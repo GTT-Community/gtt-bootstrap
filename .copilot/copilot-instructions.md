@@ -1,5 +1,7 @@
 # GTT — GitHub Copilot integration
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 > **Known limitation:** GitHub Copilot's actual, documented discovery path
 > for repository-wide custom instructions is `.github/copilot-instructions.md`
 > — Copilot does not read `.copilot/copilot-instructions.md` automatically.

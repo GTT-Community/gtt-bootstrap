@@ -1,5 +1,7 @@
 # GTT Bootstrap — Installation Guide
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 This document contains the detailed installation procedures for GTT Bootstrap.
 
 The repository README remains the canonical entry point. This guide expands the installation details without removing the Quick Start from the README.

@@ -3,6 +3,8 @@ name: gtt-guard
 description: Mark a file, class, or method as protected with a @GTTGuard marker, or remove one, then keep gtt/protection/registry.yaml in sync. Use when the user asks to protect a piece of code from autonomous agent edits, to mark something GTTGuard, to unprotect something, or asks what is currently protected. Not for making the actual change to a protected artifact — that goes through gtt-propose-change (Form 5).
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Mark or unmark a GTTGuard-protected artifact
 
 GTTGuard is a sibling mechanism to L0/L1 governance, not a copy of it. It

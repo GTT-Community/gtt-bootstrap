@@ -1,5 +1,7 @@
 # Architecture
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 The current architecture of this solution. Loaded on demand, not at session
 start — so it can be longer than `constraints.md`, but every section should
 still be something an agent would act on.

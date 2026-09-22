@@ -1,5 +1,7 @@
 # GTT Bootstrap
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 > **When context doesn't govern AI, AI governs the solution.**
 
 The official starter kit for **Governance Throw Think (GTT)** — a practical flow for AI-assisted software development.

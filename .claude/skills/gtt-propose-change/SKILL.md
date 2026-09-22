@@ -3,6 +3,8 @@ name: gtt-propose-change
 description: Produce a GTT change proposal instead of applying a change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt/context/ is wrong or outdated, when implementation code conflicts with the governed context, when gtt/backlog.md needs an Epic/Story added, removed, or materially changed, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change the committed development line, and whenever a permission denial points at gtt/context/, gtt/adr/, gtt/CHANGE-REQUEST.md, or a GTTGuard-protected artifact.
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # GTT change proposal
 
 Governed context is owned by the Solution Designer. You produce proposals; a

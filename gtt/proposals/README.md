@@ -1,5 +1,7 @@
 # Proposals — staging area
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 Agent-writable. This is the only place under `gtt/` an agent may create files.
 
 A proposal here is a **draft, not a decision**. Nothing in this directory

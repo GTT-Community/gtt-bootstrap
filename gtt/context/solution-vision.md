@@ -1,5 +1,7 @@
 # Solution Vision
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 ## Problem
 
 What is broken today, for whom, and what it costs them.

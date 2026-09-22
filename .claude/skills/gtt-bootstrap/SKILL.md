@@ -3,6 +3,8 @@ name: gtt-bootstrap
 description: Detect the host ADE, install only its GTT adapter, then populate gtt/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt/context/ still holds template placeholders. Checks the project root for an existing solution document, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Bootstrap the governed context
 
 `gtt/context/` ships as a template — angle-bracket placeholders and empty

@@ -3,6 +3,8 @@ name: gtt-drift-response
 description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Produces a proposal under gtt/proposals/ plus a promotion script the human runs to ratify it.
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # GTT drift response
 
 Something outside the governed paths may have made the ratified context stale.

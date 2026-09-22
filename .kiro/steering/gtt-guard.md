@@ -3,6 +3,8 @@ inclusion: fileMatch
 fileMatchPattern: 'src/**/*'
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Protected artifacts (GTTGuard)
 
 Mirror of `AGENTS.md` → *Protected artifacts (GTTGuard)* for Kiro. Keep

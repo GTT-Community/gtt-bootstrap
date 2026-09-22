@@ -9,6 +9,8 @@ paths:
   - ".github/workflows/**/*"
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Infrastructure and deployment
 
 Infrastructure choices are architectural. Changing the deployment target,

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # GTT - validate. Deterministic aggregator over the existing CI gates:
-# backlog structural integrity, ADE-adapter matrix, GTTGuard registry, and
-# the stack map. Reuses each check script's own logic rather than
-# reimplementing it - this script only runs them and summarizes.
+# backlog structural integrity, ADE-adapter matrix, GTTGuard registry, the
+# stack map, and the markdown canonical-reference gate. Reuses each check
+# script's own logic rather than reimplementing it - this script only runs
+# them and summarizes.
 #
 # Adapter check is skipped (not failed) when zero or more than one adapter
 # is present: this source repository is the catalog and legitimately ships
@@ -59,6 +60,12 @@ STACK_RC=$?
 report "gtt-check-stack.sh" "$STACK_RC"
 [ "$STACK_RC" -ne 0 ] && cat /tmp/gtt-validate-stack.$$
 rm -f /tmp/gtt-validate-stack.$$
+
+bash gtt/scripts/gtt-check-markdown.sh >/tmp/gtt-validate-markdown.$$ 2>&1
+MARKDOWN_RC=$?
+report "gtt-check-markdown.sh" "$MARKDOWN_RC"
+[ "$MARKDOWN_RC" -ne 0 ] && cat /tmp/gtt-validate-markdown.$$
+rm -f /tmp/gtt-validate-markdown.$$
 
 echo
 if [ "$FAIL" -ne 0 ]; then

@@ -5,6 +5,8 @@ paths:
   - "lib/**/*"
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Implementation work (L3)
 
 You are editing implementation code. It is freely editable, but it must stay

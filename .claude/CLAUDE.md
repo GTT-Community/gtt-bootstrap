@@ -1,3 +1,5 @@
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 @../AGENTS.md
 
 ## Claude Code specifics

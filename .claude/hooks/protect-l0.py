@@ -24,11 +24,16 @@ as the same coarse-but-safe tradeoff already made for CHANGE-REQUEST.md
 and SOURCE-BRIEF.*, and irrelevant to this repository, which has exactly
 one AGENTS.md, at the root.
 
-Machinery (.claude/settings.json, .claude/hooks/) has no regime exception
-and no Write/Edit fallback here either: permissions.deny already blocks the
-tool path, so this hook's job for machinery is exclusively the shell path -
-an agent must never be able to disarm its own protection via sed/rm/tee/
-redirection just because that happens to route through Bash instead of Edit.
+Machinery (.claude/settings.json, .claude/settings.local.json,
+.claude/hooks/) has no regime exception and no Write/Edit fallback here
+either: permissions.deny already blocks the tool path, so this hook's job
+for machinery is exclusively the shell path - an agent must never be able
+to disarm its own protection via sed/rm/tee/redirection just because that
+happens to route through Bash instead of Edit. settings.local.json is
+covered for the same reason as settings.json itself: Claude Code merges it
+into the effective permissions/hooks configuration, so it is exactly as
+capable of disabling this mechanism and must not be reachable by any path
+settings.json itself is denied on.
 
 Exit 2 plus permissionDecision:deny blocks the call deterministically.
 Any unexpected input exits 0 so a broken hook never blocks a session.
@@ -43,11 +48,11 @@ FROZEN_MARKER = "gtt/.frozen"
 
 REGIME_PATHS = re.compile(r"gtt/(context|adr)/")
 ROOT_FILES = re.compile(r"AGENTS\.md|CHANGE-REQUEST\.md|SOURCE-BRIEF\.")
-MACHINERY = re.compile(r"\.claude/settings\.json|\.claude/hooks/")
+MACHINERY = re.compile(r"\.claude/settings(\.local)?\.json|\.claude/hooks/")
 MUTATING_SHELL = re.compile(
     r"\b(sed\s+-i|tee|mv|cp|rm|truncate|dd|install)\b"
     r"|>>?\s*\S*(gtt/|CHANGE-REQUEST\.md|SOURCE-BRIEF\."
-    r"|\.claude/settings\.json|\.claude/hooks/)"
+    r"|\.claude/settings(\.local)?\.json|\.claude/hooks/)"
 )
 # An agent may always write drafts into gtt/proposals/ (see is_protected),
 # but it must never be the one to execute the promotion script it staged

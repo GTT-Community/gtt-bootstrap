@@ -1,5 +1,7 @@
 # GTT Bootstrap — Usage Guide
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 GTT governs the context that guides AI-assisted development. The normal development loop is:
 
 ```text

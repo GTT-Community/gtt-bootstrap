@@ -1,5 +1,7 @@
 # GTT Bootstrap
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 > **Cuando el contexto no gobierna a la IA, la IA gobierna la solución.**
 
 Kit de inicio oficial de **Governance Throw Think (GTT)** — un flujo práctico para el desarrollo de software asistido por IA.

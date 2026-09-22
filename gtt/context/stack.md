@@ -1,5 +1,7 @@
 # Stack & Architecture Map
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 > The single view of this solution. If it is not on this page, it is not part of
 > the architecture. Every approved architectural change updates this file in the
 > same commit as the ADR that approves it.

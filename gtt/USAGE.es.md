@@ -1,5 +1,7 @@
 # GTT Bootstrap — Guía de uso
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 GTT gobierna el contexto que guía el desarrollo asistido por IA.
 
 El ciclo normal es:

@@ -1,5 +1,7 @@
 # Project Backlog
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 > The project's living development line — Epics, Stories, and the work
 > currently expected to be built. This is a development-planning artifact,
 > not architecture: see *Precedence* below. It answers "what exists, what's

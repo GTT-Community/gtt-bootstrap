@@ -3,6 +3,8 @@ name: gtt-audit
 description: Audit whether the governed context under gtt/context/ still matches the actual codebase, and whether gtt/backlog.md is reconciled with defined Epics/Stories. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The scheduled counterpart to the PostToolUse drift detector: same signals, same response path, full sweep instead of one file.
 ---
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 # Audit context freshness
 
 Stale context is worse than no context: it makes every agent in the project

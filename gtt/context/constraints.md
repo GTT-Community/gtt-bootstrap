@@ -1,5 +1,7 @@
 # Constraints
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 Hard limits this solution must respect. This file is loaded into every AI
 session, so keep it short and concrete: only constraints that would change a
 decision. Delete every line you have not actually committed to.

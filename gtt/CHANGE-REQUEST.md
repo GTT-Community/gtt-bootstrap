@@ -1,5 +1,7 @@
 # Change Request
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 **This is the front door. To change anything governed — stack, architecture,
 principles, constraints, vision, product-level design intent, or the
 committed development line in `gtt/backlog.md` (adding/removing an
