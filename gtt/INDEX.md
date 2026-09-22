@@ -36,6 +36,8 @@ ADE or a human needs to find them there. See *Workspace hygiene* in
 | Change the stack, architecture, any directive, or an Epic/Story | `CHANGE-REQUEST.md` |
 | See the development line — Epics, Stories, current focus | `backlog.md` |
 | Check whether an L3 change (infra, a manifest) contradicts ratified architecture | `.claude/skills/gtt-drift-response/SKILL.md`, or wait for the `GTT DRIFT SIGNAL` warning |
+| Protect a file, class, or method from autonomous agent edits | `.claude/skills/gtt-guard/SKILL.md` — add a `@GTTGuard` marker |
+| Request a change to a GTTGuard-protected artifact | `.claude/skills/gtt-propose-change/SKILL.md` (form 5) |
 | See what this system is, in one screen | `context/stack.md` |
 | Understand why GTT works this way | `docs/DOCS.md` (Methodology) |
 | Set this up in my project | `../README-GTT.md` |
@@ -78,6 +80,16 @@ edits — see *Backlog governance* in `AGENTS.md`. Precedence: L0 → ADR →
 |---|---|---|
 | `proposals/` | Agent drafts, and approved changes' promotion packages (ADR draft + affected context files + `apply-*.sh`), awaiting your review. Delete when resolved | never |
 
+## Protection registry — derived, self-correcting
+
+GTTGuard (see `AGENTS.md` → *Protected artifacts*) is a sibling to L0/L1,
+not part of it — it protects L3 code you opt into protecting, not
+`gtt/context/`/`gtt/adr/`.
+
+| File | Contains | Loads |
+|---|---|---|
+| `protection/registry.yaml` | Every `@GTTGuard`-marked artifact, regenerated from source markers by `gtt-guard-sync.sh`. Derived, like a lockfile — never hand-edited; `gtt-check-protection.sh` fails the build if it drifts from a fresh regeneration | never |
+
 ## Instructions — how agents behave
 
 A project has exactly one adapter, matching the ADE that executed its
@@ -101,10 +113,11 @@ because this source repository is the catalog, not an installed project.
 | File | Invoked when |
 |---|---|
 | `../.claude/skills/gtt-bootstrap/SKILL.md` | first time populating `context/`, pre-freeze, right after cloning the kit |
-| `../.claude/skills/gtt-propose-change/SKILL.md` | processing a change request — architecture, context, conflict, or a development-line (Epic/Story) change |
-| `../.claude/skills/gtt-adr/SKILL.md` | a change was approved and needs recording — drafts the ADR, the affected context files, and the `apply-ADR-NNN-<slug>.sh` promotion script together (architecture/context changes only — a backlog-only change does not get an ADR) |
+| `../.claude/skills/gtt-propose-change/SKILL.md` | processing a change request — architecture, context, conflict, a development-line (Epic/Story) change (form 4), or a change to a GTTGuard-protected artifact (form 5) |
+| `../.claude/skills/gtt-adr/SKILL.md` | a change was approved and needs recording — drafts the ADR, the affected context files, and the `apply-ADR-NNN-<slug>.sh` promotion script together (architecture/context changes only — a backlog-only or GTTGuard-only change does not get an ADR) |
 | `../.claude/skills/gtt-audit/SKILL.md` | checking whether context still matches the code, or whether `backlog.md` is reconciled with defined Epics/Stories — also the scheduled sweep counterpart to the drift detector below |
 | `../.claude/skills/gtt-drift-response/SKILL.md` | a `GTT DRIFT SIGNAL` fired, `gtt-audit` found a divergence, or you're asking whether an L3 change contradicts ratified architecture — stages the same promotion-script package as `gtt-adr` |
+| `../.claude/skills/gtt-guard/SKILL.md` | marking or unmarking a `@GTTGuard`-protected file/class/method, then syncing the registry |
 
 ## Enforcement — costs zero context
 
@@ -112,8 +125,9 @@ because this source repository is the catalog, not an installed project.
 |---|---|
 | `.frozen` | The regime marker. Absent = pre-freeze, `context/`/`adr/` are agent-writable. Present = governed, they're denied. Human-written only, via `gtt-freeze.sh`; versioned, not ignored |
 | `scripts/gtt-freeze.sh` | Run by the Solution Designer to ratify: validates L0 has real content, then writes `.frozen` |
-| `../.claude/settings.json` | Denies writes to governance machinery unconditionally; registers both hooks below |
+| `../.claude/settings.json` | Denies writes to governance machinery unconditionally; registers all hooks below |
 | `../.claude/hooks/protect-l0.py` | `PreToolUse`. Regime-aware: blocks `context/`/`adr/`/`CHANGE-REQUEST.md`/`SOURCE-BRIEF.*` (the last two unconditionally) once frozen; blocks machinery paths always, via shell too. Exit 2 |
+| `../.claude/hooks/protect-guard.py` | `PreToolUse`. Blocks an autonomous edit to a `HUMAN_APPROVAL` entry in `protection/registry.yaml` in real time — file-scope blocks the whole file, symbol-scope resolves the exact span live from disk and fails safe to whole-file if resolution is ambiguous. Exit 2 |
 | `../.claude/hooks/detect-drift.py` | `PostToolUse`, governed regime only. Warns (never blocks) when a write matches the `gtt-drift-signals` block in `stack.md`. Deduplicated per session |
 | `../.claude/hooks/notify-change-request.py` | `UserPromptSubmit`. Advisory only: notices a filled-in, unprocessed `CHANGE-REQUEST.md` and surfaces it in context — never analyzes or drafts. Deduplicated per session/content |
 | `../.kiro/permissions.yaml` | Kiro's declarative equivalent of the machinery-path deny (1.0+) |
@@ -121,6 +135,8 @@ because this source repository is the catalog, not an installed project.
 | `scripts/gtt-check-stack.sh` | CI gate: an ADR without a map update fails the build; also checks referential integrity of ADR citations and warns if the drift-signals block is missing |
 | `scripts/gtt-check-adapter.sh` | Deterministic validation of the ADE-adapter matrix: given a target ADE, asserts the installed files match exactly what that ADE should have and nothing else |
 | `scripts/gtt-check-backlog.sh` | CI gate: fails on duplicate Epic/Story IDs or a status value outside the agreed vocabulary in `backlog.md`; warns on an Epic with no Stories yet |
+| `scripts/gtt-check-protection.sh` | CI gate: fails if `protection/registry.yaml` drifts from a fresh regeneration, if an artifact/symbol/source fails to resolve, or if a protected artifact changed with no accompanying `gtt/proposals/`/`gtt/adr/` change (the one real-time backstop on Kiro, Codex, and Copilot) |
+| `scripts/gtt-guard-sync.sh` / `scripts/gtt_guard.py` | Regenerates `protection/registry.yaml` from `@GTTGuard` markers in source; the shared, deterministic engine both this script and `protect-guard.py` import |
 
 ## Human documentation — never loaded by any agent
 

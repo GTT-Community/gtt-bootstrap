@@ -74,6 +74,7 @@ The resulting workspace must contain:
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 
@@ -177,11 +178,13 @@ Wire:
 
 ```text
 gtt/scripts/gtt-check-stack.sh
+gtt/scripts/gtt-check-backlog.sh
+gtt/scripts/gtt-check-protection.sh
 ```
 
 into CI against the project's default branch.
 
-The goal is to ensure that governed architectural changes and the architecture map remain synchronized.
+The goal is to ensure that governed architectural changes and the architecture map remain synchronized, and that `gtt/protection/registry.yaml` (GTTGuard) always matches the `@GTTGuard` markers actually in source.
 
 ---
 
@@ -310,6 +313,7 @@ When an agent deploys GTT into a host project, it MUST reorganize the installed 
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 

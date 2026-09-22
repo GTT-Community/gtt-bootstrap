@@ -1,6 +1,6 @@
 ---
 name: gtt-propose-change
-description: Produce a GTT change proposal instead of applying a change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt/context/ is wrong or outdated, when implementation code conflicts with the governed context, or when gtt/backlog.md needs an Epic/Story added, removed, or materially changed. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change the committed development line, and whenever a permission denial points at gtt/context/, gtt/adr/, or gtt/CHANGE-REQUEST.md.
+description: Produce a GTT change proposal instead of applying a change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt/context/ is wrong or outdated, when implementation code conflicts with the governed context, when gtt/backlog.md needs an Epic/Story added, removed, or materially changed, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change the committed development line, and whenever a permission denial points at gtt/context/, gtt/adr/, gtt/CHANGE-REQUEST.md, or a GTTGuard-protected artifact.
 ---
 
 # GTT change proposal
@@ -44,6 +44,10 @@ first, and check whether it contradicts governed context or an accepted
 ADR before drafting (see backlog *Precedence* in `AGENTS.md`). Routine Story
 status updates during already-approved work are not a change request at
 all; redirect those back to direct editing, not a proposal.
+
+If the request is a change to a file, class, or method carrying a
+`@GTTGuard` marker — check `gtt/protection/registry.yaml` — use Form 5
+below; it is neither an architecture change nor a backlog change.
 
 ## Forms
 
@@ -129,6 +133,42 @@ If the request would contradict governed context or an accepted ADR, say so
 explicitly rather than quietly aligning the Story to the architecture — that
 contradiction is exactly what the Solution Designer needs to see and decide.
 
+## 5. Protected artifact change (GTTGuard)
+
+Use when the requested change touches a file, class, or method that
+`gtt/protection/registry.yaml` lists with `protection: HUMAN_APPROVAL`.
+This is not an architecture change and not a backlog change — GTTGuard is a
+sibling mechanism protecting L3 code the developer opted into protecting,
+not `gtt/context/` or `gtt/adr/`. See `AGENTS.md` → *Protected artifacts
+(GTTGuard)* before using this form.
+
+```text
+Protected Artifact Change
+
+Artifact: <file path>
+Symbol: <ClassName, ClassName.method, or "whole file">
+Current behavior:
+Suggested change:
+Reason:
+Source (if any, e.g. an ADR or ticket the protection traces to):
+Impact:
+Risk:
+Alternatives considered:
+
+Status: Requires Solution Designer approval
+```
+
+**Promotion is lighter here than Forms 1-3.** There is no ADR and no
+`apply-*.sh` script — GTTGuard is deliberately not a second, unrelated
+approval model; it reuses this proposal mechanism, nothing heavier. Once
+the Solution Designer approves
+**in conversation**, implement the change directly, update or remove the
+`@GTTGuard` marker as appropriate, and run `gtt/scripts/gtt-guard-sync.sh`
+so the registry reflects it. Do not treat this approval as covering any
+other protected artifact, and do not confuse this with the L0/L1 Human
+Promotion Boundary — that one still requires the Solution Designer to run a
+script themselves, this one does not.
+
 ## Quality bar
 
 A proposal is only useful if it can be decided without a follow-up question.
@@ -152,4 +192,7 @@ itself (the Human Promotion Boundary, `AGENTS.md`). A development-line
 proposal (form 4) is not an architectural decision — once approved, the
 Solution Designer applies it directly to `gtt/backlog.md`, no script
 involved; it does not get an ADR unless it also happens to touch governed
-context.
+context. A protected-artifact proposal (form 5) is approved in conversation
+— once the Solution Designer says so, implement it directly, update the
+marker, and re-sync the registry; no ADR, no script, and never treat it as
+approval for a different protected artifact.

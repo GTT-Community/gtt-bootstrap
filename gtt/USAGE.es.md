@@ -140,6 +140,50 @@ el backlog contra lo que realmente está definido y realmente se hizo.
 
 ---
 
+## Artefactos protegidos (GTTGuard)
+
+Algo de código L3 merece una regla más estricta que "libremente editable":
+un archivo, clase o método que un desarrollador marcó explícitamente para
+que un agente pueda leerlo y proponer cambios, pero nunca modificarlo por
+su cuenta. Eso es GTTGuard — un mecanismo hermano de la gobernanza L0/L1,
+no parte de ella.
+
+**Marcar algo como protegido** es una edición de código normal, no un
+cambio gobernado: agregá `@GTTGuard` (Java/Python), `[GTTGuard]` (C#), o
+`// @GTTGuard` / `# @GTTGuard` (lenguajes basados en comentarios),
+opcionalmente con `reason="..."`/`source="..."`, justo arriba de la
+declaración — o como primera línea del archivo para proteger todo el
+archivo. Usá la skill `gtt-guard` para esto, y después corré:
+
+```bash
+bash gtt/scripts/gtt-guard-sync.sh
+```
+
+para regenerar `gtt/protection/registry.yaml` desde cada marcador en el
+código. El registro es derivado, nunca editado a mano —
+`gtt-check-protection.sh` hace fallar el build si se desincroniza de lo
+que los marcadores realmente declaran.
+
+**Cambiar algo ya protegido** pasa por el formulario 5 de
+`gtt-propose-change`, no por una edición directa. Una vez que aprobás la
+propuesta **en la conversación**, el agente implementa el cambio
+directamente y vuelve a sincronizar el registro — sin ADR, sin script de
+promoción. Esto es deliberadamente más liviano que el Límite Humano de
+Promoción de arriba: GTTGuard protege código L3 que vos decidiste
+proteger, no `gtt/context/` ni `gtt/adr/`, y los dos modelos de promoción
+nunca deben confundirse.
+
+En Claude Code, `.claude/hooks/protect-guard.py` bloquea una edición
+protegida en tiempo real, resolviendo el tramo de línea actual de cada
+símbolo protegido en vivo contra el archivo en disco, de modo que un
+método sin proteger junto a uno protegido sigue siendo editable. Kiro,
+Codex y GitHub Copilot no tienen un bloqueo equivalente en tiempo real; el
+enforcement ahí es `gtt/scripts/gtt-check-protection.sh` en CI más una
+nota en el plano de instrucciones, el mismo respaldo honesto que ya usa la
+condición de dos regímenes de `gtt/context/`/`gtt/adr/`.
+
+---
+
 ## Ejemplo de solicitud de cambio
 
 La solicitud debe comunicar intención, no imponer ciegamente una implementación.
@@ -276,6 +320,7 @@ Durante la implementación:
 
 - [ ] Mantener la implementación alineada con el contexto.
 - [ ] No modificar silenciosamente decisiones gobernadas.
+- [ ] Si un archivo/clase/método tiene un marcador `@GTTGuard`, usar `gtt-propose-change` (formulario 5) en lugar de editarlo directamente.
 - [ ] Actualizar el estado de la Story y el Current Focus a medida que avanza el trabajo real.
 - [ ] Preservar la estructura del proyecto anfitrión.
 
@@ -324,6 +369,7 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 

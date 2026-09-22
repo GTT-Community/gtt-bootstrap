@@ -34,6 +34,12 @@ write a draft under `gtt/proposals/` and follow the change process in
 `AGENTS.md`; never edit the governed paths directly, and never work around
 this by renaming, duplicating, or editing them through another path.
 
+The same applies to any file, class, or method carrying a `@GTTGuard`
+marker (listed in `gtt/protection/registry.yaml`) — see `AGENTS.md` →
+*Protected artifacts (GTTGuard)*. Copilot has no real-time block for this
+either; `gtt/scripts/gtt-check-protection.sh` in CI is the actual
+enforcement, so treat the instruction as binding regardless.
+
 ## Procedures
 
 GTT's step-by-step procedures (bootstrap, propose a change, record an ADR,

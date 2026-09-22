@@ -228,6 +228,12 @@ change) — do not silently leave them out, and do not invent ones that
 weren't actually stated. If nothing like that came up, say so plainly and
 move on; an empty backlog is a valid state, not a gap to fill by guessing.
 
+If the host project already contains source files with `@GTTGuard` markers
+(a prior partial setup, or code copied in before GTT was bootstrapped), run
+`bash gtt/scripts/gtt-guard-sync.sh` once the workspace is in place so
+`gtt/protection/registry.yaml` reflects them from the start, rather than
+leaving it stale until someone happens to run the sync later.
+
 Point out three things:
 
 - `stack.md`'s "Locked by" column should reference `ADR-001` for now; later

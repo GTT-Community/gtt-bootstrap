@@ -13,6 +13,8 @@ Use these skills instead of improvising the format:
 | Verify the governed context still matches the code | `gtt-audit` |
 | `gtt/backlog.md` needs an Epic/Story added, removed, or materially changed | `gtt-propose-change` (form 4) |
 | Reconcile `gtt/backlog.md` against defined Epics/Stories | `gtt-audit` |
+| Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
+| A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
 
 `gtt/context/`, `gtt/adr/`, `gtt/CHANGE-REQUEST.md`, and `SOURCE-BRIEF.*`
 are blocked at the permission layer and by a PreToolUse hook. A denial there
@@ -21,6 +23,15 @@ never look for another way to reach a blocked path. `gtt/backlog.md` is not
 blocked the same way — routine Story status/focus updates are direct edits;
 only structural changes go through the flow above (see `AGENTS.md` →
 *Backlog governance*).
+
+A GTTGuard-protected file/class/method is a separate, live-resolved block by
+a different PreToolUse hook (`protect-guard.py`), driven by
+`gtt/protection/registry.yaml` rather than a fixed path list. A denial there
+is the same kind of signal — use `gtt-propose-change` (form 5), never look
+for another way in. `.claude/hooks/` and `.claude/settings.json` are
+themselves machinery and permission-denied like any other governance file;
+if a change needs to land there, stage it under `gtt/proposals/` and tell
+the Solution Designer to move it into place.
 
 Hard constraints, always in context:
 

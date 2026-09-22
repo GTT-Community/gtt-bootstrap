@@ -138,6 +138,46 @@ what is actually defined and actually done.
 
 ---
 
+## Protected artifacts (GTTGuard)
+
+Some L3 code deserves a narrower rule than "freely editable": a file,
+class, or method a developer has explicitly marked so an agent may read and
+propose changes to it, but never modify it autonomously. That is GTTGuard —
+a sibling to L0/L1 governance, not part of it.
+
+**Marking something protected** is a normal source edit, not a governed
+change: add `@GTTGuard` (Java/Python), `[GTTGuard]` (C#), or `// @GTTGuard`
+/ `# @GTTGuard` (comment-based languages), optionally with
+`reason="..."`/`source="..."`, immediately above the declaration — or as
+the file's first line to protect the whole file. Use the `gtt-guard` skill
+for this, then run:
+
+```bash
+bash gtt/scripts/gtt-guard-sync.sh
+```
+
+to regenerate `gtt/protection/registry.yaml` from every marker in source.
+The registry is derived, never hand-edited — `gtt-check-protection.sh`
+fails the build if it drifts from what the markers actually declare.
+
+**Changing something already protected** goes through `gtt-propose-change`
+form 5, not a direct edit. Once you approve the proposal **in
+conversation**, the agent implements the change directly and re-syncs the
+registry — no ADR, no promotion script. This is deliberately lighter than
+the Human Promotion Boundary above: GTTGuard protects L3 code you opted
+into protecting, not `gtt/context/` or `gtt/adr/`, and the two promotion
+models must never be conflated.
+
+On Claude Code, `.claude/hooks/protect-guard.py` blocks a protected edit in
+real time, resolving each protected symbol's current line span live from
+disk so an unprotected method next to a protected one stays editable. Kiro,
+Codex, and GitHub Copilot have no equivalent real-time block; enforcement
+there is `gtt/scripts/gtt-check-protection.sh` in CI plus an
+instruction-plane note, the same honest fallback the two-regime
+`gtt/context/`/`gtt/adr/` condition already uses.
+
+---
+
 ## Change request example
 
 A request should communicate intent rather than prescribe an implementation blindly.
@@ -276,6 +316,7 @@ During implementation:
 
 - [ ] Keep implementation aligned with governed context.
 - [ ] Do not silently modify governed decisions.
+- [ ] If a file/class/method carries a `@GTTGuard` marker, use `gtt-propose-change` (form 5) instead of editing it directly.
 - [ ] Update the Story's status and Current Focus as work actually progresses.
 - [ ] Preserve host-project structure.
 
@@ -323,6 +364,7 @@ When an agent deploys GTT into a host project, it MUST reorganize the installed 
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 

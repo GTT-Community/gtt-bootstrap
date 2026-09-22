@@ -74,6 +74,7 @@ El workspace final debe contener:
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 
@@ -174,9 +175,11 @@ Conecta:
 
 ```text
 gtt/scripts/gtt-check-stack.sh
+gtt/scripts/gtt-check-backlog.sh
+gtt/scripts/gtt-check-protection.sh
 ```
 
-al CI contra la rama por defecto.
+al CI contra la rama por defecto. Esto asegura que los cambios arquitectónicos gobernados y el mapa permanezcan sincronizados, y que `gtt/protection/registry.yaml` (GTTGuard) siempre coincida con los marcadores `@GTTGuard` realmente presentes en el código.
 
 ---
 
@@ -280,6 +283,7 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 

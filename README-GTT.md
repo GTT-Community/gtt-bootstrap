@@ -26,6 +26,7 @@ Works with Claude Code, Kiro, Copilot and Codex · CC BY 4.0
 - [Changing something](#changing-something)
 - [Human Promotion Boundary](#human-promotion-boundary)
 - [Backlog](#backlog)
+- [Protected artifacts (GTTGuard)](#protected-artifacts-gttguard)
 - [Keeping the map honest](#keeping-the-map-honest)
 - [Design principle](#design-principle)
 - [Structure](#structure)
@@ -212,6 +213,7 @@ When bootstrapping GTT into a project, **the AI coding agent/ADE MUST create and
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 
@@ -409,6 +411,51 @@ verify.
 
 ---
 
+## Protected artifacts (GTTGuard)
+
+`gtt/backlog.md` governs *what* gets built. GTTGuard governs *which pieces
+of already-existing code an agent may never touch on its own* — a file, a
+class, or a method. It is a sibling mechanism to L0/L1, not a copy of it:
+it protects L3 code you opt into protecting, and its promotion model is
+deliberately lighter than the Human Promotion Boundary above.
+
+Mark a declaration and GTT does the rest:
+
+```java
+@GTTGuard(reason = "Financial calculation", source = "ADR-021")
+public PaymentResponse calculatePayment(...) { ... }
+```
+
+```text
+Developer adds @GTTGuard
+        ↓
+gtt/scripts/gtt-guard-sync.sh detects it, resolves the symbol deterministically
+        ↓
+gtt/protection/registry.yaml regenerated (derived — never hand-edited)
+        ↓
+gtt/scripts/gtt-check-protection.sh validates it in CI
+        ↓
+.claude/hooks/protect-guard.py blocks an autonomous edit to it in real time
+```
+
+`getPayment()` next to a protected `calculatePayment()` in the same file
+stays freely editable — only the marked symbol's resolved span is blocked,
+and the hook fails safe to blocking the whole file if that resolution is
+ever ambiguous. Requesting a change to a protected artifact goes through
+`gtt-propose-change` (form 5): once you approve it **in conversation**, the
+agent implements it directly and re-syncs the registry — no ADR, no script,
+on purpose.
+
+Real-time blocking exists on Claude Code today. Kiro, Codex, and GitHub
+Copilot rely on the CI gate (`gtt-check-protection.sh`) plus an
+instruction-plane note, the same honest fallback already used for the
+two-regime `gtt/context/`/`gtt/adr/` condition.
+
+Full mechanism: `AGENTS.md` → *Protected artifacts (GTTGuard)*. Procedures:
+`.claude/skills/gtt-guard/SKILL.md` and `.claude/skills/gtt-propose-change/SKILL.md`.
+
+---
+
 ## Keeping the map honest
 
 Four mechanisms, from weakest to strongest:
@@ -465,6 +512,7 @@ gtt/                           # GTT governance — everything below is generate
 ├── USAGE.md                     # the normal development loop
 ├── USAGE.es.md
 ├── proposals/                  # agent drafts awaiting review
+├── protection/                 # GTTGuard registry.yaml — derived, never hand-edited
 ├── context/                    # L0 — governed context
 │   ├── stack.md                # the seven-view architecture map
 │   ├── architecture.md
@@ -474,9 +522,12 @@ gtt/                           # GTT governance — everything below is generate
 │   └── glossary.md
 ├── adr/                        # L1 — accepted decisions
 ├── scripts/
-│   ├── gtt-check-stack.sh     # CI gate
-│   ├── gtt-check-adapter.sh   # validates the installed adapter matches the matrix
-│   └── gtt-check-backlog.sh   # validates backlog.md structural integrity
+│   ├── gtt-check-stack.sh       # CI gate
+│   ├── gtt-check-adapter.sh     # validates the installed adapter matches the matrix
+│   ├── gtt-check-backlog.sh     # validates backlog.md structural integrity
+│   ├── gtt-check-protection.sh  # validates the GTTGuard registry
+│   ├── gtt-guard-sync.sh        # regenerates the GTTGuard registry from source markers
+│   └── gtt_guard.py             # shared GTTGuard engine (detection, resolution, registry)
 └── docs/                       # human reference
     └── DOCS.md                # methodology, portability, migration
 │
@@ -487,12 +538,14 @@ gtt/                           # GTT governance — everything below is generate
 ├── CLAUDE.md
 ├── settings.json
 ├── hooks/protect-l0.py
+├── hooks/protect-guard.py      # GTTGuard real-time block
 ├── rules/
 └── skills/
     ├── gtt-bootstrap
     ├── gtt-propose-change
     ├── gtt-adr
-    └── gtt-audit
+    ├── gtt-audit
+    └── gtt-guard
 │
 .kiro/steering/                 # Kiro adapter
 │
@@ -529,7 +582,7 @@ gtt/                           # GTT governance — everything below is generate
 3. Run the `gtt-bootstrap` skill (for example, “bootstrap GTT” or “set up GTT”) instead of filling `gtt/context/` by hand — it performs step 1 above for you, deterministically.
 4. If you prefer to author the context manually, start with `gtt/context/stack.md`. Leave a cell empty rather than guessing; an explicit unknown is preferable to an invented decision.
 5. Adjust the `paths:` globs in `.claude/rules/` to match the host project's folder layout (Claude Code only).
-6. Wire `gtt/scripts/gtt-check-stack.sh` and `gtt/scripts/gtt-check-backlog.sh` into CI against the default branch.
+6. Wire `gtt/scripts/gtt-check-stack.sh`, `gtt/scripts/gtt-check-backlog.sh`, and `gtt/scripts/gtt-check-protection.sh` into CI against the default branch.
 7. Run a session and inspect `/context`. Only the expected core rules and constraints should be loaded automatically.
 8. Verify the guardrail: ask the agent to edit a protected context file such as `gtt/context/stack.md`. The write must be blocked by the applicable enforcement layer, not merely discouraged.
 9. Verify the adapter: `gtt/scripts/gtt-check-adapter.sh <claude|kiro|codex|copilot>` confirms only the resolved adapter's files are present.
@@ -558,6 +611,7 @@ Full file map: [`gtt/INDEX.md`](gtt/INDEX.md) · Migration guidance: [`gtt/docs/
 | On-demand procedures | Skills | `inclusion: manual` | prompt | prompt |
 | Deterministic write block | yes | `permissions.yaml` (1.0+) | config globs | no — CI gate only |
 | Governed context + CI gate | yes | yes | yes | yes |
+| GTTGuard real-time block | yes — `protect-guard.py` | no — CI gate only | no — CI gate only | no — CI gate only |
 
 Claude Code supports the complete adapter set. Kiro's `permissions.yaml` covers unconditional machinery paths declaratively; regime-conditional paths rely on the shared hook plus CI gate where needed. Codex keeps the write protection model but has fewer fine-grained conditional-loading controls. GitHub Copilot reads repository-wide instructions from `.github/copilot-instructions.md` and agent instructions from `AGENTS.md`, per current GitHub documentation — note that GTT's adapter file lives at `.copilot/copilot-instructions.md` instead, so it is not picked up automatically at Copilot's real path; see the note above. It gets no path-scoped loading and no deterministic write block beyond the CI gate — the Copilot adapter is intentionally thin and does not claim capabilities GTT has not actually implemented for it.
 
@@ -604,6 +658,7 @@ infra/AGENTS.md
 - `gtt/CHANGE-REQUEST.md`: your entry point whenever a governed decision or the committed development line needs to change.
 - `SOURCE-BRIEF.*`: written once during bootstrap and preserved as the original source, at the project root.
 - Your resolved adapter (`.claude/`, `.kiro/`, or `.copilot/copilot-instructions.md`) and `gtt/scripts/`: GTT runtime/integration assets that normally require little change beyond path configuration.
+- `gtt/protection/registry.yaml`: never hand-maintained — it is regenerated from `@GTTGuard` markers in source by `gtt/scripts/gtt-guard-sync.sh`. Your part is placing/removing the marker; the registry follows.
 
 ---
 

@@ -83,6 +83,7 @@ governed territory, since L3 stays free by design.
 | Accepted decisions | `gtt/adr/` | when the task needs them |
 | Change requests | `gtt/CHANGE-REQUEST.md` | never |
 | Agent drafts awaiting review | `gtt/proposals/` | never |
+| GTTGuard protection registry (derived, never hand-edited) | `gtt/protection/registry.yaml` | never |
 | This document | `gtt/docs/` | never |
 
 ### The change flow
@@ -278,6 +279,67 @@ current, and a stale backlog is worse than no backlog (same failure mode as
 stale context). The bar is calibrated to what actually needs a human
 decision: *what* the project commits to building, not *how far along* it is.
 
+### GTTGuard: protected artifacts
+
+`gtt/context/` and `gtt/adr/` govern architecture. `gtt/backlog.md` governs
+the development line. GTTGuard governs neither — it is a **sibling**
+mechanism that lets a developer flag an individual file, class, or method
+so an agent may read and propose a change to it, but never modify it
+autonomously. Conflating it with L0/L1 or with the Human Promotion Boundary
+below is a mistake this document exists to prevent.
+
+**The marker.** A developer adds `@GTTGuard` (Java, Python), `[GTTGuard]`
+(C#), or `// @GTTGuard` / `# @GTTGuard` (comment-based languages, e.g.
+JS/TS) immediately above a declaration — or as the file's first line to
+protect the whole file — optionally with `reason="..."` and
+`source="..."`. Placing or removing the marker is an ordinary L3 edit: it
+*is* the developer's proposal ("User proposes → GTT implements → Agent
+respects"), not a protected change in its own right.
+
+**The registry is derived, not authored.** `gtt/scripts/gtt-guard-sync.sh`
+scans source for markers, resolves each one's file/class/method
+deterministically — brace-balance matching for Java/C#/JS/TS, indentation
+matching for Python, never an LLM's judgment — and regenerates
+`gtt/protection/registry.yaml` in full. This is the same trust model as a
+lockfile: the registry is committed for reviewability, but hand-editing it
+is self-defeating, because `gtt/scripts/gtt-check-protection.sh` fails the
+build the moment the committed file no longer matches a fresh regeneration
+from source. No write-block is needed on the file itself; the drift check
+makes tampering with it pointless rather than merely forbidden.
+
+**Real-time enforcement (Claude Code).** `.claude/hooks/protect-guard.py`,
+a `PreToolUse` hook registered alongside `protect-l0.py`, blocks an
+autonomous edit to a `HUMAN_APPROVAL` entry. A file-scope entry blocks the
+whole file, the same way `protect-l0.py` blocks a machinery path. A
+class/method-scope entry resolves that symbol's exact current line span
+*live against the file on disk* — never a cached value, so it can never go
+stale — and blocks only an edit that overlaps it: an unprotected sibling
+method in the same file stays freely editable. Whenever that resolution is
+ambiguous, the hook fails safe to blocking the whole file rather than
+risking a silent bypass. A mutating-looking Bash command naming a
+protected file is always blocked outright, for the same reason
+`protect-l0.py` takes no chances with shell commands against machinery:
+there is no way to inspect a shell command's line-range effect on a file.
+
+**Deterministic validation.** `gtt-check-protection.sh` is the CI gate:
+registry-drift, artifact/symbol resolution, protection-value validity, and
+`source: "ADR-NNN"` existence are all checked unconditionally; a protected
+artifact that changed in the diff must also be accompanied by a change
+under `gtt/proposals/` or `gtt/adr/`, or the build fails. This is the one
+real enforcement layer on Kiro, Codex, and GitHub Copilot, none of which
+has a real-time equivalent — the same honest limitation already documented
+for the two-regime `gtt/context/`/`gtt/adr/` condition below. GTTGuard
+never claims a guarantee an ADE does not actually provide.
+
+**Changing a protected artifact.** `gtt-propose-change` gets a fifth form
+for exactly this. Once the Solution Designer approves it **in
+conversation**, the agent implements the change directly, updates or
+removes the marker, and re-syncs the registry — no ADR, no `apply-*.sh`
+script. This is deliberately lighter than the Human Promotion Boundary:
+GTTGuard protects L3 code a developer opted into protecting, not governed
+context, and is deliberately not a second, unrelated approval model — it
+reuses the existing proposal mechanism, nothing heavier.
+
 ### Operational boundary
 
 GTT does not slow implementation down. It prevents accidental architectural
@@ -312,6 +374,7 @@ ADE actually executing it — see the ADE adapter matrix in `README.md` and in
 | Programmatic pre-tool block | PreToolUse hook | agent hooks (different model) | hooks / sandbox | none documented |
 | Governed context in `gtt/` | works | works | works | works |
 | CI gate (`gtt/scripts/`) | works | works | works | works |
+| GTTGuard real-time block | yes — `protect-guard.py` | no — CI gate only | no — CI gate only | no — CI gate only |
 
 \* GTT's Copilot adapter file actually lives at `.copilot/copilot-instructions.md`
 (naming consistency with `.claude/`/`.kiro/`), so Copilot does not load it
@@ -335,6 +398,10 @@ design.
 
 Verify with `/context`: only `.claude/CLAUDE.md`, `AGENTS.md`, and
 `constraints.md` should appear under memory files.
+
+`.claude/hooks/protect-guard.py` is the only adapter with a real-time
+GTTGuard block, resolving each protected symbol's span live against the
+file on disk on every `Write`/`Edit`/`NotebookEdit`/`Bash` attempt.
 
 ### Kiro
 
@@ -362,6 +429,11 @@ rather than a write block, so it mirrors cleanly to Kiro as
 
 Known issue: global steering in `~/.kiro/steering/` has had reports of
 `fileMatch` not triggering. Keep GTT steering in the workspace, not global.
+
+GTTGuard has the same gap as the two-regime paths: `permissions.yaml` is
+static and cannot evaluate `gtt/protection/registry.yaml`'s dynamic
+contents, so there is no real-time block. `gtt/scripts/gtt-check-protection.sh`
+in CI, plus `.kiro/steering/gtt-guard.md`, is the enforcement.
 
 ### Codex
 
@@ -400,6 +472,10 @@ Combine with `sandbox_mode` and `writable_roots` for a harder boundary. Verify
 against the current Codex config reference — this surface has been changing
 quickly.
 
+GTTGuard has no real-time block on Codex either, for the same reason: its
+registry is dynamic content a static filesystem glob cannot evaluate.
+`gtt-check-protection.sh` in CI is the enforcement, backed by `AGENTS.md`.
+
 ### GitHub Copilot
 
 Copilot reads two files per current GitHub documentation: repository-wide
@@ -424,6 +500,10 @@ two regime-conditional paths.
 The adapter file itself must stay thin: it points at `AGENTS.md` and `gtt/`
 as the canonical source rather than restating GTT methodology, so there is
 never a second copy of the rules to drift out of sync with the first.
+
+GTTGuard is no exception to that thinness: Copilot gets `gtt-check-protection.sh`
+in CI as its only real enforcement, and one pointer line in the adapter
+file back to `AGENTS.md` — never a restatement of the mechanism.
 
 ### If your team uses more than one ADE
 

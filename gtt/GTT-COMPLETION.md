@@ -59,6 +59,9 @@ Protection verification:
 CI gate:
 - configured / pending
 
+Protection:
+- GTTGuard markers found: <count, or "none"> — registry: initialized / not applicable
+
 Human action required:
 - ...
 ```

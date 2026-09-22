@@ -44,6 +44,7 @@ The GTT bootstrap contract is:
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 
@@ -91,6 +92,55 @@ Structural integrity (unique IDs, valid status values) is checked
 deterministically by `gtt/scripts/gtt-check-backlog.sh`; whether an
 Epic/Story is real, current, and correctly linked to actual work is a
 judgment call for the `gtt-audit` skill.
+
+## Protected artifacts (GTTGuard)
+
+GTTGuard is a lightweight, language-agnostic mechanism for marking a file,
+class, or method so an AI coding agent may read, analyze, and propose a
+change to it, but may never modify it autonomously. It is a **sibling** to
+L0/L1 governance, not a restatement of it: it protects arbitrary L3 code
+the developer opts into protecting, never `gtt/context/` or `gtt/adr/`, and
+it must never be conflated with the Human Promotion Boundary below — the
+two are deliberately different weights of ceremony for different things.
+
+**Core rule:** User proposes the protection → GTT implements it → Agent
+respects it.
+
+A developer marks a declaration with `@GTTGuard` (Java, Python), `[GTTGuard]`
+(C#), or a `// @GTTGuard` / `# @GTTGuard` comment (other languages),
+optionally with `reason=`/`source=`. `gtt/scripts/gtt-guard-sync.sh`
+detects every marker, resolves the file/class/method it protects
+deterministically (never by LLM judgment), and regenerates
+`gtt/protection/registry.yaml` — a **derived artifact**, like a lockfile:
+never hand-edit it, since `gtt/scripts/gtt-check-protection.sh` fails the
+build the moment the committed file drifts from what the markers in source
+actually declare. Placing or removing the marker is an ordinary L3 edit —
+it is the Solution Designer's proposal, not a protected change itself.
+
+On Claude Code, `.claude/hooks/protect-guard.py` (a PreToolUse hook,
+registered alongside `protect-l0.py`) blocks an autonomous edit to a
+protected artifact in real time, resolving each protected symbol's exact
+span live against the file on disk so an unprotected method next to a
+protected one stays freely editable — and failing safe to whole-file
+blocking whenever that resolution is ambiguous. Kiro, Codex, and GitHub
+Copilot have no equivalent real-time block, the same honest limitation
+already documented for the two-regime `gtt/context/`/`gtt/adr/` condition —
+`gtt-check-protection.sh` in CI is the enforcement there, backed by an
+instruction-plane note in each adapter. No ADE is credited with a guarantee
+it does not actually have.
+
+**Changing a protected artifact:** draft a proposal with `gtt-propose-change`
+(form 5). Once the Solution Designer approves **in conversation** — not a
+script run — implement the change directly, update or remove the marker,
+and re-sync the registry. This promotion model is deliberately lighter than
+the Human Promotion Boundary below (no ADR, no `apply-*.sh` script):
+GTTGuard protects L3 code the developer chose to flag, not L0/L1 governed
+context, and the proposal that introduced this mechanism is explicit that
+it "should not create a second, unrelated approval model."
+
+Full procedure: `.claude/skills/gtt-guard/SKILL.md` (marking/unmarking) and
+`.claude/skills/gtt-propose-change/SKILL.md` (form 5, changing a protected
+artifact).
 
 ## Adapters vs. portable core
 
@@ -338,6 +388,9 @@ Protection verification:
 CI gate:
 - configured / pending
 
+Protection:
+- GTTGuard markers found: <count, or "none"> — registry: initialized / not applicable
+
 Human action required:
 - ...
 ```
@@ -361,6 +414,8 @@ Human action required:
 - Never let a Story in `gtt/backlog.md` silently override governed context or an accepted ADR.
 - Never add or remove an Epic/Story, or materially change one, outside the `gtt/CHANGE-REQUEST.md` flow.
 - Never generate `INDEX.md`, `CHANGE-REQUEST.md`, `GTT-COMPLETION.md`, or `backlog.md` at the project root and move them into `gtt/` afterward — write them under `gtt/` directly.
+- Never bypass a GTTGuard-protected artifact's approval requirement — not by renaming or removing its marker without authorization, not by editing around the enforcing hook, and not by hand-editing `gtt/protection/registry.yaml`.
+- Never treat approval of one GTTGuard proposal as authorization for a different protected artifact, and never confuse its lightweight, in-conversation promotion with the L0/L1 Human Promotion Boundary.
 
 ### Bootstrap documentation vs. installed project layout
 
@@ -398,6 +453,7 @@ When an agent installs/bootstraps GTT into a **host project**, it MUST organize 
     ├── context/
     ├── docs/
     ├── proposals/
+    ├── protection/
     └── scripts/
 ```
 
@@ -443,7 +499,7 @@ The agent MUST:
 6. Create/organize the GTT scaffold under `gtt/` as defined above.
 7. Keep `AGENTS.md`, `README-GTT.md`, and `README-GTT.es.md` at the host-project root.
 8. Write `INDEX.md`, `CHANGE-REQUEST.md`, `GTT-COMPLETION.md`, and `backlog.md` directly under `gtt/` — never at the project root, and never generated at the root then moved.
-9. Install the project-facing README at `gtt/README.md`, and keep the other GTT-owned `adr/`, `context/`, `docs/`, `proposals/`, and `scripts/` under `gtt/`.
+9. Install the project-facing README at `gtt/README.md`, and keep the other GTT-owned `adr/`, `context/`, `docs/`, `proposals/`, `protection/`, and `scripts/` under `gtt/`.
 10. Preserve the original design/source brief (`SOURCE-BRIEF.*`) in the host project according to the GTT bootstrap procedure.
 11. Never move, rename, duplicate, redistribute, or silently overwrite an existing host-project file.
 12. If a target file already exists, stop and report the conflict rather than silently replacing it.
