@@ -18,7 +18,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/protect-l0.py"
+            "command": "python3 -c '' >/dev/null 2>&1 && python3 .claude/hooks/protect-l0.py || python .claude/hooks/protect-l0.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 -c '' >/dev/null 2>&1 && python3 .claude/hooks/protect-guard.py || python .claude/hooks/protect-guard.py"
           }
         ]
       }
