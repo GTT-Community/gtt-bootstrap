@@ -1,6 +1,8 @@
 {
   "permissions": {
     "deny": [
+      "Edit(/AGENTS.md)",
+      "Write(/AGENTS.md)",
       "Edit(/gtt/CHANGE-REQUEST.md)",
       "Write(/gtt/CHANGE-REQUEST.md)",
       "Edit(/SOURCE-BRIEF.*)",

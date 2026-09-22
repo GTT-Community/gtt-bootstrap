@@ -1,5 +1,7 @@
 # AGENTS.md — GTT Bootstrap Agent Contract
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 This file defines the portable agent-facing contract for GTT Bootstrap.
 
 ## Mission
@@ -9,6 +11,24 @@ When asked to bootstrap GTT into a project, establish the GTT workspace contract
 The governing principle is:
 
 > **Context is the Source of Truth.**
+
+## Agent roles and the evidence boundary
+
+GTT distinguishes three responsibilities. No skill or script may collapse
+them into one:
+
+| Role | Does | Never does | This repo's mechanism |
+|---|---|---|---|
+| Grounding | Retrieves and exposes governed evidence faithfully | Decide architecture | `gtt-bootstrap`, `gtt-audit` reading `gtt/context/`, `gtt/adr/`, `gtt/backlog.md` |
+| Reasoning | Analyzes evidence, drafts proposals/ADRs | Authorize its own draft | `gtt-propose-change`, `gtt-adr`, `gtt-drift-response` |
+| Validation | Runs deterministic structural checks | Make an architectural judgment | `gtt/scripts/gtt-check-*.sh`, `gtt-validate.sh` |
+
+The chain is: Sources → Grounding → Evidence Dossier (governed context as
+read) → Reasoning → Proposal → Human Decision → Freeze. A reasoning step
+must never receive raw sources "for context" in a way that bypasses
+grounding — read `gtt/docs/DOCS.md` → *Governance model* for the full
+rationale. Producing output, of any kind, never grants an agent decision
+authority.
 
 ## Before changing anything
 
@@ -141,6 +161,33 @@ it "should not create a second, unrelated approval model."
 Full procedure: `.claude/skills/gtt-guard/SKILL.md` (marking/unmarking) and
 `.claude/skills/gtt-propose-change/SKILL.md` (form 5, changing a protected
 artifact).
+
+## Session continuity
+
+Run `gtt/scripts/gtt-status.sh` to regenerate `gtt/SESSION.md`: a
+deterministic snapshot (freeze state, backlog focus, pending proposals,
+protected-artifact count, installed adapter) derived from repository
+artifacts, never from any ADE's private conversation memory — the same
+project resumes the same way whether the next session is Claude Code,
+Codex, Kiro, or Copilot. Treat it as operational context only: never
+architectural authority, never evidence, never a substitute for an ADR or
+decision record. An agent must never invent this state from memory instead
+of running the script.
+
+If working preferences for this project are ever introduced, keep them in
+an artifact separate from session state — they are not Canon, architecture,
+evidence, or decisions, sit below governed context/constraints in
+precedence, must never silently override them, and no agent may author its
+own preferences.
+
+## Validation
+
+`gtt/scripts/gtt-validate.sh` runs every deterministic check script
+(`gtt-check-backlog.sh`, `gtt-check-adapter.sh`, `gtt-check-protection.sh`,
+`gtt-check-stack.sh`) and reports pass/fail/cannot-determine.
+`gtt/scripts/gtt-status.sh` reports what is current, governed, pending,
+proposed, blocked, and frozen. Both are read-only and deterministic;
+neither substitutes for a human architectural judgment.
 
 ## Adapters vs. portable core
 

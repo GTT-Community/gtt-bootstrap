@@ -4,18 +4,25 @@
 permissions.deny already blocks the Write/Edit tools for the unconditional
 machinery paths. This hook covers what static config can't express: shell
 commands (sed -i, tee, redirection, mv, rm, ...) reaching those same
-machinery paths and the two protected governance files - gtt/CHANGE-REQUEST.md
-(moved under gtt/ in v2.1) and SOURCE-BRIEF.* (stays at the project root,
-the one human-facing exception) - without going through a file tool, and the
-two-regime condition on gtt/context/ and gtt/adr/ - writable pre-freeze,
-denied once gtt/.frozen exists. A static permissions.deny entry can't test
-for a file's existence, so those two paths are deliberately absent from
-settings.json and live here instead.
+machinery paths and the three protected governance files - AGENTS.md,
+gtt/CHANGE-REQUEST.md (moved under gtt/ in v2.1), and SOURCE-BRIEF.* (stays
+at the project root, the one human-facing exception) - without going
+through a file tool, and the two-regime condition on gtt/context/ and
+gtt/adr/ - writable pre-freeze, denied once gtt/.frozen exists. A static
+permissions.deny entry can't test for a file's existence, so those two
+paths are deliberately absent from settings.json and live here instead.
 
 ROOT_FILES matches by filename substring, not by directory prefix, so it
-keeps protecting CHANGE-REQUEST.md and SOURCE-BRIEF.* correctly regardless
-of which directory each lives in - the v2.1 relocation of CHANGE-REQUEST.md
-under gtt/ needed no logic change here, only settings.json's static glob.
+keeps protecting AGENTS.md, CHANGE-REQUEST.md, and SOURCE-BRIEF.*
+correctly regardless of which directory each lives in - the v2.1
+relocation of CHANGE-REQUEST.md under gtt/ needed no logic change here,
+only settings.json's static glob. This does mean a nested AGENTS.md some
+ADEs use to approximate path-scoped rules in an installed host project
+(e.g. Codex's src/AGENTS.md convention, documented in gtt/docs/DOCS.md)
+would also match here if this hook is copied into that project - accepted
+as the same coarse-but-safe tradeoff already made for CHANGE-REQUEST.md
+and SOURCE-BRIEF.*, and irrelevant to this repository, which has exactly
+one AGENTS.md, at the root.
 
 Machinery (.claude/settings.json, .claude/hooks/) has no regime exception
 and no Write/Edit fallback here either: permissions.deny already blocks the
@@ -35,7 +42,7 @@ import sys
 FROZEN_MARKER = "gtt/.frozen"
 
 REGIME_PATHS = re.compile(r"gtt/(context|adr)/")
-ROOT_FILES = re.compile(r"CHANGE-REQUEST\.md|SOURCE-BRIEF\.")
+ROOT_FILES = re.compile(r"AGENTS\.md|CHANGE-REQUEST\.md|SOURCE-BRIEF\.")
 MACHINERY = re.compile(r"\.claude/settings\.json|\.claude/hooks/")
 MUTATING_SHELL = re.compile(
     r"\b(sed\s+-i|tee|mv|cp|rm|truncate|dd|install)\b"
@@ -53,7 +60,7 @@ PROMOTION_SCRIPT_EXEC = re.compile(
 )
 
 REASON = (
-    "GTT governance: gtt/context/, gtt/adr/, gtt/CHANGE-REQUEST.md, "
+    "GTT governance: AGENTS.md, gtt/context/, gtt/adr/, gtt/CHANGE-REQUEST.md, "
     "SOURCE-BRIEF.*, and the .claude/ governance machinery itself are "
     "owned by the Solution Designer. Write your draft to gtt/proposals/ "
     "instead - that directory is yours. Use the gtt-propose-change or "

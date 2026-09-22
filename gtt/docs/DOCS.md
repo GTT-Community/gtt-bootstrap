@@ -1,5 +1,7 @@
 # GTT — Reference Docs
 
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
 This document is for humans. It is deliberately outside the agent's context
 window: an agent does not need to understand GTT to comply with it, and every
 token spent explaining the methodology is a token not spent on the problem.
@@ -84,6 +86,7 @@ governed territory, since L3 stays free by design.
 | Change requests | `gtt/CHANGE-REQUEST.md` | never |
 | Agent drafts awaiting review | `gtt/proposals/` | never |
 | GTTGuard protection registry (derived, never hand-edited) | `gtt/protection/registry.yaml` | never |
+| Session state (derived, never hand-edited) | `gtt/SESSION.md` | never |
 | This document | `gtt/docs/` | never |
 
 ### The change flow
@@ -133,6 +136,29 @@ aligned with the governed context.
 redefine architecture without explicit approval from the Solution Designer,
 and it may not execute a promotion script even after that approval — the
 Solution Designer runs it. See *Human Promotion Boundary* in `AGENTS.md`.
+
+**Agent roles and the evidence boundary.** GTT names three responsibilities
+that no skill or script may collapse into one — producing output, of any
+kind, never grants an agent decision authority:
+
+| Role | Does | Never does | This repo's mechanism |
+|---|---|---|---|
+| Grounding | Retrieves and exposes governed evidence faithfully | Decide architecture | `gtt-bootstrap`, `gtt-audit` reading `gtt/context/`, `gtt/adr/`, `gtt/backlog.md` |
+| Reasoning | Analyzes evidence, drafts proposals/ADRs/session state | Authorize its own draft | `gtt-propose-change`, `gtt-adr`, `gtt-drift-response` |
+| Validation | Runs deterministic structural checks | Make an architectural judgment | `gtt/scripts/gtt-check-*.sh`, `gtt-validate.sh` |
+
+The evidence boundary is the chain those roles sit on: **Sources → Grounding
+→ Evidence Dossier → Reasoning → Proposal → Human Decision → Freeze.** This
+is not a new mechanism — it is the change-flow diagram above, named. A
+reasoning step (drafting a proposal or an ADR) must never receive raw
+sources "for context" in a way that bypasses grounding: it reasons over the
+governed context and backlog as read, not over arbitrary source material an
+agent decided was relevant. Where the repository cannot enforce this
+mechanically (nothing stops a skill's prompt from pasting in extra text),
+it is stated here as the operational contract instead — the same honest
+gap already documented for the two-regime condition and for GTTGuard on
+non-Claude-Code adapters below: an instruction-plane rule, not a claimed
+guarantee the tooling doesn't actually have.
 
 ### Two regimes
 
@@ -339,6 +365,56 @@ script. This is deliberately lighter than the Human Promotion Boundary:
 GTTGuard protects L3 code a developer opted into protecting, not governed
 context, and is deliberately not a second, unrelated approval model — it
 reuses the existing proposal mechanism, nothing heavier.
+
+### Status and validation
+
+`gtt/scripts/gtt-status.sh` derives a deterministic snapshot from
+repository artifacts — installed adapter, freeze state, Stories currently
+`In Progress`/`Blocked`, pending files under `gtt/proposals/`, whether
+`gtt/CHANGE-REQUEST.md` has been filled in, every ADR and its status, and
+the GTTGuard protected-artifact count — and writes it to `gtt/SESSION.md`.
+That file is a **derived artifact**, the same trust model as
+`gtt/protection/registry.yaml`: never hand-edited, safe to regenerate at
+any time, and never loaded automatically by any agent. It exists so a
+project resumes the same way regardless of which ADE's session picks it up
+next — session continuity that does not depend on any tool's private
+conversation memory. It is operational context only: never architectural
+authority, never evidence, never a substitute for an ADR or decision
+record, and no agent may invent it from memory instead of running the
+script.
+
+`gtt/scripts/gtt-validate.sh` runs the existing deterministic check scripts
+(`gtt-check-backlog.sh`, `gtt-check-adapter.sh`, `gtt-check-protection.sh`,
+`gtt-check-stack.sh`) in sequence and reports PASS / FAIL /
+CANNOT-DETERMINE per check — it does not reimplement any of their logic,
+only aggregates it. The adapter check is skipped, not failed, when zero or
+more than one adapter is present, since this source repository is the
+catalog and legitimately ships every adapter — that is not the "wrong
+adapter installed" violation the check exists to catch on an installed
+project.
+
+Neither script makes an architectural judgment; both are read-only.
+
+### Capability status
+
+Not every mechanism gtt-bootstrap implements is a Canon *requirement* —
+some are this tool's particular way of satisfying one. Confusing "exists in
+this repo" with "the Canon demands exactly this" is the mistake this table
+exists to prevent:
+
+| Mechanism | Status | Note |
+|---|---|---|
+| Governed context (L0/L1), freeze | CANONICAL | The Canon's core model; not optional |
+| Change flow (`CHANGE-REQUEST.md` → `proposals/` → ADR) | CANONICAL | The Canon's one entry point for change |
+| Human Promotion Boundary | CANONICAL | Agent prepares, human promotes — non-negotiable |
+| Agent roles (Grounding/Reasoning/Validation) | CANONICAL | Named vocabulary from the Canon; mapped onto existing skills here, not a new framework |
+| GTTGuard | IMPLEMENTED | A Canon capability; this repo's marker syntax, registry format, and Bash-command heuristic are implementation choices, not canonical requirements |
+| Backlog governance (`backlog.md`) | IMPLEMENTED | Development-line tracking; the Canon requires the precedence rule, not this exact file format |
+| Drift detection | IMPLEMENTED | Extends the control plane from paths to decisions; this repo's `gtt-drift-signals` block mechanism is one way to do it |
+| Session continuity (`gtt-status.sh` / `gtt/SESSION.md`) | IMPLEMENTED | Satisfies the Canon's ADE-independence requirement for resuming work; the snapshot format is this repo's choice |
+| `gtt status` / `gtt validate` | IMPLEMENTED | Deterministic aggregation the Canon asks for; implemented here as bash scripts because that is what this repo already uses, not because the Canon mandates a shell script |
+| Working preferences (separate from session state) | PROPOSED | Precedence rule is stated in `AGENTS.md`; no artifact exists yet because nothing in this project currently needs one |
+| RAG/vector-backed grounding | NOT IMPLEMENTED | Not required by the Canon or this repo's directives; would need its own proposal if ever needed |
 
 ### Operational boundary
 
