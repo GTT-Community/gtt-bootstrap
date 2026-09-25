@@ -8,9 +8,8 @@
 #   ---
 #   <contents of gtt/SESSION.md>
 #
-# This script knows nothing about any ADE. Adapters (Claude Code today;
-# Codex, Kiro, Copilot later) call it and translate its stdout into whatever
-# their ADE consumes. It fails loudly - a real non-zero exit and a message on
+# This script knows nothing about any ADE. Each ADE's adapter calls it and
+# translates its stdout into whatever that ADE consumes. It fails loudly - a real non-zero exit and a message on
 # stderr - instead of returning a partial or empty context.
 #
 # The payload is session memory: derived from repository state, operational

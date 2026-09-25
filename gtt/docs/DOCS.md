@@ -369,7 +369,7 @@ reuses the existing proposal mechanism, nothing heavier.
 ### Status and validation
 
 `gtt/scripts/gtt-status.sh` derives a deterministic snapshot from
-repository artifacts — installed adapter, freeze state, Stories currently
+repository artifacts — freeze state, Stories currently
 `In Progress`/`Blocked`, pending files under `gtt/proposals/`, whether
 `gtt/CHANGE-REQUEST.md` has been filled in, every ADR and its status, and
 the GTTGuard protected-artifact count, artifact identity/index health, and
@@ -450,13 +450,20 @@ entry point, and each ADE gets a thin adapter:
 
 ```text
 GTT Core
+   ├── Artifact Identity
+   ├── Technical Index
    └── Session Memory Service
-          └── gtt/scripts/gtt-session-context.sh   (ADE-independent)
-                 ├── Claude Code adapter  ── SessionStart hook   (implemented, staged)
-                 ├── Codex adapter        ── not yet defined
-                 ├── Kiro adapter         ── not yet defined
-                 └── Copilot adapter      ── not yet defined
+          └── gtt/scripts/gtt-session-context.sh   (ADE-independent; the Core ends here)
+                 │
+                 └── ADE Adapter Contract          (gtt/docs/SESSION-ADAPTER-CONTRACT.md)
+                        ├── Claude Code adapter    installed
+                        ├── Codex adapter          staged (Draft)
+                        ├── GitHub Copilot adapter staged (Draft)
+                        └── Kiro adapter           staged (Draft)
 ```
+
+> **GTT Core is ADE-agnostic. ADE adapters are integration-specific.**
+> Claude Code is one adapter, not part of the Core.
 
 `gtt-session-context.sh` resolves Python (same probe as the other GTT
 wrappers), regenerates `SESSION.md`, verifies it, and prints a payload
@@ -468,6 +475,44 @@ The Claude Code adapter is a `SessionStart` hook (warm start on new or
 resumed sessions — never `UserPromptSubmit`) that emits the payload as
 `additionalContext`; hook commands resolve Python through
 `gtt/scripts/gtt-run-python.sh`, never `python3 X || python X`.
+
+#### Session Memory adapter matrix
+
+**Status: Draft — not a decision.** Full contract:
+`gtt/docs/SESSION-ADAPTER-CONTRACT.md`. Each adapter is declared in
+`gtt/session-adapters/<ade>.json`; `gtt-check-session-adapter.sh <ade>` (run by
+`gtt-validate.sh`) checks it statically and never runs the ADE. Coverage:
+**N1** native session injection · **N2** ADE-loaded session file · **N3**
+instruction-based retrieval.
+
+| ADE | Adapter (native path) | Event | Level | Implemented | Static check | Runtime |
+|---|---|---|---|---|---|---|
+| Claude Code | `.claude/hooks/session-start.py` | `SessionStart` | N1 | installed | PASS | **RUNTIME VERIFIED** — startup and resume both fired the hook (`session_source` observed) and the agent quoted the payload |
+| Codex | `.codex/hooks.json` + `.codex/gtt-session-start.sh` | `SessionStart` | N1 | staged | PASS | **NOT VERIFIED** — in a sandbox the hook never executed (documented hook-approval requirement; bypass flag deliberately not used) |
+| GitHub Copilot | `.github/hooks/gtt-session.json` + `gtt-session-start.py` | `sessionStart` | N1 (new interactive CLI sessions only) | staged | PASS | **VERIFICATION REQUIRES INTERACTIVE SESSION** |
+| Kiro | `.kiro/agents/gtt-session.json` + `.kiro/gtt-session-start.sh` | `agentSpawn` (CLI) | N1 (CLI only, docs disagree) | staged | PASS | **STATICALLY VALIDATED, NOT RUNTIME VERIFIED** — not installed here |
+
+Events per adapter (`verified` = observed at runtime, `documented` = vendor
+docs only, `unknown`/`unsupported` as stated by the vendor):
+
+| ADE | startup | resume | clear | compact | fork |
+|---|---|---|---|---|---|
+| Claude Code | verified | verified (hook fires; delivery not separable from the resumed transcript) | documented | documented | documented |
+| Codex | documented | documented | documented | documented | unknown |
+| GitHub Copilot | documented | **unsupported** (documented not to fire) | unknown | unknown | unknown |
+| Kiro | documented | unknown | unknown | unknown | unknown |
+
+"Static check PASS" means the declaration, registration, service reference,
+absence of duplicated logic and silenced errors, the command's output
+(markers + declared format) and its visible failure path passed in a sandbox
+laid out as installed. It does **not** mean the ADE loads the context.
+
+Known documentation gaps: Kiro's docs disagree on whether `agentSpawn` stdout
+reaches the agent and show three hook schemas (this repo's existing
+`.kiro/hooks/detect-drift.json` is a fourth shape, unverified). The
+compatibility matrix earlier in this document says Copilot has no
+programmatic hook; Copilot now documents hooks (`sessionStart`, and per its
+reference others), so that row needs re-verification.
 
 ### Capability status
 

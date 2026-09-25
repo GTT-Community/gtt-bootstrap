@@ -966,7 +966,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "86bf30a72de27cea398dafec835741f795a96fe61273aee3f4037adaced67f96",
+      "sha256": "adf204c9b86b1be1d8f0c183f24119affce14b95997c9c472d87990558586ff0",
       "aliases": [],
       "sections": [
         {
@@ -975,7 +975,7 @@
           "anchor": "gtt--reference-docs",
           "path": "GTT — Reference Docs",
           "line_start": 1,
-          "line_end": 764
+          "line_end": 809
         },
         {
           "heading": "Methodology",
@@ -983,7 +983,7 @@
           "anchor": "methodology",
           "path": "GTT — Reference Docs > Methodology",
           "line_start": 19,
-          "line_end": 504
+          "line_end": 549
         },
         {
           "heading": "The premise",
@@ -1103,135 +1103,143 @@
           "anchor": "session-memory-boundary",
           "path": "GTT — Reference Docs > Methodology > Session memory boundary",
           "line_start": 431,
-          "line_end": 471
+          "line_end": 516
+        },
+        {
+          "heading": "Session Memory adapter matrix",
+          "level": 4,
+          "anchor": "session-memory-adapter-matrix",
+          "path": "GTT — Reference Docs > Methodology > Session memory boundary > Session Memory adapter matrix",
+          "line_start": 479,
+          "line_end": 516
         },
         {
           "heading": "Capability status",
           "level": 3,
           "anchor": "capability-status",
           "path": "GTT — Reference Docs > Methodology > Capability status",
-          "line_start": 472,
-          "line_end": 493
+          "line_start": 517,
+          "line_end": 538
         },
         {
           "heading": "Operational boundary",
           "level": 3,
           "anchor": "operational-boundary",
           "path": "GTT — Reference Docs > Methodology > Operational boundary",
-          "line_start": 494,
-          "line_end": 504
+          "line_start": 539,
+          "line_end": 549
         },
         {
           "heading": "Portability: Claude Code, Kiro, Codex, Copilot",
           "level": 2,
           "anchor": "portability-claude-code-kiro-codex-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot",
-          "line_start": 505,
-          "line_end": 688
+          "line_start": 550,
+          "line_end": 733
         },
         {
           "heading": "Compatibility matrix",
           "level": 3,
           "anchor": "compatibility-matrix",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Compatibility matrix",
-          "line_start": 516,
-          "line_end": 543
+          "line_start": 561,
+          "line_end": 588
         },
         {
           "heading": "Claude Code",
           "level": 3,
           "anchor": "claude-code",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Claude Code",
-          "line_start": 544,
-          "line_end": 556
+          "line_start": 589,
+          "line_end": 601
         },
         {
           "heading": "Kiro",
           "level": 3,
           "anchor": "kiro",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Kiro",
-          "line_start": 557,
-          "line_end": 588
+          "line_start": 602,
+          "line_end": 633
         },
         {
           "heading": "Codex",
           "level": 3,
           "anchor": "codex",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Codex",
-          "line_start": 589,
-          "line_end": 629
+          "line_start": 634,
+          "line_end": 674
         },
         {
           "heading": "GitHub Copilot",
           "level": 3,
           "anchor": "github-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > GitHub Copilot",
-          "line_start": 630,
-          "line_end": 658
+          "line_start": 675,
+          "line_end": 703
         },
         {
           "heading": "If your team uses more than one ADE",
           "level": 3,
           "anchor": "if-your-team-uses-more-than-one-ade",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If your team uses more than one ADE",
-          "line_start": 659,
-          "line_end": 675
+          "line_start": 704,
+          "line_end": 720
         },
         {
           "heading": "If you use only one",
           "level": 3,
           "anchor": "if-you-use-only-one",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If you use only one",
-          "line_start": 676,
-          "line_end": 688
+          "line_start": 721,
+          "line_end": 733
         },
         {
           "heading": "Migrating from GTT v1",
           "level": 2,
           "anchor": "migrating-from-gtt-v1",
           "path": "GTT — Reference Docs > Migrating from GTT v1",
-          "line_start": 689,
-          "line_end": 764
+          "line_start": 734,
+          "line_end": 809
         },
         {
           "heading": "What changed and why",
           "level": 3,
           "anchor": "what-changed-and-why",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > What changed and why",
-          "line_start": 691,
-          "line_end": 707
+          "line_start": 736,
+          "line_end": 752
         },
         {
           "heading": "File mapping",
           "level": 3,
           "anchor": "file-mapping",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > File mapping",
-          "line_start": 708,
-          "line_end": 726
+          "line_start": 753,
+          "line_end": 771
         },
         {
           "heading": "Steps",
           "level": 3,
           "anchor": "steps",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Steps",
-          "line_start": 727,
-          "line_end": 746
+          "line_start": 772,
+          "line_end": 791
         },
         {
           "heading": "If you use other agents too",
           "level": 3,
           "anchor": "if-you-use-other-agents-too",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > If you use other agents too",
-          "line_start": 747,
-          "line_end": 757
+          "line_start": 792,
+          "line_end": 802
         },
         {
           "heading": "Verifying the token saving",
           "level": 3,
           "anchor": "verifying-the-token-saving",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Verifying the token saving",
-          "line_start": 758,
-          "line_end": 764
+          "line_start": 803,
+          "line_end": 809
         }
       ],
       "references": [],
@@ -1239,6 +1247,73 @@
         "README-GTT",
         "README-GTT-ES"
       ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "DOC-SESSION-ADAPTER-CONTRACT",
+      "type": "documentation",
+      "path": "gtt/docs/SESSION-ADAPTER-CONTRACT.md",
+      "title": "GTT Session Memory — ADE Adapter Contract",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "117651616358a22f475c3bc5b61d3d1d40898f3180aa3645e7b5802a90ab5f55",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Session Memory — ADE Adapter Contract",
+          "level": 1,
+          "anchor": "gtt-session-memory--ade-adapter-contract",
+          "path": "GTT Session Memory — ADE Adapter Contract",
+          "line_start": 1,
+          "line_end": 138
+        },
+        {
+          "heading": "Layers",
+          "level": 2,
+          "anchor": "layers",
+          "path": "GTT Session Memory — ADE Adapter Contract > Layers",
+          "line_start": 10,
+          "line_end": 48
+        },
+        {
+          "heading": "The contract",
+          "level": 2,
+          "anchor": "the-contract",
+          "path": "GTT Session Memory — ADE Adapter Contract > The contract",
+          "line_start": 49,
+          "line_end": 80
+        },
+        {
+          "heading": "Declaration file",
+          "level": 2,
+          "anchor": "declaration-file",
+          "path": "GTT Session Memory — ADE Adapter Contract > Declaration file",
+          "line_start": 81,
+          "line_end": 109
+        },
+        {
+          "heading": "Conformance check",
+          "level": 2,
+          "anchor": "conformance-check",
+          "path": "GTT Session Memory — ADE Adapter Contract > Conformance check",
+          "line_start": 110,
+          "line_end": 124
+        },
+        {
+          "heading": "Governance",
+          "level": 2,
+          "anchor": "governance",
+          "path": "GTT Session Memory — ADE Adapter Contract > Governance",
+          "line_start": 125,
+          "line_end": 138
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
       "relationships": [],
       "provenance": {
         "history": [],
@@ -1289,7 +1364,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e600935aa18193144e1a5bf41077584ef8be230102296679e2ade60c617e157d",
+      "sha256": "4469d5770d4dbbdc660cbee74da60b5a720243f31f841e317c477554cd9eeca4",
       "aliases": [],
       "sections": [
         {
@@ -1298,7 +1373,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 211
+          "line_end": 214
         },
         {
           "heading": "Quick links",
@@ -1386,31 +1461,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 149,
-          "line_end": 173
+          "line_end": 175
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 174,
-          "line_end": 185
+          "line_start": 176,
+          "line_end": 188
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 186,
-          "line_end": 200
+          "line_start": 189,
+          "line_end": 203
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 201,
-          "line_end": 211
+          "line_start": 204,
+          "line_end": 214
         }
       ],
       "references": [
@@ -2342,13 +2417,219 @@
       }
     },
     {
+      "id": "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY",
+      "type": "proposal",
+      "path": "gtt/proposals/ADR-DRAFT-gtt-v2-1-identity-index-session-memory.md",
+      "title": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "659e0ad3a7725a15f3608f67229a3deaeb580a810b8d4acbdf18deadd61a647c",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service",
+          "level": 1,
+          "anchor": "adr-002--gtt-v21-artifact-identity-repository-reconciliation-technical-index--session-memory-service",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service",
+          "line_start": 1,
+          "line_end": 221
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Context",
+          "line_start": 23,
+          "line_end": 44
+        },
+        {
+          "heading": "Decision (as implemented — for ratification)",
+          "level": 2,
+          "anchor": "decision-as-implemented--for-ratification",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Decision (as implemented — for ratification)",
+          "line_start": 45,
+          "line_end": 124
+        },
+        {
+          "heading": "1. Artifact Identity",
+          "level": 3,
+          "anchor": "1-artifact-identity",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Decision (as implemented — for ratification) > 1. Artifact Identity",
+          "line_start": 51,
+          "line_end": 65
+        },
+        {
+          "heading": "2. Repository Reconciliation",
+          "level": 3,
+          "anchor": "2-repository-reconciliation",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Decision (as implemented — for ratification) > 2. Repository Reconciliation",
+          "line_start": 66,
+          "line_end": 83
+        },
+        {
+          "heading": "3. Technical Index",
+          "level": 3,
+          "anchor": "3-technical-index",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Decision (as implemented — for ratification) > 3. Technical Index",
+          "line_start": 84,
+          "line_end": 96
+        },
+        {
+          "heading": "4. Session Memory Service and the ADE Adapter Contract",
+          "level": 3,
+          "anchor": "4-session-memory-service-and-the-ade-adapter-contract",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Decision (as implemented — for ratification) > 4. Session Memory Service and the ADE Adapter Contract",
+          "line_start": 97,
+          "line_end": 124
+        },
+        {
+          "heading": "Authority limits",
+          "level": 2,
+          "anchor": "authority-limits",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Authority limits",
+          "line_start": 125,
+          "line_end": 139
+        },
+        {
+          "heading": "Relation to GTT Core and to ADE adapters",
+          "level": 2,
+          "anchor": "relation-to-gtt-core-and-to-ade-adapters",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Relation to GTT Core and to ADE adapters",
+          "line_start": 140,
+          "line_end": 154
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Alternatives considered",
+          "line_start": 155,
+          "line_end": 170
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Consequences",
+          "line_start": 171,
+          "line_end": 182
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Risks",
+          "line_start": 183,
+          "line_end": 194
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Affected context",
+          "line_start": 195,
+          "line_end": 208
+        },
+        {
+          "heading": "Validation evidence and known pending items",
+          "level": 2,
+          "anchor": "validation-evidence-and-known-pending-items",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Validation evidence and known pending items",
+          "line_start": 209,
+          "line_end": 217
+        },
+        {
+          "heading": "Status of this record",
+          "level": 2,
+          "anchor": "status-of-this-record",
+          "path": "ADR-002 — GTT v2.1: Artifact Identity, Repository Reconciliation, Technical Index & Session Memory Service > Status of this record",
+          "line_start": 218,
+          "line_end": 221
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
+      "type": "proposal",
+      "path": "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
+      "title": "GTT v2.1 — Governance package (for human review)",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "666936035b09125d51f10130de32c9b0f91285418277d8189da63fbc9d89e0cb",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT v2.1 — Governance package (for human review)",
+          "level": 1,
+          "anchor": "gtt-v21--governance-package-for-human-review",
+          "path": "GTT v2.1 — Governance package (for human review)",
+          "line_start": 1,
+          "line_end": 109
+        },
+        {
+          "heading": "Contents",
+          "level": 2,
+          "anchor": "contents",
+          "path": "GTT v2.1 — Governance package (for human review) > Contents",
+          "line_start": 13,
+          "line_end": 24
+        },
+        {
+          "heading": "Evidence register",
+          "level": 2,
+          "anchor": "evidence-register",
+          "path": "GTT v2.1 — Governance package (for human review) > Evidence register",
+          "line_start": 25,
+          "line_end": 55
+        },
+        {
+          "heading": "Pending items",
+          "level": 2,
+          "anchor": "pending-items",
+          "path": "GTT v2.1 — Governance package (for human review) > Pending items",
+          "line_start": 56,
+          "line_end": 78
+        },
+        {
+          "heading": "What the human needs to review and ratify",
+          "level": 2,
+          "anchor": "what-the-human-needs-to-review-and-ratify",
+          "path": "GTT v2.1 — Governance package (for human review) > What the human needs to review and ratify",
+          "line_start": 79,
+          "line_end": 105
+        },
+        {
+          "heading": "Status",
+          "level": 2,
+          "anchor": "status",
+          "path": "GTT v2.1 — Governance package (for human review) > Status",
+          "line_start": 106,
+          "line_end": 109
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
       "type": "proposal",
       "path": "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
       "title": "Proposal — artifact identity: items that need the Solution Designer",
       "authority": "draft",
       "version": "v2.1",
-      "sha256": "65cf49e565abef98dc4097e41da2984509654017def0099bf66ef14f7d45dd3b",
+      "sha256": "f5eadc66840c80aef7d834d8f7ba838b265516226a850bbbbf6ce87922e3a801",
       "aliases": [],
       "sections": [
         {
@@ -2357,7 +2638,7 @@
           "anchor": "proposal--artifact-identity-items-that-need-the-solution-designer",
           "path": "Proposal — artifact identity: items that need the Solution Designer",
           "line_start": 1,
-          "line_end": 84
+          "line_end": 167
         },
         {
           "heading": "1. Root             — add after *Session continuity*",
@@ -2384,12 +2665,71 @@
           "line_end": 75
         },
         {
+          "heading": "2c. Multi-ADE Session Memory adapters",
+          "level": 2,
+          "anchor": "2c-multi-ade-session-memory-adapters",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 2c. Multi-ADE Session Memory adapters",
+          "line_start": 76,
+          "line_end": 131
+        },
+        {
+          "heading": "2d.             — manual change required (stale reference)",
+          "level": 2,
+          "anchor": "2d--------------manual-change-required-stale-reference",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 2d.             — manual change required (stale reference)",
+          "line_start": 132,
+          "line_end": 158
+        },
+        {
           "heading": "3. Decision points",
           "level": 2,
           "anchor": "3-decision-points",
           "path": "Proposal — artifact identity: items that need the Solution Designer > 3. Decision points",
-          "line_start": 76,
-          "line_end": 84
+          "line_start": 159,
+          "line_end": 167
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
+      "type": "proposal",
+      "path": "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
+      "title": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "fc4e65f14c7fbde893aef51e9807019aebd470d1858da110cf1bca78755fb15c",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
+          "level": 1,
+          "anchor": "proposed-backlog-change--gtt-v21-epic-and-stories",
+          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
+          "line_start": 1,
+          "line_end": 204
+        },
+        {
+          "heading": "Ground rules used to write this",
+          "level": 2,
+          "anchor": "ground-rules-used-to-write-this",
+          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories > Ground rules used to write this",
+          "line_start": 33,
+          "line_end": 47
+        },
+        {
+          "heading": "Backlog-ready block",
+          "level": 2,
+          "anchor": "backlog-ready-block",
+          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories > Backlog-ready block",
+          "line_start": 48,
+          "line_end": 204
         }
       ],
       "references": [],
@@ -3583,6 +3923,9 @@
     "1. architecture change": [
       "SKILL-GTT-PROPOSE-CHANGE#1-architecture-change"
     ],
+    "1. artifact identity": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#1-artifact-identity"
+    ],
     "1. bootstrap the governed context": [
       "README-GTT#1-bootstrap-the-governed-context"
     ],
@@ -3631,6 +3974,9 @@
     "2. manual installation": [
       "README-GTT#2-manual-installation"
     ],
+    "2. repository reconciliation": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#2-repository-reconciliation"
+    ],
     "2. sessionstart hook — warm start for claude code": [
       "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2-sessionstart-hook--warm-start-for-claude-code"
     ],
@@ -3639,6 +3985,12 @@
     ],
     "2. work on implementation": [
       "GTT-USAGE#2-work-on-implementation"
+    ],
+    "2c. multi-ade session memory adapters": [
+      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2c-multi-ade-session-memory-adapters"
+    ],
+    "2d.             — manual change required (stale reference)": [
+      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2d--------------manual-change-required-stale-reference"
     ],
     "3. agent-assisted installation": [
       "README-GTT#3-agent-assisted-installation"
@@ -3670,6 +4022,9 @@
     "3. preserve the source design": [
       "GTT-INSTALLATION#3-preserve-the-source-design"
     ],
+    "3. technical index": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#3-technical-index"
+    ],
     "4. ask what is still missing": [
       "SKILL-GTT-BOOTSTRAP#4-ask-what-is-still-missing"
     ],
@@ -3690,6 +4045,9 @@
     ],
     "4. propose the change": [
       "GTT-USAGE#4-propose-the-change"
+    ],
+    "4. session memory service and the ade adapter contract": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#4-session-memory-service-and-the-ade-adapter-contract"
     ],
     "5. approve": [
       "GTT-USAGE#5-approve"
@@ -3781,7 +4139,8 @@
     ],
     "affected context": [
       "ADR-001#affected-context",
-      "ADR-TEMPLATE#affected-context"
+      "ADR-TEMPLATE#affected-context",
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#affected-context"
     ],
     "after adding or removing a marker": [
       "SKILL-GTT-GUARD#after-adding-or-removing-a-marker"
@@ -3809,7 +4168,8 @@
     ],
     "alternatives considered": [
       "ADR-001#alternatives-considered",
-      "ADR-TEMPLATE#alternatives-considered"
+      "ADR-TEMPLATE#alternatives-considered",
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#alternatives-considered"
     ],
     "anti-examples": [
       "CTX-PRINCIPLES#anti-examples"
@@ -3833,6 +4193,9 @@
     "audit context freshness": [
       "SKILL-GTT-AUDIT#audit-context-freshness"
     ],
+    "authority limits": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#authority-limits"
+    ],
     "backlog": [
       "README-GTT#backlog",
       "README-GTT-ES#backlog"
@@ -3843,6 +4206,9 @@
     ],
     "backlog reconciliation": [
       "SKILL-GTT-AUDIT#backlog-reconciliation"
+    ],
+    "backlog-ready block": [
+      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#backlog-ready-block"
     ],
     "before changing anything": [
       "AGENTS#before-changing-anything"
@@ -3932,16 +4298,24 @@
     "conflict policy": [
       "AGENTS#conflict-policy"
     ],
+    "conformance check": [
+      "DOC-SESSION-ADAPTER-CONTRACT#conformance-check"
+    ],
     "consequences": [
       "ADR-001#consequences",
-      "ADR-TEMPLATE#consequences"
+      "ADR-TEMPLATE#consequences",
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#consequences"
     ],
     "constraints": [
       "CTX-CONSTRAINTS#constraints"
     ],
+    "contents": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#contents"
+    ],
     "context": [
       "ADR-001#context",
-      "ADR-TEMPLATE#context"
+      "ADR-TEMPLATE#context",
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#context"
     ],
     "context freshness": [
       "DOC-DOCS#context-freshness"
@@ -3960,6 +4334,12 @@
     "decision": [
       "ADR-001#decision",
       "ADR-TEMPLATE#decision"
+    ],
+    "decision (as implemented — for ratification)": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#decision-as-implemented--for-ratification"
+    ],
+    "declaration file": [
+      "DOC-SESSION-ADAPTER-CONTRACT#declaration-file"
     ],
     "deployment target: bootstrap repository vs. host project": [
       "GTT-INSTALLATION#deployment-target-bootstrap-repository-vs-host-project",
@@ -4009,6 +4389,9 @@
     ],
     "estructura": [
       "README-GTT-ES#estructura"
+    ],
+    "evidence register": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#evidence-register"
     ],
     "evolución": [
       "README-GTT-ES#evolución"
@@ -4068,12 +4451,18 @@
     "glossary": [
       "CTX-GLOSSARY#glossary"
     ],
+    "governance": [
+      "DOC-SESSION-ADAPTER-CONTRACT#governance"
+    ],
     "governance model": [
       "DOC-DOCS#governance-model"
     ],
     "governed regime": [
       "AGENTS#governed-regime",
       "GTT-USAGE#governed-regime"
+    ],
+    "ground rules used to write this": [
+      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#ground-rules-used-to-write-this"
     ],
     "gtt bootstrap": [
       "README-GTT#gtt-bootstrap",
@@ -4105,6 +4494,12 @@
     ],
     "gtt request": [
       "CHANGE-REQUEST#gtt-request"
+    ],
+    "gtt session memory — ade adapter contract": [
+      "DOC-SESSION-ADAPTER-CONTRACT#gtt-session-memory--ade-adapter-contract"
+    ],
+    "gtt v2.1 — governance package (for human review)": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#gtt-v21--governance-package-for-human-review"
     ],
     "gtt — github copilot integration": [
       "COPILOT-COPILOT-INSTRUCTIONS#gtt--github-copilot-integration"
@@ -4208,6 +4603,9 @@
     "l3 — implementation": [
       "GTT-USAGE#l3--implementation"
     ],
+    "layers": [
+      "DOC-SESSION-ADAPTER-CONTRACT#layers"
+    ],
     "licencia": [
       "README-GTT-ES#licencia"
     ],
@@ -4289,6 +4687,9 @@
     "output": [
       "SKILL-GTT-AUDIT#output"
     ],
+    "pending items": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#pending-items"
+    ],
     "platform": [
       "CTX-CONSTRAINTS#platform"
     ],
@@ -4337,6 +4738,9 @@
     "proposals — staging area": [
       "PROP-README#proposals--staging-area"
     ],
+    "proposed backlog change — gtt v2.1 epic and stories": [
+      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#proposed-backlog-change--gtt-v21-epic-and-stories"
+    ],
     "protected artifacts (gttguard)": [
       "AGENTS#protected-artifacts-gttguard",
       "GTT-USAGE#protected-artifacts-gttguard",
@@ -4370,6 +4774,9 @@
     "regulatory and organizational": [
       "CTX-CONSTRAINTS#regulatory-and-organizational"
     ],
+    "relation to gtt core and to ade adapters": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#relation-to-gtt-core-and-to-ade-adapters"
+    ],
     "removing a marker": [
       "SKILL-GTT-GUARD#removing-a-marker"
     ],
@@ -4399,7 +4806,8 @@
     ],
     "risks": [
       "ADR-001#risks",
-      "ADR-TEMPLATE#risks"
+      "ADR-TEMPLATE#risks",
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#risks"
     ],
     "régimen de bootstrap": [
       "GTT-USAGE-ES#régimen-de-bootstrap"
@@ -4415,6 +4823,9 @@
     ],
     "session continuity": [
       "AGENTS#session-continuity"
+    ],
+    "session memory adapter matrix": [
+      "DOC-DOCS#session-memory-adapter-matrix"
     ],
     "session memory boundary": [
       "DOC-DOCS#session-memory-boundary"
@@ -4443,8 +4854,14 @@
     "start here": [
       "GTT-INDEX#start-here"
     ],
+    "status": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#status"
+    ],
     "status and validation": [
       "DOC-DOCS#status-and-validation"
+    ],
+    "status of this record": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#status-of-this-record"
     ],
     "step 1 — assess": [
       "SKILL-GTT-DRIFT-RESPONSE#step-1--assess"
@@ -4481,6 +4898,9 @@
     ],
     "the change flow": [
       "DOC-DOCS#the-change-flow"
+    ],
+    "the contract": [
+      "DOC-SESSION-ADAPTER-CONTRACT#the-contract"
     ],
     "the drift-signals sweep": [
       "SKILL-GTT-AUDIT#the-drift-signals-sweep"
@@ -4534,6 +4954,9 @@
     "validation": [
       "AGENTS#validation"
     ],
+    "validation evidence and known pending items": [
+      "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY#validation-evidence-and-known-pending-items"
+    ],
     "verifying the token saving": [
       "DOC-DOCS#verifying-the-token-saving"
     ],
@@ -4554,6 +4977,9 @@
     ],
     "what success looks like": [
       "CTX-SOLUTION-VISION#what-success-looks-like"
+    ],
+    "what the human needs to review and ratify": [
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#what-the-human-needs-to-review-and-ratify"
     ],
     "what you maintain": [
       "README-GTT#what-you-maintain"

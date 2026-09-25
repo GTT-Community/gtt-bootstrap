@@ -2,7 +2,8 @@
 # GTT - validate. Deterministic aggregator over the existing CI gates:
 # backlog structural integrity, ADE-adapter matrix, GTTGuard registry, the
 # stack map, the markdown canonical-reference gate, and artifact identity /
-# repository integrity (broken references, duplicate identity, stale index). Reuses each check
+# repository integrity (broken references, duplicate identity, stale index),
+# and Session Memory adapter conformance (one line per declared adapter). Reuses each check
 # script's own logic rather than reimplementing it - this script only runs
 # them and summarizes.
 #
@@ -73,6 +74,31 @@ INTEGRITY_RC=$?
 report "gtt-check-integrity.sh" "$INTEGRITY_RC"
 [ "$INTEGRITY_RC" -ne 0 ] && cat /tmp/gtt-validate-integrity.$$
 rm -f /tmp/gtt-validate-integrity.$$
+
+# Session Memory adapter conformance: one result per declared adapter. The
+# check is static and needs no ADE; runtime verification by the real ADE is
+# never run here, so each line carries the DECLARED runtime status instead of
+# implying it was proven. A staged (not yet promoted) adapter is labelled so.
+for manifest in gtt/session-adapters/*.json; do
+  [ -f "$manifest" ] || continue
+  ade="$(basename "$manifest" .json)"
+  out="$(bash gtt/scripts/gtt-check-session-adapter.sh "$ade" 2>&1)"
+  rc=$?
+  summary="$(printf '%s
+' "$out" | grep '^SUMMARY ' | sed 's/^SUMMARY //')"
+  if [ "$rc" -eq 0 ]; then
+    echo "PASS               gtt-check-session-adapter.sh $ade  [$summary]"
+  elif [ "$rc" -eq 2 ]; then
+    echo "CANNOT-DETERMINE   gtt-check-session-adapter.sh $ade"
+    printf '%s
+' "$out"
+  else
+    echo "FAIL               gtt-check-session-adapter.sh $ade"
+    FAIL=1
+    printf '%s
+' "$out" | grep -E '^(FAIL|SUMMARY)'
+  fi
+done
 
 echo
 if [ "$FAIL" -ne 0 ]; then

@@ -73,6 +73,89 @@ the `SessionStart` registration. Separate, not included: the `UserPromptSubmit`
 `python3` and fail on Windows with the Store stub; they are unrelated to Session
 Memory and were left untouched.
 
+## 2c. Multi-ADE Session Memory adapters
+
+Status remains **Draft — not a decision.** Working spec:
+`gtt/docs/SESSION-ADAPTER-CONTRACT.md`. Declarations:
+`gtt/session-adapters/*.json`. Staged adapters (Codex, Copilot, Kiro):
+`gtt/proposals/session-adapters/`. Promotion, by a human, per adapter:
+`bash gtt/proposals/apply-session-adapters.sh <codex|copilot|kiro>` (installs
+files, flips the declaration; does not ratify anything).
+
+**What needs the governed path** (`Proposal → Epic/Story → ADR → ratification`)
+before any of this is more than a draft:
+
+- `AGENTS.md`: the adapter matrix and *Adapters vs. portable core* ("Codex takes
+  no adapter file beyond AGENTS.md" is contradicted by `.codex/`).
+- `gtt/scripts/gtt-check-adapter.sh`: its Codex row, and its detection list
+  (`.github/hooks/`, `.codex/`).
+- The `gtt-bootstrap` skill step 0 and `README-GTT.md` ADE-adapter table.
+- The `Compatibility matrix` earlier in `gtt/docs/DOCS.md` (Copilot hook row is
+  likely stale).
+
+> **Superseded by `PROPOSAL-gtt-v2-1-backlog-epic-stories.md`.** The Epic/Story
+> draft below reuses the same ids for a narrower scope; do not apply both. Kept
+> only as history.
+
+**Backlog (form 4) — proposed, not defined.** `gtt/backlog.md` has no real
+Epics/Stories, so per `AGENTS.md` → *Backlog governance* these are drafts only
+and must stay `Status: Proposed` until you accept them:
+
+```markdown
+### EPIC-001 — GTT v2.1 Session Memory across ADEs
+**Status:** Proposed
+**Goal:** Session continuity for every supported ADE through one ADE-agnostic
+service, with adapters that are checked, honestly declared, and never authority.
+
+##### STORY-001 — Adapter contract and conformance check
+- **Status:** Proposed  - **Priority:** High
+- **Acceptance Criteria:** contract documented; `gtt-check-session-adapter.sh`
+  passes for every declared adapter and fails on each mutation of the contract.
+##### STORY-002 — Claude Code adapter (SessionStart)
+- **Status:** Proposed  - **Priority:** High
+##### STORY-003 — Codex adapter
+- **Status:** Proposed  - **Priority:** Medium
+- **Dependencies:** STORY-001. **Notes:** runtime verification needs the user to
+  trust the project and approve the hook.
+##### STORY-004 — GitHub Copilot adapter
+- **Status:** Proposed  - **Priority:** Medium
+- **Notes:** verification requires an interactive Copilot CLI session; resume is
+  documented as unsupported.
+##### STORY-005 — Kiro adapter
+- **Status:** Proposed  - **Priority:** Low
+- **Notes:** Kiro not installed here; its docs conflict on `agentSpawn` stdout.
+```
+
+No ADR has been drafted: `gtt-adr` is for decisions the Solution Designer has
+already approved.
+
+## 2d. `AGENTS.md` — manual change required (stale reference)
+
+Status remains **Draft — not a decision.** `gtt-status.sh` no longer detects or
+reports an installed adapter (the Session Memory chain names no ADE), so the
+*Session continuity* paragraph is stale. `AGENTS.md` is outside the agent's write
+zone; the Solution Designer applies this by hand.
+
+In `## Session continuity`, replace exactly:
+
+```text
+deterministic snapshot (freeze state, backlog focus, pending proposals,
+protected-artifact count, installed adapter) derived from repository
+artifacts, never from any ADE's private conversation memory — the same
+```
+
+with:
+
+```text
+deterministic snapshot (freeze state, backlog focus, pending proposals,
+protected-artifact count, artifact identity and index state) derived from
+repository artifacts, never from any ADE's private conversation memory — the same
+```
+
+The rest of that paragraph (naming the ADEs to explain ADE-independence) is
+documentation and stays. After editing, run `gtt/scripts/gtt-index.sh` —
+`AGENTS.md` is an indexed artifact, so the index goes stale until it is rebuilt.
+
 ## 3. Decision points
 
 - Commit `gtt/index/technical-index.json` (current) vs. gitignore it. Committed

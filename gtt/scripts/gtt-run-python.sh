@@ -12,8 +12,8 @@
 # script starts.
 #
 # Exit codes: the script's own; or 1 (never 2) when no interpreter is found -
-# exit 2 would BLOCK a UserPromptSubmit/PreToolUse hook, and a missing Python
-# should be a visible error, not a silent block of the user's prompt.
+# exit 2 is a blocking status for some hook runners, and a missing Python
+# should be a visible error, not a silent block.
 #
 # Usage:
 #   gtt/scripts/gtt-run-python.sh <script.py> [args...]

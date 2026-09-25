@@ -121,6 +121,9 @@ def tracked_files():
     for f in ("AGENTS.md", "README-GTT.md", "README-GTT.es.md", "SOURCE-BRIEF.md"):
         if os.path.isfile(f):
             found.append(f)
+    # Scope, not semantics: these directories hold kit files (instructions,
+    # skills, rules) that must be indexed like any other artifact. Nothing below
+    # branches on which tool owns a directory.
     for base in ("gtt", ".claude", ".kiro", ".copilot"):
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__"))
@@ -160,16 +163,12 @@ def derive(path):
         return "DOC-" + slug_id(stem), "documentation"
     if path.startswith("gtt/"):
         return "GTT-" + slug_id(stem), "documentation"
-    if path.startswith(".claude/skills/"):
-        return "SKILL-" + slug_id(path.split("/")[2]), "skill"
-    if path == ".claude/CLAUDE.md":
-        return "CLAUDE-INSTRUCTIONS", "instruction"
-    if path.startswith(".claude/rules/"):
-        return "RULE-" + slug_id(stem), "instruction"
-    if path.startswith(".kiro/"):
-        return "KIRO-" + slug_id(stem), "instruction"
-    if path.startswith(".copilot/"):
-        return "COPILOT-" + slug_id(stem), "instruction"
+    if "/skills/" in path and posixpath.basename(path) == "SKILL.md":
+        return "SKILL-" + slug_id(posixpath.basename(posixpath.dirname(path))), "skill"
+    if path.startswith("."):
+        # A tool-owned top-level directory: registered like any other file. The
+        # engine attaches no meaning to which tool owns it.
+        return "ART-" + slug_id(path[:-3]), "instruction"
     return "ART-" + slug_id(path[:-3]), "documentation"
 
 

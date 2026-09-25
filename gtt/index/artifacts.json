@@ -114,6 +114,14 @@
       "aliases": []
     },
     {
+      "id": "DOC-SESSION-ADAPTER-CONTRACT",
+      "type": "documentation",
+      "path": "gtt/docs/SESSION-ADAPTER-CONTRACT.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "GTT-GTT-COMPLETION",
       "type": "documentation",
       "path": "gtt/GTT-COMPLETION.md",
@@ -186,9 +194,33 @@
       "aliases": []
     },
     {
+      "id": "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY",
+      "type": "proposal",
+      "path": "gtt/proposals/ADR-DRAFT-gtt-v2-1-identity-index-session-memory.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
+      "type": "proposal",
+      "path": "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
       "type": "proposal",
       "path": "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
+      "type": "proposal",
+      "path": "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
       "status": "active",
       "history": [],
       "aliases": []
