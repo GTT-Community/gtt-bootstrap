@@ -5,7 +5,7 @@
 # only: NOT architectural authority, NOT evidence, NOT a substitute for
 # an ADR or decision record.
 #
-# Generated: 2026-09-22T19:08:09Z
+# Generated: 2026-09-25T15:01:56Z
 
 ## ADE adapter
 catalog (multiple adapters present: claude kiro copilot - normal for the gtt-bootstrap source repo, not for an installed project)
@@ -20,7 +20,9 @@ none
 none
 
 ## Pending proposals (gtt/proposals/, excluding README.md)
-none
+apply-artifact-identity-followups.sh
+apply-claude-session-start-adapter.sh
+PROPOSAL-artifact-identity-followups.md
 
 ## Change request
 empty (still template placeholders)
@@ -30,3 +32,17 @@ ADR-001-context-governance.md - Status: Accepted
 
 ## GTTGuard
 0 protected artifact(s) in gtt/protection/registry.yaml
+
+## Artifact identity and technical index
+identity: 36 active artifact(s), 0 retired
+technical index: fresh
+unresolved references: 0
+
+## Repository (resume hints)
+branch: main; uncommitted paths: 22
+recent commits:
+c64d694 Close AGENTS.md/settings.local.json protection gaps, add gtt-check-markdown.sh, backfill canonical-reference headers across the GTT kit
+b1566db Evolves gtt-bootstrap toward GTT Canonical v2.1 by naming the existing Grounding/Reasoning/Validation split in AGENTS.md and DOCS.md, adding deterministic session continuity
+1ed1ccc Wire GTTGuard's protect-guard.py hook into .claude/settings.json
+20d749b Add GTTGuard protected-artifact enforcement, fixing a boundary-overlap edit bypass and a Windows python3 resolution failure before wiring it in
+b4956fc .gitignore less

@@ -1,0 +1,4574 @@
+{
+  "schema": 1,
+  "notice": "DERIVED by gtt/scripts/gtt-index.sh from the Markdown artifacts. Never hand-edit; never authoritative. Delete and rebuild at will.",
+  "documents": [
+    {
+      "id": "ADR-001",
+      "type": "architecture-decision",
+      "path": "gtt/adr/ADR-001-context-governance.md",
+      "title": "ADR-001 — Context is the source of truth",
+      "authority": "L1",
+      "version": "v2.1",
+      "sha256": "7fbdcb5f12d88dbe0816e120451054ae818b1ccdf5c2e95e6212acb788d886ed",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-001 — Context is the source of truth",
+          "level": 1,
+          "anchor": "adr-001--context-is-the-source-of-truth",
+          "path": "ADR-001 — Context is the source of truth",
+          "line_start": 1,
+          "line_end": 50
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-001 — Context is the source of truth > Context",
+          "line_start": 10,
+          "line_end": 16
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "anchor": "decision",
+          "path": "ADR-001 — Context is the source of truth > Decision",
+          "line_start": 17,
+          "line_end": 23
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-001 — Context is the source of truth > Alternatives considered",
+          "line_start": 24,
+          "line_end": 31
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-001 — Context is the source of truth > Consequences",
+          "line_start": 32,
+          "line_end": 41
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-001 — Context is the source of truth > Risks",
+          "line_start": 42,
+          "line_end": 46
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-001 — Context is the source of truth > Affected context",
+          "line_start": 47,
+          "line_end": 50
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "adr": {
+          "status": "Accepted",
+          "date": "2026-01-01",
+          "approved_by": "Solution Designer",
+          "supersedes": "none"
+        },
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "ADR-TEMPLATE",
+      "type": "template",
+      "path": "gtt/adr/ADR-TEMPLATE.md",
+      "title": "ADR-NNN — <Title>",
+      "authority": "template",
+      "version": "v2.1",
+      "sha256": "ef478e5d81746043d23bdebe3f71989e79ad30b1e7cb62124641de20d7236d90",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-NNN — <Title>",
+          "level": 1,
+          "anchor": "adr-nnn--title",
+          "path": "ADR-NNN — <Title>",
+          "line_start": 1,
+          "line_end": 24
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-NNN — <Title> > Context",
+          "line_start": 10,
+          "line_end": 11
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "anchor": "decision",
+          "path": "ADR-NNN — <Title> > Decision",
+          "line_start": 12,
+          "line_end": 13
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-NNN — <Title> > Alternatives considered",
+          "line_start": 14,
+          "line_end": 18
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-NNN — <Title> > Consequences",
+          "line_start": 19,
+          "line_end": 20
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-NNN — <Title> > Risks",
+          "line_start": 21,
+          "line_end": 22
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-NNN — <Title> > Affected context",
+          "line_start": 23,
+          "line_end": 24
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "AGENTS",
+      "type": "instruction",
+      "path": "AGENTS.md",
+      "title": "AGENTS.md — GTT Bootstrap Agent Contract",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "4387ad774b843989761d67310b5de99e4659a5d98f03ee9be71c073bfd2e0776",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "AGENTS.md — GTT Bootstrap Agent Contract",
+          "level": 1,
+          "anchor": "agentsmd--gtt-bootstrap-agent-contract",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract",
+          "line_start": 1,
+          "line_end": 572
+        },
+        {
+          "heading": "Mission",
+          "level": 2,
+          "anchor": "mission",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Mission",
+          "line_start": 7,
+          "line_end": 14
+        },
+        {
+          "heading": "Agent roles and the evidence boundary",
+          "level": 2,
+          "anchor": "agent-roles-and-the-evidence-boundary",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Agent roles and the evidence boundary",
+          "line_start": 15,
+          "line_end": 32
+        },
+        {
+          "heading": "Before changing anything",
+          "level": 2,
+          "anchor": "before-changing-anything",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Before changing anything",
+          "line_start": 33,
+          "line_end": 42
+        },
+        {
+          "heading": "Required workspace",
+          "level": 2,
+          "anchor": "required-workspace",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Required workspace",
+          "line_start": 43,
+          "line_end": 76
+        },
+        {
+          "heading": "Backlog governance",
+          "level": 2,
+          "anchor": "backlog-governance",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Backlog governance",
+          "line_start": 77,
+          "line_end": 115
+        },
+        {
+          "heading": "Protected artifacts (GTTGuard)",
+          "level": 2,
+          "anchor": "protected-artifacts-gttguard",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected artifacts (GTTGuard)",
+          "line_start": 116,
+          "line_end": 164
+        },
+        {
+          "heading": "Session continuity",
+          "level": 2,
+          "anchor": "session-continuity",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Session continuity",
+          "line_start": 165,
+          "line_end": 182
+        },
+        {
+          "heading": "Artifact identity and technical index",
+          "level": 2,
+          "anchor": "artifact-identity-and-technical-index",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Artifact identity and technical index",
+          "line_start": 183,
+          "line_end": 197
+        },
+        {
+          "heading": "Validation",
+          "level": 2,
+          "anchor": "validation",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Validation",
+          "line_start": 198,
+          "line_end": 206
+        },
+        {
+          "heading": "Adapters vs. portable core",
+          "level": 2,
+          "anchor": "adapters-vs-portable-core",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Adapters vs. portable core",
+          "line_start": 207,
+          "line_end": 227
+        },
+        {
+          "heading": "Bootstrap behavior",
+          "level": 2,
+          "anchor": "bootstrap-behavior",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Bootstrap behavior",
+          "line_start": 228,
+          "line_end": 245
+        },
+        {
+          "heading": "Two confirmations",
+          "level": 2,
+          "anchor": "two-confirmations",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
+          "line_start": 246,
+          "line_end": 259
+        },
+        {
+          "heading": "Confirmation A — source/design",
+          "level": 3,
+          "anchor": "confirmation-a--sourcedesign",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation A — source/design",
+          "line_start": 250,
+          "line_end": 253
+        },
+        {
+          "heading": "Confirmation B — governed context",
+          "level": 3,
+          "anchor": "confirmation-b--governed-context",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation B — governed context",
+          "line_start": 254,
+          "line_end": 259
+        },
+        {
+          "heading": "Conflict policy",
+          "level": 2,
+          "anchor": "conflict-policy",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Conflict policy",
+          "line_start": 260,
+          "line_end": 280
+        },
+        {
+          "heading": "Governed regime",
+          "level": 2,
+          "anchor": "governed-regime",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Governed regime",
+          "line_start": 281,
+          "line_end": 312
+        },
+        {
+          "heading": "Change requests",
+          "level": 2,
+          "anchor": "change-requests",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Change requests",
+          "line_start": 313,
+          "line_end": 330
+        },
+        {
+          "heading": "Human Promotion Boundary",
+          "level": 2,
+          "anchor": "human-promotion-boundary",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Human Promotion Boundary",
+          "line_start": 331,
+          "line_end": 383
+        },
+        {
+          "heading": "Protected context",
+          "level": 2,
+          "anchor": "protected-context",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected context",
+          "line_start": 384,
+          "line_end": 395
+        },
+        {
+          "heading": "Source preservation",
+          "level": 2,
+          "anchor": "source-preservation",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
+          "line_start": 396,
+          "line_end": 403
+        },
+        {
+          "heading": "Completion report",
+          "level": 2,
+          "anchor": "completion-report",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
+          "line_start": 404,
+          "line_end": 459
+        },
+        {
+          "heading": "Non-negotiable rules",
+          "level": 2,
+          "anchor": "non-negotiable-rules",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules",
+          "line_start": 460,
+          "line_end": 572
+        },
+        {
+          "heading": "Bootstrap documentation vs. installed project layout",
+          "level": 3,
+          "anchor": "bootstrap-documentation-vs-installed-project-layout",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules > Bootstrap documentation vs. installed project layout",
+          "line_start": 482,
+          "line_end": 572
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INDEX",
+        "README-GTT",
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "BACKLOG",
+      "type": "backlog",
+      "path": "gtt/backlog.md",
+      "title": "Project Backlog",
+      "authority": "development-line",
+      "version": "v2.1",
+      "sha256": "5f1df426fb7e8c3e416b775c6185b3a74943adc04faf9e337d8564ba6446d7c6",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Project Backlog",
+          "level": 1,
+          "anchor": "project-backlog",
+          "path": "Project Backlog",
+          "line_start": 1,
+          "line_end": 104
+        },
+        {
+          "heading": "Development Line",
+          "level": 2,
+          "anchor": "development-line",
+          "path": "Project Backlog > Development Line",
+          "line_start": 15,
+          "line_end": 18
+        },
+        {
+          "heading": "Precedence",
+          "level": 2,
+          "anchor": "precedence",
+          "path": "Project Backlog > Precedence",
+          "line_start": 19,
+          "line_end": 36
+        },
+        {
+          "heading": "Epics",
+          "level": 2,
+          "anchor": "epics",
+          "path": "Project Backlog > Epics",
+          "line_start": 37,
+          "line_end": 73
+        },
+        {
+          "heading": "Example",
+          "level": 3,
+          "anchor": "example",
+          "path": "Project Backlog > Epics > Example",
+          "line_start": 46,
+          "line_end": 73
+        },
+        {
+          "heading": "General Development Work",
+          "level": 2,
+          "anchor": "general-development-work",
+          "path": "Project Backlog > General Development Work",
+          "line_start": 74,
+          "line_end": 79
+        },
+        {
+          "heading": "Current Focus",
+          "level": 2,
+          "anchor": "current-focus",
+          "path": "Project Backlog > Current Focus",
+          "line_start": 80,
+          "line_end": 85
+        },
+        {
+          "heading": "Next Work",
+          "level": 2,
+          "anchor": "next-work",
+          "path": "Project Backlog > Next Work",
+          "line_start": 86,
+          "line_end": 91
+        },
+        {
+          "heading": "Blocked",
+          "level": 2,
+          "anchor": "blocked",
+          "path": "Project Backlog > Blocked",
+          "line_start": 92,
+          "line_end": 104
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INDEX"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CHANGE-REQUEST",
+      "type": "change-request",
+      "path": "gtt/CHANGE-REQUEST.md",
+      "title": "Change Request",
+      "authority": "input",
+      "version": "v2.1",
+      "sha256": "3bffa7e179802bca40b055e98bf96a1f883830394a4b62247d6c9a4919cec3e6",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Change Request",
+          "level": 1,
+          "anchor": "change-request",
+          "path": "Change Request",
+          "line_start": 1,
+          "line_end": 79
+        },
+        {
+          "heading": "GTT Request",
+          "level": 2,
+          "anchor": "gtt-request",
+          "path": "Change Request > GTT Request",
+          "line_start": 21,
+          "line_end": 46
+        },
+        {
+          "heading": "Example",
+          "level": 3,
+          "anchor": "example",
+          "path": "Change Request > GTT Request > Example",
+          "line_start": 33,
+          "line_end": 46
+        },
+        {
+          "heading": "How to use this",
+          "level": 2,
+          "anchor": "how-to-use-this",
+          "path": "Change Request > How to use this",
+          "line_start": 47,
+          "line_end": 69
+        },
+        {
+          "heading": "What does not belong here",
+          "level": 2,
+          "anchor": "what-does-not-belong-here",
+          "path": "Change Request > What does not belong here",
+          "line_start": 70,
+          "line_end": 79
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INDEX"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CLAUDE-INSTRUCTIONS",
+      "type": "instruction",
+      "path": ".claude/CLAUDE.md",
+      "title": null,
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "2582ef84ccb7d2843742b10a35ad5237d66e728adc4bd7517a75a7a22808359d",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Claude Code specifics",
+          "level": 2,
+          "anchor": "claude-code-specifics",
+          "path": "Claude Code specifics",
+          "line_start": 5,
+          "line_end": 41
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "COPILOT-COPILOT-INSTRUCTIONS",
+      "type": "instruction",
+      "path": ".copilot/copilot-instructions.md",
+      "title": "GTT — GitHub Copilot integration",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "2dd66fec924f143d39ef1c845992df7c55d4599996e0c7ccac51f182736e2ebc",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT — GitHub Copilot integration",
+          "level": 1,
+          "anchor": "gtt--github-copilot-integration",
+          "path": "GTT — GitHub Copilot integration",
+          "line_start": 1,
+          "line_end": 53
+        },
+        {
+          "heading": "Read first",
+          "level": 2,
+          "anchor": "read-first",
+          "path": "GTT — GitHub Copilot integration > Read first",
+          "line_start": 21,
+          "line_end": 28
+        },
+        {
+          "heading": "What Copilot must not do",
+          "level": 2,
+          "anchor": "what-copilot-must-not-do",
+          "path": "GTT — GitHub Copilot integration > What Copilot must not do",
+          "line_start": 29,
+          "line_end": 44
+        },
+        {
+          "heading": "Procedures",
+          "level": 2,
+          "anchor": "procedures",
+          "path": "GTT — GitHub Copilot integration > Procedures",
+          "line_start": 45,
+          "line_end": 53
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-ARCHITECTURE",
+      "type": "governed-context",
+      "path": "gtt/context/architecture.md",
+      "title": "Architecture",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "219afcb9049d1e1539f5174bd82a193889430b4ac4f7062e68ac83cf7a285c5e",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Architecture",
+          "level": 1,
+          "anchor": "architecture",
+          "path": "Architecture",
+          "line_start": 1,
+          "line_end": 41
+        },
+        {
+          "heading": "Architectural style",
+          "level": 2,
+          "anchor": "architectural-style",
+          "path": "Architecture > Architectural style",
+          "line_start": 9,
+          "line_end": 15
+        },
+        {
+          "heading": "Modules and boundaries",
+          "level": 2,
+          "anchor": "modules-and-boundaries",
+          "path": "Architecture > Modules and boundaries",
+          "line_start": 16,
+          "line_end": 20
+        },
+        {
+          "heading": "Integration strategy",
+          "level": 2,
+          "anchor": "integration-strategy",
+          "path": "Architecture > Integration strategy",
+          "line_start": 21,
+          "line_end": 25
+        },
+        {
+          "heading": "Data model ownership",
+          "level": 2,
+          "anchor": "data-model-ownership",
+          "path": "Architecture > Data model ownership",
+          "line_start": 26,
+          "line_end": 29
+        },
+        {
+          "heading": "Deployment topology",
+          "level": 2,
+          "anchor": "deployment-topology",
+          "path": "Architecture > Deployment topology",
+          "line_start": 30,
+          "line_end": 33
+        },
+        {
+          "heading": "Known deviations",
+          "level": 2,
+          "anchor": "known-deviations",
+          "path": "Architecture > Known deviations",
+          "line_start": 34,
+          "line_end": 41
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-CONSTRAINTS",
+      "type": "governed-context",
+      "path": "gtt/context/constraints.md",
+      "title": "Constraints",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "bbf248c21fe50e569a0860ace2b3a71f3ef67fead9604a026ae71f3def7bced8",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Constraints",
+          "level": 1,
+          "anchor": "constraints",
+          "path": "Constraints",
+          "line_start": 1,
+          "line_end": 34
+        },
+        {
+          "heading": "Platform",
+          "level": 2,
+          "anchor": "platform",
+          "path": "Constraints > Platform",
+          "line_start": 9,
+          "line_end": 14
+        },
+        {
+          "heading": "Technical",
+          "level": 2,
+          "anchor": "technical",
+          "path": "Constraints > Technical",
+          "line_start": 15,
+          "line_end": 20
+        },
+        {
+          "heading": "Regulatory and organizational",
+          "level": 2,
+          "anchor": "regulatory-and-organizational",
+          "path": "Constraints > Regulatory and organizational",
+          "line_start": 21,
+          "line_end": 26
+        },
+        {
+          "heading": "Explicitly out of scope",
+          "level": 2,
+          "anchor": "explicitly-out-of-scope",
+          "path": "Constraints > Explicitly out of scope",
+          "line_start": 27,
+          "line_end": 34
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-GLOSSARY",
+      "type": "governed-context",
+      "path": "gtt/context/glossary.md",
+      "title": "Glossary",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "783e4c9a92e0dbb423a997016ef74b9e064100eefaf115fbd81a9d58aaa154d3",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Glossary",
+          "level": 1,
+          "anchor": "glossary",
+          "path": "Glossary",
+          "line_start": 1,
+          "line_end": 10
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-PRINCIPLES",
+      "type": "governed-context",
+      "path": "gtt/context/principles.md",
+      "title": "Principles",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "66c894287c8f87606d9f570a3ace74037e43015b1bdff4686481f64d10b7877f",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Principles",
+          "level": 1,
+          "anchor": "principles",
+          "path": "Principles",
+          "line_start": 1,
+          "line_end": 30
+        },
+        {
+          "heading": "Format",
+          "level": 2,
+          "anchor": "format",
+          "path": "Principles > Format",
+          "line_start": 9,
+          "line_end": 14
+        },
+        {
+          "heading": "Examples of the right shape",
+          "level": 2,
+          "anchor": "examples-of-the-right-shape",
+          "path": "Principles > Examples of the right shape",
+          "line_start": 15,
+          "line_end": 22
+        },
+        {
+          "heading": "Anti-examples",
+          "level": 2,
+          "anchor": "anti-examples",
+          "path": "Principles > Anti-examples",
+          "line_start": 23,
+          "line_end": 30
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-SOLUTION-VISION",
+      "type": "governed-context",
+      "path": "gtt/context/solution-vision.md",
+      "title": "Solution Vision",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "a0a9f2d7c446e0f7ce82e456b5c6ab46ccb45690395bb65546ff53a02767de4f",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Solution Vision",
+          "level": 1,
+          "anchor": "solution-vision",
+          "path": "Solution Vision",
+          "line_start": 1,
+          "line_end": 25
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "anchor": "problem",
+          "path": "Solution Vision > Problem",
+          "line_start": 5,
+          "line_end": 8
+        },
+        {
+          "heading": "Users",
+          "level": 2,
+          "anchor": "users",
+          "path": "Solution Vision > Users",
+          "line_start": 9,
+          "line_end": 12
+        },
+        {
+          "heading": "What success looks like",
+          "level": 2,
+          "anchor": "what-success-looks-like",
+          "path": "Solution Vision > What success looks like",
+          "line_start": 13,
+          "line_end": 16
+        },
+        {
+          "heading": "Non-goals",
+          "level": 2,
+          "anchor": "non-goals",
+          "path": "Solution Vision > Non-goals",
+          "line_start": 17,
+          "line_end": 25
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "CTX-STACK",
+      "type": "governed-context",
+      "path": "gtt/context/stack.md",
+      "title": "Stack & Architecture Map",
+      "authority": "L0",
+      "version": "v2.1",
+      "sha256": "30cb7c30f446b3cd157447c978b3e228a1d765c9d87a4ff190107b53e5507809",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Stack & Architecture Map",
+          "level": 1,
+          "anchor": "stack--architecture-map",
+          "path": "Stack & Architecture Map",
+          "line_start": 1,
+          "line_end": 201
+        },
+        {
+          "heading": "1. Stack at a glance",
+          "level": 2,
+          "anchor": "1-stack-at-a-glance",
+          "path": "Stack & Architecture Map > 1. Stack at a glance",
+          "line_start": 14,
+          "line_end": 39
+        },
+        {
+          "heading": "2. Component map",
+          "level": 2,
+          "anchor": "2-component-map",
+          "path": "Stack & Architecture Map > 2. Component map",
+          "line_start": 40,
+          "line_end": 77
+        },
+        {
+          "heading": "3. Deployment topology",
+          "level": 2,
+          "anchor": "3-deployment-topology",
+          "path": "Stack & Architecture Map > 3. Deployment topology",
+          "line_start": 78,
+          "line_end": 106
+        },
+        {
+          "heading": "4. Observability",
+          "level": 2,
+          "anchor": "4-observability",
+          "path": "Stack & Architecture Map > 4. Observability",
+          "line_start": 107,
+          "line_end": 161
+        },
+        {
+          "heading": "5. Dependency rules",
+          "level": 2,
+          "anchor": "5-dependency-rules",
+          "path": "Stack & Architecture Map > 5. Dependency rules",
+          "line_start": 162,
+          "line_end": 172
+        },
+        {
+          "heading": "6. Map change log",
+          "level": 2,
+          "anchor": "6-map-change-log",
+          "path": "Stack & Architecture Map > 6. Map change log",
+          "line_start": 173,
+          "line_end": 183
+        },
+        {
+          "heading": "7. Drift signals",
+          "level": 2,
+          "anchor": "7-drift-signals",
+          "path": "Stack & Architecture Map > 7. Drift signals",
+          "line_start": 184,
+          "line_end": 201
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "DOC-DOCS",
+      "type": "documentation",
+      "path": "gtt/docs/DOCS.md",
+      "title": "GTT — Reference Docs",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "86bf30a72de27cea398dafec835741f795a96fe61273aee3f4037adaced67f96",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT — Reference Docs",
+          "level": 1,
+          "anchor": "gtt--reference-docs",
+          "path": "GTT — Reference Docs",
+          "line_start": 1,
+          "line_end": 764
+        },
+        {
+          "heading": "Methodology",
+          "level": 2,
+          "anchor": "methodology",
+          "path": "GTT — Reference Docs > Methodology",
+          "line_start": 19,
+          "line_end": 504
+        },
+        {
+          "heading": "The premise",
+          "level": 3,
+          "anchor": "the-premise",
+          "path": "GTT — Reference Docs > Methodology > The premise",
+          "line_start": 23,
+          "line_end": 32
+        },
+        {
+          "heading": "Context layers",
+          "level": 3,
+          "anchor": "context-layers",
+          "path": "GTT — Reference Docs > Methodology > Context layers",
+          "line_start": 33,
+          "line_end": 46
+        },
+        {
+          "heading": "The three enforcement planes",
+          "level": 3,
+          "anchor": "the-three-enforcement-planes",
+          "path": "GTT — Reference Docs > Methodology > The three enforcement planes",
+          "line_start": 47,
+          "line_end": 74
+        },
+        {
+          "heading": "What lives where",
+          "level": 3,
+          "anchor": "what-lives-where",
+          "path": "GTT — Reference Docs > Methodology > What lives where",
+          "line_start": 75,
+          "line_end": 91
+        },
+        {
+          "heading": "The change flow",
+          "level": 3,
+          "anchor": "the-change-flow",
+          "path": "GTT — Reference Docs > Methodology > The change flow",
+          "line_start": 92,
+          "line_end": 124
+        },
+        {
+          "heading": "Governance model",
+          "level": 3,
+          "anchor": "governance-model",
+          "path": "GTT — Reference Docs > Methodology > Governance model",
+          "line_start": 125,
+          "line_end": 162
+        },
+        {
+          "heading": "Two regimes",
+          "level": 3,
+          "anchor": "two-regimes",
+          "path": "GTT — Reference Docs > Methodology > Two regimes",
+          "line_start": 163,
+          "line_end": 187
+        },
+        {
+          "heading": "The map",
+          "level": 3,
+          "anchor": "the-map",
+          "path": "GTT — Reference Docs > Methodology > The map",
+          "line_start": 188,
+          "line_end": 209
+        },
+        {
+          "heading": "Context freshness",
+          "level": 3,
+          "anchor": "context-freshness",
+          "path": "GTT — Reference Docs > Methodology > Context freshness",
+          "line_start": 210,
+          "line_end": 219
+        },
+        {
+          "heading": "Drift detection",
+          "level": 3,
+          "anchor": "drift-detection",
+          "path": "GTT — Reference Docs > Methodology > Drift detection",
+          "line_start": 220,
+          "line_end": 246
+        },
+        {
+          "heading": "Backlog governance",
+          "level": 3,
+          "anchor": "backlog-governance",
+          "path": "GTT — Reference Docs > Methodology > Backlog governance",
+          "line_start": 247,
+          "line_end": 307
+        },
+        {
+          "heading": "GTTGuard: protected artifacts",
+          "level": 3,
+          "anchor": "gttguard-protected-artifacts",
+          "path": "GTT — Reference Docs > Methodology > GTTGuard: protected artifacts",
+          "line_start": 308,
+          "line_end": 368
+        },
+        {
+          "heading": "Status and validation",
+          "level": 3,
+          "anchor": "status-and-validation",
+          "path": "GTT — Reference Docs > Methodology > Status and validation",
+          "line_start": 369,
+          "line_end": 398
+        },
+        {
+          "heading": "Artifact identity and the technical index",
+          "level": 3,
+          "anchor": "artifact-identity-and-the-technical-index",
+          "path": "GTT — Reference Docs > Methodology > Artifact identity and the technical index",
+          "line_start": 399,
+          "line_end": 430
+        },
+        {
+          "heading": "Session memory boundary",
+          "level": 3,
+          "anchor": "session-memory-boundary",
+          "path": "GTT — Reference Docs > Methodology > Session memory boundary",
+          "line_start": 431,
+          "line_end": 471
+        },
+        {
+          "heading": "Capability status",
+          "level": 3,
+          "anchor": "capability-status",
+          "path": "GTT — Reference Docs > Methodology > Capability status",
+          "line_start": 472,
+          "line_end": 493
+        },
+        {
+          "heading": "Operational boundary",
+          "level": 3,
+          "anchor": "operational-boundary",
+          "path": "GTT — Reference Docs > Methodology > Operational boundary",
+          "line_start": 494,
+          "line_end": 504
+        },
+        {
+          "heading": "Portability: Claude Code, Kiro, Codex, Copilot",
+          "level": 2,
+          "anchor": "portability-claude-code-kiro-codex-copilot",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot",
+          "line_start": 505,
+          "line_end": 688
+        },
+        {
+          "heading": "Compatibility matrix",
+          "level": 3,
+          "anchor": "compatibility-matrix",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Compatibility matrix",
+          "line_start": 516,
+          "line_end": 543
+        },
+        {
+          "heading": "Claude Code",
+          "level": 3,
+          "anchor": "claude-code",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Claude Code",
+          "line_start": 544,
+          "line_end": 556
+        },
+        {
+          "heading": "Kiro",
+          "level": 3,
+          "anchor": "kiro",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Kiro",
+          "line_start": 557,
+          "line_end": 588
+        },
+        {
+          "heading": "Codex",
+          "level": 3,
+          "anchor": "codex",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Codex",
+          "line_start": 589,
+          "line_end": 629
+        },
+        {
+          "heading": "GitHub Copilot",
+          "level": 3,
+          "anchor": "github-copilot",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > GitHub Copilot",
+          "line_start": 630,
+          "line_end": 658
+        },
+        {
+          "heading": "If your team uses more than one ADE",
+          "level": 3,
+          "anchor": "if-your-team-uses-more-than-one-ade",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If your team uses more than one ADE",
+          "line_start": 659,
+          "line_end": 675
+        },
+        {
+          "heading": "If you use only one",
+          "level": 3,
+          "anchor": "if-you-use-only-one",
+          "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If you use only one",
+          "line_start": 676,
+          "line_end": 688
+        },
+        {
+          "heading": "Migrating from GTT v1",
+          "level": 2,
+          "anchor": "migrating-from-gtt-v1",
+          "path": "GTT — Reference Docs > Migrating from GTT v1",
+          "line_start": 689,
+          "line_end": 764
+        },
+        {
+          "heading": "What changed and why",
+          "level": 3,
+          "anchor": "what-changed-and-why",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > What changed and why",
+          "line_start": 691,
+          "line_end": 707
+        },
+        {
+          "heading": "File mapping",
+          "level": 3,
+          "anchor": "file-mapping",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > File mapping",
+          "line_start": 708,
+          "line_end": 726
+        },
+        {
+          "heading": "Steps",
+          "level": 3,
+          "anchor": "steps",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > Steps",
+          "line_start": 727,
+          "line_end": 746
+        },
+        {
+          "heading": "If you use other agents too",
+          "level": 3,
+          "anchor": "if-you-use-other-agents-too",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > If you use other agents too",
+          "line_start": 747,
+          "line_end": 757
+        },
+        {
+          "heading": "Verifying the token saving",
+          "level": 3,
+          "anchor": "verifying-the-token-saving",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > Verifying the token saving",
+          "line_start": 758,
+          "line_end": 764
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "README-GTT",
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-GTT-COMPLETION",
+      "type": "documentation",
+      "path": "gtt/GTT-COMPLETION.md",
+      "title": "GTT Bootstrap — Completion Report",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "75aa85d3a47e78afa37f45f2adf17dbf8a4b44f91ca0ce8e1ca602d58dc41c39",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap — Completion Report",
+          "level": 1,
+          "anchor": "gtt-bootstrap--completion-report",
+          "path": "GTT Bootstrap — Completion Report",
+          "line_start": 1,
+          "line_end": 76
+        },
+        {
+          "heading": "Report",
+          "level": 2,
+          "anchor": "report",
+          "path": "GTT Bootstrap — Completion Report > Report",
+          "line_start": 20,
+          "line_end": 76
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INDEX"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-INDEX",
+      "type": "documentation",
+      "path": "gtt/INDEX.md",
+      "title": "GTT Index",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "e600935aa18193144e1a5bf41077584ef8be230102296679e2ade60c617e157d",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Index",
+          "level": 1,
+          "anchor": "gtt-index",
+          "path": "GTT Index",
+          "line_start": 1,
+          "line_end": 211
+        },
+        {
+          "heading": "Quick links",
+          "level": 2,
+          "anchor": "quick-links",
+          "path": "GTT Index > Quick links",
+          "line_start": 15,
+          "line_end": 31
+        },
+        {
+          "heading": "Start here",
+          "level": 2,
+          "anchor": "start-here",
+          "path": "GTT Index > Start here",
+          "line_start": 32,
+          "line_end": 54
+        },
+        {
+          "heading": "Governed context — you own it, agents cannot write it once frozen",
+          "level": 2,
+          "anchor": "governed-context--you-own-it-agents-cannot-write-it-once-frozen",
+          "path": "GTT Index > Governed context — you own it, agents cannot write it once frozen",
+          "line_start": 55,
+          "line_end": 73
+        },
+        {
+          "heading": "Development line — governed like architecture, but not L0",
+          "level": 2,
+          "anchor": "development-line--governed-like-architecture-but-not-l0",
+          "path": "GTT Index > Development line — governed like architecture, but not L0",
+          "line_start": 74,
+          "line_end": 82
+        },
+        {
+          "heading": "Staging — agents write here",
+          "level": 2,
+          "anchor": "staging--agents-write-here",
+          "path": "GTT Index > Staging — agents write here",
+          "line_start": 83,
+          "line_end": 88
+        },
+        {
+          "heading": "Protection registry — derived, self-correcting",
+          "level": 2,
+          "anchor": "protection-registry--derived-self-correcting",
+          "path": "GTT Index > Protection registry — derived, self-correcting",
+          "line_start": 89,
+          "line_end": 98
+        },
+        {
+          "heading": "Session state — derived, on demand",
+          "level": 2,
+          "anchor": "session-state--derived-on-demand",
+          "path": "GTT Index > Session state — derived, on demand",
+          "line_start": 99,
+          "line_end": 108
+        },
+        {
+          "heading": "Artifact identity and technical index — derived accelerator, identity manifest",
+          "level": 2,
+          "anchor": "artifact-identity-and-technical-index--derived-accelerator-identity-manifest",
+          "path": "GTT Index > Artifact identity and technical index — derived accelerator, identity manifest",
+          "line_start": 109,
+          "line_end": 118
+        },
+        {
+          "heading": "Instructions — how agents behave",
+          "level": 2,
+          "anchor": "instructions--how-agents-behave",
+          "path": "GTT Index > Instructions — how agents behave",
+          "line_start": 119,
+          "line_end": 136
+        },
+        {
+          "heading": "Procedures — load only when invoked",
+          "level": 2,
+          "anchor": "procedures--load-only-when-invoked",
+          "path": "GTT Index > Procedures — load only when invoked",
+          "line_start": 137,
+          "line_end": 148
+        },
+        {
+          "heading": "Enforcement — costs zero context",
+          "level": 2,
+          "anchor": "enforcement--costs-zero-context",
+          "path": "GTT Index > Enforcement — costs zero context",
+          "line_start": 149,
+          "line_end": 173
+        },
+        {
+          "heading": "Human documentation — never loaded by any agent",
+          "level": 2,
+          "anchor": "human-documentation--never-loaded-by-any-agent",
+          "path": "GTT Index > Human documentation — never loaded by any agent",
+          "line_start": 174,
+          "line_end": 185
+        },
+        {
+          "heading": "The one flow that matters",
+          "level": 2,
+          "anchor": "the-one-flow-that-matters",
+          "path": "GTT Index > The one flow that matters",
+          "line_start": 186,
+          "line_end": 200
+        },
+        {
+          "heading": "What loads on every single session",
+          "level": 2,
+          "anchor": "what-loads-on-every-single-session",
+          "path": "GTT Index > What loads on every single session",
+          "line_start": 201,
+          "line_end": 211
+        }
+      ],
+      "references": [
+        "AGENTS",
+        "BACKLOG",
+        "CHANGE-REQUEST",
+        "GTT-GTT-COMPLETION",
+        "GTT-INSTALLATION",
+        "GTT-USAGE",
+        "README-GTT"
+      ],
+      "referenced_by": [
+        "README-GTT",
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-INSTALLATION",
+      "type": "documentation",
+      "path": "gtt/INSTALLATION.md",
+      "title": "GTT Bootstrap — Installation Guide",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "02be916336b5d23fc79f62532d66ebd94de372c0df663cc1213a0334790038a7",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap — Installation Guide",
+          "level": 1,
+          "anchor": "gtt-bootstrap--installation-guide",
+          "path": "GTT Bootstrap — Installation Guide",
+          "line_start": 1,
+          "line_end": 325
+        },
+        {
+          "heading": "Installation modes",
+          "level": 2,
+          "anchor": "installation-modes",
+          "path": "GTT Bootstrap — Installation Guide > Installation modes",
+          "line_start": 9,
+          "line_end": 19
+        },
+        {
+          "heading": "Prerequisites",
+          "level": 2,
+          "anchor": "prerequisites",
+          "path": "GTT Bootstrap — Installation Guide > Prerequisites",
+          "line_start": 20,
+          "line_end": 32
+        },
+        {
+          "heading": "Manual installation",
+          "level": 2,
+          "anchor": "manual-installation",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation",
+          "line_start": 33,
+          "line_end": 192
+        },
+        {
+          "heading": "1. Inspect the host project",
+          "level": 3,
+          "anchor": "1-inspect-the-host-project",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 1. Inspect the host project",
+          "line_start": 35,
+          "line_end": 54
+        },
+        {
+          "heading": "2. Install the GTT scaffolding",
+          "level": 3,
+          "anchor": "2-install-the-gtt-scaffolding",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 2. Install the GTT scaffolding",
+          "line_start": 55,
+          "line_end": 89
+        },
+        {
+          "heading": "3. Preserve the source design",
+          "level": 3,
+          "anchor": "3-preserve-the-source-design",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 3. Preserve the source design",
+          "line_start": 90,
+          "line_end": 101
+        },
+        {
+          "heading": "4. Merge",
+          "level": 3,
+          "anchor": "4-merge",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 4. Merge",
+          "line_start": 102,
+          "line_end": 109
+        },
+        {
+          "heading": "5. Populate the context",
+          "level": 3,
+          "anchor": "5-populate-the-context",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 5. Populate the context",
+          "line_start": 110,
+          "line_end": 133
+        },
+        {
+          "heading": "6. Review",
+          "level": 3,
+          "anchor": "6-review",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 6. Review",
+          "line_start": 134,
+          "line_end": 148
+        },
+        {
+          "heading": "7. Freeze",
+          "level": 3,
+          "anchor": "7-freeze",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 7. Freeze",
+          "line_start": 149,
+          "line_end": 164
+        },
+        {
+          "heading": "8. Verify the guardrail",
+          "level": 3,
+          "anchor": "8-verify-the-guardrail",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 8. Verify the guardrail",
+          "line_start": 165,
+          "line_end": 176
+        },
+        {
+          "heading": "9. Install the CI gate",
+          "level": 3,
+          "anchor": "9-install-the-ci-gate",
+          "path": "GTT Bootstrap — Installation Guide > Manual installation > 9. Install the CI gate",
+          "line_start": 177,
+          "line_end": 192
+        },
+        {
+          "heading": "Agent-assisted installation",
+          "level": 2,
+          "anchor": "agent-assisted-installation",
+          "path": "GTT Bootstrap — Installation Guide > Agent-assisted installation",
+          "line_start": 193,
+          "line_end": 237
+        },
+        {
+          "heading": "Agent procedure",
+          "level": 3,
+          "anchor": "agent-procedure",
+          "path": "GTT Bootstrap — Installation Guide > Agent-assisted installation > Agent procedure",
+          "line_start": 197,
+          "line_end": 216
+        },
+        {
+          "heading": "Required agent report",
+          "level": 3,
+          "anchor": "required-agent-report",
+          "path": "GTT Bootstrap — Installation Guide > Agent-assisted installation > Required agent report",
+          "line_start": 217,
+          "line_end": 237
+        },
+        {
+          "heading": "Existing projects and upgrades",
+          "level": 2,
+          "anchor": "existing-projects-and-upgrades",
+          "path": "GTT Bootstrap — Installation Guide > Existing projects and upgrades",
+          "line_start": 238,
+          "line_end": 263
+        },
+        {
+          "heading": "Two-regime upgrade",
+          "level": 3,
+          "anchor": "two-regime-upgrade",
+          "path": "GTT Bootstrap — Installation Guide > Existing projects and upgrades > Two-regime upgrade",
+          "line_start": 252,
+          "line_end": 263
+        },
+        {
+          "heading": "Installation checklist",
+          "level": 2,
+          "anchor": "installation-checklist",
+          "path": "GTT Bootstrap — Installation Guide > Installation checklist",
+          "line_start": 264,
+          "line_end": 284
+        },
+        {
+          "heading": "Next step",
+          "level": 2,
+          "anchor": "next-step",
+          "path": "GTT Bootstrap — Installation Guide > Next step",
+          "line_start": 285,
+          "line_end": 325
+        },
+        {
+          "heading": "Deployment target: bootstrap repository vs. host project",
+          "level": 3,
+          "anchor": "deployment-target-bootstrap-repository-vs-host-project",
+          "path": "GTT Bootstrap — Installation Guide > Next step > Deployment target: bootstrap repository vs. host project",
+          "line_start": 289,
+          "line_end": 325
+        }
+      ],
+      "references": [
+        "GTT-USAGE"
+      ],
+      "referenced_by": [
+        "GTT-INDEX",
+        "README-GTT"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-INSTALLATION-ES",
+      "type": "documentation",
+      "path": "gtt/INSTALLATION.es.md",
+      "title": "GTT Bootstrap — Guía de instalación",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "2639ef9f1ec38bb618caedb64184ff994bcf26cdd273cca7b85dc9d71e7aa0e3",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap — Guía de instalación",
+          "level": 1,
+          "anchor": "gtt-bootstrap--guía-de-instalación",
+          "path": "GTT Bootstrap — Guía de instalación",
+          "line_start": 1,
+          "line_end": 295
+        },
+        {
+          "heading": "Modos de instalación",
+          "level": 2,
+          "anchor": "modos-de-instalación",
+          "path": "GTT Bootstrap — Guía de instalación > Modos de instalación",
+          "line_start": 9,
+          "line_end": 19
+        },
+        {
+          "heading": "Requisitos previos",
+          "level": 2,
+          "anchor": "requisitos-previos",
+          "path": "GTT Bootstrap — Guía de instalación > Requisitos previos",
+          "line_start": 20,
+          "line_end": 32
+        },
+        {
+          "heading": "Instalación manual",
+          "level": 2,
+          "anchor": "instalación-manual",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual",
+          "line_start": 33,
+          "line_end": 187
+        },
+        {
+          "heading": "1. Inspeccionar el proyecto anfitrión",
+          "level": 3,
+          "anchor": "1-inspeccionar-el-proyecto-anfitrión",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 1. Inspeccionar el proyecto anfitrión",
+          "line_start": 35,
+          "line_end": 54
+        },
+        {
+          "heading": "2. Instalar el scaffolding de GTT",
+          "level": 3,
+          "anchor": "2-instalar-el-scaffolding-de-gtt",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 2. Instalar el scaffolding de GTT",
+          "line_start": 55,
+          "line_end": 90
+        },
+        {
+          "heading": "3. Preservar el diseño original",
+          "level": 3,
+          "anchor": "3-preservar-el-diseño-original",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 3. Preservar el diseño original",
+          "line_start": 91,
+          "line_end": 100
+        },
+        {
+          "heading": "4. Combinar",
+          "level": 3,
+          "anchor": "4-combinar",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 4. Combinar",
+          "line_start": 101,
+          "line_end": 106
+        },
+        {
+          "heading": "5. Poblar el contexto",
+          "level": 3,
+          "anchor": "5-poblar-el-contexto",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 5. Poblar el contexto",
+          "line_start": 107,
+          "line_end": 130
+        },
+        {
+          "heading": "6. Revisar",
+          "level": 3,
+          "anchor": "6-revisar",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 6. Revisar",
+          "line_start": 131,
+          "line_end": 145
+        },
+        {
+          "heading": "7. Freeze",
+          "level": 3,
+          "anchor": "7-freeze",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 7. Freeze",
+          "line_start": 146,
+          "line_end": 161
+        },
+        {
+          "heading": "8. Verificar el guardrail",
+          "level": 3,
+          "anchor": "8-verificar-el-guardrail",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 8. Verificar el guardrail",
+          "line_start": 162,
+          "line_end": 173
+        },
+        {
+          "heading": "9. Instalar el CI gate",
+          "level": 3,
+          "anchor": "9-instalar-el-ci-gate",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación manual > 9. Instalar el CI gate",
+          "line_start": 174,
+          "line_end": 187
+        },
+        {
+          "heading": "Instalación asistida por agente",
+          "level": 2,
+          "anchor": "instalación-asistida-por-agente",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación asistida por agente",
+          "line_start": 188,
+          "line_end": 232
+        },
+        {
+          "heading": "Procedimiento del agente",
+          "level": 3,
+          "anchor": "procedimiento-del-agente",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación asistida por agente > Procedimiento del agente",
+          "line_start": 192,
+          "line_end": 211
+        },
+        {
+          "heading": "Informe obligatorio del agente",
+          "level": 3,
+          "anchor": "informe-obligatorio-del-agente",
+          "path": "GTT Bootstrap — Guía de instalación > Instalación asistida por agente > Informe obligatorio del agente",
+          "line_start": 212,
+          "line_end": 232
+        },
+        {
+          "heading": "Checklist",
+          "level": 2,
+          "anchor": "checklist",
+          "path": "GTT Bootstrap — Guía de instalación > Checklist",
+          "line_start": 233,
+          "line_end": 253
+        },
+        {
+          "heading": "Siguiente paso",
+          "level": 2,
+          "anchor": "siguiente-paso",
+          "path": "GTT Bootstrap — Guía de instalación > Siguiente paso",
+          "line_start": 254,
+          "line_end": 295
+        },
+        {
+          "heading": "Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
+          "level": 3,
+          "anchor": "destino-del-despliegue-repositorio-bootstrap-vs-proyecto-anfitrión",
+          "path": "GTT Bootstrap — Guía de instalación > Siguiente paso > Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
+          "line_start": 258,
+          "line_end": 295
+        }
+      ],
+      "references": [
+        "GTT-USAGE-ES"
+      ],
+      "referenced_by": [
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-USAGE",
+      "type": "documentation",
+      "path": "gtt/USAGE.md",
+      "title": "GTT Bootstrap — Usage Guide",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "84c165a37bb000256b3531635f68bda64bad4168e6612b61d8af9dd325da4185",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap — Usage Guide",
+          "level": 1,
+          "anchor": "gtt-bootstrap--usage-guide",
+          "path": "GTT Bootstrap — Usage Guide",
+          "line_start": 1,
+          "line_end": 376
+        },
+        {
+          "heading": "The normal workflow",
+          "level": 2,
+          "anchor": "the-normal-workflow",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow",
+          "line_start": 11,
+          "line_end": 105
+        },
+        {
+          "heading": "1. Start from governed context",
+          "level": 3,
+          "anchor": "1-start-from-governed-context",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 1. Start from governed context",
+          "line_start": 13,
+          "line_end": 20
+        },
+        {
+          "heading": "2. Work on implementation",
+          "level": 3,
+          "anchor": "2-work-on-implementation",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 2. Work on implementation",
+          "line_start": 21,
+          "line_end": 28
+        },
+        {
+          "heading": "3. Detect an architectural change",
+          "level": 3,
+          "anchor": "3-detect-an-architectural-change",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 3. Detect an architectural change",
+          "line_start": 29,
+          "line_end": 38
+        },
+        {
+          "heading": "4. Propose the change",
+          "level": 3,
+          "anchor": "4-propose-the-change",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 4. Propose the change",
+          "line_start": 39,
+          "line_end": 58
+        },
+        {
+          "heading": "5. Approve",
+          "level": 3,
+          "anchor": "5-approve",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 5. Approve",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "heading": "6. Record the decision",
+          "level": 3,
+          "anchor": "6-record-the-decision",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 6. Record the decision",
+          "line_start": 65,
+          "line_end": 91
+        },
+        {
+          "heading": "7. Verify",
+          "level": 3,
+          "anchor": "7-verify",
+          "path": "GTT Bootstrap — Usage Guide > The normal workflow > 7. Verify",
+          "line_start": 92,
+          "line_end": 105
+        },
+        {
+          "heading": "The architecture map",
+          "level": 2,
+          "anchor": "the-architecture-map",
+          "path": "GTT Bootstrap — Usage Guide > The architecture map",
+          "line_start": 106,
+          "line_end": 123
+        },
+        {
+          "heading": "The backlog",
+          "level": 2,
+          "anchor": "the-backlog",
+          "path": "GTT Bootstrap — Usage Guide > The backlog",
+          "line_start": 124,
+          "line_end": 142
+        },
+        {
+          "heading": "Protected artifacts (GTTGuard)",
+          "level": 2,
+          "anchor": "protected-artifacts-gttguard",
+          "path": "GTT Bootstrap — Usage Guide > Protected artifacts (GTTGuard)",
+          "line_start": 143,
+          "line_end": 182
+        },
+        {
+          "heading": "Change request example",
+          "level": 2,
+          "anchor": "change-request-example",
+          "path": "GTT Bootstrap — Usage Guide > Change request example",
+          "line_start": 183,
+          "line_end": 215
+        },
+        {
+          "heading": "Context layers",
+          "level": 2,
+          "anchor": "context-layers",
+          "path": "GTT Bootstrap — Usage Guide > Context layers",
+          "line_start": 216,
+          "line_end": 254
+        },
+        {
+          "heading": "L0 — governed context",
+          "level": 3,
+          "anchor": "l0--governed-context",
+          "path": "GTT Bootstrap — Usage Guide > Context layers > L0 — governed context",
+          "line_start": 218,
+          "line_end": 225
+        },
+        {
+          "heading": "L1 — architecture decisions",
+          "level": 3,
+          "anchor": "l1--architecture-decisions",
+          "path": "GTT Bootstrap — Usage Guide > Context layers > L1 — architecture decisions",
+          "line_start": 226,
+          "line_end": 233
+        },
+        {
+          "heading": "L2 — documentation",
+          "level": 3,
+          "anchor": "l2--documentation",
+          "path": "GTT Bootstrap — Usage Guide > Context layers > L2 — documentation",
+          "line_start": 234,
+          "line_end": 241
+        },
+        {
+          "heading": "L3 — implementation",
+          "level": 3,
+          "anchor": "l3--implementation",
+          "path": "GTT Bootstrap — Usage Guide > Context layers > L3 — implementation",
+          "line_start": 242,
+          "line_end": 254
+        },
+        {
+          "heading": "Freeze and the two-regime model",
+          "level": 2,
+          "anchor": "freeze-and-the-two-regime-model",
+          "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model",
+          "line_start": 255,
+          "line_end": 280
+        },
+        {
+          "heading": "Bootstrap regime",
+          "level": 3,
+          "anchor": "bootstrap-regime",
+          "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model > Bootstrap regime",
+          "line_start": 259,
+          "line_end": 266
+        },
+        {
+          "heading": "Governed regime",
+          "level": 3,
+          "anchor": "governed-regime",
+          "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model > Governed regime",
+          "line_start": 267,
+          "line_end": 280
+        },
+        {
+          "heading": "Keeping context useful",
+          "level": 2,
+          "anchor": "keeping-context-useful",
+          "path": "GTT Bootstrap — Usage Guide > Keeping context useful",
+          "line_start": 281,
+          "line_end": 292
+        },
+        {
+          "heading": "Tool-specific adapters",
+          "level": 2,
+          "anchor": "tool-specific-adapters",
+          "path": "GTT Bootstrap — Usage Guide > Tool-specific adapters",
+          "line_start": 293,
+          "line_end": 307
+        },
+        {
+          "heading": "Operational checklist",
+          "level": 2,
+          "anchor": "operational-checklist",
+          "path": "GTT Bootstrap — Usage Guide > Operational checklist",
+          "line_start": 308,
+          "line_end": 333
+        },
+        {
+          "heading": "Guiding principle",
+          "level": 2,
+          "anchor": "guiding-principle",
+          "path": "GTT Bootstrap — Usage Guide > Guiding principle",
+          "line_start": 334,
+          "line_end": 376
+        },
+        {
+          "heading": "Deployment target: bootstrap repository vs. host project",
+          "level": 3,
+          "anchor": "deployment-target-bootstrap-repository-vs-host-project",
+          "path": "GTT Bootstrap — Usage Guide > Guiding principle > Deployment target: bootstrap repository vs. host project",
+          "line_start": 340,
+          "line_end": 376
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INDEX",
+        "GTT-INSTALLATION",
+        "README-GTT"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-USAGE-ES",
+      "type": "documentation",
+      "path": "gtt/USAGE.es.md",
+      "title": "GTT Bootstrap — Guía de uso",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "915f6ac66157c080aa0b83e58ac7fd8fb32db5cd28d1534b8104f7f185e3012e",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap — Guía de uso",
+          "level": 1,
+          "anchor": "gtt-bootstrap--guía-de-uso",
+          "path": "GTT Bootstrap — Guía de uso",
+          "line_start": 1,
+          "line_end": 381
+        },
+        {
+          "heading": "Flujo normal",
+          "level": 2,
+          "anchor": "flujo-normal",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal",
+          "line_start": 13,
+          "line_end": 106
+        },
+        {
+          "heading": "1. Comenzar desde el contexto gobernado",
+          "level": 3,
+          "anchor": "1-comenzar-desde-el-contexto-gobernado",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 1. Comenzar desde el contexto gobernado",
+          "line_start": 15,
+          "line_end": 20
+        },
+        {
+          "heading": "2. Trabajar en la implementación",
+          "level": 3,
+          "anchor": "2-trabajar-en-la-implementación",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 2. Trabajar en la implementación",
+          "line_start": 21,
+          "line_end": 28
+        },
+        {
+          "heading": "3. Detectar un cambio arquitectónico",
+          "level": 3,
+          "anchor": "3-detectar-un-cambio-arquitectónico",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 3. Detectar un cambio arquitectónico",
+          "line_start": 29,
+          "line_end": 38
+        },
+        {
+          "heading": "4. Proponer el cambio",
+          "level": 3,
+          "anchor": "4-proponer-el-cambio",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 4. Proponer el cambio",
+          "line_start": 39,
+          "line_end": 58
+        },
+        {
+          "heading": "5. Aprobar",
+          "level": 3,
+          "anchor": "5-aprobar",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 5. Aprobar",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "heading": "6. Registrar la decisión",
+          "level": 3,
+          "anchor": "6-registrar-la-decisión",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 6. Registrar la decisión",
+          "line_start": 65,
+          "line_end": 92
+        },
+        {
+          "heading": "7. Verificar",
+          "level": 3,
+          "anchor": "7-verificar",
+          "path": "GTT Bootstrap — Guía de uso > Flujo normal > 7. Verificar",
+          "line_start": 93,
+          "line_end": 106
+        },
+        {
+          "heading": "El mapa arquitectónico",
+          "level": 2,
+          "anchor": "el-mapa-arquitectónico",
+          "path": "GTT Bootstrap — Guía de uso > El mapa arquitectónico",
+          "line_start": 107,
+          "line_end": 124
+        },
+        {
+          "heading": "El backlog",
+          "level": 2,
+          "anchor": "el-backlog",
+          "path": "GTT Bootstrap — Guía de uso > El backlog",
+          "line_start": 125,
+          "line_end": 144
+        },
+        {
+          "heading": "Artefactos protegidos (GTTGuard)",
+          "level": 2,
+          "anchor": "artefactos-protegidos-gttguard",
+          "path": "GTT Bootstrap — Guía de uso > Artefactos protegidos (GTTGuard)",
+          "line_start": 145,
+          "line_end": 188
+        },
+        {
+          "heading": "Ejemplo de solicitud de cambio",
+          "level": 2,
+          "anchor": "ejemplo-de-solicitud-de-cambio",
+          "path": "GTT Bootstrap — Guía de uso > Ejemplo de solicitud de cambio",
+          "line_start": 189,
+          "line_end": 219
+        },
+        {
+          "heading": "Capas de contexto",
+          "level": 2,
+          "anchor": "capas-de-contexto",
+          "path": "GTT Bootstrap — Guía de uso > Capas de contexto",
+          "line_start": 220,
+          "line_end": 258
+        },
+        {
+          "heading": "L0 — contexto gobernado",
+          "level": 3,
+          "anchor": "l0--contexto-gobernado",
+          "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L0 — contexto gobernado",
+          "line_start": 222,
+          "line_end": 229
+        },
+        {
+          "heading": "L1 — decisiones arquitectónicas",
+          "level": 3,
+          "anchor": "l1--decisiones-arquitectónicas",
+          "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L1 — decisiones arquitectónicas",
+          "line_start": 230,
+          "line_end": 237
+        },
+        {
+          "heading": "L2 — documentación",
+          "level": 3,
+          "anchor": "l2--documentación",
+          "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L2 — documentación",
+          "line_start": 238,
+          "line_end": 245
+        },
+        {
+          "heading": "L3 — implementación",
+          "level": 3,
+          "anchor": "l3--implementación",
+          "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L3 — implementación",
+          "line_start": 246,
+          "line_end": 258
+        },
+        {
+          "heading": "Freeze y modelo de dos regímenes",
+          "level": 2,
+          "anchor": "freeze-y-modelo-de-dos-regímenes",
+          "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes",
+          "line_start": 259,
+          "line_end": 284
+        },
+        {
+          "heading": "Régimen de bootstrap",
+          "level": 3,
+          "anchor": "régimen-de-bootstrap",
+          "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes > Régimen de bootstrap",
+          "line_start": 263,
+          "line_end": 270
+        },
+        {
+          "heading": "Régimen gobernado",
+          "level": 3,
+          "anchor": "régimen-gobernado",
+          "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes > Régimen gobernado",
+          "line_start": 271,
+          "line_end": 284
+        },
+        {
+          "heading": "Mantener útil el contexto",
+          "level": 2,
+          "anchor": "mantener-útil-el-contexto",
+          "path": "GTT Bootstrap — Guía de uso > Mantener útil el contexto",
+          "line_start": 285,
+          "line_end": 296
+        },
+        {
+          "heading": "Adaptadores por herramienta",
+          "level": 2,
+          "anchor": "adaptadores-por-herramienta",
+          "path": "GTT Bootstrap — Guía de uso > Adaptadores por herramienta",
+          "line_start": 297,
+          "line_end": 311
+        },
+        {
+          "heading": "Checklist operativo",
+          "level": 2,
+          "anchor": "checklist-operativo",
+          "path": "GTT Bootstrap — Guía de uso > Checklist operativo",
+          "line_start": 312,
+          "line_end": 337
+        },
+        {
+          "heading": "Principio rector",
+          "level": 2,
+          "anchor": "principio-rector",
+          "path": "GTT Bootstrap — Guía de uso > Principio rector",
+          "line_start": 338,
+          "line_end": 381
+        },
+        {
+          "heading": "Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
+          "level": 3,
+          "anchor": "destino-del-despliegue-repositorio-bootstrap-vs-proyecto-anfitrión",
+          "path": "GTT Bootstrap — Guía de uso > Principio rector > Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
+          "line_start": 344,
+          "line_end": 381
+        }
+      ],
+      "references": [],
+      "referenced_by": [
+        "GTT-INSTALLATION-ES",
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "KIRO-GTT-GUARD",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-guard.md",
+      "title": "Protected artifacts (GTTGuard)",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "c982b5e4b85ccc91e45b45d99edc92e4adabe9a5454f7555012450b33a79324c",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Protected artifacts (GTTGuard)",
+          "level": 1,
+          "anchor": "protected-artifacts-gttguard",
+          "path": "Protected artifacts (GTTGuard)",
+          "line_start": 8,
+          "line_end": 30
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "KIRO-GTT-IMPLEMENTATION",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-implementation.md",
+      "title": "Implementation work (L3)",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "3fc3ff72c74a1baa03e948002177fb668056c43eb8182fb5ad34e402eda8ba64",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Implementation work (L3)",
+          "level": 1,
+          "anchor": "implementation-work-l3",
+          "path": "Implementation work (L3)",
+          "line_start": 8,
+          "line_end": 25
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "KIRO-GTT-INFRASTRUCTURE",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-infrastructure.md",
+      "title": "Infrastructure and deployment",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "b1b8db1bdcafcc994dd7beaad910f2e460a95278ad471bca430d0cd47b54f154",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Infrastructure and deployment",
+          "level": 1,
+          "anchor": "infrastructure-and-deployment",
+          "path": "Infrastructure and deployment",
+          "line_start": 8,
+          "line_end": 24
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
+      "type": "proposal",
+      "path": "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
+      "title": "Proposal — artifact identity: items that need the Solution Designer",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "65cf49e565abef98dc4097e41da2984509654017def0099bf66ef14f7d45dd3b",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Proposal — artifact identity: items that need the Solution Designer",
+          "level": 1,
+          "anchor": "proposal--artifact-identity-items-that-need-the-solution-designer",
+          "path": "Proposal — artifact identity: items that need the Solution Designer",
+          "line_start": 1,
+          "line_end": 84
+        },
+        {
+          "heading": "1. Root             — add after *Session continuity*",
+          "level": 2,
+          "anchor": "1-root--------------add-after-session-continuity",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 1. Root             — add after *Session continuity*",
+          "line_start": 12,
+          "line_end": 30
+        },
+        {
+          "heading": "2. SessionStart hook — warm start for Claude Code",
+          "level": 2,
+          "anchor": "2-sessionstart-hook--warm-start-for-claude-code",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 2. SessionStart hook — warm start for Claude Code",
+          "line_start": 31,
+          "line_end": 62
+        },
+        {
+          "heading": "2b. Update — SessionStart adapter (supersedes the hook in §2)",
+          "level": 2,
+          "anchor": "2b-update--sessionstart-adapter-supersedes-the-hook-in-2",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 2b. Update — SessionStart adapter (supersedes the hook in §2)",
+          "line_start": 63,
+          "line_end": 75
+        },
+        {
+          "heading": "3. Decision points",
+          "level": 2,
+          "anchor": "3-decision-points",
+          "path": "Proposal — artifact identity: items that need the Solution Designer > 3. Decision points",
+          "line_start": 76,
+          "line_end": 84
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-README",
+      "type": "proposal",
+      "path": "gtt/proposals/README.md",
+      "title": "Proposals — staging area",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "b6ea2dcf14cf230ae6f4b8bf65456bc7bce9b32795204332df8f92e81421623a",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Proposals — staging area",
+          "level": 1,
+          "anchor": "proposals--staging-area",
+          "path": "Proposals — staging area",
+          "line_start": 1,
+          "line_end": 55
+        },
+        {
+          "heading": "Flow",
+          "level": 2,
+          "anchor": "flow",
+          "path": "Proposals — staging area > Flow",
+          "line_start": 11,
+          "line_end": 33
+        },
+        {
+          "heading": "Lifecycle",
+          "level": 2,
+          "anchor": "lifecycle",
+          "path": "Proposals — staging area > Lifecycle",
+          "line_start": 34,
+          "line_end": 45
+        },
+        {
+          "heading": "Naming",
+          "level": 2,
+          "anchor": "naming",
+          "path": "Proposals — staging area > Naming",
+          "line_start": 46,
+          "line_end": 55
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "README-GTT",
+      "type": "documentation",
+      "path": "README-GTT.md",
+      "title": "GTT Bootstrap",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "84ef91be7e2e19b67d5785436d3b85cd8a810597015812b65b913752600b453b",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap",
+          "level": 1,
+          "anchor": "gtt-bootstrap",
+          "path": "GTT Bootstrap",
+          "line_start": 1,
+          "line_end": 700
+        },
+        {
+          "heading": "Quick navigation",
+          "level": 2,
+          "anchor": "quick-navigation",
+          "path": "GTT Bootstrap > Quick navigation",
+          "line_start": 19,
+          "line_end": 44
+        },
+        {
+          "heading": "Usage flow",
+          "level": 2,
+          "anchor": "usage-flow",
+          "path": "GTT Bootstrap > Usage flow",
+          "line_start": 45,
+          "line_end": 134
+        },
+        {
+          "heading": "1. Bootstrap the governed context",
+          "level": 3,
+          "anchor": "1-bootstrap-the-governed-context",
+          "path": "GTT Bootstrap > Usage flow > 1. Bootstrap the governed context",
+          "line_start": 47,
+          "line_end": 105
+        },
+        {
+          "heading": "2. Manual installation",
+          "level": 3,
+          "anchor": "2-manual-installation",
+          "path": "GTT Bootstrap > Usage flow > 2. Manual installation",
+          "line_start": 106,
+          "line_end": 113
+        },
+        {
+          "heading": "3. Agent-assisted installation",
+          "level": 3,
+          "anchor": "3-agent-assisted-installation",
+          "path": "GTT Bootstrap > Usage flow > 3. Agent-assisted installation",
+          "line_start": 114,
+          "line_end": 134
+        },
+        {
+          "heading": "ADE adapters",
+          "level": 2,
+          "anchor": "ade-adapters",
+          "path": "GTT Bootstrap > ADE adapters",
+          "line_start": 135,
+          "line_end": 193
+        },
+        {
+          "heading": "Mandatory GTT workspace scaffolding",
+          "level": 2,
+          "anchor": "mandatory-gtt-workspace-scaffolding",
+          "path": "GTT Bootstrap > Mandatory GTT workspace scaffolding",
+          "line_start": 194,
+          "line_end": 235
+        },
+        {
+          "heading": "Scaffolding rules",
+          "level": 3,
+          "anchor": "scaffolding-rules",
+          "path": "GTT Bootstrap > Mandatory GTT workspace scaffolding > Scaffolding rules",
+          "line_start": 222,
+          "line_end": 235
+        },
+        {
+          "heading": "Workspace hygiene",
+          "level": 2,
+          "anchor": "workspace-hygiene",
+          "path": "GTT Bootstrap > Workspace hygiene",
+          "line_start": 236,
+          "line_end": 264
+        },
+        {
+          "heading": "The problem",
+          "level": 2,
+          "anchor": "the-problem",
+          "path": "GTT Bootstrap > The problem",
+          "line_start": 265,
+          "line_end": 276
+        },
+        {
+          "heading": "The two files you will always touch",
+          "level": 2,
+          "anchor": "the-two-files-you-will-always-touch",
+          "path": "GTT Bootstrap > The two files you will always touch",
+          "line_start": 277,
+          "line_end": 293
+        },
+        {
+          "heading": "The map",
+          "level": 2,
+          "anchor": "the-map",
+          "path": "GTT Bootstrap > The map",
+          "line_start": 294,
+          "line_end": 315
+        },
+        {
+          "heading": "Changing something",
+          "level": 2,
+          "anchor": "changing-something",
+          "path": "GTT Bootstrap > Changing something",
+          "line_start": 316,
+          "line_end": 352
+        },
+        {
+          "heading": "Human Promotion Boundary",
+          "level": 2,
+          "anchor": "human-promotion-boundary",
+          "path": "GTT Bootstrap > Human Promotion Boundary",
+          "line_start": 353,
+          "line_end": 379
+        },
+        {
+          "heading": "Backlog",
+          "level": 2,
+          "anchor": "backlog",
+          "path": "GTT Bootstrap > Backlog",
+          "line_start": 380,
+          "line_end": 415
+        },
+        {
+          "heading": "Protected artifacts (GTTGuard)",
+          "level": 2,
+          "anchor": "protected-artifacts-gttguard",
+          "path": "GTT Bootstrap > Protected artifacts (GTTGuard)",
+          "line_start": 416,
+          "line_end": 460
+        },
+        {
+          "heading": "Keeping the map honest",
+          "level": 2,
+          "anchor": "keeping-the-map-honest",
+          "path": "GTT Bootstrap > Keeping the map honest",
+          "line_start": 461,
+          "line_end": 475
+        },
+        {
+          "heading": "Design principle",
+          "level": 2,
+          "anchor": "design-principle",
+          "path": "GTT Bootstrap > Design principle",
+          "line_start": 476,
+          "line_end": 496
+        },
+        {
+          "heading": "Structure",
+          "level": 2,
+          "anchor": "structure",
+          "path": "GTT Bootstrap > Structure",
+          "line_start": 497,
+          "line_end": 568
+        },
+        {
+          "heading": "Why some files stay at the root",
+          "level": 3,
+          "anchor": "why-some-files-stay-at-the-root",
+          "path": "GTT Bootstrap > Structure > Why some files stay at the root",
+          "line_start": 557,
+          "line_end": 568
+        },
+        {
+          "heading": "Context layers",
+          "level": 2,
+          "anchor": "context-layers",
+          "path": "GTT Bootstrap > Context layers",
+          "line_start": 569,
+          "line_end": 579
+        },
+        {
+          "heading": "Getting started",
+          "level": 2,
+          "anchor": "getting-started",
+          "path": "GTT Bootstrap > Getting started",
+          "line_start": 580,
+          "line_end": 606
+        },
+        {
+          "heading": "Upgrading to the two-regime model",
+          "level": 3,
+          "anchor": "upgrading-to-the-two-regime-model",
+          "path": "GTT Bootstrap > Getting started > Upgrading to the two-regime model",
+          "line_start": 593,
+          "line_end": 606
+        },
+        {
+          "heading": "Tool support",
+          "level": 2,
+          "anchor": "tool-support",
+          "path": "GTT Bootstrap > Tool support",
+          "line_start": 607,
+          "line_end": 655
+        },
+        {
+          "heading": "Switching ADE later",
+          "level": 3,
+          "anchor": "switching-ade-later",
+          "path": "GTT Bootstrap > Tool support > Switching ADE later",
+          "line_start": 622,
+          "line_end": 655
+        },
+        {
+          "heading": "What you maintain",
+          "level": 2,
+          "anchor": "what-you-maintain",
+          "path": "GTT Bootstrap > What you maintain",
+          "line_start": 656,
+          "line_end": 666
+        },
+        {
+          "heading": "Requirements",
+          "level": 2,
+          "anchor": "requirements",
+          "path": "GTT Bootstrap > Requirements",
+          "line_start": 667,
+          "line_end": 674
+        },
+        {
+          "heading": "Evolution",
+          "level": 2,
+          "anchor": "evolution",
+          "path": "GTT Bootstrap > Evolution",
+          "line_start": 675,
+          "line_end": 686
+        },
+        {
+          "heading": "License",
+          "level": 2,
+          "anchor": "license",
+          "path": "GTT Bootstrap > License",
+          "line_start": 687,
+          "line_end": 700
+        }
+      ],
+      "references": [
+        "AGENTS",
+        "DOC-DOCS",
+        "GTT-INDEX",
+        "GTT-INSTALLATION",
+        "GTT-USAGE",
+        "README-GTT-ES"
+      ],
+      "referenced_by": [
+        "GTT-INDEX",
+        "README-GTT-ES"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "README-GTT-ES",
+      "type": "documentation",
+      "path": "README-GTT.es.md",
+      "title": "GTT Bootstrap",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "4b8247fe50a880831323afc500b213d321f8fb516457f652cb8cb561b505138c",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap",
+          "level": 1,
+          "anchor": "gtt-bootstrap",
+          "path": "GTT Bootstrap",
+          "line_start": 1,
+          "line_end": 708
+        },
+        {
+          "heading": "Navegación rápida",
+          "level": 2,
+          "anchor": "navegación-rápida",
+          "path": "GTT Bootstrap > Navegación rápida",
+          "line_start": 19,
+          "line_end": 46
+        },
+        {
+          "heading": "Flujo de uso",
+          "level": 2,
+          "anchor": "flujo-de-uso",
+          "path": "GTT Bootstrap > Flujo de uso",
+          "line_start": 47,
+          "line_end": 136
+        },
+        {
+          "heading": "1. Inicializar el contexto gobernado",
+          "level": 3,
+          "anchor": "1-inicializar-el-contexto-gobernado",
+          "path": "GTT Bootstrap > Flujo de uso > 1. Inicializar el contexto gobernado",
+          "line_start": 49,
+          "line_end": 107
+        },
+        {
+          "heading": "2. Instalación manual",
+          "level": 3,
+          "anchor": "2-instalación-manual",
+          "path": "GTT Bootstrap > Flujo de uso > 2. Instalación manual",
+          "line_start": 108,
+          "line_end": 115
+        },
+        {
+          "heading": "3. Instalación asistida por agente",
+          "level": 3,
+          "anchor": "3-instalación-asistida-por-agente",
+          "path": "GTT Bootstrap > Flujo de uso > 3. Instalación asistida por agente",
+          "line_start": 116,
+          "line_end": 136
+        },
+        {
+          "heading": "Adaptadores de ADE",
+          "level": 2,
+          "anchor": "adaptadores-de-ade",
+          "path": "GTT Bootstrap > Adaptadores de ADE",
+          "line_start": 137,
+          "line_end": 198
+        },
+        {
+          "heading": "Scaffolding obligatorio del workspace GTT",
+          "level": 2,
+          "anchor": "scaffolding-obligatorio-del-workspace-gtt",
+          "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT",
+          "line_start": 199,
+          "line_end": 240
+        },
+        {
+          "heading": "Reglas del scaffolding",
+          "level": 3,
+          "anchor": "reglas-del-scaffolding",
+          "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT > Reglas del scaffolding",
+          "line_start": 227,
+          "line_end": 240
+        },
+        {
+          "heading": "Higiene del workspace",
+          "level": 2,
+          "anchor": "higiene-del-workspace",
+          "path": "GTT Bootstrap > Higiene del workspace",
+          "line_start": 241,
+          "line_end": 272
+        },
+        {
+          "heading": "El problema",
+          "level": 2,
+          "anchor": "el-problema",
+          "path": "GTT Bootstrap > El problema",
+          "line_start": 273,
+          "line_end": 284
+        },
+        {
+          "heading": "Los dos archivos que siempre tocarás",
+          "level": 2,
+          "anchor": "los-dos-archivos-que-siempre-tocarás",
+          "path": "GTT Bootstrap > Los dos archivos que siempre tocarás",
+          "line_start": 285,
+          "line_end": 297
+        },
+        {
+          "heading": "El mapa",
+          "level": 2,
+          "anchor": "el-mapa",
+          "path": "GTT Bootstrap > El mapa",
+          "line_start": 298,
+          "line_end": 319
+        },
+        {
+          "heading": "Cambiar algo",
+          "level": 2,
+          "anchor": "cambiar-algo",
+          "path": "GTT Bootstrap > Cambiar algo",
+          "line_start": 320,
+          "line_end": 356
+        },
+        {
+          "heading": "Límite Humano de Promoción",
+          "level": 2,
+          "anchor": "límite-humano-de-promoción",
+          "path": "GTT Bootstrap > Límite Humano de Promoción",
+          "line_start": 357,
+          "line_end": 383
+        },
+        {
+          "heading": "Backlog",
+          "level": 2,
+          "anchor": "backlog",
+          "path": "GTT Bootstrap > Backlog",
+          "line_start": 384,
+          "line_end": 420
+        },
+        {
+          "heading": "Artefactos protegidos (GTTGuard)",
+          "level": 2,
+          "anchor": "artefactos-protegidos-gttguard",
+          "path": "GTT Bootstrap > Artefactos protegidos (GTTGuard)",
+          "line_start": 421,
+          "line_end": 467
+        },
+        {
+          "heading": "Mantener el mapa honesto",
+          "level": 2,
+          "anchor": "mantener-el-mapa-honesto",
+          "path": "GTT Bootstrap > Mantener el mapa honesto",
+          "line_start": 468,
+          "line_end": 482
+        },
+        {
+          "heading": "Principio de diseño",
+          "level": 2,
+          "anchor": "principio-de-diseño",
+          "path": "GTT Bootstrap > Principio de diseño",
+          "line_start": 483,
+          "line_end": 503
+        },
+        {
+          "heading": "Estructura",
+          "level": 2,
+          "anchor": "estructura",
+          "path": "GTT Bootstrap > Estructura",
+          "line_start": 504,
+          "line_end": 575
+        },
+        {
+          "heading": "Por qué algunos archivos permanecen en la raíz",
+          "level": 3,
+          "anchor": "por-qué-algunos-archivos-permanecen-en-la-raíz",
+          "path": "GTT Bootstrap > Estructura > Por qué algunos archivos permanecen en la raíz",
+          "line_start": 564,
+          "line_end": 575
+        },
+        {
+          "heading": "Capas de contexto",
+          "level": 2,
+          "anchor": "capas-de-contexto",
+          "path": "GTT Bootstrap > Capas de contexto",
+          "line_start": 576,
+          "line_end": 586
+        },
+        {
+          "heading": "Primeros pasos",
+          "level": 2,
+          "anchor": "primeros-pasos",
+          "path": "GTT Bootstrap > Primeros pasos",
+          "line_start": 587,
+          "line_end": 613
+        },
+        {
+          "heading": "Actualización al modelo de dos regímenes",
+          "level": 3,
+          "anchor": "actualización-al-modelo-de-dos-regímenes",
+          "path": "GTT Bootstrap > Primeros pasos > Actualización al modelo de dos regímenes",
+          "line_start": 600,
+          "line_end": 613
+        },
+        {
+          "heading": "Compatibilidad con herramientas",
+          "level": 2,
+          "anchor": "compatibilidad-con-herramientas",
+          "path": "GTT Bootstrap > Compatibilidad con herramientas",
+          "line_start": 614,
+          "line_end": 663
+        },
+        {
+          "heading": "Cambiar de ADE más adelante",
+          "level": 3,
+          "anchor": "cambiar-de-ade-más-adelante",
+          "path": "GTT Bootstrap > Compatibilidad con herramientas > Cambiar de ADE más adelante",
+          "line_start": 629,
+          "line_end": 663
+        },
+        {
+          "heading": "Lo que mantienes",
+          "level": 2,
+          "anchor": "lo-que-mantienes",
+          "path": "GTT Bootstrap > Lo que mantienes",
+          "line_start": 664,
+          "line_end": 674
+        },
+        {
+          "heading": "Requisitos",
+          "level": 2,
+          "anchor": "requisitos",
+          "path": "GTT Bootstrap > Requisitos",
+          "line_start": 675,
+          "line_end": 682
+        },
+        {
+          "heading": "Evolución",
+          "level": 2,
+          "anchor": "evolución",
+          "path": "GTT Bootstrap > Evolución",
+          "line_start": 683,
+          "line_end": 694
+        },
+        {
+          "heading": "Licencia",
+          "level": 2,
+          "anchor": "licencia",
+          "path": "GTT Bootstrap > Licencia",
+          "line_start": 695,
+          "line_end": 708
+        }
+      ],
+      "references": [
+        "AGENTS",
+        "DOC-DOCS",
+        "GTT-INDEX",
+        "GTT-INSTALLATION-ES",
+        "GTT-USAGE-ES",
+        "README-GTT"
+      ],
+      "referenced_by": [
+        "README-GTT"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "RULE-IMPLEMENTATION",
+      "type": "instruction",
+      "path": ".claude/rules/implementation.md",
+      "title": "Implementation work (L3)",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "402832a2c767d03198a479236c5d376b32aba25ab70b86d4149b941f36a54712",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Implementation work (L3)",
+          "level": 1,
+          "anchor": "implementation-work-l3",
+          "path": "Implementation work (L3)",
+          "line_start": 10,
+          "line_end": 27
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "RULE-INFRASTRUCTURE",
+      "type": "instruction",
+      "path": ".claude/rules/infrastructure.md",
+      "title": "Infrastructure and deployment",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "2042db215ff6ed4a77303cecc5cef379f5de40f2a7a84474070d94ef1d06b44d",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Infrastructure and deployment",
+          "level": 1,
+          "anchor": "infrastructure-and-deployment",
+          "path": "Infrastructure and deployment",
+          "line_start": 14,
+          "line_end": 35
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-ADR",
+      "type": "skill",
+      "path": ".claude/skills/gtt-adr/SKILL.md",
+      "title": "Draft an ADR and its promotion package",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "7b83b99bdde8d8b55890befb79376cfee9e70d34779a7261d1b718c20cdbfcb7",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Draft an ADR and its promotion package",
+          "level": 1,
+          "anchor": "draft-an-adr-and-its-promotion-package",
+          "path": "Draft an ADR and its promotion package",
+          "line_start": 8,
+          "line_end": 219
+        },
+        {
+          "heading": "Numbering",
+          "level": 2,
+          "anchor": "numbering",
+          "path": "Draft an ADR and its promotion package > Numbering",
+          "line_start": 25,
+          "line_end": 30
+        },
+        {
+          "heading": "Template",
+          "level": 2,
+          "anchor": "template",
+          "path": "Draft an ADR and its promotion package > Template",
+          "line_start": 31,
+          "line_end": 82
+        },
+        {
+          "heading": "After drafting",
+          "level": 2,
+          "anchor": "after-drafting",
+          "path": "Draft an ADR and its promotion package > After drafting",
+          "line_start": 83,
+          "line_end": 88
+        },
+        {
+          "heading": "Stage the affected context files",
+          "level": 2,
+          "anchor": "stage-the-affected-context-files",
+          "path": "Draft an ADR and its promotion package > Stage the affected context files",
+          "line_start": 89,
+          "line_end": 97
+        },
+        {
+          "heading": "Generate the promotion script",
+          "level": 2,
+          "anchor": "generate-the-promotion-script",
+          "path": "Draft an ADR and its promotion package > Generate the promotion script",
+          "line_start": 98,
+          "line_end": 181
+        },
+        {
+          "heading": "Tell the user",
+          "level": 2,
+          "anchor": "tell-the-user",
+          "path": "Draft an ADR and its promotion package > Tell the user",
+          "line_start": 182,
+          "line_end": 219
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-AUDIT",
+      "type": "skill",
+      "path": ".claude/skills/gtt-audit/SKILL.md",
+      "title": "Audit context freshness",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "ce9988e61a260667b202e5ee760855ec611361671ec4eefb8c2cad06e8dec2e2",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Audit context freshness",
+          "level": 1,
+          "anchor": "audit-context-freshness",
+          "path": "Audit context freshness",
+          "line_start": 8,
+          "line_end": 135
+        },
+        {
+          "heading": "Procedure",
+          "level": 2,
+          "anchor": "procedure",
+          "path": "Audit context freshness > Procedure",
+          "line_start": 14,
+          "line_end": 24
+        },
+        {
+          "heading": "Checking the stack map specifically",
+          "level": 2,
+          "anchor": "checking-the-stack-map-specifically",
+          "path": "Audit context freshness > Checking the stack map specifically",
+          "line_start": 25,
+          "line_end": 38
+        },
+        {
+          "heading": "The drift-signals sweep",
+          "level": 2,
+          "anchor": "the-drift-signals-sweep",
+          "path": "Audit context freshness > The drift-signals sweep",
+          "line_start": 39,
+          "line_end": 60
+        },
+        {
+          "heading": "Backlog reconciliation",
+          "level": 2,
+          "anchor": "backlog-reconciliation",
+          "path": "Audit context freshness > Backlog reconciliation",
+          "line_start": 61,
+          "line_end": 83
+        },
+        {
+          "heading": "Classification",
+          "level": 2,
+          "anchor": "classification",
+          "path": "Audit context freshness > Classification",
+          "line_start": 84,
+          "line_end": 96
+        },
+        {
+          "heading": "Output",
+          "level": 2,
+          "anchor": "output",
+          "path": "Audit context freshness > Output",
+          "line_start": 97,
+          "line_end": 135
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-BOOTSTRAP",
+      "type": "skill",
+      "path": ".claude/skills/gtt-bootstrap/SKILL.md",
+      "title": "Bootstrap the governed context",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "320321eef24cb314baaf595ea20ea24e2422e95a56f56d49efd5bb77a35fc3b0",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Bootstrap the governed context",
+          "level": 1,
+          "anchor": "bootstrap-the-governed-context",
+          "path": "Bootstrap the governed context",
+          "line_start": 8,
+          "line_end": 250
+        },
+        {
+          "heading": "0. Detect the host ADE and resolve the adapter",
+          "level": 2,
+          "anchor": "0-detect-the-host-ade-and-resolve-the-adapter",
+          "path": "Bootstrap the governed context > 0. Detect the host ADE and resolve the adapter",
+          "line_start": 15,
+          "line_end": 81
+        },
+        {
+          "heading": "1. Establish the regime",
+          "level": 2,
+          "anchor": "1-establish-the-regime",
+          "path": "Bootstrap the governed context > 1. Establish the regime",
+          "line_start": 82,
+          "line_end": 112
+        },
+        {
+          "heading": "2. Look for an existing solution document",
+          "level": 2,
+          "anchor": "2-look-for-an-existing-solution-document",
+          "path": "Bootstrap the governed context > 2. Look for an existing solution document",
+          "line_start": 113,
+          "line_end": 142
+        },
+        {
+          "heading": "3. Confirm the document is finished — or stop",
+          "level": 2,
+          "anchor": "3-confirm-the-document-is-finished--or-stop",
+          "path": "Bootstrap the governed context > 3. Confirm the document is finished — or stop",
+          "line_start": 143,
+          "line_end": 163
+        },
+        {
+          "heading": "4. Ask what is still missing",
+          "level": 2,
+          "anchor": "4-ask-what-is-still-missing",
+          "path": "Bootstrap the governed context > 4. Ask what is still missing",
+          "line_start": 164,
+          "line_end": 190
+        },
+        {
+          "heading": "5. Confirm before drafting",
+          "level": 2,
+          "anchor": "5-confirm-before-drafting",
+          "path": "Bootstrap the governed context > 5. Confirm before drafting",
+          "line_start": 191,
+          "line_end": 196
+        },
+        {
+          "heading": "6. Write the context, then stop",
+          "level": 2,
+          "anchor": "6-write-the-context-then-stop",
+          "path": "Bootstrap the governed context > 6. Write the context, then stop",
+          "line_start": 197,
+          "line_end": 213
+        },
+        {
+          "heading": "After bootstrap",
+          "level": 2,
+          "anchor": "after-bootstrap",
+          "path": "Bootstrap the governed context > After bootstrap",
+          "line_start": 214,
+          "line_end": 250
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-DRIFT-RESPONSE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-drift-response/SKILL.md",
+      "title": "GTT drift response",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "f2d774dac86dc7c285182ce8c865c807c0c5d793d957ec66a4afb3e5b95418c1",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT drift response",
+          "level": 1,
+          "anchor": "gtt-drift-response",
+          "path": "GTT drift response",
+          "line_start": 8,
+          "line_end": 78
+        },
+        {
+          "heading": "Step 1 — Assess",
+          "level": 2,
+          "anchor": "step-1--assess",
+          "path": "GTT drift response > Step 1 — Assess",
+          "line_start": 16,
+          "line_end": 31
+        },
+        {
+          "heading": "Step 2 — Draft",
+          "level": 2,
+          "anchor": "step-2--draft",
+          "path": "GTT drift response > Step 2 — Draft",
+          "line_start": 32,
+          "line_end": 51
+        },
+        {
+          "heading": "Step 3 — Stage the promotion package, never execute it",
+          "level": 2,
+          "anchor": "step-3--stage-the-promotion-package-never-execute-it",
+          "path": "GTT drift response > Step 3 — Stage the promotion package, never execute it",
+          "line_start": 52,
+          "line_end": 71
+        },
+        {
+          "heading": "Hard rule",
+          "level": 2,
+          "anchor": "hard-rule",
+          "path": "GTT drift response > Hard rule",
+          "line_start": 72,
+          "line_end": 78
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-GUARD",
+      "type": "skill",
+      "path": ".claude/skills/gtt-guard/SKILL.md",
+      "title": "Mark or unmark a GTTGuard-protected artifact",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "e0b2eebc4c6e11ca7dbf56a64b6a9379806ae9af9cda0c09056d610e63de6e8d",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Mark or unmark a GTTGuard-protected artifact",
+          "level": 1,
+          "anchor": "mark-or-unmark-a-gttguard-protected-artifact",
+          "path": "Mark or unmark a GTTGuard-protected artifact",
+          "line_start": 8,
+          "line_end": 87
+        },
+        {
+          "heading": "Adding a marker",
+          "level": 2,
+          "anchor": "adding-a-marker",
+          "path": "Mark or unmark a GTTGuard-protected artifact > Adding a marker",
+          "line_start": 17,
+          "line_end": 48
+        },
+        {
+          "heading": "Removing a marker",
+          "level": 2,
+          "anchor": "removing-a-marker",
+          "path": "Mark or unmark a GTTGuard-protected artifact > Removing a marker",
+          "line_start": 49,
+          "line_end": 55
+        },
+        {
+          "heading": "After adding or removing a marker",
+          "level": 2,
+          "anchor": "after-adding-or-removing-a-marker",
+          "path": "Mark or unmark a GTTGuard-protected artifact > After adding or removing a marker",
+          "line_start": 56,
+          "line_end": 75
+        },
+        {
+          "heading": "Changing something that is already protected",
+          "level": 2,
+          "anchor": "changing-something-that-is-already-protected",
+          "path": "Mark or unmark a GTTGuard-protected artifact > Changing something that is already protected",
+          "line_start": 76,
+          "line_end": 87
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-PROPOSE-CHANGE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-propose-change/SKILL.md",
+      "title": "GTT change proposal",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "946034525763dc4b6509ac4c35750f02a7d44ecb837dfa42c162a59936d63386",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT change proposal",
+          "level": 1,
+          "anchor": "gtt-change-proposal",
+          "path": "GTT change proposal",
+          "line_start": 8,
+          "line_end": 201
+        },
+        {
+          "heading": "Where the request comes from",
+          "level": 2,
+          "anchor": "where-the-request-comes-from",
+          "path": "GTT change proposal > Where the request comes from",
+          "line_start": 14,
+          "line_end": 27
+        },
+        {
+          "heading": "Where the output goes",
+          "level": 2,
+          "anchor": "where-the-output-goes",
+          "path": "GTT change proposal > Where the output goes",
+          "line_start": 28,
+          "line_end": 35
+        },
+        {
+          "heading": "Before writing",
+          "level": 2,
+          "anchor": "before-writing",
+          "path": "GTT change proposal > Before writing",
+          "line_start": 36,
+          "line_end": 53
+        },
+        {
+          "heading": "Forms",
+          "level": 2,
+          "anchor": "forms",
+          "path": "GTT change proposal > Forms",
+          "line_start": 54,
+          "line_end": 57
+        },
+        {
+          "heading": "1. Architecture change",
+          "level": 2,
+          "anchor": "1-architecture-change",
+          "path": "GTT change proposal > 1. Architecture change",
+          "line_start": 58,
+          "line_end": 77
+        },
+        {
+          "heading": "2. Context change",
+          "level": 2,
+          "anchor": "2-context-change",
+          "path": "GTT change proposal > 2. Context change",
+          "line_start": 78,
+          "line_end": 95
+        },
+        {
+          "heading": "3. Context conflict",
+          "level": 2,
+          "anchor": "3-context-conflict",
+          "path": "GTT change proposal > 3. Context conflict",
+          "line_start": 96,
+          "line_end": 112
+        },
+        {
+          "heading": "4. Development-line change",
+          "level": 2,
+          "anchor": "4-development-line-change",
+          "path": "GTT change proposal > 4. Development-line change",
+          "line_start": 113,
+          "line_end": 137
+        },
+        {
+          "heading": "5. Protected artifact change (GTTGuard)",
+          "level": 2,
+          "anchor": "5-protected-artifact-change-gttguard",
+          "path": "GTT change proposal > 5. Protected artifact change (GTTGuard)",
+          "line_start": 138,
+          "line_end": 173
+        },
+        {
+          "heading": "Quality bar",
+          "level": 2,
+          "anchor": "quality-bar",
+          "path": "GTT change proposal > Quality bar",
+          "line_start": 174,
+          "line_end": 183
+        },
+        {
+          "heading": "After writing",
+          "level": 2,
+          "anchor": "after-writing",
+          "path": "GTT change proposal > After writing",
+          "line_start": 184,
+          "line_end": 201
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "SKILL-GTT-RETRIEVE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-retrieve/SKILL.md",
+      "title": "Retrieve by identity, reconcile moves",
+      "authority": "instruction",
+      "version": "v2.1",
+      "sha256": "e8f366a4d7bbdb39e0dcc56e4dffe61246b3659d320d0e5634895754e59a7433",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Retrieve by identity, reconcile moves",
+          "level": 1,
+          "anchor": "retrieve-by-identity-reconcile-moves",
+          "path": "Retrieve by identity, reconcile moves",
+          "line_start": 8,
+          "line_end": 60
+        },
+        {
+          "heading": "Retrieval",
+          "level": 2,
+          "anchor": "retrieval",
+          "path": "Retrieve by identity, reconcile moves > Retrieval",
+          "line_start": 14,
+          "line_end": 28
+        },
+        {
+          "heading": "References you write",
+          "level": 2,
+          "anchor": "references-you-write",
+          "path": "Retrieve by identity, reconcile moves > References you write",
+          "line_start": 29,
+          "line_end": 34
+        },
+        {
+          "heading": "Moves and renames",
+          "level": 2,
+          "anchor": "moves-and-renames",
+          "path": "Retrieve by identity, reconcile moves > Moves and renames",
+          "line_start": 35,
+          "line_end": 53
+        },
+        {
+          "heading": "Duplicate identity",
+          "level": 2,
+          "anchor": "duplicate-identity",
+          "path": "Retrieve by identity, reconcile moves > Duplicate identity",
+          "line_start": 54,
+          "line_end": 60
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    }
+  ],
+  "concepts": {
+    "0. detect the host ade and resolve the adapter": [
+      "SKILL-GTT-BOOTSTRAP#0-detect-the-host-ade-and-resolve-the-adapter"
+    ],
+    "1. architecture change": [
+      "SKILL-GTT-PROPOSE-CHANGE#1-architecture-change"
+    ],
+    "1. bootstrap the governed context": [
+      "README-GTT#1-bootstrap-the-governed-context"
+    ],
+    "1. comenzar desde el contexto gobernado": [
+      "GTT-USAGE-ES#1-comenzar-desde-el-contexto-gobernado"
+    ],
+    "1. establish the regime": [
+      "SKILL-GTT-BOOTSTRAP#1-establish-the-regime"
+    ],
+    "1. inicializar el contexto gobernado": [
+      "README-GTT-ES#1-inicializar-el-contexto-gobernado"
+    ],
+    "1. inspeccionar el proyecto anfitrión": [
+      "GTT-INSTALLATION-ES#1-inspeccionar-el-proyecto-anfitrión"
+    ],
+    "1. inspect the host project": [
+      "GTT-INSTALLATION#1-inspect-the-host-project"
+    ],
+    "1. root             — add after *session continuity*": [
+      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#1-root--------------add-after-session-continuity"
+    ],
+    "1. stack at a glance": [
+      "CTX-STACK#1-stack-at-a-glance"
+    ],
+    "1. start from governed context": [
+      "GTT-USAGE#1-start-from-governed-context"
+    ],
+    "2. component map": [
+      "CTX-STACK#2-component-map"
+    ],
+    "2. context change": [
+      "SKILL-GTT-PROPOSE-CHANGE#2-context-change"
+    ],
+    "2. instalación manual": [
+      "README-GTT-ES#2-instalación-manual"
+    ],
+    "2. instalar el scaffolding de gtt": [
+      "GTT-INSTALLATION-ES#2-instalar-el-scaffolding-de-gtt"
+    ],
+    "2. install the gtt scaffolding": [
+      "GTT-INSTALLATION#2-install-the-gtt-scaffolding"
+    ],
+    "2. look for an existing solution document": [
+      "SKILL-GTT-BOOTSTRAP#2-look-for-an-existing-solution-document"
+    ],
+    "2. manual installation": [
+      "README-GTT#2-manual-installation"
+    ],
+    "2. sessionstart hook — warm start for claude code": [
+      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2-sessionstart-hook--warm-start-for-claude-code"
+    ],
+    "2. trabajar en la implementación": [
+      "GTT-USAGE-ES#2-trabajar-en-la-implementación"
+    ],
+    "2. work on implementation": [
+      "GTT-USAGE#2-work-on-implementation"
+    ],
+    "3. agent-assisted installation": [
+      "README-GTT#3-agent-assisted-installation"
+    ],
+    "3. confirm the document is finished — or stop": [
+      "SKILL-GTT-BOOTSTRAP#3-confirm-the-document-is-finished--or-stop"
+    ],
+    "3. context conflict": [
+      "SKILL-GTT-PROPOSE-CHANGE#3-context-conflict"
+    ],
+    "3. decision points": [
+      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#3-decision-points"
+    ],
+    "3. deployment topology": [
+      "CTX-STACK#3-deployment-topology"
+    ],
+    "3. detect an architectural change": [
+      "GTT-USAGE#3-detect-an-architectural-change"
+    ],
+    "3. detectar un cambio arquitectónico": [
+      "GTT-USAGE-ES#3-detectar-un-cambio-arquitectónico"
+    ],
+    "3. instalación asistida por agente": [
+      "README-GTT-ES#3-instalación-asistida-por-agente"
+    ],
+    "3. preservar el diseño original": [
+      "GTT-INSTALLATION-ES#3-preservar-el-diseño-original"
+    ],
+    "3. preserve the source design": [
+      "GTT-INSTALLATION#3-preserve-the-source-design"
+    ],
+    "4. ask what is still missing": [
+      "SKILL-GTT-BOOTSTRAP#4-ask-what-is-still-missing"
+    ],
+    "4. combinar": [
+      "GTT-INSTALLATION-ES#4-combinar"
+    ],
+    "4. development-line change": [
+      "SKILL-GTT-PROPOSE-CHANGE#4-development-line-change"
+    ],
+    "4. merge": [
+      "GTT-INSTALLATION#4-merge"
+    ],
+    "4. observability": [
+      "CTX-STACK#4-observability"
+    ],
+    "4. proponer el cambio": [
+      "GTT-USAGE-ES#4-proponer-el-cambio"
+    ],
+    "4. propose the change": [
+      "GTT-USAGE#4-propose-the-change"
+    ],
+    "5. approve": [
+      "GTT-USAGE#5-approve"
+    ],
+    "5. aprobar": [
+      "GTT-USAGE-ES#5-aprobar"
+    ],
+    "5. confirm before drafting": [
+      "SKILL-GTT-BOOTSTRAP#5-confirm-before-drafting"
+    ],
+    "5. dependency rules": [
+      "CTX-STACK#5-dependency-rules"
+    ],
+    "5. poblar el contexto": [
+      "GTT-INSTALLATION-ES#5-poblar-el-contexto"
+    ],
+    "5. populate the context": [
+      "GTT-INSTALLATION#5-populate-the-context"
+    ],
+    "5. protected artifact change (gttguard)": [
+      "SKILL-GTT-PROPOSE-CHANGE#5-protected-artifact-change-gttguard"
+    ],
+    "6. map change log": [
+      "CTX-STACK#6-map-change-log"
+    ],
+    "6. record the decision": [
+      "GTT-USAGE#6-record-the-decision"
+    ],
+    "6. registrar la decisión": [
+      "GTT-USAGE-ES#6-registrar-la-decisión"
+    ],
+    "6. review": [
+      "GTT-INSTALLATION#6-review"
+    ],
+    "6. revisar": [
+      "GTT-INSTALLATION-ES#6-revisar"
+    ],
+    "6. write the context, then stop": [
+      "SKILL-GTT-BOOTSTRAP#6-write-the-context-then-stop"
+    ],
+    "7. drift signals": [
+      "CTX-STACK#7-drift-signals"
+    ],
+    "7. freeze": [
+      "GTT-INSTALLATION#7-freeze",
+      "GTT-INSTALLATION-ES#7-freeze"
+    ],
+    "7. verificar": [
+      "GTT-USAGE-ES#7-verificar"
+    ],
+    "7. verify": [
+      "GTT-USAGE#7-verify"
+    ],
+    "8. verificar el guardrail": [
+      "GTT-INSTALLATION-ES#8-verificar-el-guardrail"
+    ],
+    "8. verify the guardrail": [
+      "GTT-INSTALLATION#8-verify-the-guardrail"
+    ],
+    "9. instalar el ci gate": [
+      "GTT-INSTALLATION-ES#9-instalar-el-ci-gate"
+    ],
+    "9. install the ci gate": [
+      "GTT-INSTALLATION#9-install-the-ci-gate"
+    ],
+    "actualización al modelo de dos regímenes": [
+      "README-GTT-ES#actualización-al-modelo-de-dos-regímenes"
+    ],
+    "adaptadores de ade": [
+      "README-GTT-ES#adaptadores-de-ade"
+    ],
+    "adaptadores por herramienta": [
+      "GTT-USAGE-ES#adaptadores-por-herramienta"
+    ],
+    "adapters vs. portable core": [
+      "AGENTS#adapters-vs-portable-core"
+    ],
+    "adding a marker": [
+      "SKILL-GTT-GUARD#adding-a-marker"
+    ],
+    "ade adapters": [
+      "README-GTT#ade-adapters"
+    ],
+    "adr-001 — context is the source of truth": [
+      "ADR-001#adr-001--context-is-the-source-of-truth"
+    ],
+    "adr-nnn — <title>": [
+      "ADR-TEMPLATE#adr-nnn--title"
+    ],
+    "affected context": [
+      "ADR-001#affected-context",
+      "ADR-TEMPLATE#affected-context"
+    ],
+    "after adding or removing a marker": [
+      "SKILL-GTT-GUARD#after-adding-or-removing-a-marker"
+    ],
+    "after bootstrap": [
+      "SKILL-GTT-BOOTSTRAP#after-bootstrap"
+    ],
+    "after drafting": [
+      "SKILL-GTT-ADR#after-drafting"
+    ],
+    "after writing": [
+      "SKILL-GTT-PROPOSE-CHANGE#after-writing"
+    ],
+    "agent procedure": [
+      "GTT-INSTALLATION#agent-procedure"
+    ],
+    "agent roles and the evidence boundary": [
+      "AGENTS#agent-roles-and-the-evidence-boundary"
+    ],
+    "agent-assisted installation": [
+      "GTT-INSTALLATION#agent-assisted-installation"
+    ],
+    "agents.md — gtt bootstrap agent contract": [
+      "AGENTS#agentsmd--gtt-bootstrap-agent-contract"
+    ],
+    "alternatives considered": [
+      "ADR-001#alternatives-considered",
+      "ADR-TEMPLATE#alternatives-considered"
+    ],
+    "anti-examples": [
+      "CTX-PRINCIPLES#anti-examples"
+    ],
+    "architectural style": [
+      "CTX-ARCHITECTURE#architectural-style"
+    ],
+    "architecture": [
+      "CTX-ARCHITECTURE#architecture"
+    ],
+    "artefactos protegidos (gttguard)": [
+      "GTT-USAGE-ES#artefactos-protegidos-gttguard",
+      "README-GTT-ES#artefactos-protegidos-gttguard"
+    ],
+    "artifact identity and technical index": [
+      "AGENTS#artifact-identity-and-technical-index"
+    ],
+    "artifact identity and the technical index": [
+      "DOC-DOCS#artifact-identity-and-the-technical-index"
+    ],
+    "audit context freshness": [
+      "SKILL-GTT-AUDIT#audit-context-freshness"
+    ],
+    "backlog": [
+      "README-GTT#backlog",
+      "README-GTT-ES#backlog"
+    ],
+    "backlog governance": [
+      "AGENTS#backlog-governance",
+      "DOC-DOCS#backlog-governance"
+    ],
+    "backlog reconciliation": [
+      "SKILL-GTT-AUDIT#backlog-reconciliation"
+    ],
+    "before changing anything": [
+      "AGENTS#before-changing-anything"
+    ],
+    "before writing": [
+      "SKILL-GTT-PROPOSE-CHANGE#before-writing"
+    ],
+    "blocked": [
+      "BACKLOG#blocked"
+    ],
+    "bootstrap behavior": [
+      "AGENTS#bootstrap-behavior"
+    ],
+    "bootstrap documentation vs. installed project layout": [
+      "AGENTS#bootstrap-documentation-vs-installed-project-layout"
+    ],
+    "bootstrap regime": [
+      "GTT-USAGE#bootstrap-regime"
+    ],
+    "bootstrap the governed context": [
+      "SKILL-GTT-BOOTSTRAP#bootstrap-the-governed-context"
+    ],
+    "cambiar algo": [
+      "README-GTT-ES#cambiar-algo"
+    ],
+    "cambiar de ade más adelante": [
+      "README-GTT-ES#cambiar-de-ade-más-adelante"
+    ],
+    "capability status": [
+      "DOC-DOCS#capability-status"
+    ],
+    "capas de contexto": [
+      "GTT-USAGE-ES#capas-de-contexto",
+      "README-GTT-ES#capas-de-contexto"
+    ],
+    "change request": [
+      "CHANGE-REQUEST#change-request"
+    ],
+    "change request example": [
+      "GTT-USAGE#change-request-example"
+    ],
+    "change requests": [
+      "AGENTS#change-requests"
+    ],
+    "changing something": [
+      "README-GTT#changing-something"
+    ],
+    "changing something that is already protected": [
+      "SKILL-GTT-GUARD#changing-something-that-is-already-protected"
+    ],
+    "checking the stack map specifically": [
+      "SKILL-GTT-AUDIT#checking-the-stack-map-specifically"
+    ],
+    "checklist": [
+      "GTT-INSTALLATION-ES#checklist"
+    ],
+    "checklist operativo": [
+      "GTT-USAGE-ES#checklist-operativo"
+    ],
+    "classification": [
+      "SKILL-GTT-AUDIT#classification"
+    ],
+    "claude code": [
+      "DOC-DOCS#claude-code"
+    ],
+    "claude code specifics": [
+      "CLAUDE-INSTRUCTIONS#claude-code-specifics"
+    ],
+    "codex": [
+      "DOC-DOCS#codex"
+    ],
+    "compatibilidad con herramientas": [
+      "README-GTT-ES#compatibilidad-con-herramientas"
+    ],
+    "compatibility matrix": [
+      "DOC-DOCS#compatibility-matrix"
+    ],
+    "completion report": [
+      "AGENTS#completion-report"
+    ],
+    "confirmation a — source/design": [
+      "AGENTS#confirmation-a--sourcedesign"
+    ],
+    "confirmation b — governed context": [
+      "AGENTS#confirmation-b--governed-context"
+    ],
+    "conflict policy": [
+      "AGENTS#conflict-policy"
+    ],
+    "consequences": [
+      "ADR-001#consequences",
+      "ADR-TEMPLATE#consequences"
+    ],
+    "constraints": [
+      "CTX-CONSTRAINTS#constraints"
+    ],
+    "context": [
+      "ADR-001#context",
+      "ADR-TEMPLATE#context"
+    ],
+    "context freshness": [
+      "DOC-DOCS#context-freshness"
+    ],
+    "context layers": [
+      "DOC-DOCS#context-layers",
+      "GTT-USAGE#context-layers",
+      "README-GTT#context-layers"
+    ],
+    "current focus": [
+      "BACKLOG#current-focus"
+    ],
+    "data model ownership": [
+      "CTX-ARCHITECTURE#data-model-ownership"
+    ],
+    "decision": [
+      "ADR-001#decision",
+      "ADR-TEMPLATE#decision"
+    ],
+    "deployment target: bootstrap repository vs. host project": [
+      "GTT-INSTALLATION#deployment-target-bootstrap-repository-vs-host-project",
+      "GTT-USAGE#deployment-target-bootstrap-repository-vs-host-project"
+    ],
+    "deployment topology": [
+      "CTX-ARCHITECTURE#deployment-topology"
+    ],
+    "design principle": [
+      "README-GTT#design-principle"
+    ],
+    "development line": [
+      "BACKLOG#development-line"
+    ],
+    "development line — governed like architecture, but not l0": [
+      "GTT-INDEX#development-line--governed-like-architecture-but-not-l0"
+    ],
+    "draft an adr and its promotion package": [
+      "SKILL-GTT-ADR#draft-an-adr-and-its-promotion-package"
+    ],
+    "drift detection": [
+      "DOC-DOCS#drift-detection"
+    ],
+    "duplicate identity": [
+      "SKILL-GTT-RETRIEVE#duplicate-identity"
+    ],
+    "ejemplo de solicitud de cambio": [
+      "GTT-USAGE-ES#ejemplo-de-solicitud-de-cambio"
+    ],
+    "el backlog": [
+      "GTT-USAGE-ES#el-backlog"
+    ],
+    "el mapa": [
+      "README-GTT-ES#el-mapa"
+    ],
+    "el mapa arquitectónico": [
+      "GTT-USAGE-ES#el-mapa-arquitectónico"
+    ],
+    "el problema": [
+      "README-GTT-ES#el-problema"
+    ],
+    "enforcement — costs zero context": [
+      "GTT-INDEX#enforcement--costs-zero-context"
+    ],
+    "epics": [
+      "BACKLOG#epics"
+    ],
+    "estructura": [
+      "README-GTT-ES#estructura"
+    ],
+    "evolución": [
+      "README-GTT-ES#evolución"
+    ],
+    "evolution": [
+      "README-GTT#evolution"
+    ],
+    "example": [
+      "BACKLOG#example",
+      "CHANGE-REQUEST#example"
+    ],
+    "examples of the right shape": [
+      "CTX-PRINCIPLES#examples-of-the-right-shape"
+    ],
+    "existing projects and upgrades": [
+      "GTT-INSTALLATION#existing-projects-and-upgrades"
+    ],
+    "explicitly out of scope": [
+      "CTX-CONSTRAINTS#explicitly-out-of-scope"
+    ],
+    "file mapping": [
+      "DOC-DOCS#file-mapping"
+    ],
+    "flow": [
+      "PROP-README#flow"
+    ],
+    "flujo de uso": [
+      "README-GTT-ES#flujo-de-uso"
+    ],
+    "flujo normal": [
+      "GTT-USAGE-ES#flujo-normal"
+    ],
+    "format": [
+      "CTX-PRINCIPLES#format"
+    ],
+    "forms": [
+      "SKILL-GTT-PROPOSE-CHANGE#forms"
+    ],
+    "freeze and the two-regime model": [
+      "GTT-USAGE#freeze-and-the-two-regime-model"
+    ],
+    "freeze y modelo de dos regímenes": [
+      "GTT-USAGE-ES#freeze-y-modelo-de-dos-regímenes"
+    ],
+    "general development work": [
+      "BACKLOG#general-development-work"
+    ],
+    "generate the promotion script": [
+      "SKILL-GTT-ADR#generate-the-promotion-script"
+    ],
+    "getting started": [
+      "README-GTT#getting-started"
+    ],
+    "github copilot": [
+      "DOC-DOCS#github-copilot"
+    ],
+    "glossary": [
+      "CTX-GLOSSARY#glossary"
+    ],
+    "governance model": [
+      "DOC-DOCS#governance-model"
+    ],
+    "governed regime": [
+      "AGENTS#governed-regime",
+      "GTT-USAGE#governed-regime"
+    ],
+    "gtt bootstrap": [
+      "README-GTT#gtt-bootstrap",
+      "README-GTT-ES#gtt-bootstrap"
+    ],
+    "gtt bootstrap — completion report": [
+      "GTT-GTT-COMPLETION#gtt-bootstrap--completion-report"
+    ],
+    "gtt bootstrap — guía de instalación": [
+      "GTT-INSTALLATION-ES#gtt-bootstrap--guía-de-instalación"
+    ],
+    "gtt bootstrap — guía de uso": [
+      "GTT-USAGE-ES#gtt-bootstrap--guía-de-uso"
+    ],
+    "gtt bootstrap — installation guide": [
+      "GTT-INSTALLATION#gtt-bootstrap--installation-guide"
+    ],
+    "gtt bootstrap — usage guide": [
+      "GTT-USAGE#gtt-bootstrap--usage-guide"
+    ],
+    "gtt change proposal": [
+      "SKILL-GTT-PROPOSE-CHANGE#gtt-change-proposal"
+    ],
+    "gtt drift response": [
+      "SKILL-GTT-DRIFT-RESPONSE#gtt-drift-response"
+    ],
+    "gtt index": [
+      "GTT-INDEX#gtt-index"
+    ],
+    "gtt request": [
+      "CHANGE-REQUEST#gtt-request"
+    ],
+    "gtt — github copilot integration": [
+      "COPILOT-COPILOT-INSTRUCTIONS#gtt--github-copilot-integration"
+    ],
+    "gtt — reference docs": [
+      "DOC-DOCS#gtt--reference-docs"
+    ],
+    "gttguard: protected artifacts": [
+      "DOC-DOCS#gttguard-protected-artifacts"
+    ],
+    "guiding principle": [
+      "GTT-USAGE#guiding-principle"
+    ],
+    "hard rule": [
+      "SKILL-GTT-DRIFT-RESPONSE#hard-rule"
+    ],
+    "higiene del workspace": [
+      "README-GTT-ES#higiene-del-workspace"
+    ],
+    "how to use this": [
+      "CHANGE-REQUEST#how-to-use-this"
+    ],
+    "human documentation — never loaded by any agent": [
+      "GTT-INDEX#human-documentation--never-loaded-by-any-agent"
+    ],
+    "human promotion boundary": [
+      "AGENTS#human-promotion-boundary",
+      "README-GTT#human-promotion-boundary"
+    ],
+    "if you use only one": [
+      "DOC-DOCS#if-you-use-only-one"
+    ],
+    "if you use other agents too": [
+      "DOC-DOCS#if-you-use-other-agents-too"
+    ],
+    "if your team uses more than one ade": [
+      "DOC-DOCS#if-your-team-uses-more-than-one-ade"
+    ],
+    "implementation work (l3)": [
+      "KIRO-GTT-IMPLEMENTATION#implementation-work-l3",
+      "RULE-IMPLEMENTATION#implementation-work-l3"
+    ],
+    "informe obligatorio del agente": [
+      "GTT-INSTALLATION-ES#informe-obligatorio-del-agente"
+    ],
+    "infrastructure and deployment": [
+      "KIRO-GTT-INFRASTRUCTURE#infrastructure-and-deployment",
+      "RULE-INFRASTRUCTURE#infrastructure-and-deployment"
+    ],
+    "instalación asistida por agente": [
+      "GTT-INSTALLATION-ES#instalación-asistida-por-agente"
+    ],
+    "instalación manual": [
+      "GTT-INSTALLATION-ES#instalación-manual"
+    ],
+    "installation checklist": [
+      "GTT-INSTALLATION#installation-checklist"
+    ],
+    "installation modes": [
+      "GTT-INSTALLATION#installation-modes"
+    ],
+    "instructions — how agents behave": [
+      "GTT-INDEX#instructions--how-agents-behave"
+    ],
+    "integration strategy": [
+      "CTX-ARCHITECTURE#integration-strategy"
+    ],
+    "keeping context useful": [
+      "GTT-USAGE#keeping-context-useful"
+    ],
+    "keeping the map honest": [
+      "README-GTT#keeping-the-map-honest"
+    ],
+    "kiro": [
+      "DOC-DOCS#kiro"
+    ],
+    "known deviations": [
+      "CTX-ARCHITECTURE#known-deviations"
+    ],
+    "l0 — contexto gobernado": [
+      "GTT-USAGE-ES#l0--contexto-gobernado"
+    ],
+    "l0 — governed context": [
+      "GTT-USAGE#l0--governed-context"
+    ],
+    "l1 — architecture decisions": [
+      "GTT-USAGE#l1--architecture-decisions"
+    ],
+    "l1 — decisiones arquitectónicas": [
+      "GTT-USAGE-ES#l1--decisiones-arquitectónicas"
+    ],
+    "l2 — documentación": [
+      "GTT-USAGE-ES#l2--documentación"
+    ],
+    "l2 — documentation": [
+      "GTT-USAGE#l2--documentation"
+    ],
+    "l3 — implementación": [
+      "GTT-USAGE-ES#l3--implementación"
+    ],
+    "l3 — implementation": [
+      "GTT-USAGE#l3--implementation"
+    ],
+    "licencia": [
+      "README-GTT-ES#licencia"
+    ],
+    "license": [
+      "README-GTT#license"
+    ],
+    "lifecycle": [
+      "PROP-README#lifecycle"
+    ],
+    "lo que mantienes": [
+      "README-GTT-ES#lo-que-mantienes"
+    ],
+    "los dos archivos que siempre tocarás": [
+      "README-GTT-ES#los-dos-archivos-que-siempre-tocarás"
+    ],
+    "límite humano de promoción": [
+      "README-GTT-ES#límite-humano-de-promoción"
+    ],
+    "mandatory gtt workspace scaffolding": [
+      "README-GTT#mandatory-gtt-workspace-scaffolding"
+    ],
+    "mantener el mapa honesto": [
+      "README-GTT-ES#mantener-el-mapa-honesto"
+    ],
+    "mantener útil el contexto": [
+      "GTT-USAGE-ES#mantener-útil-el-contexto"
+    ],
+    "manual installation": [
+      "GTT-INSTALLATION#manual-installation"
+    ],
+    "mark or unmark a gttguard-protected artifact": [
+      "SKILL-GTT-GUARD#mark-or-unmark-a-gttguard-protected-artifact"
+    ],
+    "methodology": [
+      "DOC-DOCS#methodology"
+    ],
+    "migrating from gtt v1": [
+      "DOC-DOCS#migrating-from-gtt-v1"
+    ],
+    "mission": [
+      "AGENTS#mission"
+    ],
+    "modos de instalación": [
+      "GTT-INSTALLATION-ES#modos-de-instalación"
+    ],
+    "modules and boundaries": [
+      "CTX-ARCHITECTURE#modules-and-boundaries"
+    ],
+    "moves and renames": [
+      "SKILL-GTT-RETRIEVE#moves-and-renames"
+    ],
+    "naming": [
+      "PROP-README#naming"
+    ],
+    "navegación rápida": [
+      "README-GTT-ES#navegación-rápida"
+    ],
+    "next step": [
+      "GTT-INSTALLATION#next-step"
+    ],
+    "next work": [
+      "BACKLOG#next-work"
+    ],
+    "non-goals": [
+      "CTX-SOLUTION-VISION#non-goals"
+    ],
+    "non-negotiable rules": [
+      "AGENTS#non-negotiable-rules"
+    ],
+    "numbering": [
+      "SKILL-GTT-ADR#numbering"
+    ],
+    "operational boundary": [
+      "DOC-DOCS#operational-boundary"
+    ],
+    "operational checklist": [
+      "GTT-USAGE#operational-checklist"
+    ],
+    "output": [
+      "SKILL-GTT-AUDIT#output"
+    ],
+    "platform": [
+      "CTX-CONSTRAINTS#platform"
+    ],
+    "por qué algunos archivos permanecen en la raíz": [
+      "README-GTT-ES#por-qué-algunos-archivos-permanecen-en-la-raíz"
+    ],
+    "portability: claude code, kiro, codex, copilot": [
+      "DOC-DOCS#portability-claude-code-kiro-codex-copilot"
+    ],
+    "precedence": [
+      "BACKLOG#precedence"
+    ],
+    "prerequisites": [
+      "GTT-INSTALLATION#prerequisites"
+    ],
+    "primeros pasos": [
+      "README-GTT-ES#primeros-pasos"
+    ],
+    "principio de diseño": [
+      "README-GTT-ES#principio-de-diseño"
+    ],
+    "principio rector": [
+      "GTT-USAGE-ES#principio-rector"
+    ],
+    "principles": [
+      "CTX-PRINCIPLES#principles"
+    ],
+    "problem": [
+      "CTX-SOLUTION-VISION#problem"
+    ],
+    "procedimiento del agente": [
+      "GTT-INSTALLATION-ES#procedimiento-del-agente"
+    ],
+    "procedure": [
+      "SKILL-GTT-AUDIT#procedure"
+    ],
+    "procedures": [
+      "COPILOT-COPILOT-INSTRUCTIONS#procedures"
+    ],
+    "procedures — load only when invoked": [
+      "GTT-INDEX#procedures--load-only-when-invoked"
+    ],
+    "project backlog": [
+      "BACKLOG#project-backlog"
+    ],
+    "proposals — staging area": [
+      "PROP-README#proposals--staging-area"
+    ],
+    "protected artifacts (gttguard)": [
+      "AGENTS#protected-artifacts-gttguard",
+      "GTT-USAGE#protected-artifacts-gttguard",
+      "KIRO-GTT-GUARD#protected-artifacts-gttguard",
+      "README-GTT#protected-artifacts-gttguard"
+    ],
+    "protected context": [
+      "AGENTS#protected-context"
+    ],
+    "protection registry — derived, self-correcting": [
+      "GTT-INDEX#protection-registry--derived-self-correcting"
+    ],
+    "quality bar": [
+      "SKILL-GTT-PROPOSE-CHANGE#quality-bar"
+    ],
+    "quick links": [
+      "GTT-INDEX#quick-links"
+    ],
+    "quick navigation": [
+      "README-GTT#quick-navigation"
+    ],
+    "read first": [
+      "COPILOT-COPILOT-INSTRUCTIONS#read-first"
+    ],
+    "references you write": [
+      "SKILL-GTT-RETRIEVE#references-you-write"
+    ],
+    "reglas del scaffolding": [
+      "README-GTT-ES#reglas-del-scaffolding"
+    ],
+    "regulatory and organizational": [
+      "CTX-CONSTRAINTS#regulatory-and-organizational"
+    ],
+    "removing a marker": [
+      "SKILL-GTT-GUARD#removing-a-marker"
+    ],
+    "report": [
+      "GTT-GTT-COMPLETION#report"
+    ],
+    "required agent report": [
+      "GTT-INSTALLATION#required-agent-report"
+    ],
+    "required workspace": [
+      "AGENTS#required-workspace"
+    ],
+    "requirements": [
+      "README-GTT#requirements"
+    ],
+    "requisitos": [
+      "README-GTT-ES#requisitos"
+    ],
+    "requisitos previos": [
+      "GTT-INSTALLATION-ES#requisitos-previos"
+    ],
+    "retrieval": [
+      "SKILL-GTT-RETRIEVE#retrieval"
+    ],
+    "retrieve by identity, reconcile moves": [
+      "SKILL-GTT-RETRIEVE#retrieve-by-identity-reconcile-moves"
+    ],
+    "risks": [
+      "ADR-001#risks",
+      "ADR-TEMPLATE#risks"
+    ],
+    "régimen de bootstrap": [
+      "GTT-USAGE-ES#régimen-de-bootstrap"
+    ],
+    "régimen gobernado": [
+      "GTT-USAGE-ES#régimen-gobernado"
+    ],
+    "scaffolding obligatorio del workspace gtt": [
+      "README-GTT-ES#scaffolding-obligatorio-del-workspace-gtt"
+    ],
+    "scaffolding rules": [
+      "README-GTT#scaffolding-rules"
+    ],
+    "session continuity": [
+      "AGENTS#session-continuity"
+    ],
+    "session memory boundary": [
+      "DOC-DOCS#session-memory-boundary"
+    ],
+    "session state — derived, on demand": [
+      "GTT-INDEX#session-state--derived-on-demand"
+    ],
+    "siguiente paso": [
+      "GTT-INSTALLATION-ES#siguiente-paso"
+    ],
+    "solution vision": [
+      "CTX-SOLUTION-VISION#solution-vision"
+    ],
+    "source preservation": [
+      "AGENTS#source-preservation"
+    ],
+    "stack & architecture map": [
+      "CTX-STACK#stack--architecture-map"
+    ],
+    "stage the affected context files": [
+      "SKILL-GTT-ADR#stage-the-affected-context-files"
+    ],
+    "staging — agents write here": [
+      "GTT-INDEX#staging--agents-write-here"
+    ],
+    "start here": [
+      "GTT-INDEX#start-here"
+    ],
+    "status and validation": [
+      "DOC-DOCS#status-and-validation"
+    ],
+    "step 1 — assess": [
+      "SKILL-GTT-DRIFT-RESPONSE#step-1--assess"
+    ],
+    "step 2 — draft": [
+      "SKILL-GTT-DRIFT-RESPONSE#step-2--draft"
+    ],
+    "step 3 — stage the promotion package, never execute it": [
+      "SKILL-GTT-DRIFT-RESPONSE#step-3--stage-the-promotion-package-never-execute-it"
+    ],
+    "steps": [
+      "DOC-DOCS#steps"
+    ],
+    "structure": [
+      "README-GTT#structure"
+    ],
+    "switching ade later": [
+      "README-GTT#switching-ade-later"
+    ],
+    "technical": [
+      "CTX-CONSTRAINTS#technical"
+    ],
+    "tell the user": [
+      "SKILL-GTT-ADR#tell-the-user"
+    ],
+    "template": [
+      "SKILL-GTT-ADR#template"
+    ],
+    "the architecture map": [
+      "GTT-USAGE#the-architecture-map"
+    ],
+    "the backlog": [
+      "GTT-USAGE#the-backlog"
+    ],
+    "the change flow": [
+      "DOC-DOCS#the-change-flow"
+    ],
+    "the drift-signals sweep": [
+      "SKILL-GTT-AUDIT#the-drift-signals-sweep"
+    ],
+    "the map": [
+      "DOC-DOCS#the-map",
+      "README-GTT#the-map"
+    ],
+    "the normal workflow": [
+      "GTT-USAGE#the-normal-workflow"
+    ],
+    "the one flow that matters": [
+      "GTT-INDEX#the-one-flow-that-matters"
+    ],
+    "the premise": [
+      "DOC-DOCS#the-premise"
+    ],
+    "the problem": [
+      "README-GTT#the-problem"
+    ],
+    "the three enforcement planes": [
+      "DOC-DOCS#the-three-enforcement-planes"
+    ],
+    "the two files you will always touch": [
+      "README-GTT#the-two-files-you-will-always-touch"
+    ],
+    "tool support": [
+      "README-GTT#tool-support"
+    ],
+    "tool-specific adapters": [
+      "GTT-USAGE#tool-specific-adapters"
+    ],
+    "two confirmations": [
+      "AGENTS#two-confirmations"
+    ],
+    "two regimes": [
+      "DOC-DOCS#two-regimes"
+    ],
+    "two-regime upgrade": [
+      "GTT-INSTALLATION#two-regime-upgrade"
+    ],
+    "upgrading to the two-regime model": [
+      "README-GTT#upgrading-to-the-two-regime-model"
+    ],
+    "usage flow": [
+      "README-GTT#usage-flow"
+    ],
+    "users": [
+      "CTX-SOLUTION-VISION#users"
+    ],
+    "validation": [
+      "AGENTS#validation"
+    ],
+    "verifying the token saving": [
+      "DOC-DOCS#verifying-the-token-saving"
+    ],
+    "what changed and why": [
+      "DOC-DOCS#what-changed-and-why"
+    ],
+    "what copilot must not do": [
+      "COPILOT-COPILOT-INSTRUCTIONS#what-copilot-must-not-do"
+    ],
+    "what does not belong here": [
+      "CHANGE-REQUEST#what-does-not-belong-here"
+    ],
+    "what lives where": [
+      "DOC-DOCS#what-lives-where"
+    ],
+    "what loads on every single session": [
+      "GTT-INDEX#what-loads-on-every-single-session"
+    ],
+    "what success looks like": [
+      "CTX-SOLUTION-VISION#what-success-looks-like"
+    ],
+    "what you maintain": [
+      "README-GTT#what-you-maintain"
+    ],
+    "where the output goes": [
+      "SKILL-GTT-PROPOSE-CHANGE#where-the-output-goes"
+    ],
+    "where the request comes from": [
+      "SKILL-GTT-PROPOSE-CHANGE#where-the-request-comes-from"
+    ],
+    "why some files stay at the root": [
+      "README-GTT#why-some-files-stay-at-the-root"
+    ],
+    "workspace hygiene": [
+      "README-GTT#workspace-hygiene"
+    ]
+  }
+}

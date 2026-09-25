@@ -51,6 +51,16 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
+          }
+        ]
+      }
     ]
   }
 }

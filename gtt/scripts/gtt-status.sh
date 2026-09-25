@@ -68,6 +68,24 @@ if [ -f "gtt/protection/registry.yaml" ]; then
   GUARD_COUNT="${GUARD_COUNT:-0}"
 fi
 
+# Artifact identity/index state and repository resume hints. Both are derived
+# from the repository (manifest, index, git) - never from ADE memory.
+PY=""
+for candidate in python3 python; do
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c "" >/dev/null 2>&1; then
+    PY="$candidate"
+    break
+  fi
+done
+ARTIFACT_STATE="cannot determine (no working Python 3 interpreter)"
+if [ -n "$PY" ] && [ -f "gtt/scripts/gtt_artifacts.py" ]; then
+  ARTIFACT_STATE="$("$PY" gtt/scripts/gtt_artifacts.py summary 2>&1 || true)"
+fi
+
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "not a git repository")"
+GIT_DIRTY="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
+
 {
   echo "# GTT Session State"
   echo "#"
@@ -101,6 +119,13 @@ fi
   echo
   echo "## GTTGuard"
   echo "${GUARD_COUNT} protected artifact(s) in gtt/protection/registry.yaml"
+  echo
+  echo "## Artifact identity and technical index"
+  echo "${ARTIFACT_STATE}"
+  echo
+  echo "## Repository (resume hints)"
+  echo "branch: ${GIT_BRANCH}; uncommitted paths: ${GIT_DIRTY}"
+  if [ -n "$GIT_RECENT" ]; then echo "recent commits:"; echo "$GIT_RECENT"; fi
 } | tee "$OUT"
 
 exit 0

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # GTT - validate. Deterministic aggregator over the existing CI gates:
 # backlog structural integrity, ADE-adapter matrix, GTTGuard registry, the
-# stack map, and the markdown canonical-reference gate. Reuses each check
+# stack map, the markdown canonical-reference gate, and artifact identity /
+# repository integrity (broken references, duplicate identity, stale index). Reuses each check
 # script's own logic rather than reimplementing it - this script only runs
 # them and summarizes.
 #
@@ -66,6 +67,12 @@ MARKDOWN_RC=$?
 report "gtt-check-markdown.sh" "$MARKDOWN_RC"
 [ "$MARKDOWN_RC" -ne 0 ] && cat /tmp/gtt-validate-markdown.$$
 rm -f /tmp/gtt-validate-markdown.$$
+
+bash gtt/scripts/gtt-check-integrity.sh >/tmp/gtt-validate-integrity.$$ 2>&1
+INTEGRITY_RC=$?
+report "gtt-check-integrity.sh" "$INTEGRITY_RC"
+[ "$INTEGRITY_RC" -ne 0 ] && cat /tmp/gtt-validate-integrity.$$
+rm -f /tmp/gtt-validate-integrity.$$
 
 echo
 if [ "$FAIL" -ne 0 ]; then

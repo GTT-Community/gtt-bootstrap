@@ -1,0 +1,293 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "id": "ADR-001",
+      "type": "architecture-decision",
+      "path": "gtt/adr/ADR-001-context-governance.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "ADR-TEMPLATE",
+      "type": "template",
+      "path": "gtt/adr/ADR-TEMPLATE.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "AGENTS",
+      "type": "instruction",
+      "path": "AGENTS.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "BACKLOG",
+      "type": "backlog",
+      "path": "gtt/backlog.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CHANGE-REQUEST",
+      "type": "change-request",
+      "path": "gtt/CHANGE-REQUEST.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CLAUDE-INSTRUCTIONS",
+      "type": "instruction",
+      "path": ".claude/CLAUDE.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "COPILOT-COPILOT-INSTRUCTIONS",
+      "type": "instruction",
+      "path": ".copilot/copilot-instructions.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-ARCHITECTURE",
+      "type": "governed-context",
+      "path": "gtt/context/architecture.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-CONSTRAINTS",
+      "type": "governed-context",
+      "path": "gtt/context/constraints.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-GLOSSARY",
+      "type": "governed-context",
+      "path": "gtt/context/glossary.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-PRINCIPLES",
+      "type": "governed-context",
+      "path": "gtt/context/principles.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-SOLUTION-VISION",
+      "type": "governed-context",
+      "path": "gtt/context/solution-vision.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "CTX-STACK",
+      "type": "governed-context",
+      "path": "gtt/context/stack.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-DOCS",
+      "type": "documentation",
+      "path": "gtt/docs/DOCS.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-GTT-COMPLETION",
+      "type": "documentation",
+      "path": "gtt/GTT-COMPLETION.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-INDEX",
+      "type": "documentation",
+      "path": "gtt/INDEX.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-INSTALLATION",
+      "type": "documentation",
+      "path": "gtt/INSTALLATION.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-INSTALLATION-ES",
+      "type": "documentation",
+      "path": "gtt/INSTALLATION.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-USAGE",
+      "type": "documentation",
+      "path": "gtt/USAGE.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-USAGE-ES",
+      "type": "documentation",
+      "path": "gtt/USAGE.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "KIRO-GTT-GUARD",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-guard.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "KIRO-GTT-IMPLEMENTATION",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-implementation.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "KIRO-GTT-INFRASTRUCTURE",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-infrastructure.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
+      "type": "proposal",
+      "path": "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-README",
+      "type": "proposal",
+      "path": "gtt/proposals/README.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "README-GTT",
+      "type": "documentation",
+      "path": "README-GTT.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "README-GTT-ES",
+      "type": "documentation",
+      "path": "README-GTT.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "RULE-IMPLEMENTATION",
+      "type": "instruction",
+      "path": ".claude/rules/implementation.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "RULE-INFRASTRUCTURE",
+      "type": "instruction",
+      "path": ".claude/rules/infrastructure.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-ADR",
+      "type": "skill",
+      "path": ".claude/skills/gtt-adr/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-AUDIT",
+      "type": "skill",
+      "path": ".claude/skills/gtt-audit/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-BOOTSTRAP",
+      "type": "skill",
+      "path": ".claude/skills/gtt-bootstrap/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-DRIFT-RESPONSE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-drift-response/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-GUARD",
+      "type": "skill",
+      "path": ".claude/skills/gtt-guard/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-PROPOSE-CHANGE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-propose-change/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-RETRIEVE",
+      "type": "skill",
+      "path": ".claude/skills/gtt-retrieve/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    }
+  ]
+}

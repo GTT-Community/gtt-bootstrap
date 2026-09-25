@@ -180,6 +180,21 @@ evidence, or decisions, sit below governed context/constraints in
 precedence, must never silently override them, and no agent may author its
 own preferences.
 
+## Artifact identity and technical index
+
+Every governed Markdown artifact has a stable identity (`gtt/index/artifacts.json`)
+independent of its path: a move or rename is reconciled, never treated as delete
++ create. Reference an artifact as `[[ID]]` (e.g. `[[ADR-007]]`) so the reference
+survives moves. `gtt/index/technical-index.json` is a DERIVED accelerator - for
+locating concepts and sections (`gtt/scripts/gtt-query.sh`) - never a source of
+truth, never evidence in itself; the Markdown it points to is authoritative.
+Regenerate it with `gtt/scripts/gtt-index.sh`; never hand-edit it. After any move
+run `gtt/scripts/gtt-reconcile.sh` (dry-run first). `gtt/scripts/gtt-check-integrity.sh`
+(part of `gtt-validate.sh`) fails on unreconciled moves, duplicate logical identity,
+broken or old-path references, unresolved `[[ID]]`, and a stale index. Agents
+operate through these scripts and MUST NOT own an artifact's identity or authority,
+and never rewrite frozen `gtt/context/` or `gtt/adr/` files to fix a reference.
+
 ## Validation
 
 `gtt/scripts/gtt-validate.sh` runs every deterministic check script
