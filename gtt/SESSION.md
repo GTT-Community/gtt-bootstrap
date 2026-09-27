@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt/context/, gtt/adr/) and gtt/backlog.md prevail over this file.
 #
-# Generated: 2026-09-25T15:53:25Z
+# Generated: 2026-09-27T03:59:00Z
 
 ## Freeze state
 pre-freeze (gtt/context/ and gtt/adr/ are agent-writable)
@@ -19,13 +19,13 @@ none
 none
 
 ## Pending proposals (gtt/proposals/, excluding README.md)
-ADR-DRAFT-gtt-v2-1-identity-index-session-memory.md
 apply-artifact-identity-followups.sh
-apply-claude-session-start-adapter.sh
-apply-session-adapters.sh
+PROPOSAL-gtt-v2-1-backlog-epic-stories.md
 GOVERNANCE-PACKAGE-gtt-v2-1.md
 PROPOSAL-artifact-identity-followups.md
-PROPOSAL-gtt-v2-1-backlog-epic-stories.md
+apply-claude-session-start-adapter.sh
+ADR-DRAFT-gtt-v2-1-identity-index-session-memory.md
+apply-session-adapters.sh
 
 ## Change request
 empty (still template placeholders)
@@ -42,10 +42,10 @@ technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: dev; uncommitted paths: 20
+branch: dev; uncommitted paths: 2
 recent commits:
+b2cdceb GTT v2.1 technical checkpoint
 81bf8df Artifact Identity + Technical Index
 c64d694 Close AGENTS.md/settings.local.json protection gaps, add gtt-check-markdown.sh, backfill canonical-reference headers across the GTT kit
 b1566db Evolves gtt-bootstrap toward GTT Canonical v2.1 by naming the existing Grounding/Reasoning/Validation split in AGENTS.md and DOCS.md, adding deterministic session continuity
 1ed1ccc Wire GTTGuard's protect-guard.py hook into .claude/settings.json
-20d749b Add GTTGuard protected-artifact enforcement, fixing a boundary-overlap edit bypass and a Windows python3 resolution failure before wiring it in
