@@ -1,6 +1,5 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: 'src/**/*'
+inclusion: always
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md

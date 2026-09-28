@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # GTT - validate. Deterministic aggregator over the existing CI gates:
 # backlog structural integrity, ADE-adapter matrix, GTTGuard registry, the
-# stack map, and the markdown canonical-reference gate. Reuses each check
+# stack map, the markdown canonical-reference gate, and artifact identity /
+# repository integrity (broken references, duplicate identity, stale index),
+# and Session Memory adapter conformance (one line per declared adapter). Reuses each check
 # script's own logic rather than reimplementing it - this script only runs
 # them and summarizes.
 #
@@ -34,19 +36,28 @@ report "gtt-check-backlog.sh" "$BACKLOG_RC"
 [ "$BACKLOG_RC" -ne 0 ] && cat /tmp/gtt-validate-backlog.$$
 rm -f /tmp/gtt-validate-backlog.$$
 
-adapters=()
-[ -d ".claude" ] && adapters+=("claude")
-[ -d ".kiro" ] && adapters+=("kiro")
-[ -f ".copilot/copilot-instructions.md" ] && adapters+=("copilot")
+# The Core does not enumerate ADE names or paths itself. It discovers the
+# set of known ADEs from gtt/session-adapters/*.json - the same declaration
+# registry the Session Memory loop below already uses - and asks
+# gtt-check-adapter.sh (the one script whose contract is to know per-ADE
+# paths) whether each one matches this workspace. Adding
+# gtt/session-adapters/<new-ade>.json tomorrow is picked up here with no
+# edit to this file.
+known_ades=()
+for manifest in gtt/session-adapters/*.json; do
+  [ -f "$manifest" ] || continue
+  known_ades+=("$(basename "$manifest" .json)")
+done
 
-if [ "${#adapters[@]}" -eq 1 ]; then
-  bash gtt/scripts/gtt-check-adapter.sh "${adapters[0]}" >/tmp/gtt-validate-adapter.$$ 2>&1
-  ADAPTER_RC=$?
-  report "gtt-check-adapter.sh ${adapters[0]}" "$ADAPTER_RC"
-  [ "$ADAPTER_RC" -ne 0 ] && cat /tmp/gtt-validate-adapter.$$
-  rm -f /tmp/gtt-validate-adapter.$$
+matched_ades=()
+for ade in "${known_ades[@]}"; do
+  bash gtt/scripts/gtt-check-adapter.sh "$ade" >/dev/null 2>&1 && matched_ades+=("$ade")
+done
+
+if [ "${#matched_ades[@]}" -eq 1 ]; then
+  report "gtt-check-adapter.sh ${matched_ades[0]}" 0
 else
-  echo "SKIPPED            gtt-check-adapter.sh (zero or multiple adapters present - catalog repo or ambiguous; run manually with an explicit ADE if this is an installed project)"
+  echo "SKIPPED            gtt-check-adapter.sh (${#matched_ades[@]} of ${#known_ades[@]} declared adapters match this workspace - catalog repo or ambiguous; run manually with an explicit ADE if this is an installed project)"
 fi
 
 bash gtt/scripts/gtt-check-protection.sh >/tmp/gtt-validate-protection.$$ 2>&1
@@ -66,6 +77,37 @@ MARKDOWN_RC=$?
 report "gtt-check-markdown.sh" "$MARKDOWN_RC"
 [ "$MARKDOWN_RC" -ne 0 ] && cat /tmp/gtt-validate-markdown.$$
 rm -f /tmp/gtt-validate-markdown.$$
+
+bash gtt/scripts/gtt-check-integrity.sh >/tmp/gtt-validate-integrity.$$ 2>&1
+INTEGRITY_RC=$?
+report "gtt-check-integrity.sh" "$INTEGRITY_RC"
+[ "$INTEGRITY_RC" -ne 0 ] && cat /tmp/gtt-validate-integrity.$$
+rm -f /tmp/gtt-validate-integrity.$$
+
+# Session Memory adapter conformance: one result per declared adapter. The
+# check is static and needs no ADE; runtime verification by the real ADE is
+# never run here, so each line carries the DECLARED runtime status instead of
+# implying it was proven. A staged (not yet promoted) adapter is labelled so.
+for manifest in gtt/session-adapters/*.json; do
+  [ -f "$manifest" ] || continue
+  ade="$(basename "$manifest" .json)"
+  out="$(bash gtt/scripts/gtt-check-session-adapter.sh "$ade" 2>&1)"
+  rc=$?
+  summary="$(printf '%s
+' "$out" | grep '^SUMMARY ' | sed 's/^SUMMARY //')"
+  if [ "$rc" -eq 0 ]; then
+    echo "PASS               gtt-check-session-adapter.sh $ade  [$summary]"
+  elif [ "$rc" -eq 2 ]; then
+    echo "CANNOT-DETERMINE   gtt-check-session-adapter.sh $ade"
+    printf '%s
+' "$out"
+  else
+    echo "FAIL               gtt-check-session-adapter.sh $ade"
+    FAIL=1
+    printf '%s
+' "$out" | grep -E '^(FAIL|SUMMARY)'
+  fi
+done
 
 echo
 if [ "$FAIL" -ne 0 ]; then

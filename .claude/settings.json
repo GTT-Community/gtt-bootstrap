@@ -18,7 +18,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
@@ -48,6 +48,16 @@
           {
             "type": "command",
             "command": "python3 .claude/hooks/notify-change-request.py"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
           }
         ]
       }

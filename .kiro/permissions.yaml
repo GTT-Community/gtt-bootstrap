@@ -4,6 +4,7 @@ permissions:
     deny:
       - "AGENTS.md"
       - "gtt/CHANGE-REQUEST.md"
+      - "SOURCE-BRIEF.*"
       - ".kiro/settings/**"
       - ".kiro/steering/**"
       - ".kiro/hooks/**"

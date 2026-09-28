@@ -8,9 +8,34 @@ delete it.
 
 ## Format
 
-Each principle: the rule, then the trade-off it accepts.
+Each principle: the rule, then the trade-off it accepts. See *Principles in
+force* below for real entries in this shape.
 
-- **<Principle>** — <what it rules out>. Accepts: <cost of holding this line>.
+## Principles in force
+
+- **GTT Core provides the service; ADE adapters provide the integration** —
+  rules out duplicating GTT logic inside an adapter. Accepts an extra
+  integration layer per ADE.
+- **Indexes are derived, never a source of truth** — rules out using
+  `technical-index.json` as authority for content or decisions. Accepts the
+  cost of regenerating it after every Markdown change.
+- **Identity is separate from content** — rules out relying on the physical
+  path as an artifact's permanent identity. Accepts maintaining an identity
+  manifest and path history.
+- **Proposal ≠ decision** — rules out an agent automatically turning a
+  proposal into ratified governance. Accepts requiring human intervention
+  for promotion.
+- **Evidence ≠ ratification** — rules out treating a technical execution or
+  an adapter declaration as a human decision. Accepts keeping static/runtime
+  evidence separate from authority.
+- **Session Memory is operational state, not authority** — rules out using
+  `SESSION.md` as a source of decisions, evidence, or grounding. Accepts it
+  as an artifact derived from the repository's real state.
+- **Human Promotion Boundary** — rules out agents automatically promoting
+  context/ADRs to a ratified state. Accepts the cost of an explicit human
+  promotion step.
+- **GTT Core is repository-native and ADE-agnostic** — rules out the Core
+  depending on any specific ADE. Accepts ADE-specific adapters for each tool.
 
 ## Examples of the right shape
 

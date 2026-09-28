@@ -6,7 +6,7 @@
 > the architecture. Every approved architectural change updates this file in the
 > same commit as the ADR that approves it.
 
-- **Last verified:** `YYYY-MM-DD` — run the `gtt-audit` skill to refresh
+- **Last verified:** `2026-09-28`
 - **Governing ADRs:** ADR-001
 
 ---
@@ -18,144 +18,51 @@ rather than leaving a plausible guess in place.
 
 | Layer | Technology | Version | Locked by |
 |---|---|---|---|
-| Language | | | |
-| Runtime | | | |
-| Application framework | | | |
-| Compute model | | | |
-| Datastore (primary) | | | |
-| Datastore (cache) | | | |
-| Messaging / events | | | |
-| Identity & authz | | | |
-| Secrets | | | |
-| IaC | | | |
-| CI/CD | | | |
-| Observability | | | |
-| Testing | | | |
+| Language | Bash (Core scripts, CI gate) + Python 3 (engine components, hooks) | not pinned | |
+| Runtime | none — no single application runtime; GTT executes as repository tooling | | |
+| Application framework | none | | |
+| Compute model | none — runs as scripts/tooling inside the repository; not deployed as a service | | |
+| Datastore (primary) | none — filesystem-based; `gtt/index/artifacts.json` is the identity manifest | | |
+| Datastore (cache) | none | | |
+| Messaging / events | none | | |
+| Identity & authz | none as an application identity service — authorization is repository governance/protection plus each ADE's own permission/hook mechanism | | |
+| Secrets | none | | |
+| IaC | none — no infrastructure to provision | | |
+| CI/CD | Bash-based repository CI gate (`gtt-validate.sh` and its specialized checks); no specific CI/CD platform declared | | |
+| Observability | none — deterministic PASS/FAIL/SKIPPED results and operational evidence from GTT scripts; no logs/metrics/traces infrastructure | | |
+| Testing | deterministic validation via GTT scripts (`gtt-validate.sh` + specialized checks); no separate formal test framework | | |
 
-"Locked by" points at the ADR that made the decision. A row with no ADR is a
-decision nobody made on purpose — treat it as technical debt.
+"Locked by" points at the ADR that made the decision. Every cell above is
+empty on purpose: no ADR has formally locked any of these choices yet
+(ADR-001 governs the context mechanism itself, not these choices). A row
+with no ADR is a decision nobody made on purpose — treat it as technical
+debt.
 
 ---
 
 ## 2. Component map
 
-What talks to what, and over which protocol. Keep it to components that exist;
-this is not a roadmap.
-
-```mermaid
-flowchart LR
-    Client["Client"]
-
-    subgraph Edge["Edge"]
-        GW["API Gateway"]
-    end
-
-    subgraph App["Application"]
-        SvcA["Service A"]
-        SvcB["Service B"]
-    end
-
-    subgraph Data["Data"]
-        DB[("Primary store")]
-        Cache[("Cache")]
-    end
-
-    Ext["External system"]
-
-    Client -->|HTTPS| GW
-    GW -->|HTTP| SvcA
-    SvcA -->|async| SvcB
-    SvcA --> DB
-    SvcA --> Cache
-    SvcB -->|HTTPS| Ext
-```
-
-Label every edge with its protocol. An unlabelled edge is where paradigm drift
-starts: sync and async look identical in a box diagram and behave nothing alike.
+Not applicable. GTT has no client/server component graph: it is
+repository-native tooling (Bash/Python scripts operating on Markdown/JSON
+files), with no network API and no messaging between components (see
+`architecture.md` → *Integration strategy*).
 
 ---
 
 ## 3. Deployment topology
 
-Where each component actually runs, and what the trust boundaries are.
-
-```mermaid
-flowchart TB
-    subgraph Cloud["Cloud provider — region"]
-        subgraph Net["Network boundary"]
-            C1["Container / function 1"]
-            C2["Container / function 2"]
-            DB[("Managed datastore")]
-        end
-        Registry["Image registry"]
-        Secrets["Secret store"]
-        Obs["Logs & metrics"]
-    end
-
-    CI["CI/CD pipeline"] -->|push image| Registry
-    Registry -->|pull| C1
-    Registry -->|pull| C2
-    C1 --> DB
-    C2 --> DB
-    C1 -.->|read| Secrets
-    C1 -.->|emit| Obs
-    C2 -.->|emit| Obs
-```
+Not applicable as a deployed service. GTT lives and runs inside the
+repository; its scripts execute locally or within the repository's own
+CI/automation context (see `architecture.md` → *Deployment topology*).
 
 ---
 
 ## 4. Observability
 
-Where signals come from and where they land. This view answers "if it breaks at
-3am, what do I look at" — keep it accurate or it is worse than absent.
-
-```mermaid
-flowchart LR
-    subgraph Sources["Signal sources"]
-        App["Application"]
-        Infra["Platform / runtime"]
-    end
-
-    subgraph Pipeline["Collection"]
-        Agent["Collector / agent"]
-    end
-
-    subgraph Sinks["Destinations"]
-        Logs[("Logs")]
-        Metrics[("Metrics")]
-        Traces[("Traces")]
-    end
-
-    Alerts["Alerting"]
-    Dash["Dashboards"]
-
-    App -->|structured logs| Agent
-    App -->|metrics| Agent
-    App -->|spans| Agent
-    Infra -->|platform logs| Agent
-    Agent --> Logs
-    Agent --> Metrics
-    Agent --> Traces
-    Metrics --> Alerts
-    Logs --> Dash
-    Metrics --> Dash
-    Traces --> Dash
-```
-
-| Signal | Emitted by | Collected via | Stored in | Retention |
-|---|---|---|---|---|
-| Logs | | | | |
-| Metrics | | | | |
-| Traces | | | | |
-| Audit events | | | | |
-
-**What is alerted on, and who receives it:**
-
-| Condition | Threshold | Routed to |
-|---|---|---|
-
-An observability stack with no row in the alerting table is a dashboard nobody
-watches. Record what actually pages someone.
+Not applicable as an external observability stack. GTT scripts produce
+deterministic PASS/FAIL/SKIPPED results and operational evidence (see
+`gtt/EVIDENCE.md`); there is no logs/metrics/traces collection pipeline,
+and nothing pages anyone.
 
 ---
 
@@ -166,7 +73,17 @@ detectable — without it, "Service A calls the database directly" is an opinion
 
 | Module | May depend on | Must not depend on |
 |---|---|---|
-| | | |
+| `gtt/scripts/` (Core) | — | any specific ADE |
+| ADE adapters (`.claude/`, `.kiro/`, `.copilot/`, staged `.codex/`) | `gtt/scripts/` (via `gtt-session-context.sh` and the other Core entry points) | duplicating Core logic |
+| `gtt/session-adapters/` | — | containing GTT logic (declarations are data only) |
+| `gtt/index/` (identity manifest + derived technical index) | `gtt/scripts/gtt_artifacts.py` | being hand-edited, or the derived index being treated as a source of truth |
+| `gtt/protection/` (GTTGuard registry) | `gtt/scripts/gtt_guard.py` | being hand-edited |
+| `gtt/context/`, `gtt/adr/` | — | direct agent writes once frozen |
+| `gtt/proposals/` | — | — |
+
+Restates, as a table, the rule from `architecture.md` → *Modules and
+boundaries*: **GTT Core provides the service; ADE adapters provide the
+integration.** Adapters must not duplicate Core logic.
 
 ---
 
@@ -177,7 +94,11 @@ happened without a row, the governance loop was skipped.
 
 | Date | ADR | What changed in this map |
 |---|---|---|
-| | | |
+
+Empty: no ADR has changed this map. The Artifact Identity, Technical Index,
+and Session Memory Service capabilities documented in `gtt/docs/DOCS.md` and
+`gtt/docs/SESSION-ADAPTER-CONTRACT.md` are GTT Core functionality, not a
+decision recorded against this map (Virgin/Product closure, 2026-09-28).
 
 ---
 
@@ -189,11 +110,10 @@ block to know what to watch; without it, the detector is blind. One line per
 signal: a glob, then the decision or view it guards.
 
 ```gtt-drift-signals
-# <glob>  ->  <what it guards, referencing a view above or an ADR>
 ```
 
-Leave the block empty (as above) rather than inventing paths that do not
-carry a real decision yet. A signal with no matching decision above is noise.
+None declared. GTT has no `src/`/`infra/`-style application code for this
+block to watch (see *Explicitly out of scope* in `constraints.md`).
 
 ---
 Governance: L0. Read-only for AI agents. Changes require an approved ADR and are

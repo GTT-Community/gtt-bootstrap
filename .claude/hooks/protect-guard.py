@@ -19,10 +19,17 @@ example. Any ambiguity - the symbol can't be resolved, or the tool is
 Write/NotebookEdit (which replace the whole file) - fails SAFE to blocking
 the entire file rather than risking a silent bypass.
 
-Bash is blocked outright for any mutating-looking command that names a
-protected file, for the same reason protect-l0.py takes the same stance for
-machinery: there is no way to inspect a shell command's line-range effect
-on a file, so no attempt is made to be more precise than that.
+Bash and PowerShell (added 2026-09-28, alongside the same fix to
+protect-l0.py) are both blocked outright for any mutating-looking command
+that names a protected file, for the same reason protect-l0.py takes the
+same stance for machinery: there is no way to inspect a shell command's
+line-range effect on a file, so no attempt is made to be more precise than
+that. This environment's primary shell is PowerShell, not Bash - before
+this fix, only the Bash tool's command string was inspected, so a
+PowerShell Remove-Item/Set-Content/etc. against a protected artifact would
+have passed through unchecked. (File-tool paths were already normalised
+for backslashes here - see matches_target - only the shell-command side
+needed the PowerShell tool and its cmdlets added.)
 
 Exit 2 plus permissionDecision:deny blocks the call deterministically. Any
 unexpected input, or an empty/missing registry, exits 0 so a broken hook or
@@ -38,7 +45,13 @@ sys.path.insert(0, os.path.join("gtt", "scripts"))
 import gtt_guard  # noqa: E402  (path must be set up first)
 
 REGISTRY = os.path.join("gtt", "protection", "registry.yaml")
-MUTATING_SHELL = re.compile(r"\b(sed\s+-i|tee|mv|rm|truncate|dd|install)\b|>>?")
+MUTATING_SHELL = re.compile(
+    r"\b(sed\s+-i|tee|mv|rm|truncate|dd|install"
+    r"|del|erase|rd|rmdir|ri|move|copy|ren"
+    r"|set-content|add-content|out-file|new-item|remove-item"
+    r"|move-item|copy-item|rename-item|clear-content)\b|>>?",
+    re.IGNORECASE,
+)
 
 PROPOSE_HINT = "Use the gtt-propose-change skill (Form 5) instead of editing it directly."
 
@@ -63,7 +76,7 @@ def find_hits(entries, target):
 
 
 def blocked_reason(root, hits, tool, tool_input, target):
-    if tool == "Bash":
+    if tool in ("Bash", "PowerShell"):
         symbols = ", ".join(h["symbol"] or "whole file" for h in hits)
         return (
             f"GTTGuard: {target} is a protected artifact ({symbols}). Shell "
@@ -132,7 +145,7 @@ def main() -> int:
         raw = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
         target = os.path.relpath(raw, root) if os.path.isabs(raw) else raw
         target = target.replace("\\", "/")
-    elif tool == "Bash":
+    elif tool in ("Bash", "PowerShell"):
         command = tool_input.get("command", "")
         if MUTATING_SHELL.search(command):
             for e in entries:

@@ -35,6 +35,26 @@ into the effective permissions/hooks configuration, so it is exactly as
 capable of disabling this mechanism and must not be reachable by any path
 settings.json itself is denied on.
 
+Path normalisation (fixed 2026-09-28): Write/Edit/NotebookEdit deliver an
+ABSOLUTE WINDOWS PATH (backslashes) as file_path on this platform, and a
+PowerShell command may equally use backslash paths. Every pattern below is
+written with forward slashes, so without normalising first, an absolute
+Windows path to gtt/context/... or gtt/adr/... silently never matched
+REGIME_PATHS and the freeze-regime block never fired for the Write/Edit
+tools - demonstrated live: a Write to a Windows-style absolute path under
+gtt/context/ after freeze was NOT denied, while the equivalent `rm` via
+Bash (forward-slash path) WAS. normalize() is applied once, inside
+is_protected(), so every caller - file-tool paths and shell command
+strings alike - benefits without duplicating the fix.
+
+PowerShell coverage (added 2026-09-28): this environment's primary shell is
+PowerShell, not Bash, and the hook previously only inspected the Bash tool's
+command string - a PowerShell Set-Content/Remove-Item/etc. against a
+protected path passed through unchecked. MUTATING_SHELL now also matches
+common PowerShell mutating cmdlets and their built-in aliases (case
+insensitive - PowerShell itself is), and both Bash and PowerShell tool
+calls are inspected the same way.
+
 Exit 2 plus permissionDecision:deny blocks the call deterministically.
 Any unexpected input exits 0 so a broken hook never blocks a session.
 """
@@ -50,9 +70,14 @@ REGIME_PATHS = re.compile(r"gtt/(context|adr)/")
 ROOT_FILES = re.compile(r"AGENTS\.md|CHANGE-REQUEST\.md|SOURCE-BRIEF\.")
 MACHINERY = re.compile(r"\.claude/settings(\.local)?\.json|\.claude/hooks/")
 MUTATING_SHELL = re.compile(
-    r"\b(sed\s+-i|tee|mv|cp|rm|truncate|dd|install)\b"
+    r"\b(sed\s+-i|tee|mv|cp|rm|truncate|dd|install"
+    # PowerShell cmdlets and their built-in aliases for the same operations.
+    r"|del|erase|rd|rmdir|ri|move|copy|ren"
+    r"|set-content|add-content|out-file|new-item|remove-item"
+    r"|move-item|copy-item|rename-item|clear-content)\b"
     r"|>>?\s*\S*(gtt/|CHANGE-REQUEST\.md|SOURCE-BRIEF\."
-    r"|\.claude/settings(\.local)?\.json|\.claude/hooks/)"
+    r"|\.claude/settings(\.local)?\.json|\.claude/hooks/)",
+    re.IGNORECASE,
 )
 # An agent may always write drafts into gtt/proposals/ (see is_protected),
 # but it must never be the one to execute the promotion script it staged
@@ -77,7 +102,15 @@ def is_frozen() -> bool:
     return os.path.exists(FROZEN_MARKER)
 
 
+def normalize(path: str) -> str:
+    """Every pattern in this module is written with forward slashes; every
+    caller's raw input (an absolute Windows path, or a shell command that
+    may contain one) is normalised here, once, before matching."""
+    return path.replace("\\", "/")
+
+
 def is_protected(target: str) -> bool:
+    target = normalize(target)
     if MACHINERY.search(target):
         return True
     if PROMOTION_SCRIPT_EXEC.search(target):
@@ -104,7 +137,7 @@ def main() -> int:
 
     if tool in ("Write", "Edit", "NotebookEdit"):
         target = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
-    elif tool == "Bash":
+    elif tool in ("Bash", "PowerShell"):
         command = tool_input.get("command", "")
         # Only flag commands that could mutate, or that execute a staged
         # promotion script. Reads stay allowed.
