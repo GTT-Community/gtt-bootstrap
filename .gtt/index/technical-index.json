@@ -72,8 +72,7 @@
       "references": [],
       "referenced_by": [
         "ADR-003",
-        "ADR-004",
-        "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE"
+        "ADR-004"
       ],
       "relationships": [],
       "provenance": {
@@ -87,9 +86,7 @@
           "approved_by": "Solution Designer",
           "supersedes": "none"
         },
-        "referenced_by_proposals": [
-          "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE"
-        ]
+        "referenced_by_proposals": []
       }
     },
     {
@@ -3091,433 +3088,6 @@
       }
     },
     {
-      "id": "PROP-CLEANUP-GTT-DOMAIN-MIGRATION",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md",
-      "title": "Cleanup after the ADR-004 migration",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "676f3f1c5b02bb336bfdcf1af99ac231276157d2fb802264d347f1c685c39e4f",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Cleanup after the ADR-004 migration",
-          "level": 1,
-          "anchor": "cleanup-after-the-adr-004-migration",
-          "path": "Cleanup after the ADR-004 migration",
-          "line_start": 1,
-          "line_end": 60
-        },
-        {
-          "heading": "1. Delete the staged package",
-          "level": 2,
-          "anchor": "1-delete-the-staged-package",
-          "path": "Cleanup after the ADR-004 migration > 1. Delete the staged package",
-          "line_start": 8,
-          "line_end": 27
-        },
-        {
-          "heading": "2. Retire the identities of the deleted Markdown files",
-          "level": 2,
-          "anchor": "2-retire-the-identities-of-the-deleted-markdown-files",
-          "path": "Cleanup after the ADR-004 migration > 2. Retire the identities of the deleted Markdown files",
-          "line_start": 28,
-          "line_end": 54
-        },
-        {
-          "heading": "3. Then",
-          "level": 2,
-          "anchor": "3-then",
-          "path": "Cleanup after the ADR-004 migration > 3. Then",
-          "line_start": 55,
-          "line_end": 60
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-architecture-adr-004.md",
-      "title": "Architecture",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "e7424955345b99a9e08a4a391c4538721180e85d0c08c74f0f09a72b306cfcb5",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Architecture",
-          "level": 1,
-          "anchor": "architecture",
-          "path": "Architecture",
-          "line_start": 1,
-          "line_end": 64
-        },
-        {
-          "heading": "Architectural style",
-          "level": 2,
-          "anchor": "architectural-style",
-          "path": "Architecture > Architectural style",
-          "line_start": 9,
-          "line_end": 14
-        },
-        {
-          "heading": "Modules and boundaries",
-          "level": 2,
-          "anchor": "modules-and-boundaries",
-          "path": "Architecture > Modules and boundaries",
-          "line_start": 15,
-          "line_end": 32
-        },
-        {
-          "heading": "Integration strategy",
-          "level": 2,
-          "anchor": "integration-strategy",
-          "path": "Architecture > Integration strategy",
-          "line_start": 33,
-          "line_end": 39
-        },
-        {
-          "heading": "Data model ownership",
-          "level": 2,
-          "anchor": "data-model-ownership",
-          "path": "Architecture > Data model ownership",
-          "line_start": 40,
-          "line_end": 48
-        },
-        {
-          "heading": "Deployment topology",
-          "level": 2,
-          "anchor": "deployment-topology",
-          "path": "Architecture > Deployment topology",
-          "line_start": 49,
-          "line_end": 54
-        },
-        {
-          "heading": "Known deviations",
-          "level": 2,
-          "anchor": "known-deviations",
-          "path": "Architecture > Known deviations",
-          "line_start": 55,
-          "line_end": 64
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-architecture-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-constraints-adr-004.md",
-      "title": "Constraints",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "0a4c7fe1197722dce144cf3b09040de302062205e5d71307415910be820b7944",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Constraints",
-          "level": 1,
-          "anchor": "constraints",
-          "path": "Constraints",
-          "line_start": 1,
-          "line_end": 50
-        },
-        {
-          "heading": "Platform",
-          "level": 2,
-          "anchor": "platform",
-          "path": "Constraints > Platform",
-          "line_start": 9,
-          "line_end": 15
-        },
-        {
-          "heading": "Technical",
-          "level": 2,
-          "anchor": "technical",
-          "path": "Constraints > Technical",
-          "line_start": 16,
-          "line_end": 28
-        },
-        {
-          "heading": "Regulatory and organizational",
-          "level": 2,
-          "anchor": "regulatory-and-organizational",
-          "path": "Constraints > Regulatory and organizational",
-          "line_start": 29,
-          "line_end": 34
-        },
-        {
-          "heading": "Explicitly out of scope",
-          "level": 2,
-          "anchor": "explicitly-out-of-scope",
-          "path": "Constraints > Explicitly out of scope",
-          "line_start": 35,
-          "line_end": 50
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-constraints-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-glossary-adr-004.md",
-      "title": "Glossary",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "1f00668d5631c154c279d01159c2edd519cfb0f478359aae9af92b917ea5b8a3",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Glossary",
-          "level": 1,
-          "anchor": "glossary",
-          "path": "Glossary",
-          "line_start": 1,
-          "line_end": 28
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-glossary-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-PRINCIPLES-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-principles-adr-004.md",
-      "title": "Principles",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "11234ee03559c9aa70696fb9fd6d64301713e00f0e76fdc75611bb8552895f99",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Principles",
-          "level": 1,
-          "anchor": "principles",
-          "path": "Principles",
-          "line_start": 1,
-          "line_end": 55
-        },
-        {
-          "heading": "Format",
-          "level": 2,
-          "anchor": "format",
-          "path": "Principles > Format",
-          "line_start": 9,
-          "line_end": 13
-        },
-        {
-          "heading": "Principles in force",
-          "level": 2,
-          "anchor": "principles-in-force",
-          "path": "Principles > Principles in force",
-          "line_start": 14,
-          "line_end": 39
-        },
-        {
-          "heading": "Examples of the right shape",
-          "level": 2,
-          "anchor": "examples-of-the-right-shape",
-          "path": "Principles > Examples of the right shape",
-          "line_start": 40,
-          "line_end": 47
-        },
-        {
-          "heading": "Anti-examples",
-          "level": 2,
-          "anchor": "anti-examples",
-          "path": "Principles > Anti-examples",
-          "line_start": 48,
-          "line_end": 55
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-principles-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-SOLUTION-VISION-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-solution-vision-adr-004.md",
-      "title": "Solution Vision",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "200878a6f0d03ce7fd205c4568c722d04375e4e1bfe6257a3c5102b7249e3708",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Solution Vision",
-          "level": 1,
-          "anchor": "solution-vision",
-          "path": "Solution Vision",
-          "line_start": 1,
-          "line_end": 46
-        },
-        {
-          "heading": "Problem",
-          "level": 2,
-          "anchor": "problem",
-          "path": "Solution Vision > Problem",
-          "line_start": 5,
-          "line_end": 19
-        },
-        {
-          "heading": "Users",
-          "level": 2,
-          "anchor": "users",
-          "path": "Solution Vision > Users",
-          "line_start": 20,
-          "line_end": 28
-        },
-        {
-          "heading": "What success looks like",
-          "level": 2,
-          "anchor": "what-success-looks-like",
-          "path": "Solution Vision > What success looks like",
-          "line_start": 29,
-          "line_end": 37
-        },
-        {
-          "heading": "Non-goals",
-          "level": 2,
-          "anchor": "non-goals",
-          "path": "Solution Vision > Non-goals",
-          "line_start": 38,
-          "line_end": 46
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-solution-vision-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-CONTEXT-STACK-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-stack-adr-004.md",
-      "title": "Stack & Architecture Map",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "dc5681fe89e0fab03a21c99c0df53a10f0b401c3a5f693293639aaae47d2d3d1",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Stack & Architecture Map",
-          "level": 1,
-          "anchor": "stack--architecture-map",
-          "path": "Stack & Architecture Map",
-          "line_start": 1,
-          "line_end": 127
-        },
-        {
-          "heading": "1. Stack at a glance",
-          "level": 2,
-          "anchor": "1-stack-at-a-glance",
-          "path": "Stack & Architecture Map > 1. Stack at a glance",
-          "line_start": 14,
-          "line_end": 42
-        },
-        {
-          "heading": "2. Component map",
-          "level": 2,
-          "anchor": "2-component-map",
-          "path": "Stack & Architecture Map > 2. Component map",
-          "line_start": 43,
-          "line_end": 51
-        },
-        {
-          "heading": "3. Deployment topology",
-          "level": 2,
-          "anchor": "3-deployment-topology",
-          "path": "Stack & Architecture Map > 3. Deployment topology",
-          "line_start": 52,
-          "line_end": 59
-        },
-        {
-          "heading": "4. Observability",
-          "level": 2,
-          "anchor": "4-observability",
-          "path": "Stack & Architecture Map > 4. Observability",
-          "line_start": 60,
-          "line_end": 68
-        },
-        {
-          "heading": "5. Dependency rules",
-          "level": 2,
-          "anchor": "5-dependency-rules",
-          "path": "Stack & Architecture Map > 5. Dependency rules",
-          "line_start": 69,
-          "line_end": 90
-        },
-        {
-          "heading": "6. Map change log",
-          "level": 2,
-          "anchor": "6-map-change-log",
-          "path": "Stack & Architecture Map > 6. Map change log",
-          "line_start": 91,
-          "line_end": 107
-        },
-        {
-          "heading": "7. Drift signals",
-          "level": 2,
-          "anchor": "7-drift-signals",
-          "path": "Stack & Architecture Map > 7. Drift signals",
-          "line_start": 108,
-          "line_end": 127
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/context-stack-adr-004.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
       "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
       "type": "proposal",
       "path": "gtt-domain/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
@@ -3583,59 +3153,6 @@
         "history": [
           "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
           "proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-PACKAGE-GTT-DOMAIN-MIGRATION",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md",
-      "title": "ADR-004 migration package",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "884ee5c38a7ccf4446da5e95e2f341e6afa859bde093aa29e9fe52057fc109a8",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "ADR-004 migration package",
-          "level": 1,
-          "anchor": "adr-004-migration-package",
-          "path": "ADR-004 migration package",
-          "line_start": 1,
-          "line_end": 63
-        },
-        {
-          "heading": "What it does",
-          "level": 2,
-          "anchor": "what-it-does",
-          "path": "ADR-004 migration package > What it does",
-          "line_start": 9,
-          "line_end": 30
-        },
-        {
-          "heading": "Contents",
-          "level": 2,
-          "anchor": "contents",
-          "path": "ADR-004 migration package > Contents",
-          "line_start": 31,
-          "line_end": 46
-        },
-        {
-          "heading": "Differences from the ADR-003 engine",
-          "level": 2,
-          "anchor": "differences-from-the-adr-003-engine",
-          "path": "ADR-004 migration package > Differences from the ADR-003 engine",
-          "line_start": 47,
-          "line_end": 63
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md"
         ],
         "referenced_by_proposals": []
       }
@@ -3714,117 +3231,6 @@
         "history": [
           "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
           "proposals/PROPOSAL-artifact-identity-followups.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md",
-      "title": "Proposal —         Engine and               governed domain",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "d4048e509226f83366ed53e53ac3d05dc440b12817f2d8232921277d59b54ef2",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Proposal —         Engine and               governed domain",
-          "level": 1,
-          "anchor": "proposal----------engine-and---------------governed-domain",
-          "path": "Proposal —         Engine and               governed domain",
-          "line_start": 1,
-          "line_end": 246
-        },
-        {
-          "heading": "1. Proposed change",
-          "level": 2,
-          "anchor": "1-proposed-change",
-          "path": "Proposal —         Engine and               governed domain > 1. Proposed change",
-          "line_start": 12,
-          "line_end": 56
-        },
-        {
-          "heading": "2. The concept:",
-          "level": 2,
-          "anchor": "2-the-concept",
-          "path": "Proposal —         Engine and               governed domain > 2. The concept:",
-          "line_start": 57,
-          "line_end": 81
-        },
-        {
-          "heading": "3. Complete path map (current → approved design)",
-          "level": 2,
-          "anchor": "3-complete-path-map-current--approved-design",
-          "path": "Proposal —         Engine and               governed domain > 3. Complete path map (current → approved design)",
-          "line_start": 82,
-          "line_end": 105
-        },
-        {
-          "heading": "4. What this touches (audit of the repository as it is today)",
-          "level": 2,
-          "anchor": "4-what-this-touches-audit-of-the-repository-as-it-is-today",
-          "path": "Proposal —         Engine and               governed domain > 4. What this touches (audit of the repository as it is today)",
-          "line_start": 106,
-          "line_end": 154
-        },
-        {
-          "heading": "4b. What the split buys — and what it costs",
-          "level": 2,
-          "anchor": "4b-what-the-split-buys--and-what-it-costs",
-          "path": "Proposal —         Engine and               governed domain > 4b. What the split buys — and what it costs",
-          "line_start": 155,
-          "line_end": 176
-        },
-        {
-          "heading": "5. Governance: an ADR is required — ADR-004 (draft staged, not ratified)",
-          "level": 2,
-          "anchor": "5-governance-an-adr-is-required--adr-004-draft-staged-not-ratified",
-          "path": "Proposal —         Engine and               governed domain > 5. Governance: an ADR is required — ADR-004 (draft staged, not ratified)",
-          "line_start": 177,
-          "line_end": 196
-        },
-        {
-          "heading": "6. Decisions (approved by the Solution Designer, 2026-09-29)",
-          "level": 2,
-          "anchor": "6-decisions-approved-by-the-solution-designer-2026-09-29",
-          "path": "Proposal —         Engine and               governed domain > 6. Decisions (approved by the Solution Designer, 2026-09-29)",
-          "line_start": 197,
-          "line_end": 208
-        },
-        {
-          "heading": "7. How it would be executed (only step 1 has been prepared)",
-          "level": 2,
-          "anchor": "7-how-it-would-be-executed-only-step-1-has-been-prepared",
-          "path": "Proposal —         Engine and               governed domain > 7. How it would be executed (only step 1 has been prepared)",
-          "line_start": 209,
-          "line_end": 225
-        },
-        {
-          "heading": "8. Consistency check of this design",
-          "level": 2,
-          "anchor": "8-consistency-check-of-this-design",
-          "path": "Proposal —         Engine and               governed domain > 8. Consistency check of this design",
-          "line_start": 226,
-          "line_end": 236
-        },
-        {
-          "heading": "9. Carry-over from the ADR-003 restructure",
-          "level": 2,
-          "anchor": "9-carry-over-from-the-adr-003-restructure",
-          "path": "Proposal —         Engine and               governed domain > 9. Carry-over from the ADR-003 restructure",
-          "line_start": 237,
-          "line_end": 246
-        }
-      ],
-      "references": [
-        "ADR-001"
-      ],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md"
         ],
         "referenced_by_proposals": []
       }
@@ -5071,9 +4477,6 @@
     "1. comenzar desde el contexto gobernado": [
       "GTT-USAGE-ES#1-comenzar-desde-el-contexto-gobernado"
     ],
-    "1. delete the staged package": [
-      "PROP-CLEANUP-GTT-DOMAIN-MIGRATION#1-delete-the-staged-package"
-    ],
     "1. establish the regime": [
       "SKILL-GTT-BOOTSTRAP#1-establish-the-regime"
     ],
@@ -5086,9 +4489,6 @@
     "1. inspect the host project": [
       "GTT-INSTALLATION#1-inspect-the-host-project"
     ],
-    "1. proposed change": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#1-proposed-change"
-    ],
     "1. reconciliation": [
       "GTT-EVIDENCE#1-reconciliation"
     ],
@@ -5096,15 +4496,13 @@
       "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#1-root--------------add-after-session-continuity"
     ],
     "1. stack at a glance": [
-      "CTX-STACK#1-stack-at-a-glance",
-      "PROP-CONTEXT-STACK-ADR-004#1-stack-at-a-glance"
+      "CTX-STACK#1-stack-at-a-glance"
     ],
     "1. start from governed context": [
       "GTT-USAGE#1-start-from-governed-context"
     ],
     "2. component map": [
-      "CTX-STACK#2-component-map",
-      "PROP-CONTEXT-STACK-ADR-004#2-component-map"
+      "CTX-STACK#2-component-map"
     ],
     "2. context change": [
       "SKILL-GTT-PROPOSE-CHANGE#2-context-change"
@@ -5124,17 +4522,11 @@
     "2. manual installation": [
       "README-GTT#2-manual-installation"
     ],
-    "2. retire the identities of the deleted markdown files": [
-      "PROP-CLEANUP-GTT-DOMAIN-MIGRATION#2-retire-the-identities-of-the-deleted-markdown-files"
-    ],
     "2. sessionstart hook — warm start for claude code": [
       "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2-sessionstart-hook--warm-start-for-claude-code"
     ],
     "2. technical index — reconstruction determinism": [
       "GTT-EVIDENCE#2-technical-index--reconstruction-determinism"
-    ],
-    "2. the concept:": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#2-the-concept"
     ],
     "2. trabajar en la implementación": [
       "GTT-USAGE-ES#2-trabajar-en-la-implementación"
@@ -5154,9 +4546,6 @@
     "3. artifact identity — stability": [
       "GTT-EVIDENCE#3-artifact-identity--stability"
     ],
-    "3. complete path map (current → approved design)": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#3-complete-path-map-current--approved-design"
-    ],
     "3. confirm the document is finished — or stop": [
       "SKILL-GTT-BOOTSTRAP#3-confirm-the-document-is-finished--or-stop"
     ],
@@ -5167,8 +4556,7 @@
       "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#3-decision-points"
     ],
     "3. deployment topology": [
-      "CTX-STACK#3-deployment-topology",
-      "PROP-CONTEXT-STACK-ADR-004#3-deployment-topology"
+      "CTX-STACK#3-deployment-topology"
     ],
     "3. detect an architectural change": [
       "GTT-USAGE#3-detect-an-architectural-change"
@@ -5185,9 +4573,6 @@
     "3. preserve the source design": [
       "GTT-INSTALLATION#3-preserve-the-source-design"
     ],
-    "3. then": [
-      "PROP-CLEANUP-GTT-DOMAIN-MIGRATION#3-then"
-    ],
     "4. ask what is still missing": [
       "SKILL-GTT-BOOTSTRAP#4-ask-what-is-still-missing"
     ],
@@ -5201,8 +4586,7 @@
       "GTT-INSTALLATION#4-merge"
     ],
     "4. observability": [
-      "CTX-STACK#4-observability",
-      "PROP-CONTEXT-STACK-ADR-004#4-observability"
+      "CTX-STACK#4-observability"
     ],
     "4. proponer el cambio": [
       "GTT-USAGE-ES#4-proponer-el-cambio"
@@ -5212,9 +4596,6 @@
     ],
     "4. session memory — reproducibility": [
       "GTT-EVIDENCE#4-session-memory--reproducibility"
-    ],
-    "4b. what the split buys — and what it costs": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#4b-what-the-split-buys--and-what-it-costs"
     ],
     "5. approve": [
       "GTT-USAGE#5-approve"
@@ -5226,8 +4607,7 @@
       "SKILL-GTT-BOOTSTRAP#5-confirm-before-drafting"
     ],
     "5. dependency rules": [
-      "CTX-STACK#5-dependency-rules",
-      "PROP-CONTEXT-STACK-ADR-004#5-dependency-rules"
+      "CTX-STACK#5-dependency-rules"
     ],
     "5. poblar el contexto": [
       "GTT-INSTALLATION-ES#5-poblar-el-contexto"
@@ -5241,12 +4621,8 @@
     "5. this entry": [
       "GTT-EVIDENCE#5-this-entry"
     ],
-    "6. decisions (approved by the solution designer, 2026-09-29)": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#6-decisions-approved-by-the-solution-designer-2026-09-29"
-    ],
     "6. map change log": [
-      "CTX-STACK#6-map-change-log",
-      "PROP-CONTEXT-STACK-ADR-004#6-map-change-log"
+      "CTX-STACK#6-map-change-log"
     ],
     "6. record the decision": [
       "GTT-USAGE#6-record-the-decision"
@@ -5264,15 +4640,11 @@
       "SKILL-GTT-BOOTSTRAP#6-write-the-context-then-stop"
     ],
     "7. drift signals": [
-      "CTX-STACK#7-drift-signals",
-      "PROP-CONTEXT-STACK-ADR-004#7-drift-signals"
+      "CTX-STACK#7-drift-signals"
     ],
     "7. freeze": [
       "GTT-INSTALLATION#7-freeze",
       "GTT-INSTALLATION-ES#7-freeze"
-    ],
-    "7. how it would be executed (only step 1 has been prepared)": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#7-how-it-would-be-executed-only-step-1-has-been-prepared"
     ],
     "7. verificar": [
       "GTT-USAGE-ES#7-verificar"
@@ -5280,17 +4652,11 @@
     "7. verify": [
       "GTT-USAGE#7-verify"
     ],
-    "8. consistency check of this design": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#8-consistency-check-of-this-design"
-    ],
     "8. verificar el guardrail": [
       "GTT-INSTALLATION-ES#8-verificar-el-guardrail"
     ],
     "8. verify the guardrail": [
       "GTT-INSTALLATION#8-verify-the-guardrail"
-    ],
-    "9. carry-over from the adr-003 restructure": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#9-carry-over-from-the-adr-003-restructure"
     ],
     "9. instalar el ci gate": [
       "GTT-INSTALLATION-ES#9-instalar-el-ci-gate"
@@ -5321,9 +4687,6 @@
     ],
     "adr-001 — context is the source of truth": [
       "ADR-001#adr-001--context-is-the-source-of-truth"
-    ],
-    "adr-004 migration package": [
-      "PROP-PACKAGE-GTT-DOMAIN-MIGRATION#adr-004-migration-package"
     ],
     "adr-004 —         engine and               governed domain": [
       "ADR-004#adr-004----------engine-and---------------governed-domain"
@@ -5368,16 +4731,13 @@
       "ADR-TEMPLATE#alternatives-considered"
     ],
     "anti-examples": [
-      "CTX-PRINCIPLES#anti-examples",
-      "PROP-CONTEXT-PRINCIPLES-ADR-004#anti-examples"
+      "CTX-PRINCIPLES#anti-examples"
     ],
     "architectural style": [
-      "CTX-ARCHITECTURE#architectural-style",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#architectural-style"
+      "CTX-ARCHITECTURE#architectural-style"
     ],
     "architecture": [
-      "CTX-ARCHITECTURE#architecture",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#architecture"
+      "CTX-ARCHITECTURE#architecture"
     ],
     "artefactos protegidos (gttguard)": [
       "GTT-USAGE-ES#artefactos-protegidos-gttguard",
@@ -5476,9 +4836,6 @@
     "claude code specifics": [
       "CLAUDE-INSTRUCTIONS#claude-code-specifics"
     ],
-    "cleanup after the adr-004 migration": [
-      "PROP-CLEANUP-GTT-DOMAIN-MIGRATION#cleanup-after-the-adr-004-migration"
-    ],
     "codex": [
       "DOC-DOCS#codex"
     ],
@@ -5510,12 +4867,10 @@
       "ADR-TEMPLATE#consequences"
     ],
     "constraints": [
-      "CTX-CONSTRAINTS#constraints",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-004#constraints"
+      "CTX-CONSTRAINTS#constraints"
     ],
     "contents": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#contents",
-      "PROP-PACKAGE-GTT-DOMAIN-MIGRATION#contents"
+      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#contents"
     ],
     "context": [
       "ADR-001#context",
@@ -5535,8 +4890,7 @@
       "BACKLOG#current-focus"
     ],
     "data model ownership": [
-      "CTX-ARCHITECTURE#data-model-ownership",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#data-model-ownership"
+      "CTX-ARCHITECTURE#data-model-ownership"
     ],
     "decision": [
       "ADR-001#decision",
@@ -5552,8 +4906,7 @@
       "GTT-USAGE#deployment-target-bootstrap-repository-vs-host-project"
     ],
     "deployment topology": [
-      "CTX-ARCHITECTURE#deployment-topology",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#deployment-topology"
+      "CTX-ARCHITECTURE#deployment-topology"
     ],
     "design principle": [
       "README-GTT#design-principle"
@@ -5563,9 +4916,6 @@
     ],
     "development line — governed like architecture, but not l0": [
       "GTT-INDEX#development-line--governed-like-architecture-but-not-l0"
-    ],
-    "differences from the adr-003 engine": [
-      "PROP-PACKAGE-GTT-DOMAIN-MIGRATION#differences-from-the-adr-003-engine"
     ],
     "domain (            )": [
       "CTX-GLOSSARY#glossary"
@@ -5628,15 +4978,13 @@
       "CHANGE-REQUEST#example"
     ],
     "examples of the right shape": [
-      "CTX-PRINCIPLES#examples-of-the-right-shape",
-      "PROP-CONTEXT-PRINCIPLES-ADR-004#examples-of-the-right-shape"
+      "CTX-PRINCIPLES#examples-of-the-right-shape"
     ],
     "existing projects and upgrades": [
       "GTT-INSTALLATION#existing-projects-and-upgrades"
     ],
     "explicitly out of scope": [
-      "CTX-CONSTRAINTS#explicitly-out-of-scope",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-004#explicitly-out-of-scope"
+      "CTX-CONSTRAINTS#explicitly-out-of-scope"
     ],
     "file mapping": [
       "DOC-DOCS#file-mapping"
@@ -5651,8 +4999,7 @@
       "GTT-USAGE-ES#flujo-normal"
     ],
     "format": [
-      "CTX-PRINCIPLES#format",
-      "PROP-CONTEXT-PRINCIPLES-ADR-004#format"
+      "CTX-PRINCIPLES#format"
     ],
     "forms": [
       "SKILL-GTT-PROPOSE-CHANGE#forms"
@@ -5679,8 +5026,7 @@
       "DOC-DOCS#github-copilot"
     ],
     "glossary": [
-      "CTX-GLOSSARY#glossary",
-      "PROP-CONTEXT-GLOSSARY-ADR-004#glossary"
+      "CTX-GLOSSARY#glossary"
     ],
     "governance": [
       "DOC-SESSION-ADAPTER-CONTRACT#governance"
@@ -5813,8 +5159,7 @@
       "GTT-INDEX#instructions--how-agents-behave"
     ],
     "integration strategy": [
-      "CTX-ARCHITECTURE#integration-strategy",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#integration-strategy"
+      "CTX-ARCHITECTURE#integration-strategy"
     ],
     "keeping context useful": [
       "GTT-USAGE#keeping-context-useful"
@@ -5826,8 +5171,7 @@
       "DOC-DOCS#kiro"
     ],
     "known deviations": [
-      "CTX-ARCHITECTURE#known-deviations",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#known-deviations"
+      "CTX-ARCHITECTURE#known-deviations"
     ],
     "l0 — contexto gobernado": [
       "GTT-USAGE-ES#l0--contexto-gobernado"
@@ -5905,8 +5249,7 @@
       "GTT-INSTALLATION-ES#modos-de-instalación"
     ],
     "modules and boundaries": [
-      "CTX-ARCHITECTURE#modules-and-boundaries",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-004#modules-and-boundaries"
+      "CTX-ARCHITECTURE#modules-and-boundaries"
     ],
     "moves and renames": [
       "SKILL-GTT-RETRIEVE#moves-and-renames"
@@ -5924,8 +5267,7 @@
       "BACKLOG#next-work"
     ],
     "non-goals": [
-      "CTX-SOLUTION-VISION#non-goals",
-      "PROP-CONTEXT-SOLUTION-VISION-ADR-004#non-goals"
+      "CTX-SOLUTION-VISION#non-goals"
     ],
     "non-negotiable rules": [
       "AGENTS#non-negotiable-rules"
@@ -5946,8 +5288,7 @@
       "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#pending-items"
     ],
     "platform": [
-      "CTX-CONSTRAINTS#platform",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-004#platform"
+      "CTX-CONSTRAINTS#platform"
     ],
     "por qué algunos archivos permanecen en la raíz": [
       "README-GTT-ES#por-qué-algunos-archivos-permanecen-en-la-raíz"
@@ -5971,16 +5312,13 @@
       "GTT-USAGE-ES#principio-rector"
     ],
     "principles": [
-      "CTX-PRINCIPLES#principles",
-      "PROP-CONTEXT-PRINCIPLES-ADR-004#principles"
+      "CTX-PRINCIPLES#principles"
     ],
     "principles in force": [
-      "CTX-PRINCIPLES#principles-in-force",
-      "PROP-CONTEXT-PRINCIPLES-ADR-004#principles-in-force"
+      "CTX-PRINCIPLES#principles-in-force"
     ],
     "problem": [
-      "CTX-SOLUTION-VISION#problem",
-      "PROP-CONTEXT-SOLUTION-VISION-ADR-004#problem"
+      "CTX-SOLUTION-VISION#problem"
     ],
     "procedimiento del agente": [
       "GTT-INSTALLATION-ES#procedimiento-del-agente"
@@ -5999,9 +5337,6 @@
     ],
     "proposal": [
       "CTX-GLOSSARY#glossary"
-    ],
-    "proposal —         engine and               governed domain": [
-      "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE#proposal----------engine-and---------------governed-domain"
     ],
     "proposals — staging area": [
       "PROP-README#proposals--staging-area"
@@ -6043,8 +5378,7 @@
       "README-GTT-ES#reglas-del-scaffolding"
     ],
     "regulatory and organizational": [
-      "CTX-CONSTRAINTS#regulatory-and-organizational",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-004#regulatory-and-organizational"
+      "CTX-CONSTRAINTS#regulatory-and-organizational"
     ],
     "removing a marker": [
       "SKILL-GTT-GUARD#removing-a-marker"
@@ -6119,15 +5453,13 @@
       "GTT-INSTALLATION-ES#siguiente-paso"
     ],
     "solution vision": [
-      "CTX-SOLUTION-VISION#solution-vision",
-      "PROP-CONTEXT-SOLUTION-VISION-ADR-004#solution-vision"
+      "CTX-SOLUTION-VISION#solution-vision"
     ],
     "source preservation": [
       "AGENTS#source-preservation"
     ],
     "stack & architecture map": [
-      "CTX-STACK#stack--architecture-map",
-      "PROP-CONTEXT-STACK-ADR-004#stack--architecture-map"
+      "CTX-STACK#stack--architecture-map"
     ],
     "stack map delta": [
       "ADR-003#stack-map-delta",
@@ -6185,8 +5517,7 @@
       "README-GTT#switching-ade-later"
     ],
     "technical": [
-      "CTX-CONSTRAINTS#technical",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-004#technical"
+      "CTX-CONSTRAINTS#technical"
     ],
     "technical index": [
       "CTX-GLOSSARY#glossary"
@@ -6259,8 +5590,7 @@
       "README-GTT#usage-flow"
     ],
     "users": [
-      "CTX-SOLUTION-VISION#users",
-      "PROP-CONTEXT-SOLUTION-VISION-ADR-004#users"
+      "CTX-SOLUTION-VISION#users"
     ],
     "validation": [
       "AGENTS#validation"
@@ -6277,9 +5607,6 @@
     "what does not belong here": [
       "CHANGE-REQUEST#what-does-not-belong-here"
     ],
-    "what it does": [
-      "PROP-PACKAGE-GTT-DOMAIN-MIGRATION#what-it-does"
-    ],
     "what lives where": [
       "DOC-DOCS#what-lives-where"
     ],
@@ -6287,8 +5614,7 @@
       "GTT-INDEX#what-loads-on-every-single-session"
     ],
     "what success looks like": [
-      "CTX-SOLUTION-VISION#what-success-looks-like",
-      "PROP-CONTEXT-SOLUTION-VISION-ADR-004#what-success-looks-like"
+      "CTX-SOLUTION-VISION#what-success-looks-like"
     ],
     "what the human needs to review and ratify": [
       "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#what-the-human-needs-to-review-and-ratify"

@@ -380,7 +380,7 @@
       "id": "PROP-CLEANUP-GTT-DOMAIN-MIGRATION",
       "type": "proposal",
       "path": "gtt-domain/proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md"
       ],
@@ -400,7 +400,7 @@
       "id": "PROP-CONTEXT-ARCHITECTURE-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-architecture-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-architecture-adr-004.md"
       ],
@@ -410,7 +410,7 @@
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-constraints-adr-004.md"
       ],
@@ -438,7 +438,7 @@
       "id": "PROP-CONTEXT-GLOSSARY-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-glossary-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-glossary-adr-004.md"
       ],
@@ -458,7 +458,7 @@
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-principles-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-principles-adr-004.md"
       ],
@@ -486,7 +486,7 @@
       "id": "PROP-CONTEXT-SOLUTION-VISION-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-solution-vision-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-solution-vision-adr-004.md"
       ],
@@ -514,7 +514,7 @@
       "id": "PROP-CONTEXT-STACK-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-adr-004.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/context-stack-adr-004.md"
       ],
@@ -535,7 +535,7 @@
       "id": "PROP-PACKAGE-GTT-DOMAIN-MIGRATION",
       "type": "proposal",
       "path": "gtt-domain/proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md"
       ],
@@ -556,7 +556,7 @@
       "id": "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md"
       ],

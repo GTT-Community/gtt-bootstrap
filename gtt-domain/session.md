@@ -7,10 +7,10 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-09-29T17:32:31Z
+# Generated: 2026-09-29T18:10:06Z
 
 ## Freeze state
-frozen (2026-09-28T17:18:49Z)
+frozen (2026-09-28T17:18:49Z)
 
 ## Current work (Stories In Progress)
 ##### STORY-002 — Repository Reconciliation
@@ -19,18 +19,9 @@ frozen (2026-09-28T17:18:49Z)
 none
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
-apply-ADR-004-gtt-domain-and-dot-gtt-engine.sh
-apply-gtt-domain-migration.sh
 apply-session-adapters.sh
-context-architecture-adr-004.md
-context-constraints-adr-004.md
-context-glossary-adr-004.md
-context-principles-adr-004.md
-context-solution-vision-adr-004.md
-context-stack-adr-004.md
 GOVERNANCE-PACKAGE-gtt-v2-1.md
 PROPOSAL-artifact-identity-followups.md
-PROPOSAL-gtt-domain-and-dot-gtt-engine.md
 PROPOSAL-gtt-v2-1-backlog-epic-stories.md
 
 ## Change request
@@ -45,15 +36,15 @@ ADR-004-gtt-domain-and-dot-gtt-engine.md - Status: Accepted
 0 protected artifact(s) in .gtt/protection/registry.yaml
 
 ## Artifact identity and technical index
-identity: 59 active artifact(s), 13 retired
+identity: 50 active artifact(s), 22 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 135
+branch: main; uncommitted paths: 41
 recent commits:
+ad67b7d feat: ratify ADR-004 gtt domain and engine layout
 b359e11 chore: finalize ADR-003 scaffold restructure
 3b3b40d update version
 81bcc9b Bootstrap GTT v2.1 Virgin Product
 c64d694 Close AGENTS.md/settings.local.json protection gaps, add gtt-check-markdown.sh, backfill canonical-reference headers across the GTT kit
-b1566db Evolves gtt-bootstrap toward GTT Canonical v2.1 by naming the existing Grounding/Reasoning/Validation split in AGENTS.md and DOCS.md, adding deterministic session continuity
