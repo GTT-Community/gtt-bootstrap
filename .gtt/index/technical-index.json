@@ -1008,7 +1008,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "5cc0b87c2db4f5d922e03b4ca277f3c63652ec9074f5918955411b0505dcba1c",
+      "sha256": "89d6ea04e0095fb473922d4cf87d83481dec6a9210836ddee0c93c8fb6a4bc4a",
       "aliases": [],
       "sections": [
         {
@@ -1017,7 +1017,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 209
+          "line_end": 276
         },
         {
           "heading": "Development Line",
@@ -1041,7 +1041,7 @@
           "anchor": "epics",
           "path": "Project Backlog > Epics",
           "line_start": 37,
-          "line_end": 178
+          "line_end": 245
         },
         {
           "heading": "EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory",
@@ -1049,7 +1049,7 @@
           "anchor": "epic-001--gtt-v21--artifact-identity-technical-index--session-memory",
           "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory",
           "line_start": 46,
-          "line_end": 178
+          "line_end": 176
         },
         {
           "heading": "Stories",
@@ -1057,7 +1057,7 @@
           "anchor": "stories",
           "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories",
           "line_start": 59,
-          "line_end": 178
+          "line_end": 176
         },
         {
           "heading": "STORY-001 — Artifact Identity",
@@ -1097,39 +1097,87 @@
           "anchor": "story-005--ade-adapter-contract-and-integration-boundary",
           "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-005 — ADE Adapter Contract and integration boundary",
           "line_start": 154,
-          "line_end": 178
+          "line_end": 176
+        },
+        {
+          "heading": "EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
+          "level": 3,
+          "anchor": "epic-002--multi-ade-participation-and-the-initial-design-questionnaire",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
+          "line_start": 177,
+          "line_end": 245
+        },
+        {
+          "heading": "Stories",
+          "level": 4,
+          "anchor": "stories-1",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories",
+          "line_start": 185,
+          "line_end": 245
+        },
+        {
+          "heading": "STORY-006 — ADE registry and per-project ADE state",
+          "level": 5,
+          "anchor": "story-006--ade-registry-and-per-project-ade-state",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-006 — ADE registry and per-project ADE state",
+          "line_start": 187,
+          "line_end": 200
+        },
+        {
+          "heading": "STORY-007 — Multi-ADE lifecycle contract",
+          "level": 5,
+          "anchor": "story-007--multi-ade-lifecycle-contract",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-007 — Multi-ADE lifecycle contract",
+          "line_start": 201,
+          "line_end": 215
+        },
+        {
+          "heading": "STORY-008 — Migration and ownership ledger",
+          "level": 5,
+          "anchor": "story-008--migration-and-ownership-ledger",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-008 — Migration and ownership ledger",
+          "line_start": 216,
+          "line_end": 229
+        },
+        {
+          "heading": "STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
+          "level": 5,
+          "anchor": "story-009--initial-design-questionnaire-as-a-bootstrap-contract",
+          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
+          "line_start": 230,
+          "line_end": 245
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 179,
-          "line_end": 184
+          "line_start": 246,
+          "line_end": 251
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 185,
-          "line_end": 190
+          "line_start": 252,
+          "line_end": 257
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 191,
-          "line_end": 196
+          "line_start": 258,
+          "line_end": 263
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 197,
-          "line_end": 209
+          "line_start": 264,
+          "line_end": 276
         }
       ],
       "references": [],
@@ -4400,89 +4448,6 @@
       }
     },
     {
-      "id": "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-backlog-epic-multi-ade-questionnaire.md",
-      "title": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "08f032d6ccb181b042a4face98edc1dd10a7e805d03d7670ec0b91e811f1059c",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire",
-          "level": 1,
-          "anchor": "proposal--backlog-epic-for-multi-ade-and-the-initial-design-questionnaire",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire",
-          "line_start": 1,
-          "line_end": 86
-        },
-        {
-          "heading": "Block to add under",
-          "level": 2,
-          "anchor": "block-to-add-under",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under",
-          "line_start": 27,
-          "line_end": 86
-        },
-        {
-          "heading": "EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
-          "level": 3,
-          "anchor": "epic-002--multi-ade-participation-and-the-initial-design-questionnaire",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
-          "line_start": 29,
-          "line_end": 86
-        },
-        {
-          "heading": "Stories",
-          "level": 4,
-          "anchor": "stories",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories",
-          "line_start": 36,
-          "line_end": 86
-        },
-        {
-          "heading": "STORY-006 — ADE registry and per-project ADE state",
-          "level": 5,
-          "anchor": "story-006--ade-registry-and-per-project-ade-state",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-006 — ADE registry and per-project ADE state",
-          "line_start": 38,
-          "line_end": 49
-        },
-        {
-          "heading": "STORY-007 — Multi-ADE lifecycle contract",
-          "level": 5,
-          "anchor": "story-007--multi-ade-lifecycle-contract",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-007 — Multi-ADE lifecycle contract",
-          "line_start": 50,
-          "line_end": 62
-        },
-        {
-          "heading": "STORY-008 — Migration and ownership ledger",
-          "level": 5,
-          "anchor": "story-008--migration-and-ownership-ledger",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-008 — Migration and ownership ledger",
-          "line_start": 63,
-          "line_end": 74
-        },
-        {
-          "heading": "STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
-          "level": 5,
-          "anchor": "story-009--initial-design-questionnaire-as-a-bootstrap-contract",
-          "path": "PROPOSAL — Backlog: Epic for Multi-ADE and the Initial Design Questionnaire > Block to add under > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
-          "line_start": 75,
-          "line_end": 86
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [],
-        "referenced_by_proposals": []
-      }
-    },
-    {
       "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
@@ -6310,9 +6275,6 @@
     "before writing": [
       "SKILL-GTT-PROPOSE-CHANGE#before-writing"
     ],
-    "block to add under": [
-      "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE#block-to-add-under"
-    ],
     "blocked": [
       "BACKLOG#blocked"
     ],
@@ -7117,7 +7079,7 @@
     ],
     "stories": [
       "BACKLOG#stories",
-      "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE#stories"
+      "BACKLOG#stories-1"
     ],
     "story-001 — artifact identity": [
       "BACKLOG#story-001--artifact-identity"
@@ -7135,13 +7097,13 @@
       "BACKLOG#story-005--ade-adapter-contract-and-integration-boundary"
     ],
     "story-006 — ade registry and per-project ade state": [
-      "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE#story-006--ade-registry-and-per-project-ade-state"
+      "BACKLOG#story-006--ade-registry-and-per-project-ade-state"
     ],
     "story-007 — multi-ade lifecycle contract": [
-      "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE#story-007--multi-ade-lifecycle-contract"
+      "BACKLOG#story-007--multi-ade-lifecycle-contract"
     ],
     "story-008 — migration and ownership ledger": [
-      "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE#story-008--migration-and-ownership-ledger"
+      "BACKLOG#story-008--migration-and-ownership-ledger"
     ],
     "structure": [
       "README-GTT#structure"

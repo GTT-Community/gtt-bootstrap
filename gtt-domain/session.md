@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-09-29T21:43:26Z
+# Generated: 2026-09-29T21:45:27Z
 
 ## Freeze state
 frozen (2026-09-28T17:18:49Z)
@@ -22,7 +22,6 @@ none
 apply-session-adapters.sh
 GOVERNANCE-PACKAGE-gtt-v2-1.md
 PROPOSAL-artifact-identity-followups.md
-PROPOSAL-backlog-epic-multi-ade-questionnaire.md
 PROPOSAL-gtt-v2-1-backlog-epic-stories.md
 
 ## Change request
@@ -50,15 +49,15 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Artifact identity and technical index
-identity: 56 active artifact(s), 36 retired
+identity: 55 active artifact(s), 37 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 3
+branch: main; uncommitted paths: 6
 recent commits:
+41c5b5b docs: evidence entry for ADR-006 promotion and staging cleanup
 a94c7a4 chore: clean up ratified ADR-005/006 staging (drafts, promotion scripts, rehearsal packages)
 947c24a feat: ratify ADR-006 provenance, gaps (OPEN/BLOCKING), source manifest and working agreements
 3f35a95 feat: ratify ADR-005 Multi-ADE overlays and Initial Design Questionnaire contracts
 5ef21f6 chore: remove .gitignore and the scaffold-restructure task file from the product
-e3426fb chore: finalize ADR-004 cleanup
