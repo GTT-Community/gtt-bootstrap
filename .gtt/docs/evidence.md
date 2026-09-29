@@ -87,3 +87,64 @@ Persisted because no existing document outside `gtt-domain/proposals/` (out of s
 | `gtt-validate.sh` | OK — every line PASS, one `SKIPPED gtt-check-adapter.sh (0 of 4 declared adapters match this workspace)` (expected: this repo is the multi-adapter catalog, not an installed project) | RUNTIME VERIFIED |
 
 No FAIL occurred; nothing was converted to SKIPPED to hide a failure — the one SKIPPED line is `gtt-validate.sh`'s own pre-existing, documented behavior for a catalog repository.
+
+---
+
+## Entry 2026-09-29T17:44 — ADR-005 package (Multi-ADE, Initial Design Questionnaire): pre-ratification checks
+
+**State:** branch `main`, HEAD `5ef21f6`; working tree has uncommitted changes (`gtt-domain/session.md` modified; untracked package files under `gtt-domain/proposals/`, `.gtt/scaffold/templates/`, the task file). Project frozen. ADR-005 is **not ratified** and `apply-ADR-005-bootstrap-integration-contracts.sh` has **not been executed by anyone**. Platform: Windows 11, Git Bash, Python 3.13. Nothing below is evidence about the promoted tree.
+
+### 1. What was run
+
+| Command | Result | Type |
+|---|---|---|
+| `python gtt-domain/proposals/adr-005-package/rehearse-multi-ade.py --project .` | `103/103 checks held` (exit 0). Runs on a **temporary copy** of the project overlaid with the staged package: registry, init, re-run, status/inspect/resume, validate failures, primary, update, clean/export, migration, record, questionnaire, Core neutrality, `gtt-index.sh` + `gtt-validate.sh` (no FAIL) | RUNTIME VERIFIED (of the staged code in a copy, not of the repository) |
+| `bash -n` on `apply-ADR-005-bootstrap-integration-contracts.sh` and `apply-session-adapters.sh` | exit 0 for both (syntax only; neither was run) | STATIC VERIFIED |
+| `sha256sum` of each of the 20 MOD/L0 targets vs the hash table embedded in the promotion script | 20 of 20 identical | RUNTIME VERIFIED |
+| `bash .gtt/scripts/gtt-check-markdown.sh` | `gtt-check-markdown: OK` | RUNTIME VERIFIED |
+| `bash .gtt/scripts/gtt-validate.sh` (baseline, before the package, real repo) | PASS except `gtt-check-integrity.sh` FAIL: unregistered artifacts (questionnaire, staged drafts) + 2 pre-existing `readme-gtt.es.md` anchor WARNs; adapter check `SKIPPED` (catalog) | RUNTIME VERIFIED |
+| `git status --short` after the package was built | only `gtt-domain/proposals/**` (new/edited), plus `.gtt/scaffold/templates/`, the task file and `__pycache__` untracked and `gtt-domain/session.md` modified — all present before the package. No governed file (`context/`, `adr/`, `.frozen`, `backlog.md`, `change-request.md`, `AGENTS.md`, hooks, settings) changed | RUNTIME VERIFIED |
+| Diff of the questionnaire ignoring `{=html}` fences and blank lines, before vs. staged | empty (53 answer slots normalised to `<!-- ADE populates this section -->`) | RUNTIME VERIFIED |
+
+### 2. What was not verified
+
+| Claim | Status | Type |
+|---|---|---|
+| The promotion script's behaviour (prompt, backup, rollback, stamping, post-validation) | never executed; only `bash -n`, its hash table and its `sed` expressions were checked in isolation | NO EVIDENCE |
+| Behaviour on Linux or macOS | not run | NO EVIDENCE |
+| Codex, GitHub Copilot and Kiro runtimes | not exercised; `enforcement: ci-gate` restates `.gtt/docs/docs.md` | DOCUMENTED ONLY |
+| An ADE following the questionnaire's Operating Contract | instruction plane only; no script can prove it | NO EVIDENCE |
+| `gtt-check-stack.sh` against `origin/main` on the promoted tree | not determinable in the temporary copy (`CANNOT-DETERMINE`) | NO EVIDENCE |
+| Claude Code hooks against the promoted tree | untouched by the package; not re-run | NO EVIDENCE |
+
+No FAIL was hidden: the only non-PASS lines are the baseline `gtt-check-integrity.sh` (expected, resolved by `gtt-index.sh` in the rehearsal) and the catalog `SKIPPED` adapter check.
+
+---
+
+## Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks
+
+**State:** branch `main`, HEAD `5ef21f6` (nothing committed since the earlier entry); working tree carries the promoted, uncommitted changes plus untracked files. ADR-005 `Status: Accepted`, ratified by the Solution Designer executing `apply-ADR-005-bootstrap-integration-contracts.sh` on 2026-09-29 (output of that run: 26 files written, `gtt-index` OK with 61 artifacts, `gtt-validate: OK`). This entry follows the pre-ratification entry above, which is history. Platform: Windows 11, Git Bash, Python 3.13.
+
+### 1. What was run on the promoted tree
+
+| Command | Result | Type |
+|---|---|---|
+| The promotion script's own post-validation (`gtt-validate.sh`), as printed by the run | `gtt-check-backlog` PASS; `gtt-check-adapter` SKIPPED (catalog, no `.gtt/ade.json`); `gtt-check-protection` PASS; `gtt-check-stack` PASS; `gtt-check-markdown` PASS; `gtt-check-integrity` PASS; session-adapter checks PASS for claude, codex, copilot, kiro; `gtt-validate: OK` | RUNTIME VERIFIED |
+| `bash .gtt/scripts/gtt-validate.sh` (re-run afterwards) | identical: every line PASS or the one SKIPPED adapter check; `gtt-validate: OK` | RUNTIME VERIFIED |
+| `python gtt-domain/proposals/adr-005-package/rehearse-multi-ade.py --catalog .` | `103/103 checks held` (temporary copy of the promoted tree; `gtt-check-stack` CANNOT-DETERMINE there, outside a checkout) | RUNTIME VERIFIED (engine, in a copy) |
+| `bash .gtt/scripts/gtt-ade.sh state` | `ADE state: not configured (no .gtt/ade.json ...)` — expected: this repository is the catalog | RUNTIME VERIFIED |
+| `bash .gtt/scripts/gtt-template.sh list` | `initial-design-questionnaire  ok  .gtt/scaffold/templates/gtt-initial-design-questionnaire.md` | RUNTIME VERIFIED |
+| ADR-005 header | `Status: Accepted`, `Date: 2026-09-29`, `Approved by: Solution Designer (mgriott) - ratified by executing apply-ADR-005-...sh` | RUNTIME VERIFIED |
+| `git status --short` | modified: the 15 machinery/instruction/documentation files, the 5 L0 context files, `.gtt/docs/evidence.md` and `gtt-completion.md` (appends), the derived index and `session.md`; new: the 5 engine files, ADR-005, the questionnaire folder. `gtt-domain/.frozen`, `backlog.md`, `change-request.md`, `SOURCE-BRIEF.*`, hooks and settings not modified | RUNTIME VERIFIED |
+
+### 2. Still not verified
+
+| Claim | Status | Type |
+|---|---|---|
+| `gtt-ade.sh install/adopt/update/remove` against a real installed project (only temporary copies were used) | not run | NO EVIDENCE |
+| Linux and macOS | not run | NO EVIDENCE |
+| Codex, GitHub Copilot and Kiro runtimes; `enforcement: ci-gate` | restates the compatibility matrix | DOCUMENTED ONLY |
+| An ADE following the questionnaire's Operating Contract | instruction plane only | NO EVIDENCE |
+| `apply-session-adapters.sh` record step on a real install | rehearsed piecewise only; the script was never run | NO EVIDENCE |
+
+The staged package files, the backlog proposal (`PROPOSAL-backlog-epic-multi-ade-questionnaire.md`) and the ADE state for this repository remain undecided; nothing here records them as done.

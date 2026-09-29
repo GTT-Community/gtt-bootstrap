@@ -181,3 +181,27 @@ ADR: ADR-004 ratified by executing apply-ADR-004-gtt-domain-and-dot-gtt-engine.s
 Freeze: .frozen preserved byte-for-byte at gtt-domain/.frozen; gtt-freeze.sh was not run
 Human action required: review 'git status', commit, then delete the staged package in gtt-domain/proposals/ (see the ADR script's closing message and gtt-domain/proposals/gtt-domain-migration/CLEANUP.md)
 ```
+
+---
+
+## Bootstrap integration contracts (Multi-ADE and Initial Design Questionnaire) - 2026-09-29T20:50:59Z
+
+```text
+GTT Bootstrap contracts applied (ADR-005)
+
+Decided:
+- Multi-ADE: one overlay per participating ADE, exactly one Primary ADE (a workflow identifier; no authority)
+- Detection is not participation; state in .gtt/ade.json (written only by gtt-ade.sh); registry in the manifest overlays:
+- The Initial Design Questionnaire is a Bootstrap-owned template (manifest templates:, gtt-template.sh); source material, not governed architecture
+
+Created: .gtt/scripts/gtt-ade.sh gtt_ade.py gtt_manifest.py gtt-template.sh gtt_template.py; gtt-domain/adr/ADR-005-bootstrap-integration-contracts.md
+Replaced: gtt-domain/context/{stack,architecture,glossary,constraints,principles}.md; AGENTS.md; manifest.yaml; gtt-check-adapter.sh gtt-validate.sh gtt-status.sh;
+          the gtt-bootstrap skill; the questionnaire (answer-slot syntax only); both READMEs; installation, usage (EN/ES), docs, index
+Unchanged: freeze regime, GTTGuard, identity/index contracts, Session Memory adapters, ADR-001/003/004, backlog.md
+
+ADR: ADR-005 ratified by executing apply-ADR-005-bootstrap-integration-contracts.sh on 2026-09-29 (L0 text changed only through it)
+Verification: static + rehearsal in a disposable copy only (Windows / Git Bash / Python 3.13). NOT run on Linux or macOS.
+              No Codex, Copilot or Kiro runtime was exercised; 'enforcement' values restate the compatibility matrix (documented, not runtime-verified).
+Human action required: review 'git status', commit; decide the staged backlog proposal (PROPOSAL-backlog-epic-multi-ade-questionnaire.md);
+                       delete the staged package (see the closing message)
+```

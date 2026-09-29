@@ -72,6 +72,24 @@ for ade in "$@"; do
 done
 bash .gtt/scripts/gtt-validate.sh || rollback
 
+# One ownership contract for clean / export --clean (ADR-005): attribute the files just
+# installed to their ADE in the .gtt/ade.json ledger. Only meaningful when that ADE
+# participates; otherwise say so - never guess, never fail the install over it.
+if [ -f .gtt/ade.json ] && [ -f .gtt/scripts/gtt-ade.sh ]; then
+  for ade in "$@"; do
+    RECORD=()
+    while IFS= read -r p; do [ -n "$p" ] && RECORD+=("$p"); done < <(grep -oE '"install_path": *"[^"]+"' ".gtt/session-adapters/$ade.json" | sed -E 's/.*: *"([^"]+)"/\1/')
+    if bash .gtt/scripts/gtt-ade.sh record "$ade" "${RECORD[@]}" --apply; then
+      echo "recorded $ade's adapter files in .gtt/ade.json"
+    else
+      echo "WARNING: $ade's files were NOT recorded (is $ade a participating ADE?)." >&2
+      echo "         clean / export --clean will keep them until you run: gtt-ade.sh record $ade <paths> --apply" >&2
+    fi
+  done
+else
+  echo "note: no .gtt/ade.json here (catalog or pre-multi-ADE project); nothing recorded."
+fi
+
 echo
 echo "Installed: $*. Runtime verification is still whatever the declaration says -"
 echo "see .gtt/session-adapters/<ade>.json. Review with 'git status'; commit when satisfied."

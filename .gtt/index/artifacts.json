@@ -39,6 +39,14 @@
       "aliases": []
     },
     {
+      "id": "ADR-005",
+      "type": "architecture-decision",
+      "path": "gtt-domain/adr/ADR-005-bootstrap-integration-contracts.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ADR-TEMPLATE",
       "type": "template",
       "path": "gtt-domain/adr/ADR-TEMPLATE.md",
@@ -270,6 +278,14 @@
       "aliases": []
     },
     {
+      "id": "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "GTT-INDEX",
       "type": "documentation",
       "path": ".gtt/docs/index.md",
@@ -349,6 +365,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-bootstrap-integration-contracts.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-ADR-DRAFT-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
       "type": "proposal",
       "path": "gtt-domain/proposals/ADR-DRAFT-gtt-domain-and-dot-gtt-engine.md",
@@ -407,6 +431,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-architecture-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-004.md",
@@ -414,6 +446,14 @@
       "history": [
         "proposals/context-constraints-adr-004.md"
       ],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-constraints-adr-005.md",
+      "status": "active",
+      "history": [],
       "aliases": []
     },
     {
@@ -445,6 +485,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-GLOSSARY-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-glossary-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-003",
       "type": "proposal",
       "path": "proposals/context-principles-adr-003.md",
@@ -462,6 +510,14 @@
       "history": [
         "proposals/context-principles-adr-004.md"
       ],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-PRINCIPLES-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-principles-adr-005.md",
+      "status": "active",
+      "history": [],
       "aliases": []
     },
     {
@@ -521,6 +577,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-STACK-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
       "type": "proposal",
       "path": "gtt-domain/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
@@ -553,6 +617,22 @@
       "aliases": []
     },
     {
+      "id": "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-backlog-epic-multi-ade-questionnaire.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-PROPOSAL-EVIDENCE-ENTRY-ADR-005",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-evidence-entry-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md",
@@ -571,6 +651,14 @@
         "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
         "proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md"
       ],
+      "aliases": []
+    },
+    {
+      "id": "PROP-PROPOSAL-MULTI-ADE-OVERLAYS-PRIMARY-ADE",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/PROPOSAL-multi-ade-overlays-primary-ade.md",
+      "status": "active",
+      "history": [],
       "aliases": []
     },
     {
