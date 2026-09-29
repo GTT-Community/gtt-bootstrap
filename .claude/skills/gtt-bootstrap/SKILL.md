@@ -1,13 +1,13 @@
 ---
 name: gtt-bootstrap
-description: Detect the host ADE, install only its GTT adapter, then populate context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and context/ still holds template placeholders. Checks the project root for an existing solution document, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
+description: Detect the host ADE, install only its GTT adapter, then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
 
 # Bootstrap the governed context
 
-`context/` ships as a template — angle-bracket placeholders and empty
+`gtt-domain/context/` ships as a template — angle-bracket placeholders and empty
 table rows, not real answers. This skill turns those placeholders into the
 project's actual context, confirmed by the Solution Designer before anything
 is written.
@@ -19,17 +19,18 @@ questions: which ADE is executing this bootstrap, and which adapter does
 that resolve to.
 
 GTT Bootstrap ships a portable core — `AGENTS.md` and `SOURCE-BRIEF.*` (if a
-source document exists) at the project root, plus Project Governance
-(`context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`),
-Documentation (`docs/`) and the Engine (`gtt/`, defined by
-`gtt/scaffold/manifest.yaml`) — plus one adapter per
+source document exists) at the project root, plus the governed domain
+(`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`) and
+the Engine (`.gtt/`, including its documentation in `.gtt/docs/`, defined by
+`.gtt/scaffold/manifest.yaml`) — plus one adapter per
 supported ADE. The source repository carries every adapter — it is a
 catalog, not a package to install whole. A target project receives the
 portable core plus exactly the adapter matching the ADE actually executing
-the bootstrap, never the whole catalog. Workspace hygiene: the Engine stays in
-`gtt/`, Documentation in `docs/`, and Project Governance at the project root;
-never mix the layers, and report (never merge) a collision with a directory the
-project already has.
+the bootstrap, never the whole catalog. Workspace hygiene: the Engine and its
+documentation stay in `.gtt/`, and the governed domain in `gtt-domain/`;
+never mix them, and report (never merge) a collision with a `.gtt/` or
+`gtt-domain/` the project already has.
+
 
 | Host ADE | Adapter | `.claude/` | `.kiro/` | `AGENTS.md` | `.copilot/copilot-instructions.md` |
 |---|---|---|---|---|---|
@@ -83,12 +84,12 @@ report after step 6. Then continue to step 1.
 
 Two independent questions. Cross them before doing anything.
 
-| `context/` has real content? | `.frozen` exists? | Action |
+| `gtt-domain/context/` has real content? | `gtt-domain/.frozen` exists? | Action |
 |---|---|---|
 | No | No | Normal case. Proceed to step 2. |
 | No | Yes | Anomaly — freeze validates content before writing the marker, so this should be impossible. Stop. Report the inconsistency. Do not guess which side is right. |
 | Yes | Yes | Normal governed state. Bootstrap does not apply. Offer `gtt-audit` instead. |
-| Yes | No | **Migration case.** Say exactly: "context/ is populated but .frozen is absent. If this project was already governed before this version of GTT, run gtt/scripts/gtt-freeze.sh now rather than treating this as a fresh bootstrap." Stop. Do not offer to overwrite it. |
+| Yes | No | **Migration case.** Say exactly: "gtt-domain/context/ is populated but gtt-domain/.frozen is absent. If this project was already governed before this version of GTT, run .gtt/scripts/gtt-freeze.sh now rather than treating this as a fresh bootstrap." Stop. Do not offer to overwrite it. |
 
 "Real content" means not placeholders like `<layered / hexagonal / ...>` or
 empty table rows.
@@ -102,6 +103,7 @@ earlier GTT layout:
   `gtt/context/`, `gtt/adr/`, `gtt/proposals/`, `gtt/backlog.md`,
   `gtt/CHANGE-REQUEST.md`, `gtt/SESSION.md`, `gtt/.frozen`, or documentation
   directly under `gtt/` (`gtt/INDEX.md`, `gtt/INSTALLATION*.md`, ...).
+- layout of ADR-003 (v2.1 after the scaffold restructure, before ADR-004): the Engine in `gtt/` and governance and documentation at the project root (`context/`, `adr/`, `proposals/`, `docs/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`).
 
 If any are found:
 
@@ -112,7 +114,7 @@ If any are found:
 - Stop and tell the Solution Designer plainly what was found and where, and
   ask whether to migrate them or leave the project on its current layout for
   now. Only move on explicit confirmation.
-- If the project is frozen, relocating `context/` or `adr/` is a governed
+- If the project is frozen, relocating `gtt-domain/context/` or `gtt-domain/adr/` is a governed
   change: route it through `gtt-propose-change` and a promotion script, never
   a direct move.
 - If they confirm an unfrozen migration, move each file's content verbatim (no
@@ -123,8 +125,8 @@ If any are found:
 
 Look at the project root only — not subdirectories, not the rest of the repo.
 Anything there that isn't part of the kit itself (`AGENTS.md`, `SOURCE-BRIEF.*`,
-`readme-gtt.md`, `readme-gtt.es.md`, `.claude/`, `.kiro/`, `copilot/`, `gtt/`,
-`docs/`, `context/`, `adr/`, `proposals/`)
+`readme-gtt.md`, `readme-gtt.es.md`, `.claude/`, `.kiro/`, `copilot/`, `.gtt/`,
+`gtt-domain/`)
 and isn't ordinary project scaffolding (`package.json`, `.gitignore`, a
 pre-existing `README.md`, `LICENSE`, and the like) is a candidate solution
 document. The
@@ -145,10 +147,10 @@ without being told, same as Claude Code checking a fixed location for
 `AGENTS.md` instead of searching for it. Beyond that, ask.
 
 Wherever it comes from, once it is processed a copy becomes `SOURCE-BRIEF.*` at
-the project root (step 6) — permanent, not archived away into `docs/` —
+the project root (step 6) — permanent, not archived away into `.gtt/docs/` —
 so the reasoning behind the context stays visible and traceable right at the
 project root, the one GTT artifact a human should never have to go looking
-for under `gtt/`.
+for under `.gtt/`.
 
 ## 3. Confirm the document is finished — or stop
 
@@ -207,7 +209,7 @@ Solution Designer before writing anything. Silence is not confirmation.
 ## 6. Write the context, then stop
 
 The project is pre-freeze, so these paths are writable. Write directly the six
-files under `context/`, using the exact target filenames (`stack.md`,
+files under `gtt-domain/context/`, using the exact target filenames (`stack.md`,
 `architecture.md`, `constraints.md`, `principles.md`, `solution-vision.md`,
 `glossary.md`).
 
@@ -227,13 +229,13 @@ Report, then point out three things.
 
 **Report** (from step 0): detected ADE, resolved adapter, files installed,
 adapters explicitly excluded, and whether native support exists for this
-ADE. Give this report in chat, and also append it to `docs/gtt-completion.md`,
+ADE. Give this report in chat, and also append it to `.gtt/docs/gtt-completion.md`,
 following the exact shape in `AGENTS.md` → *Completion report* — that file
 is the durable record; chat output alone is lost once the session ends.
 Append, don't overwrite, if the file already has an entry from a prior
 bootstrap or re-run.
 
-Before stopping, check `backlog.md`: if the source document or the
+Before stopping, check `gtt-domain/backlog.md`: if the source document or the
 conversation surfaced Epics or Stories, ask whether they should be recorded
 there now (via `gtt-propose-change`, form 4, same as any other backlog
 change) — do not silently leave them out, and do not invent ones that
@@ -242,8 +244,8 @@ move on; an empty backlog is a valid state, not a gap to fill by guessing.
 
 If the host project already contains source files with `@GTTGuard` markers
 (a prior partial setup, or code copied in before GTT was bootstrapped), run
-`bash gtt/scripts/gtt-guard-sync.sh` once the workspace is in place so
-`gtt/protection/registry.yaml` reflects them from the start, rather than
+`bash .gtt/scripts/gtt-guard-sync.sh` once the workspace is in place so
+`.gtt/protection/registry.yaml` reflects them from the start, rather than
 leaving it stale until someone happens to run the sync later.
 
 Point out three things:

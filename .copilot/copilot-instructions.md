@@ -23,23 +23,23 @@ should never become one.
 - `AGENTS.md` — the portable GTT contract: mission, required workspace,
   bootstrap behavior, governed regime, change process, non-negotiable
   rules.
-- `context/constraints.md` — hard limits that apply to every change.
-- `docs/index.md` — map of every file in this kit.
+- `gtt-domain/context/constraints.md` — hard limits that apply to every change.
+- `.gtt/docs/index.md` — map of every file in this kit.
 
 ## What Copilot must not do
 
-`context/`, `adr/`, `change-request.md`, and `SOURCE-BRIEF.*`
+`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/change-request.md`, and `SOURCE-BRIEF.*`
 are governed paths owned by the Solution Designer. GTT has no deterministic
 write-block adapter for Copilot today — this is an instruction, not an
 enforced guardrail, so treat it as binding anyway. To propose a change,
-write a draft under `proposals/` and follow the change process in
+write a draft under `gtt-domain/proposals/` and follow the change process in
 `AGENTS.md`; never edit the governed paths directly, and never work around
 this by renaming, duplicating, or editing them through another path.
 
 The same applies to any file, class, or method carrying a `@GTTGuard`
-marker (listed in `gtt/protection/registry.yaml`) — see `AGENTS.md` →
+marker (listed in `.gtt/protection/registry.yaml`) — see `AGENTS.md` →
 *Protected artifacts (GTTGuard)*. Copilot has no real-time block for this
-either; `gtt/scripts/gtt-check-protection.sh` in CI is the actual
+either; `.gtt/scripts/gtt-check-protection.sh` in CI is the actual
 enforcement, so treat the instruction as binding regardless.
 
 ## Procedures

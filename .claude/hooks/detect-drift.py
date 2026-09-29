@@ -3,20 +3,20 @@
 
 L3 (src/, infra/, dependency manifests, ...) is free by design - it is not a
 governed path - but a change there can silently override a decision that is
-locked in context/stack.md. This hook is the write-time trigger of that
+locked in gtt-domain/context/stack.md. This hook is the write-time trigger of that
 check: the gtt-audit skill is the sweep trigger for everything this hook
 did not happen to see.
 
-Reads the ```gtt-drift-signals fenced block from context/stack.md - one
+Reads the ```gtt-drift-signals fenced block from gtt-domain/context/stack.md - one
 `<glob> -> <what it guards>` line per signal - and warns on stderr when a
 write matches a glob. Advisory only: it never blocks (always exits 0) and
-only runs once the project is governed (.frozen present); pre-freeze
+only runs once the project is governed (gtt-domain/.frozen present); pre-freeze
 there is nothing ratified yet to contradict. A category warns once per
 session - the dedup state lives outside the repo (system temp), never inside
 it, so a session never leaves a trace in the working tree.
 
 Shell mutations of L3 are invisible here (PostToolUse tool_input for Bash is
-a command string, not a path) - gtt/scripts/gtt-check-stack.sh is the net
+a command string, not a path) - .gtt/scripts/gtt-check-stack.sh is the net
 for that case, same as for the write block in protect-l0.py.
 """
 
@@ -27,8 +27,8 @@ import re
 import sys
 import tempfile
 
-FROZEN_MARKER = ".frozen"
-STACK_MAP = "context/stack.md"
+FROZEN_MARKER = "gtt-domain/.frozen"
+STACK_MAP = "gtt-domain/context/stack.md"
 
 BLOCK_RE = re.compile(
     r"```gtt-drift-signals\r?\n(.*?)```", re.DOTALL

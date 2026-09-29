@@ -17,8 +17,8 @@ Infrastructure choices are architectural. Changing the deployment target,
 the orchestration model, the IaC tool, or a managed service is an architecture
 change, not a config edit.
 
-Read section 3 of `context/stack.md` (deployment topology) before
-proposing anything here. `context/constraints.md` records which platform
+Read section 3 of `gtt-domain/context/stack.md` (deployment topology) before
+proposing anything here. `gtt-domain/context/constraints.md` records which platform
 decisions are already locked and why.
 
 Requires a proposal via `gtt-propose-change`, never a direct edit:

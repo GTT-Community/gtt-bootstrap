@@ -1,6 +1,6 @@
 ---
 name: gtt-guard
-description: Mark a file, class, or method as protected with a @GTTGuard marker, or remove one, then keep gtt/protection/registry.yaml in sync. Use when the user asks to protect a piece of code from autonomous agent edits, to mark something GTTGuard, to unprotect something, or asks what is currently protected. Not for making the actual change to a protected artifact — that goes through gtt-propose-change (Form 5).
+description: Mark a file, class, or method as protected with a @GTTGuard marker, or remove one, then keep .gtt/protection/registry.yaml in sync. Use when the user asks to protect a piece of code from autonomous agent edits, to mark something GTTGuard, to unprotect something, or asks what is currently protected. Not for making the actual change to a protected artifact — that goes through gtt-propose-change (Form 5).
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -49,7 +49,7 @@ default the enforcement hook uses.
 ## Removing a marker
 
 Delete the `@GTTGuard`/`[GTTGuard]`/comment-marker line. Do not hand-edit
-`gtt/protection/registry.yaml` to remove the entry — it is a derived
+`.gtt/protection/registry.yaml` to remove the entry — it is a derived
 artifact and will simply be regenerated with the entry gone once you
 re-sync.
 
@@ -58,17 +58,17 @@ re-sync.
 Run:
 
 ```bash
-bash gtt/scripts/gtt-guard-sync.sh
+bash .gtt/scripts/gtt-guard-sync.sh
 ```
 
-This regenerates `gtt/protection/registry.yaml` from every marker currently
+This regenerates `.gtt/protection/registry.yaml` from every marker currently
 in source. If a marker precedes a class/method whose body can't actually
 be resolved (a truncated file, for example), the sync fails with the exact
 file and line — fix the underlying code and re-run rather than editing the
 registry by hand.
 
-Then, ideally, run `bash gtt/scripts/gtt-check-protection.sh` — it also
-validates that any `source: "ADR-NNN"` actually exists under `adr/`.
+Then, ideally, run `bash .gtt/scripts/gtt-check-protection.sh` — it also
+validates that any `source: "ADR-NNN"` actually exists under `gtt-domain/adr/`.
 
 Tell the user in one line what is now protected/unprotected and that the
 registry was synced.

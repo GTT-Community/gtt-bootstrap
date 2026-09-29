@@ -1,6 +1,6 @@
 ---
 name: gtt-drift-response
-description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Produces a proposal under proposals/ plus a promotion script the human runs to ratify it.
+description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Produces a proposal under gtt-domain/proposals/ plus a promotion script the human runs to ratify it.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -15,9 +15,9 @@ the PostToolUse detector, a `gtt-audit` sweep, or a direct question.
 
 ## Step 1 — Assess
 
-Read the changed file and compare it against `context/stack.md`,
-`context/architecture.md`, `context/constraints.md`, and any ADR under
-`adr/` whose subject covers the change.
+Read the changed file and compare it against `gtt-domain/context/stack.md`,
+`gtt-domain/context/architecture.md`, `gtt-domain/context/constraints.md`, and any ADR under
+`gtt-domain/adr/` whose subject covers the change.
 
 Three outcomes:
 
@@ -31,11 +31,11 @@ Three outcomes:
 
 ## Step 2 — Draft
 
-Write to `proposals/PROPOSAL-<short-kebab-summary>.md`. No numbers:
+Write to `gtt-domain/proposals/PROPOSAL-<short-kebab-summary>.md`. No numbers:
 numbering belongs to ADRs, which are the permanent record, and choosing an ADR
 number would mean reserving ratified identity for your own draft.
 
-`proposals/` is the only writable governed path.
+`gtt-domain/proposals/` is the only writable governed path.
 
 **Fast track** — minimum viable delta:
 
@@ -44,7 +44,7 @@ number would mean reserving ratified identity for your own draft.
 - What the map should say instead
 - The exact change-log row for `stack.md`
 
-**Full track** — follow `adr/ADR-TEMPLATE.md`: context, decision,
+**Full track** — follow `gtt-domain/adr/ADR-TEMPLATE.md`: context, decision,
 alternatives considered with why each loses, consequences, risks.
 
 Status line: `Status: Requires Architect approval`. Only the human accepts.
@@ -55,14 +55,14 @@ If the proposal is accepted (or once you know it will need to be — ask if
 unclear), stage the same promotion package the `gtt-adr` skill produces,
 using the same shape it defines:
 
-- `proposals/ADR-DRAFT-<slug>.md` — the ADR, following
-  `adr/ADR-TEMPLATE.md` for the full track, or the fast-track minimum
+- `gtt-domain/proposals/ADR-DRAFT-<slug>.md` — the ADR, following
+  `gtt-domain/adr/ADR-TEMPLATE.md` for the full track, or the fast-track minimum
   delta promoted into the same template shape
-- `proposals/context-<basename>.md` for every affected file (`stack.md`
+- `gtt-domain/proposals/context-<basename>.md` for every affected file (`stack.md`
   at minimum, changelog row included)
-- `proposals/apply-ADR-NNN-<slug>.sh` — the executable promotion script,
+- `gtt-domain/proposals/apply-ADR-NNN-<slug>.sh` — the executable promotion script,
   with the required header, the `view`/`yes`/`no` review loop, one `mv`/`cp`
-  per staged file, and a final `bash gtt/scripts/gtt-check-stack.sh`
+  per staged file, and a final `bash .gtt/scripts/gtt-check-stack.sh`
 
 State the ADR number as a suggestion — the next free one — and say it is the
 human's to confirm. Then deliver the same "🟡 Change ready for review" message

@@ -5,12 +5,13 @@ permissions.deny already blocks the Write/Edit tools for the unconditional
 machinery paths. This hook covers what static config can't express: shell
 commands (sed -i, tee, redirection, mv, rm, ...) reaching those same
 machinery paths and the three protected governance files - AGENTS.md,
-change-request.md (project root since the scaffold restructure), and
+change-request.md (in gtt-domain/ since ADR-004), and
 SOURCE-BRIEF.* (stays at the project root, the one human-facing exception) -
-without going through a file tool, and the two-regime condition on context/
-and adr/ - writable pre-freeze, denied once .frozen exists. A static
-permissions.deny entry can't test for a file's existence, so those two
-paths are deliberately absent from settings.json and live here instead.
+without going through a file tool, and the two-regime condition on
+gtt-domain/context/ and gtt-domain/adr/ - writable pre-freeze, denied once
+gtt-domain/.frozen exists. A static permissions.deny entry can't test for a
+file's existence, so those two paths are deliberately absent from
+settings.json and live here instead.
 
 ROOT_FILES matches by filename substring, not by directory prefix, so it
 keeps protecting AGENTS.md, change-request.md, and SOURCE-BRIEF.*
@@ -33,14 +34,15 @@ into the effective permissions/hooks configuration, so it is exactly as
 capable of disabling this mechanism and must not be reachable by any path
 settings.json itself is denied on.
 
-Root-anchored paths (scaffold restructure): the governed directories moved
-from gtt/context/ and gtt/adr/ to context/ and adr/ at the project root. A
-bare substring test for "context/" would also fire on a host project's own
+Root-anchored paths (ADR-004): the governed directories moved from the
+project root (ADR-003) to gtt-domain/context/ and gtt-domain/adr/, and
+gtt-domain/proposals/ is the one directory agents may write. A bare
+substring test for "context/" would also fire on a host project's own
 src/context/ (a very common directory name) and deny legitimate edits, so
 paths are RESOLVED instead: every path-like token (a tool's file_path, or a
 token of a shell command) is normalised, resolved against the project root,
-and only a result that lands at <root>/context/, <root>/adr/ or
-<root>/proposals/ counts. This is at least as strict as the old substring
+and only a result that lands at <root>/gtt-domain/context/,
+<root>/gtt-domain/adr/ or <root>/gtt-domain/proposals/ counts. This is at least as strict as the old substring
 test for everything that resolves into those directories - absolute Windows
 paths, Git-Bash /c/... paths, ./ prefixes, backslashes and ../ traversal
 all resolve to the same place - and it stops matching unrelated directories
@@ -75,12 +77,12 @@ import posixpath
 import re
 import sys
 
-FROZEN_MARKER = ".frozen"
+FROZEN_MARKER = "gtt-domain/.frozen"
 
 # Directories governed by the two-regime condition, relative to the project
 # root. Resolved (see docstring), never substring-matched.
-REGIME_DIRS = ("context", "adr")
-PROPOSALS_DIR = "proposals"
+REGIME_DIRS = ("gtt-domain/context", "gtt-domain/adr")
+PROPOSALS_DIR = "gtt-domain/proposals"
 
 ROOT_FILES = re.compile(r"AGENTS\.md|change-request\.md|SOURCE-BRIEF\.", re.IGNORECASE)
 MACHINERY = re.compile(r"\.claude/settings(\.local)?\.json|\.claude/hooks/", re.IGNORECASE)
@@ -90,11 +92,11 @@ MUTATING_SHELL = re.compile(
     r"|del|erase|rd|rmdir|ri|move|copy|ren"
     r"|set-content|add-content|out-file|new-item|remove-item"
     r"|move-item|copy-item|rename-item|clear-content)\b"
-    r"|>>?\s*\S*(gtt/|context/|adr/|change-request\.md|SOURCE-BRIEF\."
+    r"|>>?\s*\S*(gtt/|gtt-domain/|change-request\.md|SOURCE-BRIEF\."
     r"|\.claude/settings(\.local)?\.json|\.claude/hooks/)",
     re.IGNORECASE,
 )
-# An agent may always write drafts into proposals/ (see is_protected),
+# An agent may always write drafts into gtt-domain/proposals/ (see is_protected),
 # but it must never be the one to execute the promotion script it staged
 # there - that is the Human Promotion Boundary (AGENTS.md). Kept as its own
 # pattern, checked ahead of the proposals/ exemption in is_protected(),
@@ -107,11 +109,11 @@ PROMOTION_SCRIPT_EXEC = re.compile(
 )
 
 REASON = (
-    "GTT governance: AGENTS.md, context/, adr/, change-request.md, "
-    "SOURCE-BRIEF.*, and the .claude/ governance machinery itself are "
-    "owned by the Solution Designer. Write your draft to proposals/ "
-    "instead - that directory is yours. Use the gtt-propose-change or "
-    "gtt-bootstrap skill."
+    "GTT governance: AGENTS.md, gtt-domain/context/, gtt-domain/adr/, "
+    "gtt-domain/change-request.md, SOURCE-BRIEF.*, and the .claude/ governance "
+    "machinery itself are owned by the Solution Designer. Write your draft to "
+    "gtt-domain/proposals/ instead - that directory is yours. Use the "
+    "gtt-propose-change or gtt-bootstrap skill."
 )
 
 # Characters that separate path-like tokens inside a shell command string.
@@ -189,9 +191,9 @@ def is_protected(target: str) -> bool:
     if PROMOTION_SCRIPT_EXEC.search(target):
         return True
     regime, proposals = classify(target)
-    # proposals/ is the one directory an agent may always write to -
+    # gtt-domain/proposals/ is the one directory an agent may always write to -
     # SOURCE-BRIEF.* and change-request.md are only protected outside it
-    # (e.g. gtt-bootstrap staging proposals/bootstrap/SOURCE-BRIEF.md).
+    # (e.g. gtt-bootstrap staging gtt-domain/proposals/bootstrap/SOURCE-BRIEF.md).
     if proposals:
         return False
     if regime:

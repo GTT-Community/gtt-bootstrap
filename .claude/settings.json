@@ -3,8 +3,8 @@
     "deny": [
       "Edit(/AGENTS.md)",
       "Write(/AGENTS.md)",
-      "Edit(/change-request.md)",
-      "Write(/change-request.md)",
+      "Edit(/gtt-domain/change-request.md)",
+      "Write(/gtt-domain/change-request.md)",
       "Edit(/SOURCE-BRIEF.*)",
       "Write(/SOURCE-BRIEF.*)",
       "Edit(/.claude/settings.json)",
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
+            "command": "bash .gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
           }
         ]
       }

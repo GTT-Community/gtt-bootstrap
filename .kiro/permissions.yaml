@@ -3,11 +3,11 @@ permissions:
   fileWrite:
     deny:
       - "AGENTS.md"
-      - "change-request.md"
+      - "gtt-domain/change-request.md"
       - "SOURCE-BRIEF.*"
       - ".kiro/settings/**"
       - ".kiro/steering/**"
       - ".kiro/hooks/**"
       - ".kiro/permissions.yaml"
       - ".claude/**"
-      - ".frozen"
+      - "gtt-domain/.frozen"

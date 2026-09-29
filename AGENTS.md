@@ -19,14 +19,14 @@ them into one:
 
 | Role | Does | Never does | This repo's mechanism |
 |---|---|---|---|
-| Grounding | Retrieves and exposes governed evidence faithfully | Decide architecture | `gtt-bootstrap`, `gtt-audit` reading `context/`, `adr/`, `backlog.md` |
-| Reasoning | Analyzes evidence, drafts proposals/ADRs | Authorize its own draft | `gtt-propose-change`, `gtt-adr`, `gtt-drift-response` |
-| Validation | Runs deterministic structural checks | Make an architectural judgment | `gtt/scripts/gtt-check-*.sh`, `gtt-validate.sh` |
+| Grounding | Retrieves and exposes governed evidence faithfully | Decide architecture | `gtt-bootstrap`, `gtt-audit` reading `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/backlog.md` |
+| Reasoning | Analyzes evidence, drafts gtt-domain/proposals/ADRs | Authorize its own draft | `gtt-propose-change`, `gtt-adr`, `gtt-drift-response` |
+| Validation | Runs deterministic structural checks | Make an architectural judgment | `.gtt/scripts/gtt-check-*.sh`, `gtt-validate.sh` |
 
 The chain is: Sources → Grounding → Evidence Dossier (governed context as
 read) → Reasoning → Proposal → Human Decision → Freeze. A reasoning step
 must never receive raw sources "for context" in a way that bypasses
-grounding — read `docs/docs.md` → *Governance model* for the full
+grounding — read `.gtt/docs/docs.md` → *Governance model* for the full
 rationale. Producing output, of any kind, never grants an agent decision
 authority.
 
@@ -51,72 +51,67 @@ The GTT bootstrap contract is:
 ├── readme-gtt.es.md
 ├── SOURCE-BRIEF.*                # if a source document existed
 │
-├── context/                      # PROJECT GOVERNANCE: L0 governed context
-├── adr/                          #   L1 accepted decisions
-├── proposals/                    #   agent drafts awaiting a human decision
-├── backlog.md                    #   development line
-├── change-request.md             #   front door for change intent
-├── session.md                    #   derived operational state (never authority)
-├── .frozen                       #   freeze marker, written by gtt-freeze.sh
-│
-├── docs/                         # GTT DOCUMENTATION
-│   ├── index.md
-│   ├── installation.md
-│   ├── installation.es.md
-│   ├── usage.md
-│   ├── usage.es.md
-│   ├── gtt-completion.md
-│   ├── evidence.md
-│   ├── docs.md
-│   └── session-adapter-contract.md
-│
-├── gtt/                          # GTT ENGINE
+├── .gtt/                         # GTT-METHOD ENGINE (machinery, derived state, GTT's own documentation)
 │   ├── README.md
-│   ├── scaffold/manifest.yaml
-│   ├── scripts/
 │   ├── index/
 │   ├── protection/
-│   └── session-adapters/
+│   ├── scaffold/manifest.yaml
+│   ├── scripts/
+│   ├── session-adapters/
+│   └── docs/                     #   GTT's own documentation: index, installation, usage, docs, evidence,
+│                                 #   gtt-completion, session-adapter-contract
+│
+├── gtt-domain/                   # THE DOMAIN GOVERNED BY GTT-METHOD
+│   ├── context/                  #   L0 governed context
+│   ├── adr/                      #   L1 accepted decisions
+│   ├── proposals/                #   governed drafts awaiting a human decision
+│   ├── backlog.md
+│   ├── change-request.md
+│   ├── session.md                #   derived operational state (never authority)
+│   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │
 └── .claude/ | .kiro/ | .copilot/ # ADE OVERLAY - exactly one: the ADE running the bootstrap
 ```
 
-The scaffold has four layers, and the layout keeps them apart:
+The scaffold has two homes and an overlay, and the layout keeps them apart:
 
-| Layer | Where | Contents |
+| Part | Where | Contents |
 |---|---|---|
-| GTT Engine | `gtt/` | scripts, artifact identity and technical index, protection registry, session-adapter declarations, the scaffold manifest |
-| Project Governance | project root | `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` |
-| GTT Documentation | `docs/` | index, installation, usage, completion record, evidence, methodology |
+| GTT Engine | `.gtt/` | scripts, artifact identity and technical index, protection registry, session-adapter declarations, the scaffold manifest, and GTT's own documentation (`.gtt/docs/`) |
+| Governed domain | `gtt-domain/` | `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` |
 | ADE Overlay | `.claude/`, `.kiro/`, `.copilot/` | the integration for exactly one ADE |
 
-`gtt/scaffold/manifest.yaml` is the single, declarative definition of this
-scaffold: what each layer contains and what is required. The layout above is
+`.gtt/scaffold/manifest.yaml` is the single, declarative definition of this
+scaffold: what each part contains and what is required. The layout above is
 its human-readable rendering; if the two ever disagree, surface it as a
 finding rather than choosing one.
 
 Tool-specific integration directories remain at their required locations.
-Workspace hygiene: the Engine stays inside `gtt/` and GTT Documentation inside
-`docs/`; Project Governance sits at the project root because it is the
-governed state of the project itself, not GTT machinery. Never mix the layers —
-no governance artifact inside `gtt/`, no engine file inside `docs/`. `docs/`,
-`context/`, `adr/` and `proposals/` are common directory names, so a host
-project may already have them: that is a conflict to report under *Conflict
+Workspace hygiene: architectural authority (L0/L1) lives only in
+`gtt-domain/context/` and `gtt-domain/adr/`; executable GTT logic lives only in
+`.gtt/`, and `gtt-domain/` holds none in operation (`gtt-domain/proposals/` holds
+governed drafts, including promotion scripts that only a human ever runs).
+`AGENTS.md` and the ADE overlay are instructions to agents and belong to neither
+group; the project's own L3 code belongs to neither either. Never mix the two:
+no governance artifact inside `.gtt/`, no engine file inside `gtt-domain/`.
+Both directory names are namespaced, so a host project's own `docs/`,
+`context/`, `adr/` or `proposals/` never collide with GTT; a host project that
+already has `.gtt/` or `gtt-domain/` is a conflict to report under *Conflict
 policy*, never a reason to overwrite or merge silently. See *Workspace
 hygiene* in `readme-gtt.md` for the full principle.
 
 ## Backlog governance
 
-`backlog.md` is the development line: Epics, Stories, and the work
+`gtt-domain/backlog.md` is the development line: Epics, Stories, and the work
 currently expected to be built. It is a development-planning artifact, not
-architecture — never a second source of truth beside `context/`.
+architecture — never a second source of truth beside `gtt-domain/context/`.
 
 **Precedence:** Governed Context / L0 → ADR → this backlog → implementation.
 A Story that contradicts governed context or an accepted ADR is a finding,
-not a resolution — surface it through `change-request.md`; never let a
+not a resolution — surface it through `gtt-domain/change-request.md`; never let a
 Story silently override architecture.
 
-**What goes through `change-request.md` → `proposals/` → decision:**
+**What goes through `gtt-domain/change-request.md` → `gtt-domain/proposals/` → decision:**
 adding or removing an Epic or Story, or materially changing its scope or
 acceptance criteria — the same funnel as an architectural change.
 
@@ -128,7 +123,7 @@ remove Epics/Stories either — that distinction requires judgment, not a
 loophole.
 
 **Before development work, establish the applicable Epic/Story from
-`backlog.md`.** If defined Epics/Stories exist elsewhere (a requirements
+`gtt-domain/backlog.md`.** If defined Epics/Stories exist elsewhere (a requirements
 doc, an issue tracker, prior conversation) but are missing from the
 backlog, reconcile them through the normal change process — do not
 silently ignore them and do not silently rewrite the backlog to match.
@@ -140,7 +135,7 @@ and present them as user-defined requirements — proposed ones must stay
 labeled `Status: Proposed` until accepted.
 
 Structural integrity (unique IDs, valid status values) is checked
-deterministically by `gtt/scripts/gtt-check-backlog.sh`; whether an
+deterministically by `.gtt/scripts/gtt-check-backlog.sh`; whether an
 Epic/Story is real, current, and correctly linked to actual work is a
 judgment call for the `gtt-audit` skill.
 
@@ -150,7 +145,7 @@ GTTGuard is a lightweight, language-agnostic mechanism for marking a file,
 class, or method so an AI coding agent may read, analyze, and propose a
 change to it, but may never modify it autonomously. It is a **sibling** to
 L0/L1 governance, not a restatement of it: it protects arbitrary L3 code
-the developer opts into protecting, never `context/` or `adr/`, and
+the developer opts into protecting, never `gtt-domain/context/` or `gtt-domain/adr/`, and
 it must never be conflated with the Human Promotion Boundary below — the
 two are deliberately different weights of ceremony for different things.
 
@@ -159,11 +154,11 @@ respects it.
 
 A developer marks a declaration with `@GTTGuard` (Java, Python), `[GTTGuard]`
 (C#), or a `// @GTTGuard` / `# @GTTGuard` comment (other languages),
-optionally with `reason=`/`source=`. `gtt/scripts/gtt-guard-sync.sh`
+optionally with `reason=`/`source=`. `.gtt/scripts/gtt-guard-sync.sh`
 detects every marker, resolves the file/class/method it protects
 deterministically (never by LLM judgment), and regenerates
-`gtt/protection/registry.yaml` — a **derived artifact**, like a lockfile:
-never hand-edit it, since `gtt/scripts/gtt-check-protection.sh` fails the
+`.gtt/protection/registry.yaml` — a **derived artifact**, like a lockfile:
+never hand-edit it, since `.gtt/scripts/gtt-check-protection.sh` fails the
 build the moment the committed file drifts from what the markers in source
 actually declare. Placing or removing the marker is an ordinary L3 edit —
 it is the Solution Designer's proposal, not a protected change itself.
@@ -175,7 +170,7 @@ span live against the file on disk so an unprotected method next to a
 protected one stays freely editable — and failing safe to whole-file
 blocking whenever that resolution is ambiguous. Kiro, Codex, and GitHub
 Copilot have no equivalent real-time block, the same honest limitation
-already documented for the two-regime `context/`/`adr/` condition —
+already documented for the two-regime `gtt-domain/context/`/`gtt-domain/adr/` condition —
 `gtt-check-protection.sh` in CI is the enforcement there, backed by an
 instruction-plane note in each adapter. No ADE is credited with a guarantee
 it does not actually have.
@@ -195,7 +190,7 @@ artifact).
 
 ## Session continuity
 
-Run `gtt/scripts/gtt-status.sh` to regenerate `session.md`: a
+Run `.gtt/scripts/gtt-status.sh` to regenerate `gtt-domain/session.md`: a
 deterministic snapshot (freeze state, backlog focus, pending proposals,
 protected-artifact count, artifact identity and index state) derived from repository
 artifacts, never from any ADE's private conversation memory — the same
@@ -207,31 +202,31 @@ of running the script.
 
 If working preferences for this project are ever introduced, keep them in
 an artifact separate from session state — they are not Canon, architecture,
-evidence, or decisions, sit below governed context/constraints in
+evidence, or decisions, sit below governed gtt-domain/context/constraints in
 precedence, must never silently override them, and no agent may author its
 own preferences.
 
 ## Artifact identity and technical index
 
-Every governed Markdown artifact has a stable identity (`gtt/index/artifacts.json`)
+Every governed Markdown artifact has a stable identity (`.gtt/index/artifacts.json`)
 independent of its path: a move or rename is reconciled, never treated as delete
 + create. Reference an artifact as `[[ID]]` (e.g. `[[ADR-007]]`) so the reference
-survives moves. `gtt/index/technical-index.json` is a DERIVED accelerator - for
-locating concepts and sections (`gtt/scripts/gtt-query.sh`) - never a source of
+survives moves. `.gtt/index/technical-index.json` is a DERIVED accelerator - for
+locating concepts and sections (`.gtt/scripts/gtt-query.sh`) - never a source of
 truth, never evidence in itself; the Markdown it points to is authoritative.
-Regenerate it with `gtt/scripts/gtt-index.sh`; never hand-edit it. After any move
-run `gtt/scripts/gtt-reconcile.sh` (dry-run first). `gtt/scripts/gtt-check-integrity.sh`
+Regenerate it with `.gtt/scripts/gtt-index.sh`; never hand-edit it. After any move
+run `.gtt/scripts/gtt-reconcile.sh` (dry-run first). `.gtt/scripts/gtt-check-integrity.sh`
 (part of `gtt-validate.sh`) fails on unreconciled moves, duplicate logical identity,
 broken or old-path references, unresolved `[[ID]]`, and a stale index. Agents
 operate through these scripts and MUST NOT own an artifact's identity or authority,
-and never rewrite frozen `context/` or `adr/` files to fix a reference.
+and never rewrite frozen `gtt-domain/context/` or `gtt-domain/adr/` files to fix a reference.
 
 ## Validation
 
-`gtt/scripts/gtt-validate.sh` runs every deterministic check script
+`.gtt/scripts/gtt-validate.sh` runs every deterministic check script
 (`gtt-check-backlog.sh`, `gtt-check-adapter.sh`, `gtt-check-protection.sh`,
 `gtt-check-stack.sh`) and reports pass/fail/cannot-determine.
-`gtt/scripts/gtt-status.sh` reports what is current, governed, pending,
+`.gtt/scripts/gtt-status.sh` reports what is current, governed, pending,
 proposed, blocked, and frozen. Both are read-only and deterministic;
 neither substitutes for a human architectural judgment.
 
@@ -239,9 +234,9 @@ neither substitutes for a human architectural judgment.
 
 GTT ships a portable core — this file, `readme-gtt.md`, `readme-gtt.es.md`,
 and `SOURCE-BRIEF.*` (if a source document existed) at the project root, plus
-Project Governance (`context/`, `adr/`, `proposals/`, `backlog.md`,
-`change-request.md`, `session.md`), GTT Documentation (`docs/`) and the GTT
-Engine (`gtt/`, including `scaffold/manifest.yaml`) — plus
+the governed domain (`gtt-domain/`) and the GTT Engine (`.gtt/`, including
+`.gtt/docs/` and `scaffold/manifest.yaml`) — plus
+
 one adapter per supported ADE: Claude Code → `.claude/`, Kiro → `.kiro/`,
 Codex → `AGENTS.md` alone, GitHub Copilot → `.copilot/copilot-instructions.md`.
 The GTT Bootstrap source carries every adapter as a catalog; a target
@@ -264,7 +259,7 @@ During initial bootstrap:
    it (see *Adapters vs. portable core*) before touching the filesystem.
 2. Obtain or confirm the design/source document.
 3. Verify that it is complete enough to serve as a source.
-4. Inspect `context/` for placeholders.
+4. Inspect `gtt-domain/context/` for placeholders.
 5. Map the source into the six governed context files.
 6. Ask for missing information rather than inventing decisions.
 7. Summarize the resulting context.
@@ -296,9 +291,9 @@ If a host project already contains:
 - `readme-gtt.md`
 - `readme-gtt.es.md`
 - `SOURCE-BRIEF.*`
-- `gtt/` (the Engine, including `scaffold/manifest.yaml`)
-- `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`
-- `docs/`
+- `.gtt/` (the Engine: scripts, index, protection, session-adapters, `docs/`, `scaffold/manifest.yaml`)
+- `gtt-domain/` (`context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`)
+
 - `.claude/`
 - `.kiro/`
 - `.copilot/copilot-instructions.md`
@@ -316,15 +311,15 @@ Preserve the host project's existing source structure.
 Before:
 
 ```text
-.frozen
+gtt-domain/.frozen
 ```
 
-the bootstrap procedure may populate `context/`.
+the bootstrap procedure may populate `gtt-domain/context/`.
 
 After:
 
 ```text
-.frozen
+gtt-domain/.frozen
 ```
 
 do not directly modify governed context.
@@ -332,22 +327,22 @@ do not directly modify governed context.
 Architectural changes must go through:
 
 ```text
-change-request.md
+gtt-domain/change-request.md
         ↓
-proposals/               (proposal, then ADR draft + promotion script)
+gtt-domain/proposals/               (proposal, then ADR draft + promotion script)
         ↓
 Human Promotion Boundary      (review, then explicit human execution)
         ↓
-adr/
+gtt-domain/adr/
         ↓
-context/stack.md
+gtt-domain/context/stack.md
 ```
 
 ## Change requests
 
 Routine implementation does not require a change request.
 
-Use `change-request.md` when a requested change affects a governed decision.
+Use `gtt-domain/change-request.md` when a requested change affects a governed decision.
 
 A proposal should identify:
 
@@ -381,15 +376,15 @@ GOVERNED CHANGE
 > **AI may prepare the change. AI may not autonomously promote the change.**
 
 Once a proposal (forms 1-3 of `gtt-propose-change`, or a `gtt-drift-response`
-full/fast track) is approved, the agent's job is not to edit `adr/` or
-`context/` — those stay write-protected regardless. Instead it stages a
-**promotion package** entirely under `proposals/`: the ADR draft, the
-full text of every affected `context/` file, and an executable script —
+full/fast track) is approved, the agent's job is not to edit `gtt-domain/adr/` or
+`gtt-domain/context/` — those stay write-protected regardless. Instead it stages a
+**promotion package** entirely under `gtt-domain/proposals/`: the ADR draft, the
+full text of every affected `gtt-domain/context/` file, and an executable script —
 `apply-ADR-NNN-<slug>.sh` — that applies all of them together.
 
 The script is a first-class GTT artifact, not a convenience wrapper:
 
-- lives in `proposals/`, the one directory the agent may always write to;
+- lives in `gtt-domain/proposals/`, the one directory the agent may always write to;
 - opens with a header naming the proposal and ADR and stating that human
   execution is required;
 - lets the human view the ADR text and the exact diff against current context
@@ -398,7 +393,7 @@ The script is a first-class GTT artifact, not a convenience wrapper:
 - applies every file the approved change touches in one run, and stops with a
   clear error rather than continuing after a partial failure;
 - is never executed by the agent, under any circumstance — the human runs it
-  from the project root: `bash proposals/apply-ADR-NNN-<slug>.sh`.
+  from the project root: `bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh`.
 
 After generating it, the agent must plainly tell the user: that a promotion
 script was generated and exactly where it is, what it will change, that they
@@ -410,7 +405,7 @@ its own explicit human decision, and approving one change does not carry over
 to the next.
 
 For changes that do not touch governed context — a development-line change
-applied straight to `backlog.md` (see *Backlog governance*) — this
+applied straight to `gtt-domain/backlog.md` (see *Backlog governance*) — this
 boundary does not apply; that stays a direct edit after approval, no ADR and
 no script.
 
@@ -437,7 +432,7 @@ If the user wants the source design changed, treat that as an explicit design ch
 ## Completion report
 
 After bootstrap, report in chat **and** append this same report to
-`docs/gtt-completion.md` — that file is the durable record; chat output
+`.gtt/docs/gtt-completion.md` — that file is the durable record; chat output
 alone is lost once the session ends. Append, do not overwrite, on a later
 re-run (ADE/adapter switch, migration, re-freeze).
 
@@ -506,10 +501,10 @@ Human action required:
 - Never install an adapter for an ADE other than the one executing the bootstrap.
 - Never infer the executing ADE from the underlying model or from adapter files that merely happen to exist; ask if it cannot be established with confidence.
 - Never invent Epics or Stories and present them as user-defined requirements.
-- Never let a Story in `backlog.md` silently override governed context or an accepted ADR.
-- Never add or remove an Epic/Story, or materially change one, outside the `change-request.md` flow.
-- Never generate a scaffold artifact (`change-request.md`, `backlog.md`, `session.md`, or the files under `docs/`) at a temporary location and move it into place afterward — write it where `gtt/scaffold/manifest.yaml` places it, directly.
-- Never bypass a GTTGuard-protected artifact's approval requirement — not by renaming or removing its marker without authorization, not by editing around the enforcing hook, and not by hand-editing `gtt/protection/registry.yaml`.
+- Never let a Story in `gtt-domain/backlog.md` silently override governed context or an accepted ADR.
+- Never add or remove an Epic/Story, or materially change one, outside the `gtt-domain/change-request.md` flow.
+- Never generate a scaffold artifact (`gtt-domain/change-request.md`, `gtt-domain/backlog.md`, `gtt-domain/session.md`, or the files under `.gtt/docs/`) at a temporary location and move it into place afterward — write it where `.gtt/scaffold/manifest.yaml` places it, directly.
+- Never bypass a GTTGuard-protected artifact's approval requirement — not by renaming or removing its marker without authorization, not by editing around the enforcing hook, and not by hand-editing `.gtt/protection/registry.yaml`.
 - Never treat approval of one GTTGuard proposal as authorization for a different protected artifact, and never confuse its lightweight, in-conversation promotion with the L0/L1 Human Promotion Boundary.
 
 ### Bootstrap documentation vs. installed project layout
@@ -523,7 +518,7 @@ In the **GTT Bootstrap repository**, the canonical entry points remain at the re
 - `AGENTS.md`
 
 `installation.md`, `installation.es.md`, `usage.md`, and `usage.es.md` live
-under `docs/` — indexed from `docs/index.md` and linked from the two
+under `.gtt/docs/` — indexed from `.gtt/docs/index.md` and linked from the two
 READMEs above — the same as in any host project this repository bootstraps.
 
 When an agent installs/bootstraps GTT into a **host project**, it MUST organize the installed GTT workspace as follows:
@@ -535,43 +530,36 @@ When an agent installs/bootstraps GTT into a **host project**, it MUST organize 
 ├── readme-gtt.es.md
 ├── SOURCE-BRIEF.*                # if a source document existed
 │
-├── context/                      # PROJECT GOVERNANCE: L0 governed context
-├── adr/                          #   L1 accepted decisions
-├── proposals/                    #   agent drafts awaiting a human decision
-├── backlog.md                    #   development line
-├── change-request.md             #   front door for change intent
-├── session.md                    #   derived operational state (never authority)
-├── .frozen                       #   freeze marker, written by gtt-freeze.sh
-│
-├── docs/                         # GTT DOCUMENTATION
-│   ├── index.md
-│   ├── installation.md
-│   ├── installation.es.md
-│   ├── usage.md
-│   ├── usage.es.md
-│   ├── gtt-completion.md
-│   ├── evidence.md
-│   ├── docs.md
-│   └── session-adapter-contract.md
-│
-├── gtt/                          # GTT ENGINE
+├── .gtt/                         # GTT-METHOD ENGINE (machinery, derived state, GTT's own documentation)
 │   ├── README.md
-│   ├── scaffold/manifest.yaml
-│   ├── scripts/
 │   ├── index/
 │   ├── protection/
-│   └── session-adapters/
+│   ├── scaffold/manifest.yaml
+│   ├── scripts/
+│   ├── session-adapters/
+│   └── docs/                     #   GTT's own documentation: index, installation, usage, docs, evidence,
+│                                 #   gtt-completion, session-adapter-contract
+│
+├── gtt-domain/                   # THE DOMAIN GOVERNED BY GTT-METHOD
+│   ├── context/                  #   L0 governed context
+│   ├── adr/                      #   L1 accepted decisions
+│   ├── proposals/                #   governed drafts awaiting a human decision
+│   ├── backlog.md
+│   ├── change-request.md
+│   ├── session.md                #   derived operational state (never authority)
+│   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │
 └── .claude/ | .kiro/ | .copilot/ # ADE OVERLAY - exactly one: the ADE running the bootstrap
 ```
 
-`gtt/` is the GTT Engine, `docs/` is GTT Documentation, and Project
-Governance (`context/`, `adr/`, `proposals/`, `backlog.md`,
-`change-request.md`, `session.md`, `.frozen`) sits at the project root. Each
+`.gtt/` is the GTT Engine (with GTT's own documentation in `.gtt/docs/`) and
+`gtt-domain/` is the governed domain (`context/`, `adr/`, `proposals/`,
+`backlog.md`, `change-request.md`, `session.md`, `.frozen`). Each
 artifact is generated directly at its place in the scaffold, never written
 elsewhere and moved afterward.
 
-Install only the adapter matching the ADE executing the bootstrap (see *Adapters vs. portable core*). Whichever one it is, it remains at the host-project root, never moved under `gtt/`:
+
+Install only the adapter matching the ADE executing the bootstrap (see *Adapters vs. portable core*). Whichever one it is, it remains at the host-project root, never moved under `.gtt/`:
 
 ```text
 .claude/                         # Claude Code
@@ -583,18 +571,18 @@ Codex takes no adapter file beyond `AGENTS.md` itself. Do not install the adapte
 
 `readme-gtt.md` and `readme-gtt.es.md` ARE installed at the host-project
 root — they are the human-facing GTT entry points and must stay
-discoverable there, not buried under `docs/`. `installation.md` and
-`usage.md` (and their `.es.md` pairs) ARE also installed, under `docs/`
+discoverable there, not buried under `.gtt/docs/`. `installation.md` and
+`usage.md` (and their `.es.md` pairs) ARE also installed, under `.gtt/docs/`
 alongside `index.md`, `gtt-completion.md`, and `evidence.md` — indexed from
-`docs/index.md` and linked from the two READMEs at root.
+`.gtt/docs/index.md` and linked from the two READMEs at root.
 
 The **project-facing GTT README MUST be installed as**:
 
 ```text
-gtt/README.md
+.gtt/README.md
 ```
 
-`gtt/README.md` is the operational README for the GTT Engine as installed in that project. It should explain the installed GTT workspace and its operation; it is not a reason to dump the bootstrap repository's documentation into the host project's root.
+`.gtt/README.md` is the operational README for the GTT Engine as installed in that project. It should explain the installed GTT workspace and its operation; it is not a reason to dump the bootstrap repository's documentation into the host project's root.
 
 The agent MUST:
 
@@ -603,14 +591,14 @@ The agent MUST:
 3. Preserve the host project's existing structure and files.
 4. Detect the ADE executing the bootstrap and resolve exactly one adapter for it; if it cannot be established with confidence, ask rather than guess.
 5. Install the portable core plus only the resolved adapter, and explicitly exclude the others — the source repository is a catalog, not a package to install whole.
-6. Create/organize the GTT scaffold as defined above and declared in `gtt/scaffold/manifest.yaml`.
+6. Create/organize the GTT scaffold as defined above and declared in `.gtt/scaffold/manifest.yaml`.
 7. Keep `AGENTS.md`, `readme-gtt.md`, and `readme-gtt.es.md` at the host-project root.
-8. Write `change-request.md` and `backlog.md` at the project root and `index.md` and `gtt-completion.md` under `docs/` — directly, never generated elsewhere and then moved.
-9. Install the project-facing README at `gtt/README.md`, keep the Engine directories (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`) under `gtt/`, and place `context/`, `adr/`, `proposals/`, and `docs/` at the project root.
+8. Write `gtt-domain/change-request.md` and `gtt-domain/backlog.md` under `gtt-domain/` and `index.md` and `gtt-completion.md` under `.gtt/docs/` — directly, never generated elsewhere and then moved.
+9. Install the project-facing README at `.gtt/README.md`, keep the Engine directories (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`, `docs/`) under `.gtt/`, and place `context/`, `adr/`, `proposals/` and the derived and state files under `gtt-domain/`.
 10. Preserve the original design/source brief (`SOURCE-BRIEF.*`) in the host project according to the GTT bootstrap procedure.
 11. Never move, rename, duplicate, redistribute, or silently overwrite an existing host-project file.
 12. If a target file already exists, stop and report the conflict rather than silently replacing it.
-13. Do not automatically freeze the project. `gtt/scripts/gtt-freeze.sh` is run after human review/confirmation.
+13. Do not automatically freeze the project. `.gtt/scripts/gtt-freeze.sh` is run after human review/confirmation.
 14. On re-run, never reintroduce an adapter that a prior bootstrap explicitly excluded, and never overwrite an existing adapter outside the normal conflict-reporting rule above.
 
-The bootstrap entry points stay at the root **of the bootstrap repository**. Inside a host project, the installed operational documentation goes under `docs/`, Project Governance sits at the project root, and the Engine goes under `gtt/`.
+The bootstrap entry points stay at the root **of the bootstrap repository**. Inside a host project, the installed operational documentation goes under `.gtt/docs/`, the governed domain under `gtt-domain/`, and the Engine under `.gtt/`.

@@ -2,10 +2,10 @@
 """GTT - GTTGuard protected-artifact enforcement (PreToolUse hook).
 
 Sibling to protect-l0.py, but for a different layer: protect-l0.py guards
-context/, adr/, and the two governance root files; this hook guards
+gtt-domain/context/, gtt-domain/adr/, and the two governance root files; this hook guards
 whatever L3 code a developer has opted into protecting with a @GTTGuard
 marker (GTT Method canonical spec v2.1, sections 13-17 "GTTGuard"), recorded in
-gtt/protection/registry.yaml by gtt/scripts/gtt-guard-sync.sh.
+.gtt/protection/registry.yaml by .gtt/scripts/gtt-guard-sync.sh.
 
 Granularity: a file-scope entry (empty symbol) blocks the whole file, same
 as protect-l0.py. A class/method-scope entry resolves that symbol's current
@@ -41,10 +41,10 @@ import os
 import re
 import sys
 
-sys.path.insert(0, os.path.join("gtt", "scripts"))
+sys.path.insert(0, os.path.join(".gtt", "scripts"))
 import gtt_guard  # noqa: E402  (path must be set up first)
 
-REGISTRY = os.path.join("gtt", "protection", "registry.yaml")
+REGISTRY = os.path.join(".gtt", "protection", "registry.yaml")
 MUTATING_SHELL = re.compile(
     r"\b(sed\s+-i|tee|mv|rm|truncate|dd|install"
     r"|del|erase|rd|rmdir|ri|move|copy|ren"
@@ -102,7 +102,7 @@ def blocked_reason(root, hits, tool, tool_input, target):
                 f"GTTGuard: {target} declares protected symbol '{h['symbol']}' "
                 f"that could not be resolved deterministically. Failing safe: "
                 f"treating the whole file as protected until this is fixed. "
-                f"Run gtt/scripts/gtt-check-protection.sh for details."
+                f"Run .gtt/scripts/gtt-check-protection.sh for details."
             )
         if not old_string:
             return f"GTTGuard: {h['symbol']} in {target} is protected (HUMAN_APPROVAL). {PROPOSE_HINT}"
