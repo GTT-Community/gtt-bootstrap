@@ -392,7 +392,7 @@
       "id": "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS",
       "type": "proposal",
       "path": "gtt-domain/proposals/ADR-DRAFT-bootstrap-integration-contracts.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -418,7 +418,7 @@
       "id": "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS",
       "type": "proposal",
       "path": "gtt-domain/proposals/ADR-DRAFT-provenance-gaps-sources-agreements.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -466,7 +466,7 @@
       "id": "PROP-CONTEXT-ARCHITECTURE-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-architecture-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -474,7 +474,7 @@
       "id": "PROP-CONTEXT-ARCHITECTURE-ADR-006",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-architecture-adr-006.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -492,7 +492,7 @@
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -500,7 +500,7 @@
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-006",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-006.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -536,7 +536,7 @@
       "id": "PROP-CONTEXT-GLOSSARY-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-glossary-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -544,7 +544,7 @@
       "id": "PROP-CONTEXT-GLOSSARY-ADR-006",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-glossary-adr-006.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -572,7 +572,7 @@
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-principles-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -580,7 +580,7 @@
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-006",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-principles-adr-006.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -644,7 +644,7 @@
       "id": "PROP-CONTEXT-STACK-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -652,7 +652,7 @@
       "id": "PROP-CONTEXT-STACK-ADR-006",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-adr-006.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -700,7 +700,7 @@
       "id": "PROP-PROPOSAL-EVIDENCE-ENTRY-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-evidence-entry-adr-005.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -729,7 +729,7 @@
       "id": "PROP-PROPOSAL-MULTI-ADE-OVERLAYS-PRIMARY-ADE",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-multi-ade-overlays-primary-ade.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },

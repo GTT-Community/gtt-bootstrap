@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-09-29T18:10:06Z
+# Generated: 2026-09-29T21:41:53Z
 
 ## Freeze state
 frozen (2026-09-28T17:18:49Z)
@@ -22,6 +22,7 @@ none
 apply-session-adapters.sh
 GOVERNANCE-PACKAGE-gtt-v2-1.md
 PROPOSAL-artifact-identity-followups.md
+PROPOSAL-backlog-epic-multi-ade-questionnaire.md
 PROPOSAL-gtt-v2-1-backlog-epic-stories.md
 
 ## Change request
@@ -31,20 +32,33 @@ empty (still template placeholders)
 ADR-001-context-governance.md - Status: Accepted
 ADR-003-scaffold-restructure.md - Status: Accepted
 ADR-004-gtt-domain-and-dot-gtt-engine.md - Status: Accepted
+ADR-005-bootstrap-integration-contracts.md - Status: Accepted
+ADR-006-provenance-gaps-sources-agreements.md - Status: Accepted
 
 ## GTTGuard
 0 protected artifact(s) in .gtt/protection/registry.yaml
 
+## ADE integration (workflow state only - the Primary ADE holds no authority)
+ADE state: not configured (no .gtt/ade.json - single-ADE legacy install or the catalog).
+Adopt it with: bash .gtt/scripts/gtt-ade.sh adopt
+
+## Evidence / Governance (derived state - never agent notes, never authority)
+sources: 0 declared (provenance policy: none)
+gaps: OPEN 0, BLOCKING 0, RESOLVED 0
+unresolved conflicts in governed context: 0
+provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUESTA 0 (must be 0)
+working agreements: team 0, user 0 (never authority; below governed context)
+
 ## Artifact identity and technical index
-identity: 50 active artifact(s), 22 retired
+identity: 56 active artifact(s), 36 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 41
+branch: main; uncommitted paths: 59
 recent commits:
+947c24a feat: ratify ADR-006 provenance, gaps (OPEN/BLOCKING), source manifest and working agreements
+3f35a95 feat: ratify ADR-005 Multi-ADE overlays and Initial Design Questionnaire contracts
+5ef21f6 chore: remove .gitignore and the scaffold-restructure task file from the product
+e3426fb chore: finalize ADR-004 cleanup
 ad67b7d feat: ratify ADR-004 gtt domain and engine layout
-b359e11 chore: finalize ADR-003 scaffold restructure
-3b3b40d update version
-81bcc9b Bootstrap GTT v2.1 Virgin Product
-c64d694 Close AGENTS.md/settings.local.json protection gaps, add gtt-check-markdown.sh, backfill canonical-reference headers across the GTT kit
