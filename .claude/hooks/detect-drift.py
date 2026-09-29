@@ -3,14 +3,14 @@
 
 L3 (src/, infra/, dependency manifests, ...) is free by design - it is not a
 governed path - but a change there can silently override a decision that is
-locked in gtt/context/stack.md. This hook is the write-time trigger of that
+locked in context/stack.md. This hook is the write-time trigger of that
 check: the gtt-audit skill is the sweep trigger for everything this hook
 did not happen to see.
 
-Reads the ```gtt-drift-signals fenced block from gtt/context/stack.md - one
+Reads the ```gtt-drift-signals fenced block from context/stack.md - one
 `<glob> -> <what it guards>` line per signal - and warns on stderr when a
 write matches a glob. Advisory only: it never blocks (always exits 0) and
-only runs once the project is governed (gtt/.frozen present); pre-freeze
+only runs once the project is governed (.frozen present); pre-freeze
 there is nothing ratified yet to contradict. A category warns once per
 session - the dedup state lives outside the repo (system temp), never inside
 it, so a session never leaves a trace in the working tree.
@@ -27,8 +27,8 @@ import re
 import sys
 import tempfile
 
-FROZEN_MARKER = "gtt/.frozen"
-STACK_MAP = "gtt/context/stack.md"
+FROZEN_MARKER = ".frozen"
+STACK_MAP = "context/stack.md"
 
 BLOCK_RE = re.compile(
     r"```gtt-drift-signals\r?\n(.*?)```", re.DOTALL

@@ -9,8 +9,8 @@
 
 set -euo pipefail
 
-MARKER="gtt/.frozen"
-CTX="gtt/context"
+MARKER=".frozen"
+CTX="context"
 REQUIRED=(stack.md architecture.md solution-vision.md principles.md constraints.md glossary.md)
 
 if [ -f "$MARKER" ]; then
@@ -38,8 +38,8 @@ for f in "${REQUIRED[@]}"; do
   fi
 done
 
-if ! ls gtt/adr/ADR-001*.md >/dev/null 2>&1; then
-  echo "gtt-freeze: ADR-001 not found under gtt/adr/" >&2
+if ! ls adr/ADR-001*.md >/dev/null 2>&1; then
+  echo "gtt-freeze: ADR-001 not found under adr/" >&2
   fail=1
 fi
 
@@ -60,17 +60,17 @@ fi
   echo "Frozen by: ${USER:-unknown}"
 } > "$MARKER"
 
-if [ -d "gtt/proposals/bootstrap" ]; then
-  rm -rf gtt/proposals/bootstrap
-  echo "gtt-freeze: removed gtt/proposals/bootstrap (superseded by ratified context)."
+if [ -d "proposals/bootstrap" ]; then
+  rm -rf proposals/bootstrap
+  echo "gtt-freeze: removed proposals/bootstrap (superseded by ratified context)."
 fi
 
 cat <<'MSG'
 gtt-freeze: DONE
 
-gtt/context/ and gtt/adr/ are now read-only for agents. From here, changes
-go through gtt/CHANGE-REQUEST.md -> gtt/proposals/ -> you apply.
+context/ and adr/ are now read-only for agents. From here, changes
+go through change-request.md -> proposals/ -> you apply.
 
-Commit gtt/.frozen. It is versioned on purpose: a clone of a frozen project
+Commit .frozen. It is versioned on purpose: a clone of a frozen project
 stays frozen.
 MSG

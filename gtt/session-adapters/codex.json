@@ -5,8 +5,8 @@
   "adapter_status": "staged",
   "coverage": "N1",
   "files": [
-    { "role": "script", "install_path": ".codex/gtt-session-start.sh", "staged_path": "gtt/proposals/session-adapters/codex/.codex/gtt-session-start.sh" },
-    { "role": "config", "install_path": ".codex/hooks.json", "staged_path": "gtt/proposals/session-adapters/codex/.codex/hooks.json" }
+    { "role": "script", "install_path": ".codex/gtt-session-start.sh", "staged_path": "proposals/session-adapters/codex/.codex/gtt-session-start.sh" },
+    { "role": "config", "install_path": ".codex/hooks.json", "staged_path": "proposals/session-adapters/codex/.codex/hooks.json" }
   ],
   "registration": { "file": ".codex/hooks.json", "event": "SessionStart", "token": ".codex/gtt-session-start.sh" },
   "command": "bash .codex/gtt-session-start.sh",

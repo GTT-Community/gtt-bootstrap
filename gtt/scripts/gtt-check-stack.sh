@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # GTT - stack map freshness gate.
 #
-# The instruction layer asks agents to keep gtt/context/stack.md current.
+# The instruction layer asks agents to keep context/stack.md current.
 # This makes it deterministic: if a change adds or edits an ADR without
 # touching the map, the build fails.
 #
@@ -14,9 +14,9 @@
 set -euo pipefail
 
 BASE="${1:-origin/main}"
-MAP="gtt/context/stack.md"
+MAP="context/stack.md"
 
-if [ ! -f "gtt/.frozen" ]; then
+if [ ! -f ".frozen" ]; then
   echo "gtt-check-stack: project is not frozen yet, nothing to enforce."
   exit 0
 fi
@@ -27,7 +27,7 @@ fi
 MISSING=""
 while read -r adr; do
   [ -z "$adr" ] && continue
-  if ! ls "gtt/adr/${adr}"*.md >/dev/null 2>&1; then
+  if ! ls "adr/${adr}"*.md >/dev/null 2>&1; then
     MISSING="$MISSING  $adr\n"
   fi
 done < <(grep -oE 'ADR-[0-9]{3}' "$MAP" | sort -u)
@@ -53,7 +53,7 @@ fi
 
 CHANGED="$(git diff --name-only "$BASE"...HEAD)"
 
-ADR_CHANGED="$(echo "$CHANGED" | grep -E '^gtt/adr/ADR-[0-9]+' || true)"
+ADR_CHANGED="$(echo "$CHANGED" | grep -E '^adr/ADR-[0-9]+' || true)"
 MAP_CHANGED="$(echo "$CHANGED" | grep -Fx "$MAP" || true)"
 
 if [ -z "$ADR_CHANGED" ]; then

@@ -41,12 +41,12 @@ import sys
 
 MANIFEST = "gtt/index/artifacts.json"
 INDEX = "gtt/index/technical-index.json"
-FROZEN = "gtt/.frozen"
+FROZEN = ".frozen"
 SCHEMA = 1
 
 # A file under these is governed: once frozen this tool will not rewrite it
 # (the Human Promotion Boundary). Unresolved references there are reported.
-GOVERNED_PREFIXES = ("gtt/context/", "gtt/adr/")
+GOVERNED_PREFIXES = ("context/", "adr/")
 
 CANONICAL_RE = re.compile(r"GTT-CANONICAL-(v\d+(?:\.\d+)*)\.md")
 ADR_ID_RE = re.compile(r"^(ADR-(?:\d+|TEMPLATE))(?=$|[-_.\s])")
@@ -116,24 +116,22 @@ def git(*args):
 
 def tracked_files():
     """Every Markdown file in the GTT kit (same scope as gtt-check-markdown.sh,
-    plus SOURCE-BRIEF.md). SESSION.md is derived, so it is never an artifact."""
+    plus SOURCE-BRIEF.md). session.md is derived, so it is never an artifact."""
     found = []
-    for f in ("AGENTS.md", "README-GTT.md", "README-GTT.es.md", "SOURCE-BRIEF.md"):
+    for f in ("AGENTS.md", "readme-gtt.md", "readme-gtt.es.md", "SOURCE-BRIEF.md",
+              "backlog.md", "change-request.md"):
         if os.path.isfile(f):
             found.append(f)
     # Scope, not semantics: these directories hold kit files (instructions,
     # skills, rules) that must be indexed like any other artifact. Nothing below
     # branches on which tool owns a directory.
-    for base in ("gtt", ".claude", ".kiro", ".copilot"):
+    for base in ("gtt", "context", "adr", "proposals", "docs", ".claude", ".kiro", ".copilot"):
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__"))
             for name in sorted(filenames):
                 if not name.lower().endswith(".md"):
                     continue
-                p = norm(os.path.join(dirpath, name))
-                if p == "gtt/SESSION.md":
-                    continue
-                found.append(p)
+                found.append(norm(os.path.join(dirpath, name)))
     return sorted(set(found))
 
 
@@ -147,19 +145,19 @@ def derive(path):
         return aid, ("template" if aid == "ADR-TEMPLATE" else "architecture-decision")
     if path == "AGENTS.md":
         return "AGENTS", "instruction"
-    if path.startswith("README-GTT"):
+    if "/" not in path and path.lower().startswith("readme-gtt"):
         return slug_id(stem), "documentation"
     if path.startswith("SOURCE-BRIEF"):
         return "SOURCE-BRIEF", "source-brief"
-    if path.startswith("gtt/context/"):
+    if path.startswith("context/"):
         return "CTX-" + slug_id(stem), "governed-context"
-    if path.startswith("gtt/proposals/"):
+    if path.startswith("proposals/"):
         return "PROP-" + slug_id(stem), "proposal"
-    if path == "gtt/backlog.md":
+    if path == "backlog.md":
         return "BACKLOG", "backlog"
-    if path == "gtt/CHANGE-REQUEST.md":
+    if path == "change-request.md":
         return "CHANGE-REQUEST", "change-request"
-    if path.startswith("gtt/docs/"):
+    if path.startswith("docs/"):
         return "DOC-" + slug_id(stem), "documentation"
     if path.startswith("gtt/"):
         return "GTT-" + slug_id(stem), "documentation"

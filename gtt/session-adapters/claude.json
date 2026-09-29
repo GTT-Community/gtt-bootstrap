@@ -5,7 +5,7 @@
   "adapter_status": "installed",
   "coverage": "N1",
   "files": [
-    { "role": "script", "install_path": ".claude/hooks/session-start.py", "staged_path": "gtt/proposals/claude-adapter/session-start.py" },
+    { "role": "script", "install_path": ".claude/hooks/session-start.py", "staged_path": "proposals/claude-adapter/session-start.py" },
     { "role": "config", "install_path": ".claude/settings.json" }
   ],
   "registration": { "file": ".claude/settings.json", "event": "SessionStart", "token": ".claude/hooks/session-start.py" },

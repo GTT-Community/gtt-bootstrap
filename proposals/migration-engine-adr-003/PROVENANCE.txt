@@ -1,0 +1,66 @@
+GTT - MIGRATION ENGINE OF ADR-003 (scaffold restructure), PERSISTED VERBATIM
+=============================================================================
+
+What this is
+  The exact migration engine that restructured the scaffold for ADR-003 (Engine in gtt/, governance and
+  documentation at the project root). It was applied to the real repository by the Solution Designer on
+  2026-09-29 and is kept here as the BASE for building the ADR-004 migration package (decision Q7 of
+  PROPOSAL-gtt-domain-and-dot-gtt-engine.md). It is a reference copy, not a pending proposal, and nothing
+  in it is to be executed as it stands: its old->new path map, its L0 hashes and its staged names are those
+  of ADR-003.
+
+Rules for using it
+  1. Do not edit these files in place. A new package is built as a COPY (e.g. under proposals/), and this
+     directory stays as the record of what was rehearsed and applied.
+  2. Verify the copy at any time, from this directory:   sha256sum -c SHA256SUMS
+  3. Identification of the engine (engine/ only, 8 files):
+       tree hash  2dd4c34e99a120c9340145a87e75185509abd8bbecc412aa23ee2861932a0e4a
+       (sha256 of the sorted per-file "sha256sum" lines of engine/; per-file hashes are in SHA256SUMS)
+       migrate.py  sha256 74642e89ce030133e9e90e48546529529ffe0d1b38f9af0178b81278af3f7b3e   (821 lines, LF)
+  4. All files use LF line endings. bash cannot run a CRLF script; keep them LF.
+
+Contents
+  engine/
+    scaffold-restructure/migrate.py        the engine: preflight, plan, apply, oldrefs, verify
+    scaffold-restructure/manifest.yaml     staged scaffold manifest (layout version 1)
+    scaffold-restructure/overlay.json      staged-file -> target map, with base hashes
+    scaffold-restructure/overlay/claude-hooks/protect-l0.py   the staged protection hook (root-resolved paths)
+    scaffold-restructure/patches.json      exact-text / block / regex / tree patches (prose + small logic edits)
+    scaffold-restructure/gitignore         staged .gitignore
+    apply-scaffold-restructure.sh          orchestrator: preflight, baseline, backup, migration, ratification,
+                                           validation, rollback (ERR/INT/TERM/HUP)
+    apply-ADR-003-scaffold-restructure.sh  the gtt-adr promotion script (view/yes/no, base-hash guard checked
+                                           before the prompt and again after 'yes', restore on failure)
+  rehearsal-harness/                       the scripts used to rehearse and verify it, verbatim
+    mkcopy.sh  rehearse.sh  sigtest.sh  hooktest.py  posix_hook_test.py  verify_smoke.sh
+    NOTE: they contain absolute paths of the session scratch directory (and, in posix_hook_test.py, the path of
+    the staged hook under the ADR-003 layout); adjust the paths when reusing them.
+
+Evidence that this is the version that was rehearsed and applied
+  - It is the byte-for-byte content of the real proposals/ directory taken immediately before the post-promotion
+    cleanup, i.e. the package the Solution Designer executed.
+  - All 8 engine files are byte-identical to the copies used in: the disposable-copy smoke test executed by the
+    Solution Designer (rh_user) and the full logical rehearsal (rh1): 16/16 comparisons identical.
+  - Rehearsal results recorded at the time: full rehearsal 51 checks / 0 failures; interruption tests (Ctrl-C,
+    SIGINT, SIGTERM, SIGHUP, prompt dying) 20 / 0; protection hook battery 38 cases / 0 failures plus the POSIX
+    case (17 checks) / 0 failures; the two scripts themselves ran end to end in the disposable copy and then in
+    the real repository (ADR-003 ratified, checks green, oldrefs ERROR=0 STALE=0).
+
+Not included (ADR-003-specific artifacts that were consumed or removed after promotion)
+  ADR-DRAFT-scaffold-restructure.md, the five context-*-adr-003.md drafts, PROPOSAL-scaffold-restructure.md.
+
+Facts observed while using it (no change was made to the engine for any of them)
+  - oldrefs reads the text "gtt/docs" inside ".gtt/docs/" as an old path (its boundary accepts a leading dot);
+    a NEW path under a dot-directory is reported as ERROR. Confirmed with a control file.
+  - This directory deliberately contains the old-layout paths (gtt/context, gtt/adr, ...) that the engine rewrites,
+    so an oldrefs run must classify proposals/migration-engine-adr-003/ as HISTORICAL (like the staged package
+    it was taken from), otherwise it reports them as ERROR.
+  - The identity registry refuses to register a new file at the path of a retired identity, which is why staged
+    L0 drafts carry a per-ADR suffix (-adr-003; -adr-004 next).
+  - gtt-check-stack.sh compares against origin/main and therefore reports "no ADR changes" for an uncommitted
+    promotion; it still verifies that every ADR cited in the map exists.
+  - After the ADR script consumes the moved ADR draft, its identity must be retired (the orchestrator does it
+    with gtt-reconcile.sh --apply --retire) before gtt-index.sh will run.
+
+Status of this copy
+  Persisted 2026-09-29, untracked until the Solution Designer commits. No migration was run from here.

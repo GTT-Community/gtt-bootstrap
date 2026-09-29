@@ -68,7 +68,7 @@ file and line — fix the underlying code and re-run rather than editing the
 registry by hand.
 
 Then, ideally, run `bash gtt/scripts/gtt-check-protection.sh` — it also
-validates that any `source: "ADR-NNN"` actually exists under `gtt/adr/`.
+validates that any `source: "ADR-NNN"` actually exists under `adr/`.
 
 Tell the user in one line what is now protected/unprotected and that the
 registry was synced.

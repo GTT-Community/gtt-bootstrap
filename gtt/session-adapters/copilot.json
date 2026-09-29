@@ -5,8 +5,8 @@
   "adapter_status": "staged",
   "coverage": "N1",
   "files": [
-    { "role": "script", "install_path": ".github/hooks/gtt-session-start.py", "staged_path": "gtt/proposals/session-adapters/copilot/.github/hooks/gtt-session-start.py" },
-    { "role": "config", "install_path": ".github/hooks/gtt-session.json", "staged_path": "gtt/proposals/session-adapters/copilot/.github/hooks/gtt-session.json" }
+    { "role": "script", "install_path": ".github/hooks/gtt-session-start.py", "staged_path": "proposals/session-adapters/copilot/.github/hooks/gtt-session-start.py" },
+    { "role": "config", "install_path": ".github/hooks/gtt-session.json", "staged_path": "proposals/session-adapters/copilot/.github/hooks/gtt-session.json" }
   ],
   "registration": { "file": ".github/hooks/gtt-session.json", "event": "sessionStart", "token": ".github/hooks/gtt-session-start.py" },
   "command": "bash gtt/scripts/gtt-run-python.sh .github/hooks/gtt-session-start.py",

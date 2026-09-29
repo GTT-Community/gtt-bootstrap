@@ -5,7 +5,7 @@
 # way whichever ADE picks it up. It describes GTT's operational state only and
 # names no ADE: anything specific to an ADE lives in its adapter.
 #
-# Also regenerates gtt/SESSION.md with the same content. That file is a
+# Also regenerates session.md with the same content. That file is a
 # DERIVED artifact, like gtt/protection/registry.yaml: never hand-edited,
 # safe to regenerate at any time, and never loaded automatically by any
 # agent - it is operational context, not architectural authority, evidence,
@@ -19,26 +19,26 @@
 
 set -uo pipefail
 
-OUT="gtt/SESSION.md"
+OUT="session.md"
 
-if [ -f "gtt/.frozen" ]; then
-  FREEZE_LINE="frozen ($(head -1 gtt/.frozen 2>/dev/null))"
+if [ -f ".frozen" ]; then
+  FREEZE_LINE="frozen ($(head -1 .frozen 2>/dev/null))"
 else
-  FREEZE_LINE="pre-freeze (gtt/context/ and gtt/adr/ are agent-writable)"
+  FREEZE_LINE="pre-freeze (context/ and adr/ are agent-writable)"
 fi
 
 IN_PROGRESS=""
 BLOCKED=""
-if [ -f "gtt/backlog.md" ]; then
-  IN_PROGRESS="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*In Progress\s*$' gtt/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
-  BLOCKED="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*Blocked\s*$' gtt/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
+if [ -f "backlog.md" ]; then
+  IN_PROGRESS="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*In Progress\s*$' backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
+  BLOCKED="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*Blocked\s*$' backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
 fi
 
-PENDING_PROPOSALS="$(cd gtt/proposals 2>/dev/null && find . -maxdepth 1 -type f ! -name 'README.md' | sed 's|^\./||' || true)"
+PENDING_PROPOSALS="$(cd proposals 2>/dev/null && find . -maxdepth 1 -type f ! -name 'README.md' | sed 's|^\./||' || true)"
 
-CR_STATE="no gtt/CHANGE-REQUEST.md found"
-if [ -f "gtt/CHANGE-REQUEST.md" ]; then
-  if grep -qE '^Change: <' gtt/CHANGE-REQUEST.md 2>/dev/null; then
+CR_STATE="no change-request.md found"
+if [ -f "change-request.md" ]; then
+  if grep -qE '^Change: <' change-request.md 2>/dev/null; then
     CR_STATE="empty (still template placeholders)"
   else
     CR_STATE="FILLED IN - review it, a change request is waiting"
@@ -46,8 +46,8 @@ if [ -f "gtt/CHANGE-REQUEST.md" ]; then
 fi
 
 ADRS=""
-if [ -d "gtt/adr" ]; then
-  ADRS="$(grep -H '^- Status:' gtt/adr/ADR-[0-9]*.md 2>/dev/null | sed -E 's#gtt/adr/##; s#:- Status:# - Status:#' || true)"
+if [ -d "adr" ]; then
+  ADRS="$(grep -H '^- Status:' adr/ADR-[0-9]*.md 2>/dev/null | sed -E 's#adr/##; s#:- Status:# - Status:#' || true)"
 fi
 
 GUARD_COUNT=0
@@ -82,7 +82,7 @@ GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
   echo "#"
   echo "# operational-only. NOT authority, NOT evidence, NOT a decision record,"
   echo "# NOT a grounding source, NOT a substitute for an ADR. Governed context"
-  echo "# (gtt/context/, gtt/adr/) and gtt/backlog.md prevail over this file."
+  echo "# (context/, adr/) and backlog.md prevail over this file."
   echo "#"
   echo "# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   echo
@@ -95,7 +95,7 @@ GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
   echo "## Blocked (Stories Blocked)"
   if [ -n "$BLOCKED" ]; then echo "$BLOCKED"; else echo "none"; fi
   echo
-  echo "## Pending proposals (gtt/proposals/, excluding README.md)"
+  echo "## Pending proposals (proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi
   echo
   echo "## Change request"

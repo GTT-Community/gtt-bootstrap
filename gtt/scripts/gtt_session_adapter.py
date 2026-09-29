@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """GTT - Session Memory adapter conformance check (engine).
 
-Checks one ADE adapter against gtt/docs/SESSION-ADAPTER-CONTRACT.md using its
+Checks one ADE adapter against docs/session-adapter-contract.md using its
 declaration, gtt/session-adapters/<ade>.json. Everything ADE-specific is DATA
 in that declaration; this engine has no per-ADE code path, and it never runs
 an ADE - so it is deterministic and works with no ADE installed.
@@ -39,7 +39,7 @@ DUPLICATED_LOGIC = [
     (r"gtt-index\.sh|gtt-reconcile\.sh", "runs index/reconcile tooling"),
     (r"registry\.yaml", "reads the protection registry"),
     (r"\bgit\s+(log|status|rev-parse|diff|branch)\b", "interprets repository state via git"),
-    (r"SESSION\.md", "touches SESSION.md directly (only an N2 adapter may name it)"),
+    (r"(?i)session\.md", "touches session.md directly (only an N2 adapter may name it)"),
 ]
 SILENCERS = [
     (r"\|\|\s*true\b", "'|| true' swallows failure"),
@@ -163,7 +163,7 @@ def check_files(m):
     if missing:
         item("FAIL", f"adapter files missing ({m['adapter_status']}): {', '.join(missing)}")
         return False
-    where = "native paths" if m["adapter_status"] == "installed" else "staged under gtt/proposals/"
+    where = "native paths" if m["adapter_status"] == "installed" else "staged under proposals/"
     item("PASS", f"adapter files present ({len(m['files'])}, {where})")
     return True
 
@@ -206,7 +206,7 @@ def check_logic_and_silence(m):
     for p in every:
         text = read(p)
         for pattern, why in DUPLICATED_LOGIC:
-            if pattern == r"SESSION\.md" and m["coverage"] == "N2":
+            if pattern == r"(?i)session\.md" and m["coverage"] == "N2":
                 continue
             if re.search(pattern, text):
                 dup.append(f"{p}: {why}")
@@ -245,7 +245,16 @@ def build_sandbox(m):
     their install paths. Lets a staged adapter be exercised as installed."""
     root = tempfile.mkdtemp(prefix="gtt-adapter-")
     shutil.copytree("gtt", os.path.join(root, "gtt"),
-                    ignore=shutil.ignore_patterns("proposals", "__pycache__"))
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    # Project Governance and Documentation sit at the project root; the staged
+    # proposals/ are deliberately left out (adapters run from install paths).
+    for name in ("context", "adr", "docs"):
+        if os.path.isdir(name):
+            shutil.copytree(name, os.path.join(root, name),
+                            ignore=shutil.ignore_patterns("__pycache__"))
+    for name in ("backlog.md", "change-request.md", ".frozen"):
+        if os.path.isfile(name):
+            shutil.copy2(name, os.path.join(root, name))
     for f in m["files"]:
         dest = os.path.join(root, f["install_path"])
         os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -313,7 +322,7 @@ def check_claims(m):
         item("PASS", "no event claims more than the declared runtime verification")
     if m["events"].get("startup") not in ("verified", "documented") and m["coverage"] == "N1":
         item("FAIL", "coverage N1 requires a start event that is at least documented")
-    if m["coverage"] == "N2" and "SESSION.md" not in json.dumps(m):
+    if m["coverage"] == "N2" and "session.md" not in json.dumps(m):
         item("FAIL", "coverage N2 must name the loaded session file")
 
 

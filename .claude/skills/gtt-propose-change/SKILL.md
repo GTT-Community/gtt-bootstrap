@@ -1,6 +1,6 @@
 ---
 name: gtt-propose-change
-description: Produce a GTT change proposal instead of applying a change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt/context/ is wrong or outdated, when implementation code conflicts with the governed context, when gtt/backlog.md needs an Epic/Story added, removed, or materially changed, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change the committed development line, and whenever a permission denial points at gtt/context/, gtt/adr/, gtt/CHANGE-REQUEST.md, or a GTTGuard-protected artifact.
+description: Produce a GTT change proposal instead of applying a change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under context/ is wrong or outdated, when implementation code conflicts with the governed context, when backlog.md needs an Epic/Story added, removed, or materially changed, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change the committed development line, and whenever a permission denial points at context/, adr/, change-request.md, or a GTTGuard-protected artifact.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -13,7 +13,7 @@ not create the ADR yourself.
 
 ## Where the request comes from
 
-If the user says "process the change request", read `gtt/CHANGE-REQUEST.md`
+If the user says "process the change request", read `change-request.md`
 first. It holds the Solution Designer's stated intent. If
 the request block is empty or unchanged from the template, say so and stop —
 do not invent one.
@@ -27,21 +27,21 @@ Otherwise the request is whatever the user just described.
 
 ## Where the output goes
 
-Write the proposal to `gtt/proposals/PROPOSAL-<short-kebab-summary>.md`. That
-directory is the only place under `gtt/` you may write.
+Write the proposal to `proposals/PROPOSAL-<short-kebab-summary>.md`. That
+directory is the only governed place you may write.
 
-Do not edit `gtt/CHANGE-REQUEST.md` — not to clear it, not to mark it
+Do not edit `change-request.md` — not to clear it, not to mark it
 processed, not to tidy it. It is the Solution Designer's desk.
 
 ## Before writing
 
-Read what the change actually touches: `gtt/context/stack.md` always, plus the
+Read what the change actually touches: `context/stack.md` always, plus the
 relevant context files and any ADR the affected stack rows point to in their
 "Locked by" column. A proposal that ignores the decision it overturns is not a
 proposal.
 
 If the request is about the development line instead — a new Epic/Story, or
-a material change to one's scope or acceptance criteria — read `gtt/backlog.md`
+a material change to one's scope or acceptance criteria — read `backlog.md`
 first, and check whether it contradicts governed context or an accepted
 ADR before drafting (see backlog *Precedence* in `AGENTS.md`). Routine Story
 status updates during already-approved work are not a change request at
@@ -77,7 +77,7 @@ Status: Requires Architect approval
 
 ## 2. Context change
 
-Use when a file under `gtt/context/` is inaccurate, stale, or contradicts
+Use when a file under `context/` is inaccurate, stale, or contradicts
 reality — and the fix is to the document, not the code.
 
 ```text
@@ -112,7 +112,7 @@ Status: Requires human review
 
 ## 4. Development-line change
 
-Use when `gtt/backlog.md` needs an Epic or Story added, removed, or materially
+Use when `backlog.md` needs an Epic or Story added, removed, or materially
 changed in scope or acceptance criteria. Not for routine status updates
 during already-approved work — those are direct edits, not a proposal.
 
@@ -121,7 +121,7 @@ Proposed Backlog Change
 
 Kind: <new Epic / new Story / remove / material scope change>
 Epic/Story ID: <EPIC-NNN / STORY-NNN, or "new" if not yet assigned>
-Current state: <what gtt/backlog.md says today, or "none" if new>
+Current state: <what backlog.md says today, or "none" if new>
 Suggested change:
 Reason:
 Contradicts governed context or an ADR?: <no / yes — cite file:line>
@@ -141,7 +141,7 @@ Use when the requested change touches a file, class, or method that
 `gtt/protection/registry.yaml` lists with `protection: HUMAN_APPROVAL`.
 This is not an architecture change and not a backlog change — GTTGuard is a
 sibling mechanism protecting L3 code the developer opted into protecting,
-not `gtt/context/` or `gtt/adr/`. See `AGENTS.md` → *Protected artifacts
+not `context/` or `adr/`. See `AGENTS.md` → *Protected artifacts
 (GTTGuard)* before using this form.
 
 ```text
@@ -192,7 +192,7 @@ affected context files, and an executable promotion script together — the
 Solution Designer reviews and runs it; the agent never applies the change
 itself (the Human Promotion Boundary, `AGENTS.md`). A development-line
 proposal (form 4) is not an architectural decision — once approved, the
-Solution Designer applies it directly to `gtt/backlog.md`, no script
+Solution Designer applies it directly to `backlog.md`, no script
 involved; it does not get an ADR unless it also happens to touch governed
 context. A protected-artifact proposal (form 5) is approved in conversation
 — once the Solution Designer says so, implement it directly, update the

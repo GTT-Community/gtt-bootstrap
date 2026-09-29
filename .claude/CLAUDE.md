@@ -8,20 +8,20 @@ Use these skills instead of improvising the format:
 
 | Situation | Skill |
 |---|---|
-| First time populating `gtt/context/`, or `gtt/context/` still holds template placeholders | `gtt-bootstrap` |
+| First time populating `context/`, or `context/` still holds template placeholders | `gtt-bootstrap` |
 | "process the change request" | `gtt-propose-change` |
 | Architectural or context change needed | `gtt-propose-change` |
 | A change was approved and needs recording | `gtt-adr` |
 | Verify the governed context still matches the code | `gtt-audit` |
-| `gtt/backlog.md` needs an Epic/Story added, removed, or materially changed | `gtt-propose-change` (form 4) |
-| Reconcile `gtt/backlog.md` against defined Epics/Stories | `gtt-audit` |
+| `backlog.md` needs an Epic/Story added, removed, or materially changed | `gtt-propose-change` (form 4) |
+| Reconcile `backlog.md` against defined Epics/Stories | `gtt-audit` |
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
 | A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
 
-`gtt/context/`, `gtt/adr/`, `gtt/CHANGE-REQUEST.md`, and `SOURCE-BRIEF.*`
+`context/`, `adr/`, `change-request.md`, and `SOURCE-BRIEF.*`
 are blocked at the permission layer and by a PreToolUse hook. A denial there
-is the system working as designed — write to `gtt/proposals/` instead, and
-never look for another way to reach a blocked path. `gtt/backlog.md` is not
+is the system working as designed — write to `proposals/` instead, and
+never look for another way to reach a blocked path. `backlog.md` is not
 blocked the same way — routine Story status/focus updates are direct edits;
 only structural changes go through the flow above (see `AGENTS.md` →
 *Backlog governance*).
@@ -32,9 +32,9 @@ a different PreToolUse hook (`protect-guard.py`), driven by
 is the same kind of signal — use `gtt-propose-change` (form 5), never look
 for another way in. `.claude/hooks/` and `.claude/settings.json` are
 themselves machinery and permission-denied like any other governance file;
-if a change needs to land there, stage it under `gtt/proposals/` and tell
+if a change needs to land there, stage it under `proposals/` and tell
 the Solution Designer to move it into place.
 
 Hard constraints, always in context:
 
-@../gtt/context/constraints.md
+@../context/constraints.md

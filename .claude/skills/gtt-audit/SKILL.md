@@ -1,6 +1,6 @@
 ---
 name: gtt-audit
-description: Audit whether the governed context under gtt/context/ still matches the actual codebase, and whether gtt/backlog.md is reconciled with defined Epics/Stories. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The scheduled counterpart to the PostToolUse drift detector: same signals, same response path, full sweep instead of one file.
+description: Audit whether the governed context under context/ still matches the actual codebase, and whether backlog.md is reconciled with defined Epics/Stories. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The scheduled counterpart to the PostToolUse drift detector: same signals, same response path, full sweep instead of one file.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -13,11 +13,11 @@ what the repository actually does.
 
 ## Procedure
 
-1. Read `gtt/context/stack.md` first — it is the densest set of falsifiable
+1. Read `context/stack.md` first — it is the densest set of falsifiable
    claims and most drift shows up there.
 2. Read `architecture.md`, `principles.md`, `constraints.md`, and
    `solution-vision.md`.
-3. Read the accepted ADRs in `gtt/adr/`.
+3. Read the accepted ADRs in `adr/`.
 4. Inspect the repository: dependency manifests, folder structure, deployment
    and pipeline definitions, module boundaries and their actual imports.
 5. For each claim in the context, classify it.
@@ -42,11 +42,11 @@ This is not a second, independent drift mechanism — it is the full-sweep
 trigger of the same loop `detect-drift.py` runs reactively at write-time. One
 signals block, one response skill, two triggers.
 
-Read the `gtt-drift-signals` block from `gtt/context/stack.md` (its
+Read the `gtt-drift-signals` block from `context/stack.md` (its
 "Drift signals" view). Instead of checking a single freshly-written file the
 way the hook does, sweep every file in the repository that matches any of its
 globs, not only files touched in this session. For each match, assess whether
-it contradicts `gtt/context/` or an accepted ADR the same way
+it contradicts `context/` or an accepted ADR the same way
 `gtt-drift-response` would.
 
 If `stack.md` has no `gtt-drift-signals` block, say so as a finding — the
@@ -60,7 +60,7 @@ twice and the two definitions ageing apart.
 
 ## Backlog reconciliation
 
-`gtt/backlog.md` is not architecture, but it is still expected to stay honest.
+`backlog.md` is not architecture, but it is still expected to stay honest.
 Run `gtt/scripts/gtt-check-backlog.sh` first for the deterministic part
 (duplicate Epic/Story IDs, invalid status values) — do not re-derive that by
 hand. Then check what only judgment can catch:
@@ -79,7 +79,7 @@ yourself — a structural correction goes through `gtt-propose-change` (form
 4) like any other backlog change. Only routine status corrections you can
 justify from the evidence above (e.g. a Story is provably `Done`) may be
 applied directly, the same way any other routine implementation work would
-update gtt/backlog.md.
+update backlog.md.
 
 ## Classification
 
@@ -126,7 +126,7 @@ Recommended action
   backlog change through gtt-propose-change>
 ```
 
-Report only. Do not edit `gtt/context/`, do not fix the drift in code, and do
+Report only. Do not edit `context/`, do not fix the drift in code, and do
 not soften a finding because the code looks reasonable. The Solution Designer
 decides whether the context or the implementation is the thing that is wrong.
 Divergences found by the drift-signals sweep are handed to `gtt-drift-response`

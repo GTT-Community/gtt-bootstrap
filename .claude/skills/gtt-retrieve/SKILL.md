@@ -46,7 +46,7 @@ path, or you were told files were moved:
    kept as history), rewrites relative links, rebuilds the index.
 4. `bash gtt/scripts/gtt-check-integrity.sh` must pass.
 
-Frozen `gtt/context/` and `gtt/adr/` files are **never** rewritten by the
+Frozen `context/` and `adr/` files are **never** rewritten by the
 tool, nor by you: the tool reports them as `SKIPPED`; fixing them is a
 governed change (`gtt-propose-change`). Moving those files at all is a
 governed/human act — do not perform the move yourself.

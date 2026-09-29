@@ -23,16 +23,16 @@ should never become one.
 - `AGENTS.md` — the portable GTT contract: mission, required workspace,
   bootstrap behavior, governed regime, change process, non-negotiable
   rules.
-- `gtt/context/constraints.md` — hard limits that apply to every change.
-- `gtt/INDEX.md` — map of every file in this kit.
+- `context/constraints.md` — hard limits that apply to every change.
+- `docs/index.md` — map of every file in this kit.
 
 ## What Copilot must not do
 
-`gtt/context/`, `gtt/adr/`, `gtt/CHANGE-REQUEST.md`, and `SOURCE-BRIEF.*`
+`context/`, `adr/`, `change-request.md`, and `SOURCE-BRIEF.*`
 are governed paths owned by the Solution Designer. GTT has no deterministic
 write-block adapter for Copilot today — this is an instruction, not an
 enforced guardrail, so treat it as binding anyway. To propose a change,
-write a draft under `gtt/proposals/` and follow the change process in
+write a draft under `proposals/` and follow the change process in
 `AGENTS.md`; never edit the governed paths directly, and never work around
 this by renaming, duplicating, or editing them through another path.
 

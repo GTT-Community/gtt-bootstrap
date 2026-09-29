@@ -1,0 +1,11 @@
+ADR-004 migration package - provenance
+Derived from : proposals/migration-engine-adr-003/engine/scaffold-restructure/migrate.py
+  base sha256 : 74642e89ce030133e9e90e48546529529ffe0d1b38f9af0178b81278af3f7b3e
+Orchestrator base: proposals/migration-engine-adr-003/engine/apply-scaffold-restructure.sh
+  base sha256 : 46b3509ac32c666575a733117f87dad4de1f2d1d28b514b382bf3121bca03f47
+Ratification script (unchanged by this package): proposals/apply-ADR-004-gtt-domain-and-dot-gtt-engine.sh
+  sha256      : 78999c97082f3cbaff84679a71764190cae19e3555f3e2f73ec26e4c045cd817
+Hook base (protect-l0.py before this migration, LF-normalised): a31de6e5adf19002c61d474708f71c189df9f2983065bdfeb076d537d9cc6119
+Manifest base (gtt/scaffold/manifest.yaml, LF-normalised)     : 3574050420cf5af445444b811014c20a38ad15dcbbe2a61ed8e1d4321c65c402
+.frozen sha256 (must be identical after migration, at gtt-domain/.frozen): 715ce1435f127639b1e0570f74c0f5ac392987310c4d5210b6b10cb8e1b12782
+The ADR-003 engine under proposals/migration-engine-adr-003/ is historical, not product; it is neither modified nor used at run time.

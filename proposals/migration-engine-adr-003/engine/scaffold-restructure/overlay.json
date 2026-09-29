@@ -1,0 +1,8 @@
+{
+ "files": {
+  ".claude/hooks/protect-l0.py": {
+   "stage": "claude-hooks/protect-l0.py",
+   "base_sha256": "c1d2faaa21de272f34c3757aa6df7ba49c496b166a363cb898e7323fb1615224"
+  }
+ }
+}

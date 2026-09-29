@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # GTT - Session Memory adapter conformance gate.
 #
-# Checks one ADE adapter against gtt/docs/SESSION-ADAPTER-CONTRACT.md using
+# Checks one ADE adapter against docs/session-adapter-contract.md using
 # its declaration gtt/session-adapters/<ade>.json: files present, registered
 # under the declared event only, references the service, no duplicated GTT
 # logic, no silenced errors, the command runs in a sandbox laid out as

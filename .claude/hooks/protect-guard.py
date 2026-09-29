@@ -2,7 +2,7 @@
 """GTT - GTTGuard protected-artifact enforcement (PreToolUse hook).
 
 Sibling to protect-l0.py, but for a different layer: protect-l0.py guards
-gtt/context/, gtt/adr/, and the two governance root files; this hook guards
+context/, adr/, and the two governance root files; this hook guards
 whatever L3 code a developer has opted into protecting with a @GTTGuard
 marker (GTT Method canonical spec v2.1, sections 13-17 "GTTGuard"), recorded in
 gtt/protection/registry.yaml by gtt/scripts/gtt-guard-sync.sh.

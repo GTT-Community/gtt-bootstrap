@@ -11,22 +11,22 @@ Only draft an ADR for a decision a human has explicitly approved. If approval is
 unclear, ask. An ADR records a decision that was made — it is not a place to
 argue for one.
 
-`gtt/adr/` and `gtt/context/` are write-protected. You never write into them
+`adr/` and `context/` are write-protected. You never write into them
 directly. Instead you stage a complete **promotion package** under
-`gtt/proposals/` — the ADR draft, the full text of every affected context
+`proposals/` — the ADR draft, the full text of every affected context
 file, and an executable script — and the human runs the script. This is the
 Human Promotion Boundary (`AGENTS.md`): you prepare, they promote. Generating
 this package is not itself approval, and approving one change never carries
 over to the next.
 
-If a proposal for this change exists in `gtt/proposals/`, base the ADR on it
+If a proposal for this change exists in `proposals/`, base the ADR on it
 rather than restating the reasoning from scratch.
 
 ## Numbering
 
-Read the existing filenames in `gtt/adr/` and take the next sequential number.
+Read the existing filenames in `adr/` and take the next sequential number.
 Target filename: `ADR-NNN-short-kebab-title.md`. Write the draft itself to
-`gtt/proposals/ADR-DRAFT-short-kebab-title.md` — never into `gtt/adr/`.
+`proposals/ADR-DRAFT-short-kebab-title.md` — never into `adr/`.
 
 ## Template
 
@@ -62,7 +62,7 @@ What could make this decision wrong later, and what signal would reveal it.
 
 ## Stack map delta
 
-The exact rows this decision changes in `gtt/context/stack.md`, as before/after
+The exact rows this decision changes in `context/stack.md`, as before/after
 pairs. Write `No change to the map` only if that is literally true.
 
 | Section | Row | Before | After |
@@ -74,7 +74,7 @@ Plus the line to append to the map change log:
 
 ## Affected context
 
-Which other files under `gtt/context/` this decision changes, and how —
+Which other files under `context/` this decision changes, and how —
 staged as full drafts alongside the ADR (see *Stage the affected context
 files* below). The Solution Designer runs the script that applies them; you
 do not edit them directly.
@@ -82,7 +82,7 @@ do not edit them directly.
 
 ## After drafting
 
-An ADR without a stack map delta is incomplete. `gtt/context/stack.md` is the
+An ADR without a stack map delta is incomplete. `context/stack.md` is the
 one artifact everyone reads to understand the system; a decision recorded in an
 ADR but absent from the map is invisible in practice.
 
@@ -90,14 +90,14 @@ ADR but absent from the map is invisible in practice.
 
 For every file the ADR's *Affected context* section names — `stack.md` always,
 plus any others — write the file's **full new content**, not a diff, to
-`gtt/proposals/context-<basename>.md` (for example
-`gtt/proposals/context-stack.md`). The promotion script will copy each one
+`proposals/context-<basename>.md` (for example
+`proposals/context-stack.md`). The promotion script will copy each one
 straight over its target, so the staged draft must be the complete file exactly
 as it should read after promotion, changelog row included.
 
 ## Generate the promotion script
 
-Write `gtt/proposals/apply-ADR-NNN-<slug>.sh`, executable, matching this
+Write `proposals/apply-ADR-NNN-<slug>.sh`, executable, matching this
 shape (fill in the placeholders with the real ADR number and slug everywhere;
 keep the review loop, the confirmation, and the fail-fast behavior — do not
 weaken any of them). Quote every `mv`/`cp` path as shown, and never leave a
@@ -123,8 +123,8 @@ echo "Proposal: PROPOSAL-<slug>"
 echo "ADR: ADR-NNN-<slug>"
 echo ""
 echo "This will apply:"
-echo "  gtt/proposals/ADR-DRAFT-<slug>.md  ->  gtt/adr/ADR-NNN-<slug>.md   (new file)"
-echo "  gtt/proposals/context-stack.md     ->  gtt/context/stack.md       (overwrite)"
+echo "  proposals/ADR-DRAFT-<slug>.md  ->  adr/ADR-NNN-<slug>.md   (new file)"
+echo "  proposals/context-stack.md     ->  context/stack.md       (overwrite)"
 # ... one line per additional affected context file, noting new file / overwrite
 echo ""
 
@@ -133,11 +133,11 @@ while true; do
     case "$choice" in
         view|v)
             echo ""
-            echo "===== gtt/proposals/ADR-DRAFT-<slug>.md (new ADR) ====="
-            cat "gtt/proposals/ADR-DRAFT-<slug>.md"
+            echo "===== proposals/ADR-DRAFT-<slug>.md (new ADR) ====="
+            cat "proposals/ADR-DRAFT-<slug>.md"
             echo ""
-            echo "===== gtt/context/stack.md: current -> staged ====="
-            diff -u "gtt/context/stack.md" "gtt/proposals/context-stack.md" || true
+            echo "===== context/stack.md: current -> staged ====="
+            diff -u "context/stack.md" "proposals/context-stack.md" || true
             # ... one "cat" for the new ADR is enough; one "diff -u" per
             # additional affected context file, same files listed above
             echo ""
@@ -155,15 +155,15 @@ while true; do
     esac
 done
 
-mv "gtt/proposals/ADR-DRAFT-<slug>.md" "gtt/adr/ADR-NNN-<slug>.md"  # <slug> replaced with the real value, no literal brackets
-cp "gtt/proposals/context-stack.md" "gtt/context/stack.md"
+mv "proposals/ADR-DRAFT-<slug>.md" "adr/ADR-NNN-<slug>.md"  # <slug> replaced with the real value, no literal brackets
+cp "proposals/context-stack.md" "context/stack.md"
 # ... one quoted cp per additional affected context file, same order as above
 
 bash gtt/scripts/gtt-check-stack.sh
 
 echo ""
-echo "Promoted. ADR-NNN-<slug> is now in gtt/adr/ and gtt/context/ reflects it."
-echo "You can now delete the staged drafts in gtt/proposals/ for this change."
+echo "Promoted. ADR-NNN-<slug> is now in adr/ and context/ reflects it."
+echo "You can now delete the staged drafts in proposals/ for this change."
 ```
 
 `set -euo pipefail` is the fail-fast mechanism: if any `mv`/`cp` or the check
@@ -175,7 +175,7 @@ run — do not ask the user to execute several unrelated commands by hand.
 The `view`/`yes`/`no` loop is not optional polish: a `[yes/no]` prompt alone
 asks the user to approve a change they can only read about in your chat
 message. `view` lets them inspect the actual ADR text and the exact diff
-against the current `gtt/context/` files, from inside the script itself,
+against the current `context/` files, from inside the script itself,
 as many times as they want, before deciding — and it loops back to the same
 prompt afterward instead of assuming they now mean yes.
 
@@ -187,7 +187,7 @@ State, in chat, plainly and without bureaucratic padding:
 >
 > I prepared the requested governed change and generated the promotion script:
 >
-> `gtt/proposals/apply-ADR-NNN-<slug>.sh`
+> `proposals/apply-ADR-NNN-<slug>.sh`
 >
 > **The change has not been applied yet.**
 >
@@ -200,7 +200,7 @@ State, in chat, plainly and without bureaucratic padding:
 > Run it from the project root:
 >
 > ```bash
-> bash gtt/proposals/apply-ADR-NNN-<slug>.sh
+> bash proposals/apply-ADR-NNN-<slug>.sh
 > ```
 >
 > It will ask you to `view` (see the ADR text and the exact diff against the

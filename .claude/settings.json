@@ -3,8 +3,8 @@
     "deny": [
       "Edit(/AGENTS.md)",
       "Write(/AGENTS.md)",
-      "Edit(/gtt/CHANGE-REQUEST.md)",
-      "Write(/gtt/CHANGE-REQUEST.md)",
+      "Edit(/change-request.md)",
+      "Write(/change-request.md)",
       "Edit(/SOURCE-BRIEF.*)",
       "Write(/SOURCE-BRIEF.*)",
       "Edit(/.claude/settings.json)",

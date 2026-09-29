@@ -6,7 +6,7 @@
 # fresh regeneration from source markers, every artifact/symbol must
 # resolve, every protection value must be valid, every ADR-shaped `source`
 # must exist, and a protected artifact that changed in the diff must be
-# accompanied by a change under gtt/proposals/ or gtt/adr/.
+# accompanied by a change under proposals/ or adr/.
 #
 # Usage:
 #   gtt/scripts/gtt-check-protection.sh              # compare against origin/main

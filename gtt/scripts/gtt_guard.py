@@ -49,6 +49,11 @@ EXCLUDE_DIRS = {
     "dist", "build", "target", ".next", ".pytest_cache",
 }
 
+# GTT's own root-level directories (Project Governance / Documentation). Skipped
+# at the project root ONLY: a host project's own src/context/ or src/docs/ holds
+# real code whose @GTTGuard markers must stay visible.
+ROOT_ONLY_EXCLUDE_DIRS = {"context", "adr", "proposals", "docs"}
+
 VALID_POLICIES = {"HUMAN_APPROVAL"}
 
 KEYWORDS = {
@@ -417,8 +422,11 @@ def scan_file(root, relpath):
 
 def iter_source_files(root):
     for dirpath, dirnames, filenames in os.walk(root):
+        at_root = os.path.abspath(dirpath) == os.path.abspath(root)
         dirnames[:] = [
-            d for d in dirnames if d not in EXCLUDE_DIRS and not d.startswith(".")
+            d for d in dirnames
+            if d not in EXCLUDE_DIRS and not d.startswith(".")
+            and not (at_root and d in ROOT_ONLY_EXCLUDE_DIRS)
         ]
         for name in filenames:
             if os.path.splitext(name)[1] in LANG_BY_EXT:
@@ -523,11 +531,11 @@ def check_governed_path_routing(root, base_ref, entries):
     changed = git_diff_names(root, base_ref)
     if changed is None:
         return [], True
-    if any(p.startswith("gtt/proposals/") or p.startswith("gtt/adr/") for p in changed):
+    if any(p.startswith("proposals/") or p.startswith("adr/") for p in changed):
         return [], False
     protected_files = {e["artifact"] for e in entries if e.get("protection") == "HUMAN_APPROVAL"}
     violations = [
-        f"{f} changed with no accompanying change under gtt/proposals/ or gtt/adr/"
+        f"{f} changed with no accompanying change under proposals/ or adr/"
         for f in sorted(changed & protected_files)
     ]
     return violations, False
@@ -604,7 +612,7 @@ def cmd_check(root, registry_path, base_ref):
         if m and not glob.glob(os.path.join(root, "gtt", "adr", m.group(1) + "*.md")):
             print(
                 f"gtt-check-protection: FAILED - {artifact}: source '{source}' "
-                f"does not exist under gtt/adr/", file=sys.stderr,
+                f"does not exist under adr/", file=sys.stderr,
             )
             fail = True
 

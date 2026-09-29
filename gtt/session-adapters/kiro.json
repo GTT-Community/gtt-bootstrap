@@ -5,8 +5,8 @@
   "adapter_status": "staged",
   "coverage": "N1",
   "files": [
-    { "role": "script", "install_path": ".kiro/gtt-session-start.sh", "staged_path": "gtt/proposals/session-adapters/kiro/.kiro/gtt-session-start.sh" },
-    { "role": "config", "install_path": ".kiro/agents/gtt-session.json", "staged_path": "gtt/proposals/session-adapters/kiro/.kiro/agents/gtt-session.json" }
+    { "role": "script", "install_path": ".kiro/gtt-session-start.sh", "staged_path": "proposals/session-adapters/kiro/.kiro/gtt-session-start.sh" },
+    { "role": "config", "install_path": ".kiro/agents/gtt-session.json", "staged_path": "proposals/session-adapters/kiro/.kiro/agents/gtt-session.json" }
   ],
   "registration": { "file": ".kiro/agents/gtt-session.json", "event": "agentSpawn", "token": ".kiro/gtt-session-start.sh" },
   "command": "bash .kiro/gtt-session-start.sh",
@@ -29,6 +29,6 @@
     "The stdout-to-context behavior of agentSpawn is documented on one page and absent on another; not runtime verified.",
     "resume/clear/compact are not documented for this trigger.",
     "The hook-entry shape used (hooks.agentSpawn[{command}]) follows the agent-configuration reference example; it differs from the hooks page schema and from this repo's existing .kiro/hooks/detect-drift.json.",
-    "N2 (resources: file://gtt/SESSION.md) was not chosen: nothing guarantees the file is fresh when Kiro loads it."
+    "N2 (resources: file://session.md) was not chosen: nothing guarantees the file is fresh when Kiro loads it."
   ]
 }

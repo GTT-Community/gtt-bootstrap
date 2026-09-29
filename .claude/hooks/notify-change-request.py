@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """GTT - pending change-request notice (UserPromptSubmit hook).
 
-gtt/CHANGE-REQUEST.md is edited by the Solution Designer directly, outside
+change-request.md is edited by the Solution Designer directly, outside
 any Claude Code tool call (the file is in permissions.deny, so the agent
 cannot write it either). No PreToolUse/PostToolUse hook can see that edit -
 it happens outside the tool loop entirely. This hook is the workaround: it
@@ -28,7 +28,7 @@ import re
 import sys
 import tempfile
 
-CHANGE_REQUEST = "gtt/CHANGE-REQUEST.md"
+CHANGE_REQUEST = "change-request.md"
 
 SECTION_RE = re.compile(
     r"##\s*GTT Request\s*\n(.*?)(?=\n###|\n---|\Z)", re.DOTALL
@@ -104,7 +104,7 @@ def main() -> int:
                 "hookSpecificOutput": {
                     "hookEventName": "UserPromptSubmit",
                     "additionalContext": (
-                        "GTT: gtt/CHANGE-REQUEST.md currently has a "
+                        "GTT: change-request.md currently has a "
                         "filled-in, unprocessed request. If the Solution "
                         "Designer has not asked you to work on it, you may "
                         "mention it exists, but do not read it in depth, "
