@@ -2081,7 +2081,7 @@
       "title": "GTT Technical Evidence Log",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "26bcc50646519946901fc617b2e49a045825b1fa4877cfa54723a236828e85cc",
+      "sha256": "e909d3e17c3d219cdc0b6eaf50d8747e468cb5ca28ed29405b614fec4f97c1e1",
       "aliases": [],
       "sections": [
         {
@@ -2090,7 +2090,7 @@
           "anchor": "gtt-technical-evidence-log",
           "path": "GTT Technical Evidence Log",
           "line_start": 1,
-          "line_end": 151
+          "line_end": 181
         },
         {
           "heading": "Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory)",
@@ -2178,7 +2178,7 @@
           "anchor": "entry-2026-09-29t1754--adr-005-promoted-multi-ade-initial-design-questionnaire-post-ratification-checks",
           "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks",
           "line_start": 124,
-          "line_end": 151
+          "line_end": 153
         },
         {
           "heading": "1. What was run on the promoted tree",
@@ -2194,7 +2194,31 @@
           "anchor": "2-still-not-verified",
           "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks > 2. Still not verified",
           "line_start": 140,
-          "line_end": 151
+          "line_end": 153
+        },
+        {
+          "heading": "Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks",
+          "level": 2,
+          "anchor": "entry-2026-09-29t2200--adr-006-promoted-provenance-gaps-sources-working-agreements-and-staging-cleanup-post-ratification-checks",
+          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks",
+          "line_start": 154,
+          "line_end": 181
+        },
+        {
+          "heading": "1. What was run on the promoted tree",
+          "level": 3,
+          "anchor": "1-what-was-run-on-the-promoted-tree-1",
+          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks > 1. What was run on the promoted tree",
+          "line_start": 158,
+          "line_end": 168
+        },
+        {
+          "heading": "2. Still not verified",
+          "level": 3,
+          "anchor": "2-still-not-verified-1",
+          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks > 2. Still not verified",
+          "line_start": 169,
+          "line_end": 181
         }
       ],
       "references": [],
@@ -5752,7 +5776,8 @@
       "GTT-EVIDENCE#1-what-was-run"
     ],
     "1. what was run on the promoted tree": [
-      "GTT-EVIDENCE#1-what-was-run-on-the-promoted-tree"
+      "GTT-EVIDENCE#1-what-was-run-on-the-promoted-tree",
+      "GTT-EVIDENCE#1-what-was-run-on-the-promoted-tree-1"
     ],
     "10. security": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#10-security"
@@ -5899,7 +5924,8 @@
       "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2-sessionstart-hook--warm-start-for-claude-code"
     ],
     "2. still not verified": [
-      "GTT-EVIDENCE#2-still-not-verified"
+      "GTT-EVIDENCE#2-still-not-verified",
+      "GTT-EVIDENCE#2-still-not-verified-1"
     ],
     "2. technical index — reconstruction determinism": [
       "GTT-EVIDENCE#2-technical-index--reconstruction-determinism"

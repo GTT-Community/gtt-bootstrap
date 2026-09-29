@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-09-29T21:41:53Z
+# Generated: 2026-09-29T21:43:26Z
 
 ## Freeze state
 frozen (2026-09-28T17:18:49Z)
@@ -55,10 +55,10 @@ technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 59
+branch: main; uncommitted paths: 3
 recent commits:
+a94c7a4 chore: clean up ratified ADR-005/006 staging (drafts, promotion scripts, rehearsal packages)
 947c24a feat: ratify ADR-006 provenance, gaps (OPEN/BLOCKING), source manifest and working agreements
 3f35a95 feat: ratify ADR-005 Multi-ADE overlays and Initial Design Questionnaire contracts
 5ef21f6 chore: remove .gitignore and the scaffold-restructure task file from the product
 e3426fb chore: finalize ADR-004 cleanup
-ad67b7d feat: ratify ADR-004 gtt domain and engine layout

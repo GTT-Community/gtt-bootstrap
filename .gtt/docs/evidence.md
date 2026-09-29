@@ -148,3 +148,33 @@ No FAIL was hidden: the only non-PASS lines are the baseline `gtt-check-integrit
 | `apply-session-adapters.sh` record step on a real install | rehearsed piecewise only; the script was never run | NO EVIDENCE |
 
 The staged package files, the backlog proposal (`PROPOSAL-backlog-epic-multi-ade-questionnaire.md`) and the ADE state for this repository remain undecided; nothing here records them as done.
+
+---
+
+## Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks
+
+**State:** branch `main`; commits `3f35a95` (ADR-005), `947c24a` (ADR-006) and `a94c7a4` (cleanup of the ratified staging). ADR-006 `Status: Accepted`, ratified by the Solution Designer executing its promotion script on 2026-09-29. Working tree clean apart from one unrelated untracked file (`GTT-BOOTSTRAP-RECIPE.md`). Platform: Windows 11, Git Bash, Python 3.13. Supersedes the "not verified" rows of the earlier ADR-005 entries only where stated below.
+
+### 1. What was run on the promoted tree
+
+| Command | Result | Type |
+|---|---|---|
+| Promotion script's post-validation, as printed by the run, and `bash .gtt/scripts/gtt-validate.sh` afterwards (also after the cleanup) | every line PASS (`gtt-check-provenance.sh` included) except the adapter check `SKIPPED` (catalog, no `.gtt/ade.json`); `gtt-validate: OK` | RUNTIME VERIFIED |
+| `bash .gtt/scripts/gtt-check-provenance.sh` | `0 FAIL, 0 WARN`; no gap register entries, sources or agreements declared yet | RUNTIME VERIFIED |
+| `python gtt-domain/proposals/adr-006-package/rehearse-provenance.py --catalog .` (before the package was removed) | `69/69 checks held`, including the nested ADR-005 rehearsal `103/103` | RUNTIME VERIFIED (engine, in a copy) |
+| `gtt-query.sh --governance open` / `sources` | `no OPEN gaps` / `no source manifest` (expected: nothing adopted in this repository) | RUNTIME VERIFIED |
+| `gtt-reconcile.sh --retire ... --apply` for the 14 removed staging artifacts, then `gtt-index.sh` and `gtt-validate.sh` | identities retired, index regenerated, `gtt-validate: OK` | RUNTIME VERIFIED |
+| `git log` / `git status` | three commits above; only the unrelated untracked file remains | RUNTIME VERIFIED |
+
+### 2. Still not verified
+
+| Claim | Status | Type |
+|---|---|---|
+| `gtt-ade.sh install/adopt/update/remove` and the provenance gate on a real installed project (only temporary copies) | not run | NO EVIDENCE |
+| Linux and macOS | not run | NO EVIDENCE |
+| Codex, GitHub Copilot and Kiro runtimes; `enforcement: ci-gate` | restates the compatibility matrix | DOCUMENTED ONLY |
+| An ADE following the Questionnaire's Operating Contract or the new provenance instructions in the bootstrap skill | instruction plane only | NO EVIDENCE |
+| `apply-session-adapters.sh` record step on a real install | rehearsed piecewise only | NO EVIDENCE |
+| Whether a `[FUENTE]` really supports a claim; whether an OPEN scope is wise | the gate is lexical and structural | NO EVIDENCE |
+
+`PROPOSAL-backlog-epic-multi-ade-questionnaire.md` remains an undecided proposal; `gtt-domain/backlog.md` was not changed.
