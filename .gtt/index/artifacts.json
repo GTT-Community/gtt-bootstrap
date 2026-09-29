@@ -47,6 +47,14 @@
       "aliases": []
     },
     {
+      "id": "ADR-006",
+      "type": "architecture-decision",
+      "path": "gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ADR-TEMPLATE",
       "type": "template",
       "path": "gtt-domain/adr/ADR-TEMPLATE.md",
@@ -286,6 +294,22 @@
       "aliases": []
     },
     {
+      "id": "GTT-GTT-SOURCES-MANIFEST",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-sources-manifest.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-GTT-WORKING-AGREEMENTS",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-working-agreements.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "GTT-INDEX",
       "type": "documentation",
       "path": ".gtt/docs/index.md",
@@ -391,6 +415,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-provenance-gaps-sources-agreements.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-ADR-DRAFT-SCAFFOLD-RESTRUCTURE",
       "type": "proposal",
       "path": "proposals/ADR-DRAFT-scaffold-restructure.md",
@@ -439,6 +471,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-architecture-adr-006.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-004",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-004.md",
@@ -452,6 +492,14 @@
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-constraints-adr-006.md",
       "status": "active",
       "history": [],
       "aliases": []
@@ -493,6 +541,14 @@
       "aliases": []
     },
     {
+      "id": "PROP-CONTEXT-GLOSSARY-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-glossary-adr-006.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-003",
       "type": "proposal",
       "path": "proposals/context-principles-adr-003.md",
@@ -516,6 +572,14 @@
       "id": "PROP-CONTEXT-PRINCIPLES-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-principles-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-PRINCIPLES-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-principles-adr-006.md",
       "status": "active",
       "history": [],
       "aliases": []
@@ -580,6 +644,14 @@
       "id": "PROP-CONTEXT-STACK-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-stack-adr-005.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "PROP-CONTEXT-STACK-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-adr-006.md",
       "status": "active",
       "history": [],
       "aliases": []

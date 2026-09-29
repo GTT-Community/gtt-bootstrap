@@ -205,3 +205,28 @@ Verification: static + rehearsal in a disposable copy only (Windows / Git Bash /
 Human action required: review 'git status', commit; decide the staged backlog proposal (PROPOSAL-backlog-epic-multi-ade-questionnaire.md);
                        delete the staged package (see the closing message)
 ```
+
+---
+
+## Provenance, gaps, sources and working agreements - 2026-09-29T21:30:25Z
+
+```text
+GTT Bootstrap contracts applied (ADR-006)
+
+Decided:
+- Canonical provenance tags in governed context; [PROPUESTA] never inside it
+- Gap register in stack.md (section 8): BLOCKING refuses freeze; OPEN is scoped, visible, crosses freeze and authorises nothing
+- Source manifest gtt-domain/context/sources.md (domain, optional): authority, unambiguous precedence; SOURCE-BRIEF is evidence after freeze
+- Working agreements (team file, local user file) below governed context, outside Session Memory
+- One gate: gtt-check-provenance.sh (tags, gaps, sources, preferences); wired into validate, freeze, status and query --governance
+
+Created: .gtt/scripts/gtt_provenance.py gtt-check-provenance.sh; templates gtt-sources-manifest.md gtt-working-agreements.md; gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md
+Replaced: gtt-domain/context/{stack,architecture,glossary,constraints,principles}.md; AGENTS.md; manifest.yaml; gtt-validate.sh gtt-status.sh gtt-query.sh gtt-freeze.sh;
+          the gtt-bootstrap skill; docs.md; index.md
+Unchanged: freeze regime, GTTGuard, identity/index, Session Memory and adapters, Multi-ADE (ADR-005), backlog.md, READMEs
+
+ADR: ADR-006 ratified by executing apply-ADR-006-provenance-gaps-sources-agreements.sh on 2026-09-29 (L0 text changed only through it)
+Verification: static + rehearsal in a disposable copy only (Windows / Git Bash / Python 3.13). NOT run on Linux or macOS, on an installed project,
+              or with an ADE following the new bootstrap instructions. The gate is lexical/structural: it cannot judge whether a [FUENTE] supports a claim.
+Human action required: review 'git status', commit; add a post-promotion entry to .gtt/docs/evidence.md; delete the staged package (see the closing message)
+```

@@ -380,6 +380,95 @@
       }
     },
     {
+      "id": "ADR-006",
+      "type": "architecture-decision",
+      "path": "gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md",
+      "title": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+      "authority": "L1",
+      "version": "v2.1",
+      "sha256": "19a52acfdcd4793105a2d72410e4e7263818f54e8f5012f2890ddefb0d2b0f85",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+          "level": 1,
+          "anchor": "adr-006--provenance-gaps-openblocking-source-manifest-and-working-agreements",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+          "line_start": 1,
+          "line_end": 109
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Context",
+          "line_start": 11,
+          "line_end": 27
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "anchor": "decision",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Decision",
+          "line_start": 28,
+          "line_end": 54
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Alternatives considered",
+          "line_start": 55,
+          "line_end": 67
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Consequences",
+          "line_start": 68,
+          "line_end": 78
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Risks",
+          "line_start": 79,
+          "line_end": 89
+        },
+        {
+          "heading": "Stack map delta",
+          "level": 2,
+          "anchor": "stack-map-delta",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Stack map delta",
+          "line_start": 90,
+          "line_end": 100
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Affected context",
+          "line_start": 101,
+          "line_end": 109
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "adr": {
+          "status": "Accepted",
+          "date": "2026-09-29",
+          "approved_by": "Solution Designer (mgriott) - ratified by executing apply-ADR-006-provenance-gaps-sources-agreements.sh on 2026-09-29",
+          "supersedes": "none"
+        },
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "ADR-TEMPLATE",
       "type": "template",
       "path": "gtt-domain/adr/ADR-TEMPLATE.md",
@@ -464,7 +553,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "5d4be00f81ab7c0c6c5ebcf8bf24cb5f405563b341b42d7a78f0cb3228b262e8",
+      "sha256": "7b671d7242ba609c827713c4f199aae9431c0e1e496863599e2f404921995f7a",
       "aliases": [],
       "sections": [
         {
@@ -473,7 +562,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 706
+          "line_end": 744
         },
         {
           "heading": "Mission",
@@ -505,175 +594,183 @@
           "anchor": "required-workspace",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Required workspace",
           "line_start": 43,
-          "line_end": 104
+          "line_end": 106
         },
         {
           "heading": "Backlog governance",
           "level": 2,
           "anchor": "backlog-governance",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Backlog governance",
-          "line_start": 105,
-          "line_end": 143
+          "line_start": 107,
+          "line_end": 145
         },
         {
           "heading": "Protected artifacts (GTTGuard)",
           "level": 2,
           "anchor": "protected-artifacts-gttguard",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected artifacts (GTTGuard)",
-          "line_start": 144,
-          "line_end": 192
+          "line_start": 146,
+          "line_end": 194
         },
         {
           "heading": "Session continuity",
           "level": 2,
           "anchor": "session-continuity",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Session continuity",
-          "line_start": 193,
-          "line_end": 217
+          "line_start": 195,
+          "line_end": 219
         },
         {
           "heading": "Artifact identity and technical index",
           "level": 2,
           "anchor": "artifact-identity-and-technical-index",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Artifact identity and technical index",
-          "line_start": 218,
-          "line_end": 232
+          "line_start": 220,
+          "line_end": 234
         },
         {
           "heading": "Validation",
           "level": 2,
           "anchor": "validation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Validation",
-          "line_start": 233,
-          "line_end": 247
+          "line_start": 235,
+          "line_end": 249
         },
         {
           "heading": "Adapters vs. portable core",
           "level": 2,
           "anchor": "adapters-vs-portable-core",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Adapters vs. portable core",
-          "line_start": 248,
-          "line_end": 269
+          "line_start": 250,
+          "line_end": 271
         },
         {
           "heading": "Multi-ADE participation",
           "level": 2,
           "anchor": "multi-ade-participation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Multi-ADE participation",
-          "line_start": 270,
-          "line_end": 312
+          "line_start": 272,
+          "line_end": 314
         },
         {
           "heading": "Bootstrap behavior",
           "level": 2,
           "anchor": "bootstrap-behavior",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Bootstrap behavior",
-          "line_start": 313,
-          "line_end": 332
+          "line_start": 315,
+          "line_end": 334
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 333,
-          "line_end": 359
+          "line_start": 335,
+          "line_end": 361
+        },
+        {
+          "heading": "Provenance, gaps, sources and working agreements",
+          "level": 2,
+          "anchor": "provenance-gaps-sources-and-working-agreements",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
+          "line_start": 362,
+          "line_end": 393
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 360,
-          "line_end": 373
+          "line_start": 394,
+          "line_end": 407
         },
         {
           "heading": "Confirmation A — source/design",
           "level": 3,
           "anchor": "confirmation-a--sourcedesign",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation A — source/design",
-          "line_start": 364,
-          "line_end": 367
+          "line_start": 398,
+          "line_end": 401
         },
         {
           "heading": "Confirmation B — governed context",
           "level": 3,
           "anchor": "confirmation-b--governed-context",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation B — governed context",
-          "line_start": 368,
-          "line_end": 373
+          "line_start": 402,
+          "line_end": 407
         },
         {
           "heading": "Conflict policy",
           "level": 2,
           "anchor": "conflict-policy",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Conflict policy",
-          "line_start": 374,
-          "line_end": 401
+          "line_start": 408,
+          "line_end": 435
         },
         {
           "heading": "Governed regime",
           "level": 2,
           "anchor": "governed-regime",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Governed regime",
-          "line_start": 402,
-          "line_end": 433
+          "line_start": 436,
+          "line_end": 467
         },
         {
           "heading": "Change requests",
           "level": 2,
           "anchor": "change-requests",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Change requests",
-          "line_start": 434,
-          "line_end": 451
+          "line_start": 468,
+          "line_end": 485
         },
         {
           "heading": "Human Promotion Boundary",
           "level": 2,
           "anchor": "human-promotion-boundary",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Human Promotion Boundary",
-          "line_start": 452,
-          "line_end": 504
+          "line_start": 486,
+          "line_end": 538
         },
         {
           "heading": "Protected context",
           "level": 2,
           "anchor": "protected-context",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected context",
-          "line_start": 505,
-          "line_end": 516
+          "line_start": 539,
+          "line_end": 550
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 517,
-          "line_end": 524
+          "line_start": 551,
+          "line_end": 558
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 525,
-          "line_end": 580
+          "line_start": 559,
+          "line_end": 614
         },
         {
           "heading": "Non-negotiable rules",
           "level": 2,
           "anchor": "non-negotiable-rules",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules",
-          "line_start": 581,
-          "line_end": 706
+          "line_start": 615,
+          "line_end": 744
         },
         {
           "heading": "Bootstrap documentation vs. installed project layout",
           "level": 3,
           "anchor": "bootstrap-documentation-vs-installed-project-layout",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules > Bootstrap documentation vs. installed project layout",
-          "line_start": 608,
-          "line_end": 706
+          "line_start": 644,
+          "line_end": 744
         }
       ],
       "references": [],
@@ -1197,7 +1294,7 @@
       "title": "Architecture",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "811b38e950841868920e4fb18fbd71feaf7d4345d04ccde8a1354682b14e20d0",
+      "sha256": "8fce43ccb87903a37f6f25e0b1a537573f8f6e9813aed330e660b846b63f010c",
       "aliases": [],
       "sections": [
         {
@@ -1206,7 +1303,7 @@
           "anchor": "architecture",
           "path": "Architecture",
           "line_start": 1,
-          "line_end": 72
+          "line_end": 76
         },
         {
           "heading": "Architectural style",
@@ -1222,39 +1319,39 @@
           "anchor": "modules-and-boundaries",
           "path": "Architecture > Modules and boundaries",
           "line_start": 15,
-          "line_end": 36
+          "line_end": 39
         },
         {
           "heading": "Integration strategy",
           "level": 2,
           "anchor": "integration-strategy",
           "path": "Architecture > Integration strategy",
-          "line_start": 37,
-          "line_end": 43
+          "line_start": 40,
+          "line_end": 46
         },
         {
           "heading": "Data model ownership",
           "level": 2,
           "anchor": "data-model-ownership",
           "path": "Architecture > Data model ownership",
-          "line_start": 44,
-          "line_end": 54
+          "line_start": 47,
+          "line_end": 58
         },
         {
           "heading": "Deployment topology",
           "level": 2,
           "anchor": "deployment-topology",
           "path": "Architecture > Deployment topology",
-          "line_start": 55,
-          "line_end": 60
+          "line_start": 59,
+          "line_end": 64
         },
         {
           "heading": "Known deviations",
           "level": 2,
           "anchor": "known-deviations",
           "path": "Architecture > Known deviations",
-          "line_start": 61,
-          "line_end": 72
+          "line_start": 65,
+          "line_end": 76
         }
       ],
       "references": [],
@@ -1275,7 +1372,7 @@
       "title": "Constraints",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "00663a7463381b067c3afff0c1c93901d58aae7c9a5b0ffe17dff53fa09eb41e",
+      "sha256": "8bebcec669cd6613d80f7062ba0b8463fe6c2854e3db10370e3873c394abfcf7",
       "aliases": [],
       "sections": [
         {
@@ -1284,7 +1381,7 @@
           "anchor": "constraints",
           "path": "Constraints",
           "line_start": 1,
-          "line_end": 51
+          "line_end": 52
         },
         {
           "heading": "Platform",
@@ -1316,7 +1413,7 @@
           "anchor": "explicitly-out-of-scope",
           "path": "Constraints > Explicitly out of scope",
           "line_start": 35,
-          "line_end": 51
+          "line_end": 52
         }
       ],
       "references": [],
@@ -1337,7 +1434,7 @@
       "title": "Glossary",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "70d2e102649d92cb4d6d527a52f5c9436fc31587fc955b8d8c9f9cdf1b6d7066",
+      "sha256": "b14609cf89c8116802cd901c9a65a2a0559f00c1b08dce583b3a38c3f18779f3",
       "aliases": [],
       "sections": [
         {
@@ -1346,7 +1443,7 @@
           "anchor": "glossary",
           "path": "Glossary",
           "line_start": 1,
-          "line_end": 33
+          "line_end": 38
         }
       ],
       "references": [],
@@ -1367,7 +1464,7 @@
       "title": "Principles",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "85ce27a01ffb37058956b1419cf83c1821c8cb01224ad3edda712e4ae7d3b7eb",
+      "sha256": "35e3dab738d921ea4862cd9cbd2b238dd321845d72037208df3f0cfd1e2f159a",
       "aliases": [],
       "sections": [
         {
@@ -1376,7 +1473,7 @@
           "anchor": "principles",
           "path": "Principles",
           "line_start": 1,
-          "line_end": 66
+          "line_end": 74
         },
         {
           "heading": "Format",
@@ -1392,23 +1489,23 @@
           "anchor": "principles-in-force",
           "path": "Principles > Principles in force",
           "line_start": 14,
-          "line_end": 50
+          "line_end": 58
         },
         {
           "heading": "Examples of the right shape",
           "level": 2,
           "anchor": "examples-of-the-right-shape",
           "path": "Principles > Examples of the right shape",
-          "line_start": 51,
-          "line_end": 58
+          "line_start": 59,
+          "line_end": 66
         },
         {
           "heading": "Anti-examples",
           "level": 2,
           "anchor": "anti-examples",
           "path": "Principles > Anti-examples",
-          "line_start": 59,
-          "line_end": 66
+          "line_start": 67,
+          "line_end": 74
         }
       ],
       "references": [],
@@ -1491,7 +1588,7 @@
       "title": "Stack & Architecture Map",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "48ed60e0b5798e76657a0d2ef275d144d4251394790b1cb96ca42f894a4fac66",
+      "sha256": "57162d04844b40895ea5c3b52e96a6956a60fc113a09e8f58db8085c0f636959",
       "aliases": [],
       "sections": [
         {
@@ -1500,7 +1597,7 @@
           "anchor": "stack--architecture-map",
           "path": "Stack & Architecture Map",
           "line_start": 1,
-          "line_end": 132
+          "line_end": 153
         },
         {
           "heading": "1. Stack at a glance",
@@ -1540,23 +1637,31 @@
           "anchor": "5-dependency-rules",
           "path": "Stack & Architecture Map > 5. Dependency rules",
           "line_start": 69,
-          "line_end": 94
+          "line_end": 97
         },
         {
           "heading": "6. Map change log",
           "level": 2,
           "anchor": "6-map-change-log",
           "path": "Stack & Architecture Map > 6. Map change log",
-          "line_start": 95,
-          "line_end": 112
+          "line_start": 98,
+          "line_end": 117
         },
         {
           "heading": "7. Drift signals",
           "level": 2,
           "anchor": "7-drift-signals",
           "path": "Stack & Architecture Map > 7. Drift signals",
-          "line_start": 113,
-          "line_end": 132
+          "line_start": 118,
+          "line_end": 135
+        },
+        {
+          "heading": "8. Gap register",
+          "level": 2,
+          "anchor": "8-gap-register",
+          "path": "Stack & Architecture Map > 8. Gap register",
+          "line_start": 136,
+          "line_end": 153
         }
       ],
       "references": [],
@@ -1577,7 +1682,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "9c259b82b5ea405f8298e8b467ee25bcc3e5c4be3d13f915d1b8e298f0909d94",
+      "sha256": "d14c656d39183a642a64b5a94c5d1b15c149c5e7ec951ccd772241f08b331d01",
       "aliases": [],
       "sections": [
         {
@@ -1586,7 +1691,7 @@
           "anchor": "gtt--reference-docs",
           "path": "GTT — Reference Docs",
           "line_start": 1,
-          "line_end": 902
+          "line_end": 916
         },
         {
           "heading": "Methodology",
@@ -1594,7 +1699,7 @@
           "anchor": "methodology",
           "path": "GTT — Reference Docs > Methodology",
           "line_start": 19,
-          "line_end": 599
+          "line_end": 613
         },
         {
           "heading": "The premise",
@@ -1693,188 +1798,196 @@
           "line_end": 351
         },
         {
+          "heading": "Provenance, gaps, sources and working agreements",
+          "level": 3,
+          "anchor": "provenance-gaps-sources-and-working-agreements",
+          "path": "GTT — Reference Docs > Methodology > Provenance, gaps, sources and working agreements",
+          "line_start": 352,
+          "line_end": 364
+        },
+        {
           "heading": "GTTGuard: protected artifacts",
           "level": 3,
           "anchor": "gttguard-protected-artifacts",
           "path": "GTT — Reference Docs > Methodology > GTTGuard: protected artifacts",
-          "line_start": 352,
-          "line_end": 412
+          "line_start": 365,
+          "line_end": 425
         },
         {
           "heading": "Status and validation",
           "level": 3,
           "anchor": "status-and-validation",
           "path": "GTT — Reference Docs > Methodology > Status and validation",
-          "line_start": 413,
-          "line_end": 448
+          "line_start": 426,
+          "line_end": 461
         },
         {
           "heading": "Artifact identity and the technical index",
           "level": 3,
           "anchor": "artifact-identity-and-the-technical-index",
           "path": "GTT — Reference Docs > Methodology > Artifact identity and the technical index",
-          "line_start": 449,
-          "line_end": 480
+          "line_start": 462,
+          "line_end": 493
         },
         {
           "heading": "Session memory boundary",
           "level": 3,
           "anchor": "session-memory-boundary",
           "path": "GTT — Reference Docs > Methodology > Session memory boundary",
-          "line_start": 481,
-          "line_end": 566
+          "line_start": 494,
+          "line_end": 579
         },
         {
           "heading": "Session Memory adapter matrix",
           "level": 4,
           "anchor": "session-memory-adapter-matrix",
           "path": "GTT — Reference Docs > Methodology > Session memory boundary > Session Memory adapter matrix",
-          "line_start": 529,
-          "line_end": 566
+          "line_start": 542,
+          "line_end": 579
         },
         {
           "heading": "Capability status",
           "level": 3,
           "anchor": "capability-status",
           "path": "GTT — Reference Docs > Methodology > Capability status",
-          "line_start": 567,
-          "line_end": 588
+          "line_start": 580,
+          "line_end": 602
         },
         {
           "heading": "Operational boundary",
           "level": 3,
           "anchor": "operational-boundary",
           "path": "GTT — Reference Docs > Methodology > Operational boundary",
-          "line_start": 589,
-          "line_end": 599
+          "line_start": 603,
+          "line_end": 613
         },
         {
           "heading": "Portability: Claude Code, Kiro, Codex, Copilot",
           "level": 2,
           "anchor": "portability-claude-code-kiro-codex-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot",
-          "line_start": 600,
-          "line_end": 791
+          "line_start": 614,
+          "line_end": 805
         },
         {
           "heading": "Compatibility matrix",
           "level": 3,
           "anchor": "compatibility-matrix",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Compatibility matrix",
-          "line_start": 617,
-          "line_end": 644
+          "line_start": 631,
+          "line_end": 658
         },
         {
           "heading": "Claude Code",
           "level": 3,
           "anchor": "claude-code",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Claude Code",
-          "line_start": 645,
-          "line_end": 657
+          "line_start": 659,
+          "line_end": 671
         },
         {
           "heading": "Kiro",
           "level": 3,
           "anchor": "kiro",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Kiro",
-          "line_start": 658,
-          "line_end": 689
+          "line_start": 672,
+          "line_end": 703
         },
         {
           "heading": "Codex",
           "level": 3,
           "anchor": "codex",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Codex",
-          "line_start": 690,
-          "line_end": 730
+          "line_start": 704,
+          "line_end": 744
         },
         {
           "heading": "GitHub Copilot",
           "level": 3,
           "anchor": "github-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > GitHub Copilot",
-          "line_start": 731,
-          "line_end": 759
+          "line_start": 745,
+          "line_end": 773
         },
         {
           "heading": "If your team uses more than one ADE",
           "level": 3,
           "anchor": "if-your-team-uses-more-than-one-ade",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If your team uses more than one ADE",
-          "line_start": 760,
-          "line_end": 779
+          "line_start": 774,
+          "line_end": 793
         },
         {
           "heading": "If you use only one",
           "level": 3,
           "anchor": "if-you-use-only-one",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If you use only one",
-          "line_start": 780,
-          "line_end": 791
+          "line_start": 794,
+          "line_end": 805
         },
         {
           "heading": "Migrating from GTT v1",
           "level": 2,
           "anchor": "migrating-from-gtt-v1",
           "path": "GTT — Reference Docs > Migrating from GTT v1",
-          "line_start": 792,
-          "line_end": 902
+          "line_start": 806,
+          "line_end": 916
         },
         {
           "heading": "What changed and why",
           "level": 3,
           "anchor": "what-changed-and-why",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > What changed and why",
-          "line_start": 794,
-          "line_end": 810
+          "line_start": 808,
+          "line_end": 824
         },
         {
           "heading": "File mapping",
           "level": 3,
           "anchor": "file-mapping",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > File mapping",
-          "line_start": 811,
-          "line_end": 829
+          "line_start": 825,
+          "line_end": 843
         },
         {
           "heading": "Scaffold restructure (layout change within v2.1)",
           "level": 3,
           "anchor": "scaffold-restructure-layout-change-within-v21",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Scaffold restructure (layout change within v2.1)",
-          "line_start": 830,
-          "line_end": 850
+          "line_start": 844,
+          "line_end": 864
         },
         {
           "heading": "Layout migration to         and               (ADR-004)",
           "level": 3,
           "anchor": "layout-migration-to---------and---------------adr-004",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Layout migration to         and               (ADR-004)",
-          "line_start": 851,
-          "line_end": 863
+          "line_start": 865,
+          "line_end": 877
         },
         {
           "heading": "Steps",
           "level": 3,
           "anchor": "steps",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Steps",
-          "line_start": 864,
-          "line_end": 884
+          "line_start": 878,
+          "line_end": 898
         },
         {
           "heading": "If you use other agents too",
           "level": 3,
           "anchor": "if-you-use-other-agents-too",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > If you use other agents too",
-          "line_start": 885,
-          "line_end": 895
+          "line_start": 899,
+          "line_end": 909
         },
         {
           "heading": "Verifying the token saving",
           "level": 3,
           "anchor": "verifying-the-token-saving",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Verifying the token saving",
-          "line_start": 896,
-          "line_end": 902
+          "line_start": 910,
+          "line_end": 916
         }
       ],
       "references": [],
@@ -2102,7 +2215,7 @@
       "title": "GTT Bootstrap — Completion Report",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e1f5047dc38d3cfcd04cde99527755c66ecb323a1aee6b862f8a45e62283d454",
+      "sha256": "3bdab089d7a31bafad3213aa5f8127efda1b693d3f81321f82e177cc6f0b4b43",
       "aliases": [],
       "sections": [
         {
@@ -2111,7 +2224,7 @@
           "anchor": "gtt-bootstrap--completion-report",
           "path": "GTT Bootstrap — Completion Report",
           "line_start": 1,
-          "line_end": 208
+          "line_end": 233
         },
         {
           "heading": "Entry 2026-09-28 — GTT v2.1 context Bootstrap + freeze",
@@ -2159,7 +2272,15 @@
           "anchor": "bootstrap-integration-contracts-multi-ade-and-initial-design-questionnaire---2026-09-29t205059z",
           "path": "GTT Bootstrap — Completion Report > Bootstrap integration contracts (Multi-ADE and Initial Design Questionnaire) - 2026-09-29T20:50:59Z",
           "line_start": 187,
-          "line_end": 208
+          "line_end": 210
+        },
+        {
+          "heading": "Provenance, gaps, sources and working agreements - 2026-09-29T21:30:25Z",
+          "level": 2,
+          "anchor": "provenance-gaps-sources-and-working-agreements---2026-09-29t213025z",
+          "path": "GTT Bootstrap — Completion Report > Provenance, gaps, sources and working agreements - 2026-09-29T21:30:25Z",
+          "line_start": 211,
+          "line_end": 233
         }
       ],
       "references": [],
@@ -2939,13 +3060,99 @@
       }
     },
     {
+      "id": "GTT-GTT-SOURCES-MANIFEST",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-sources-manifest.md",
+      "title": "Source Manifest",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "d0df8eaa10956bca670f183353353edb13ef0014014970d579d674aba9e361d1",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Source Manifest",
+          "level": 1,
+          "anchor": "source-manifest",
+          "path": "Source Manifest",
+          "line_start": 1,
+          "line_end": 37
+        },
+        {
+          "heading": "Rules",
+          "level": 2,
+          "anchor": "rules",
+          "path": "Source Manifest > Rules",
+          "line_start": 12,
+          "line_end": 26
+        },
+        {
+          "heading": "Sources",
+          "level": 2,
+          "anchor": "sources",
+          "path": "Source Manifest > Sources",
+          "line_start": 27,
+          "line_end": 37
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "GTT-GTT-WORKING-AGREEMENTS",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-working-agreements.md",
+      "title": "Working Agreements",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "7bf65bc5f1c0c6fa9d654df6026ba29438f15a98794db9534b9958f968699e59",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Working Agreements",
+          "level": 1,
+          "anchor": "working-agreements",
+          "path": "Working Agreements",
+          "line_start": 1,
+          "line_end": 25
+        },
+        {
+          "heading": "Format",
+          "level": 2,
+          "anchor": "format",
+          "path": "Working Agreements > Format",
+          "line_start": 15,
+          "line_end": 19
+        },
+        {
+          "heading": "Agreements",
+          "level": 2,
+          "anchor": "agreements",
+          "path": "Working Agreements > Agreements",
+          "line_start": 20,
+          "line_end": 25
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "GTT-INDEX",
       "type": "documentation",
       "path": ".gtt/docs/index.md",
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e0b19c9a7e9416f36ff9e250ed8bdf45d4272293a16a7aed8185889d77640795",
+      "sha256": "555065b6617177f5cf5d1ba8e8e8812c0a4f9cf5c3e9ee25d9fa2f5445b64add",
       "aliases": [],
       "sections": [
         {
@@ -2954,7 +3161,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 226
+          "line_end": 230
         },
         {
           "heading": "Quick links",
@@ -3050,31 +3257,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 157,
-          "line_end": 187
+          "line_end": 191
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 188,
-          "line_end": 200
+          "line_start": 192,
+          "line_end": 204
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 201,
-          "line_end": 215
+          "line_start": 205,
+          "line_end": 219
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 216,
-          "line_end": 226
+          "line_start": 220,
+          "line_end": 230
         }
       ],
       "references": [
@@ -4104,6 +4311,89 @@
       }
     },
     {
+      "id": "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/ADR-DRAFT-provenance-gaps-sources-agreements.md",
+      "title": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "4330e7a115f174605be9635fd92b855bb0d3711759aa5b6d623e77e3abf69ddd",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+          "level": 1,
+          "anchor": "adr-006--provenance-gaps-openblocking-source-manifest-and-working-agreements",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
+          "line_start": 1,
+          "line_end": 111
+        },
+        {
+          "heading": "Context",
+          "level": 2,
+          "anchor": "context",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Context",
+          "line_start": 13,
+          "line_end": 29
+        },
+        {
+          "heading": "Decision",
+          "level": 2,
+          "anchor": "decision",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Decision",
+          "line_start": 30,
+          "line_end": 56
+        },
+        {
+          "heading": "Alternatives considered",
+          "level": 2,
+          "anchor": "alternatives-considered",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Alternatives considered",
+          "line_start": 57,
+          "line_end": 69
+        },
+        {
+          "heading": "Consequences",
+          "level": 2,
+          "anchor": "consequences",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Consequences",
+          "line_start": 70,
+          "line_end": 80
+        },
+        {
+          "heading": "Risks",
+          "level": 2,
+          "anchor": "risks",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Risks",
+          "line_start": 81,
+          "line_end": 91
+        },
+        {
+          "heading": "Stack map delta",
+          "level": 2,
+          "anchor": "stack-map-delta",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Stack map delta",
+          "line_start": 92,
+          "line_end": 102
+        },
+        {
+          "heading": "Affected context",
+          "level": 2,
+          "anchor": "affected-context",
+          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Affected context",
+          "line_start": 103,
+          "line_end": 111
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-CONTEXT-ARCHITECTURE-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-architecture-adr-005.md",
@@ -4179,6 +4469,81 @@
       }
     },
     {
+      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-architecture-adr-006.md",
+      "title": "Architecture",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "8fce43ccb87903a37f6f25e0b1a537573f8f6e9813aed330e660b846b63f010c",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Architecture",
+          "level": 1,
+          "anchor": "architecture",
+          "path": "Architecture",
+          "line_start": 1,
+          "line_end": 76
+        },
+        {
+          "heading": "Architectural style",
+          "level": 2,
+          "anchor": "architectural-style",
+          "path": "Architecture > Architectural style",
+          "line_start": 9,
+          "line_end": 14
+        },
+        {
+          "heading": "Modules and boundaries",
+          "level": 2,
+          "anchor": "modules-and-boundaries",
+          "path": "Architecture > Modules and boundaries",
+          "line_start": 15,
+          "line_end": 39
+        },
+        {
+          "heading": "Integration strategy",
+          "level": 2,
+          "anchor": "integration-strategy",
+          "path": "Architecture > Integration strategy",
+          "line_start": 40,
+          "line_end": 46
+        },
+        {
+          "heading": "Data model ownership",
+          "level": 2,
+          "anchor": "data-model-ownership",
+          "path": "Architecture > Data model ownership",
+          "line_start": 47,
+          "line_end": 58
+        },
+        {
+          "heading": "Deployment topology",
+          "level": 2,
+          "anchor": "deployment-topology",
+          "path": "Architecture > Deployment topology",
+          "line_start": 59,
+          "line_end": 64
+        },
+        {
+          "heading": "Known deviations",
+          "level": 2,
+          "anchor": "known-deviations",
+          "path": "Architecture > Known deviations",
+          "line_start": 65,
+          "line_end": 76
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-CONTEXT-CONSTRAINTS-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-constraints-adr-005.md",
@@ -4238,6 +4603,65 @@
       }
     },
     {
+      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-constraints-adr-006.md",
+      "title": "Constraints",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "8bebcec669cd6613d80f7062ba0b8463fe6c2854e3db10370e3873c394abfcf7",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Constraints",
+          "level": 1,
+          "anchor": "constraints",
+          "path": "Constraints",
+          "line_start": 1,
+          "line_end": 52
+        },
+        {
+          "heading": "Platform",
+          "level": 2,
+          "anchor": "platform",
+          "path": "Constraints > Platform",
+          "line_start": 9,
+          "line_end": 15
+        },
+        {
+          "heading": "Technical",
+          "level": 2,
+          "anchor": "technical",
+          "path": "Constraints > Technical",
+          "line_start": 16,
+          "line_end": 28
+        },
+        {
+          "heading": "Regulatory and organizational",
+          "level": 2,
+          "anchor": "regulatory-and-organizational",
+          "path": "Constraints > Regulatory and organizational",
+          "line_start": 29,
+          "line_end": 34
+        },
+        {
+          "heading": "Explicitly out of scope",
+          "level": 2,
+          "anchor": "explicitly-out-of-scope",
+          "path": "Constraints > Explicitly out of scope",
+          "line_start": 35,
+          "line_end": 52
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "PROP-CONTEXT-GLOSSARY-ADR-005",
       "type": "proposal",
       "path": "gtt-domain/proposals/context-glossary-adr-005.md",
@@ -4254,6 +4678,33 @@
           "path": "Glossary",
           "line_start": 1,
           "line_end": 33
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-CONTEXT-GLOSSARY-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-glossary-adr-006.md",
+      "title": "Glossary",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "b14609cf89c8116802cd901c9a65a2a0559f00c1b08dce583b3a38c3f18779f3",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Glossary",
+          "level": 1,
+          "anchor": "glossary",
+          "path": "Glossary",
+          "line_start": 1,
+          "line_end": 38
         }
       ],
       "references": [],
@@ -4313,6 +4764,65 @@
           "path": "Principles > Anti-examples",
           "line_start": 59,
           "line_end": 66
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-CONTEXT-PRINCIPLES-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-principles-adr-006.md",
+      "title": "Principles",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "35e3dab738d921ea4862cd9cbd2b238dd321845d72037208df3f0cfd1e2f159a",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Principles",
+          "level": 1,
+          "anchor": "principles",
+          "path": "Principles",
+          "line_start": 1,
+          "line_end": 74
+        },
+        {
+          "heading": "Format",
+          "level": 2,
+          "anchor": "format",
+          "path": "Principles > Format",
+          "line_start": 9,
+          "line_end": 13
+        },
+        {
+          "heading": "Principles in force",
+          "level": 2,
+          "anchor": "principles-in-force",
+          "path": "Principles > Principles in force",
+          "line_start": 14,
+          "line_end": 58
+        },
+        {
+          "heading": "Examples of the right shape",
+          "level": 2,
+          "anchor": "examples-of-the-right-shape",
+          "path": "Principles > Examples of the right shape",
+          "line_start": 59,
+          "line_end": 66
+        },
+        {
+          "heading": "Anti-examples",
+          "level": 2,
+          "anchor": "anti-examples",
+          "path": "Principles > Anti-examples",
+          "line_start": 67,
+          "line_end": 74
         }
       ],
       "references": [],
@@ -4396,6 +4906,97 @@
           "path": "Stack & Architecture Map > 7. Drift signals",
           "line_start": 113,
           "line_end": 132
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "PROP-CONTEXT-STACK-ADR-006",
+      "type": "proposal",
+      "path": "gtt-domain/proposals/context-stack-adr-006.md",
+      "title": "Stack & Architecture Map",
+      "authority": "draft",
+      "version": "v2.1",
+      "sha256": "cafc9fb188610517dc26abc492a11798944b76071fa1db202f31732878db47fa",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Stack & Architecture Map",
+          "level": 1,
+          "anchor": "stack--architecture-map",
+          "path": "Stack & Architecture Map",
+          "line_start": 1,
+          "line_end": 153
+        },
+        {
+          "heading": "1. Stack at a glance",
+          "level": 2,
+          "anchor": "1-stack-at-a-glance",
+          "path": "Stack & Architecture Map > 1. Stack at a glance",
+          "line_start": 14,
+          "line_end": 42
+        },
+        {
+          "heading": "2. Component map",
+          "level": 2,
+          "anchor": "2-component-map",
+          "path": "Stack & Architecture Map > 2. Component map",
+          "line_start": 43,
+          "line_end": 51
+        },
+        {
+          "heading": "3. Deployment topology",
+          "level": 2,
+          "anchor": "3-deployment-topology",
+          "path": "Stack & Architecture Map > 3. Deployment topology",
+          "line_start": 52,
+          "line_end": 59
+        },
+        {
+          "heading": "4. Observability",
+          "level": 2,
+          "anchor": "4-observability",
+          "path": "Stack & Architecture Map > 4. Observability",
+          "line_start": 60,
+          "line_end": 68
+        },
+        {
+          "heading": "5. Dependency rules",
+          "level": 2,
+          "anchor": "5-dependency-rules",
+          "path": "Stack & Architecture Map > 5. Dependency rules",
+          "line_start": 69,
+          "line_end": 97
+        },
+        {
+          "heading": "6. Map change log",
+          "level": 2,
+          "anchor": "6-map-change-log",
+          "path": "Stack & Architecture Map > 6. Map change log",
+          "line_start": 98,
+          "line_end": 117
+        },
+        {
+          "heading": "7. Drift signals",
+          "level": 2,
+          "anchor": "7-drift-signals",
+          "path": "Stack & Architecture Map > 7. Drift signals",
+          "line_start": 118,
+          "line_end": 135
+        },
+        {
+          "heading": "8. Gap register",
+          "level": 2,
+          "anchor": "8-gap-register",
+          "path": "Stack & Architecture Map > 8. Gap register",
+          "line_start": 136,
+          "line_end": 153
         }
       ],
       "references": [],
@@ -5679,7 +6280,7 @@
       "title": "Bootstrap the governed context",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "baac500347e7a45ce40714f8d417b9f987247e2dc975d22bd87ec6dee0a33f27",
+      "sha256": "973b2df18a001f643dace8dfd2f4a2eb358649e154e03d7b0413568949153386",
       "aliases": [],
       "sections": [
         {
@@ -5688,7 +6289,7 @@
           "anchor": "bootstrap-the-governed-context",
           "path": "Bootstrap the governed context",
           "line_start": 8,
-          "line_end": 324
+          "line_end": 334
         },
         {
           "heading": "0. Detect candidate ADEs, let the human choose, and resolve the overlays",
@@ -5712,55 +6313,55 @@
           "anchor": "2-look-for-an-existing-solution-document",
           "path": "Bootstrap the governed context > 2. Look for an existing solution document",
           "line_start": 151,
-          "line_end": 213
+          "line_end": 216
         },
         {
           "heading": "The Initial Design Questionnaire (no sufficient design document)",
           "level": 3,
           "anchor": "the-initial-design-questionnaire-no-sufficient-design-document",
           "path": "Bootstrap the governed context > 2. Look for an existing solution document > The Initial Design Questionnaire (no sufficient design document)",
-          "line_start": 183,
-          "line_end": 213
+          "line_start": 186,
+          "line_end": 216
         },
         {
           "heading": "3. Confirm the document is finished — or stop",
           "level": 2,
           "anchor": "3-confirm-the-document-is-finished--or-stop",
           "path": "Bootstrap the governed context > 3. Confirm the document is finished — or stop",
-          "line_start": 214,
-          "line_end": 236
+          "line_start": 217,
+          "line_end": 239
         },
         {
           "heading": "4. Ask what is still missing",
           "level": 2,
           "anchor": "4-ask-what-is-still-missing",
           "path": "Bootstrap the governed context > 4. Ask what is still missing",
-          "line_start": 237,
-          "line_end": 263
+          "line_start": 240,
+          "line_end": 273
         },
         {
           "heading": "5. Confirm before drafting",
           "level": 2,
           "anchor": "5-confirm-before-drafting",
           "path": "Bootstrap the governed context > 5. Confirm before drafting",
-          "line_start": 264,
-          "line_end": 269
+          "line_start": 274,
+          "line_end": 279
         },
         {
           "heading": "6. Write the context, then stop",
           "level": 2,
           "anchor": "6-write-the-context-then-stop",
           "path": "Bootstrap the governed context > 6. Write the context, then stop",
-          "line_start": 270,
-          "line_end": 286
+          "line_start": 280,
+          "line_end": 296
         },
         {
           "heading": "After bootstrap",
           "level": 2,
           "anchor": "after-bootstrap",
           "path": "Bootstrap the governed context > After bootstrap",
-          "line_start": 287,
-          "line_end": 324
+          "line_start": 297,
+          "line_end": 334
         }
       ],
       "references": [],
@@ -6100,7 +6701,8 @@
     ],
     "1. stack at a glance": [
       "CTX-STACK#1-stack-at-a-glance",
-      "PROP-CONTEXT-STACK-ADR-005#1-stack-at-a-glance"
+      "PROP-CONTEXT-STACK-ADR-005#1-stack-at-a-glance",
+      "PROP-CONTEXT-STACK-ADR-006#1-stack-at-a-glance"
     ],
     "1. start from governed context": [
       "GTT-USAGE#1-start-from-governed-context"
@@ -6233,7 +6835,8 @@
     ],
     "2. component map": [
       "CTX-STACK#2-component-map",
-      "PROP-CONTEXT-STACK-ADR-005#2-component-map"
+      "PROP-CONTEXT-STACK-ADR-005#2-component-map",
+      "PROP-CONTEXT-STACK-ADR-006#2-component-map"
     ],
     "2. context change": [
       "SKILL-GTT-PROPOSE-CHANGE#2-context-change"
@@ -6345,7 +6948,8 @@
     ],
     "3. deployment topology": [
       "CTX-STACK#3-deployment-topology",
-      "PROP-CONTEXT-STACK-ADR-005#3-deployment-topology"
+      "PROP-CONTEXT-STACK-ADR-005#3-deployment-topology",
+      "PROP-CONTEXT-STACK-ADR-006#3-deployment-topology"
     ],
     "3. detect an architectural change": [
       "GTT-USAGE#3-detect-an-architectural-change"
@@ -6391,7 +6995,8 @@
     ],
     "4. observability": [
       "CTX-STACK#4-observability",
-      "PROP-CONTEXT-STACK-ADR-005#4-observability"
+      "PROP-CONTEXT-STACK-ADR-005#4-observability",
+      "PROP-CONTEXT-STACK-ADR-006#4-observability"
     ],
     "4. project identity": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#4-project-identity"
@@ -6428,7 +7033,8 @@
     ],
     "5. dependency rules": [
       "CTX-STACK#5-dependency-rules",
-      "PROP-CONTEXT-STACK-ADR-005#5-dependency-rules"
+      "PROP-CONTEXT-STACK-ADR-005#5-dependency-rules",
+      "PROP-CONTEXT-STACK-ADR-006#5-dependency-rules"
     ],
     "5. next step (only after approval)": [
       "PROP-PROPOSAL-MULTI-ADE-OVERLAYS-PRIMARY-ADE#5-next-step-only-after-approval"
@@ -6459,7 +7065,8 @@
     ],
     "6. map change log": [
       "CTX-STACK#6-map-change-log",
-      "PROP-CONTEXT-STACK-ADR-005#6-map-change-log"
+      "PROP-CONTEXT-STACK-ADR-005#6-map-change-log",
+      "PROP-CONTEXT-STACK-ADR-006#6-map-change-log"
     ],
     "6. record the decision": [
       "GTT-USAGE#6-record-the-decision"
@@ -6490,7 +7097,8 @@
     ],
     "7. drift signals": [
       "CTX-STACK#7-drift-signals",
-      "PROP-CONTEXT-STACK-ADR-005#7-drift-signals"
+      "PROP-CONTEXT-STACK-ADR-005#7-drift-signals",
+      "PROP-CONTEXT-STACK-ADR-006#7-drift-signals"
     ],
     "7. freeze": [
       "GTT-INSTALLATION#7-freeze",
@@ -6507,6 +7115,10 @@
     ],
     "8. functional requirements": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#8-functional-requirements"
+    ],
+    "8. gap register": [
+      "CTX-STACK#8-gap-register",
+      "PROP-CONTEXT-STACK-ADR-006#8-gap-register"
     ],
     "8. verificar el guardrail": [
       "GTT-INSTALLATION-ES#8-verificar-el-guardrail"
@@ -6573,8 +7185,10 @@
       "ADR-003#affected-context",
       "ADR-004#affected-context",
       "ADR-005#affected-context",
+      "ADR-006#affected-context",
       "ADR-TEMPLATE#affected-context",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#affected-context"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#affected-context",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#affected-context"
     ],
     "after adding or removing a marker": [
       "SKILL-GTT-GUARD#after-adding-or-removing-a-marker"
@@ -6600,25 +7214,33 @@
     "agents.md — gtt bootstrap agent contract": [
       "AGENTS#agentsmd--gtt-bootstrap-agent-contract"
     ],
+    "agreements": [
+      "GTT-GTT-WORKING-AGREEMENTS#agreements"
+    ],
     "alternatives considered": [
       "ADR-001#alternatives-considered",
       "ADR-003#alternatives-considered",
       "ADR-004#alternatives-considered",
       "ADR-005#alternatives-considered",
+      "ADR-006#alternatives-considered",
       "ADR-TEMPLATE#alternatives-considered",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#alternatives-considered"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#alternatives-considered",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#alternatives-considered"
     ],
     "anti-examples": [
       "CTX-PRINCIPLES#anti-examples",
-      "PROP-CONTEXT-PRINCIPLES-ADR-005#anti-examples"
+      "PROP-CONTEXT-PRINCIPLES-ADR-005#anti-examples",
+      "PROP-CONTEXT-PRINCIPLES-ADR-006#anti-examples"
     ],
     "architectural style": [
       "CTX-ARCHITECTURE#architectural-style",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#architectural-style"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#architectural-style",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#architectural-style"
     ],
     "architecture": [
       "CTX-ARCHITECTURE#architecture",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#architecture"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#architecture",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#architecture"
     ],
     "artefactos protegidos (gttguard)": [
       "GTT-USAGE-ES#artefactos-protegidos-gttguard",
@@ -6661,6 +7283,9 @@
     ],
     "blocked": [
       "BACKLOG#blocked"
+    ],
+    "blocking gap": [
+      "CTX-GLOSSARY#glossary"
     ],
     "bootstrap behavior": [
       "AGENTS#bootstrap-behavior"
@@ -6755,13 +7380,16 @@
       "ADR-003#consequences",
       "ADR-004#consequences",
       "ADR-005#consequences",
+      "ADR-006#consequences",
       "ADR-TEMPLATE#consequences",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#consequences"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#consequences",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#consequences"
     ],
     "constraints": [
       "CTX-CONSTRAINTS#constraints",
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#constraints",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-005#constraints"
+      "PROP-CONTEXT-CONSTRAINTS-ADR-005#constraints",
+      "PROP-CONTEXT-CONSTRAINTS-ADR-006#constraints"
     ],
     "contents": [
       "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#contents"
@@ -6771,8 +7399,10 @@
       "ADR-003#context",
       "ADR-004#context",
       "ADR-005#context",
+      "ADR-006#context",
       "ADR-TEMPLATE#context",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#context"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#context",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#context"
     ],
     "context freshness": [
       "DOC-DOCS#context-freshness"
@@ -6787,15 +7417,18 @@
     ],
     "data model ownership": [
       "CTX-ARCHITECTURE#data-model-ownership",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#data-model-ownership"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#data-model-ownership",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#data-model-ownership"
     ],
     "decision": [
       "ADR-001#decision",
       "ADR-003#decision",
       "ADR-004#decision",
       "ADR-005#decision",
+      "ADR-006#decision",
       "ADR-TEMPLATE#decision",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#decision"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#decision",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#decision"
     ],
     "decisions": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#decisions"
@@ -6812,7 +7445,8 @@
     ],
     "deployment topology": [
       "CTX-ARCHITECTURE#deployment-topology",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#deployment-topology"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#deployment-topology",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#deployment-topology"
     ],
     "design principle": [
       "README-GTT#design-principle"
@@ -6894,14 +7528,16 @@
     ],
     "examples of the right shape": [
       "CTX-PRINCIPLES#examples-of-the-right-shape",
-      "PROP-CONTEXT-PRINCIPLES-ADR-005#examples-of-the-right-shape"
+      "PROP-CONTEXT-PRINCIPLES-ADR-005#examples-of-the-right-shape",
+      "PROP-CONTEXT-PRINCIPLES-ADR-006#examples-of-the-right-shape"
     ],
     "existing projects and upgrades": [
       "GTT-INSTALLATION#existing-projects-and-upgrades"
     ],
     "explicitly out of scope": [
       "CTX-CONSTRAINTS#explicitly-out-of-scope",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-005#explicitly-out-of-scope"
+      "PROP-CONTEXT-CONSTRAINTS-ADR-005#explicitly-out-of-scope",
+      "PROP-CONTEXT-CONSTRAINTS-ADR-006#explicitly-out-of-scope"
     ],
     "file mapping": [
       "DOC-DOCS#file-mapping"
@@ -6917,7 +7553,9 @@
     ],
     "format": [
       "CTX-PRINCIPLES#format",
-      "PROP-CONTEXT-PRINCIPLES-ADR-005#format"
+      "GTT-GTT-WORKING-AGREEMENTS#format",
+      "PROP-CONTEXT-PRINCIPLES-ADR-005#format",
+      "PROP-CONTEXT-PRINCIPLES-ADR-006#format"
     ],
     "forms": [
       "SKILL-GTT-PROPOSE-CHANGE#forms"
@@ -6945,7 +7583,8 @@
     ],
     "glossary": [
       "CTX-GLOSSARY#glossary",
-      "PROP-CONTEXT-GLOSSARY-ADR-005#glossary"
+      "PROP-CONTEXT-GLOSSARY-ADR-005#glossary",
+      "PROP-CONTEXT-GLOSSARY-ADR-006#glossary"
     ],
     "governance": [
       "DOC-SESSION-ADAPTER-CONTRACT#governance"
@@ -7089,7 +7728,8 @@
     ],
     "integration strategy": [
       "CTX-ARCHITECTURE#integration-strategy",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#integration-strategy"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#integration-strategy",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#integration-strategy"
     ],
     "integration surface": [
       "CTX-GLOSSARY#glossary"
@@ -7105,7 +7745,8 @@
     ],
     "known deviations": [
       "CTX-ARCHITECTURE#known-deviations",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#known-deviations"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#known-deviations",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#known-deviations"
     ],
     "l0 — contexto gobernado": [
       "GTT-USAGE-ES#l0--contexto-gobernado"
@@ -7187,7 +7828,8 @@
     ],
     "modules and boundaries": [
       "CTX-ARCHITECTURE#modules-and-boundaries",
-      "PROP-CONTEXT-ARCHITECTURE-ADR-005#modules-and-boundaries"
+      "PROP-CONTEXT-ARCHITECTURE-ADR-005#modules-and-boundaries",
+      "PROP-CONTEXT-ARCHITECTURE-ADR-006#modules-and-boundaries"
     ],
     "moves and renames": [
       "SKILL-GTT-RETRIEVE#moves-and-renames"
@@ -7222,6 +7864,9 @@
     "numbering": [
       "SKILL-GTT-ADR#numbering"
     ],
+    "open gap": [
+      "CTX-GLOSSARY#glossary"
+    ],
     "operational boundary": [
       "DOC-DOCS#operational-boundary"
     ],
@@ -7239,7 +7884,8 @@
     ],
     "platform": [
       "CTX-CONSTRAINTS#platform",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-005#platform"
+      "PROP-CONTEXT-CONSTRAINTS-ADR-005#platform",
+      "PROP-CONTEXT-CONSTRAINTS-ADR-006#platform"
     ],
     "por qué algunos archivos permanecen en la raíz": [
       "README-GTT-ES#por-qué-algunos-archivos-permanecen-en-la-raíz"
@@ -7267,11 +7913,13 @@
     ],
     "principles": [
       "CTX-PRINCIPLES#principles",
-      "PROP-CONTEXT-PRINCIPLES-ADR-005#principles"
+      "PROP-CONTEXT-PRINCIPLES-ADR-005#principles",
+      "PROP-CONTEXT-PRINCIPLES-ADR-006#principles"
     ],
     "principles in force": [
       "CTX-PRINCIPLES#principles-in-force",
-      "PROP-CONTEXT-PRINCIPLES-ADR-005#principles-in-force"
+      "PROP-CONTEXT-PRINCIPLES-ADR-005#principles-in-force",
+      "PROP-CONTEXT-PRINCIPLES-ADR-006#principles-in-force"
     ],
     "problem": [
       "CTX-SOLUTION-VISION#problem"
@@ -7321,6 +7969,13 @@
     "protection registry — derived, self-correcting": [
       "GTT-INDEX#protection-registry--derived-self-correcting"
     ],
+    "provenance tag": [
+      "CTX-GLOSSARY#glossary"
+    ],
+    "provenance, gaps, sources and working agreements": [
+      "AGENTS#provenance-gaps-sources-and-working-agreements",
+      "DOC-DOCS#provenance-gaps-sources-and-working-agreements"
+    ],
     "purpose": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#purpose"
     ],
@@ -7350,7 +8005,8 @@
     ],
     "regulatory and organizational": [
       "CTX-CONSTRAINTS#regulatory-and-organizational",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-005#regulatory-and-organizational"
+      "PROP-CONTEXT-CONSTRAINTS-ADR-005#regulatory-and-organizational",
+      "PROP-CONTEXT-CONSTRAINTS-ADR-006#regulatory-and-organizational"
     ],
     "removing a marker": [
       "SKILL-GTT-GUARD#removing-a-marker"
@@ -7382,8 +8038,13 @@
       "ADR-003#risks",
       "ADR-004#risks",
       "ADR-005#risks",
+      "ADR-006#risks",
       "ADR-TEMPLATE#risks",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#risks"
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#risks",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#risks"
+    ],
+    "rules": [
+      "GTT-GTT-SOURCES-MANIFEST#rules"
     ],
     "régimen de bootstrap": [
       "GTT-USAGE-ES#régimen-de-bootstrap"
@@ -7430,18 +8091,28 @@
     "solution vision": [
       "CTX-SOLUTION-VISION#solution-vision"
     ],
+    "source manifest": [
+      "CTX-GLOSSARY#glossary",
+      "GTT-GTT-SOURCES-MANIFEST#source-manifest"
+    ],
     "source preservation": [
       "AGENTS#source-preservation"
     ],
+    "sources": [
+      "GTT-GTT-SOURCES-MANIFEST#sources"
+    ],
     "stack & architecture map": [
       "CTX-STACK#stack--architecture-map",
-      "PROP-CONTEXT-STACK-ADR-005#stack--architecture-map"
+      "PROP-CONTEXT-STACK-ADR-005#stack--architecture-map",
+      "PROP-CONTEXT-STACK-ADR-006#stack--architecture-map"
     ],
     "stack map delta": [
       "ADR-003#stack-map-delta",
       "ADR-004#stack-map-delta",
       "ADR-005#stack-map-delta",
-      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#stack-map-delta"
+      "ADR-006#stack-map-delta",
+      "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS#stack-map-delta",
+      "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS#stack-map-delta"
     ],
     "stage the affected context files": [
       "SKILL-GTT-ADR#stage-the-affected-context-files"
@@ -7509,7 +8180,8 @@
     ],
     "technical": [
       "CTX-CONSTRAINTS#technical",
-      "PROP-CONTEXT-CONSTRAINTS-ADR-005#technical"
+      "PROP-CONTEXT-CONSTRAINTS-ADR-005#technical",
+      "PROP-CONTEXT-CONSTRAINTS-ADR-006#technical"
     ],
     "technical index": [
       "CTX-GLOSSARY#glossary"
@@ -7631,6 +8303,12 @@
     ],
     "why some files stay at the root": [
       "README-GTT#why-some-files-stay-at-the-root"
+    ],
+    "working agreement": [
+      "CTX-GLOSSARY#glossary"
+    ],
+    "working agreements": [
+      "GTT-GTT-WORKING-AGREEMENTS#working-agreements"
     ],
     "workspace hygiene": [
       "README-GTT#workspace-hygiene"
