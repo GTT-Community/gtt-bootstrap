@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Methodology application profiles. The CLI only SELECTS a profile (gtt-project.sh profile set); what Light, Medium and Hard MEAN is defined here, by the Bootstrap. `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane) - each rule says which. No profile weakens an invariant.",
+  "supported": [
+    { "id": "light", "label": "Light" },
+    { "id": "medium", "label": "Medium" },
+    { "id": "hard", "label": "Hard" }
+  ],
+  "default": "medium",
+  "strictness_order": ["light", "medium", "hard"],
+  "after_freeze": "Selecting a LESS strict profile in a frozen project is refused: it is a governed change (change request -> proposal -> human decision). Selecting a stricter one is allowed.",
+  "invariants": [
+    { "id": "human-decision-authority", "statement": "Agents prepare; only a human decides, ratifies and freezes. No profile, ADE or Primary ADE changes that.", "enforcement": "hook+script+instruction", "relaxable": false },
+    { "id": "provenance-tags", "statement": "[PROPUESTA] never appears inside governed context; [FUENTE], [VACIO] and [CONFLICTO] must be well formed wherever they are used.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
+    { "id": "evidence-boundary", "statement": "Sources -> grounding -> evidence dossier -> reasoning -> proposal -> human decision. Reasoning does not receive raw sources in a way that bypasses grounding.", "enforcement": "instruction", "relaxable": false },
+    { "id": "proposal-distinction", "statement": "A proposal is never a decision and is never written as one.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
+    { "id": "conflict-visibility", "statement": "A conflict between sources is exposed, never silently resolved; an unresolved [CONFLICTO] refuses freeze.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
+    { "id": "open-is-not-authorization", "statement": "An OPEN gap is scoped, visible and authorises nothing; a BLOCKING gap refuses freeze.", "enforcement": "gate:gtt-check-provenance.sh#gaps", "relaxable": false },
+    { "id": "freeze-semantics", "statement": "Freeze is a human ratification; there is no unfreeze shortcut. A frozen L0/L1 is changed only through the governed path.", "enforcement": "script:gtt-freeze.sh+hook", "relaxable": false },
+    { "id": "protected-artifacts", "statement": "GTTGuard-protected artifacts and the frozen governed context are never modified autonomously.", "enforcement": "hook+gate:gtt-check-protection.sh", "relaxable": false },
+    { "id": "selected-is-not-authority", "statement": "A selected source is not a governed authority; authority and precedence are declared, never inferred.", "enforcement": "gate:gtt-check-provenance.sh#sources", "relaxable": false }
+  ],
+  "profiles": {
+    "light": {
+      "intended_for": ["POCs", "experiments", "spikes", "disposable tests", "exploratory development", "short-lived technical work"],
+      "semantics": {
+        "proposal_rigor": "A proposal may be a short note in gtt-domain/proposals/; alternatives and risk may be one line each.",
+        "confirmation_requirements": "Confirmation A (source) and Confirmation B (context) stay explicit and separate, but may be requested in the same interaction.",
+        "documentation_depth": "solution-vision, stack and constraints are enough to freeze; architecture, principles and glossary may stay minimal.",
+        "adr_expectations": "An ADR is expected only for a structural change to what is already frozen.",
+        "change_process": "Change request is required for governed context; routine implementation needs none.",
+        "validation_gates": "gtt-validate.sh; provenance policy advisory; warnings do not block freeze.",
+        "freeze_expectations": "Freeze when the context is real and no BLOCKING gap or unresolved conflict remains.",
+        "audit_requirements": "None scheduled; run gtt-audit on demand.",
+        "promotion_rigor": "Human reviews the promotion script output before running it.",
+        "evidence_requirements": "Record what was run only when a claim about it is made."
+      },
+      "relaxes": [
+        { "control": "documentation-depth", "how": "Only solution-vision, stack and constraints must be non-template before freeze; the other three files may stay minimal but must not contain template placeholders." },
+        { "control": "adr-expectations", "how": "No ADR for changes that do not alter frozen governed context." },
+        { "control": "confirmation-batching", "how": "Confirmation A and B may be asked in one exchange; each still needs its own explicit human answer." },
+        { "control": "audit-cadence", "how": "gtt-audit is not scheduled." }
+      ],
+      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
+    },
+    "medium": {
+      "intended_for": ["normal development", "features", "integrations", "internal services", "controlled prototypes"],
+      "semantics": {
+        "proposal_rigor": "Full proposal: current decision, requested change, reason, impact, risk, alternatives.",
+        "confirmation_requirements": "Confirmation A and B, each explicit and separate.",
+        "documentation_depth": "All six governed context files real (no template text) before freeze.",
+        "adr_expectations": "An ADR for every architectural decision that changes governed context.",
+        "change_process": "Change request -> proposal -> human decision -> promotion package -> human execution.",
+        "validation_gates": "gtt-validate.sh including provenance (advisory), integrity and stack checks.",
+        "freeze_expectations": "Freeze after both confirmations; BLOCKING gaps and unresolved conflicts resolved; OPEN gaps scoped.",
+        "audit_requirements": "gtt-audit before a release or after a large merge.",
+        "promotion_rigor": "Promotion package: ADR draft, full affected context, human-run script with diffs.",
+        "evidence_requirements": "Verification claims are classified (STATIC / RUNTIME VERIFIED, DOCUMENTED ONLY, NO EVIDENCE) when recorded."
+      },
+      "relaxes": [],
+      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
+    },
+    "hard": {
+      "intended_for": ["production", "critical systems", "security-sensitive changes", "high-consequence architecture", "regulated work"],
+      "semantics": {
+        "proposal_rigor": "Full proposal with explicit alternatives, rollback and blast radius; no promotion from an informal note.",
+        "confirmation_requirements": "Confirmation A and B, each explicit and separate, recorded in gtt-completion.md.",
+        "documentation_depth": "All six governed context files real, every technology row cited ([FUENTE] or a Locked-by ADR), a source manifest declared.",
+        "adr_expectations": "An ADR for every change to governed context, including small ones; the stack map delta is exact.",
+        "change_process": "Change request -> analysis -> proposal -> human decision -> promotion package -> human execution -> validation; no shortcuts.",
+        "validation_gates": "gtt-validate.sh with provenance policy required; warnings block freeze.",
+        "freeze_expectations": "Freeze only with a source manifest, every OPEN gap scoped and carrying `affects`, no BLOCKING gap, no unresolved conflict, no warning.",
+        "audit_requirements": "gtt-audit before every promotion and on a schedule.",
+        "promotion_rigor": "Promotion script reviewed by a second person where the team has one; hashes verified before and after.",
+        "evidence_requirements": "Every verification claim recorded with command, result and evidence type; NO EVIDENCE stated for what was not run."
+      },
+      "relaxes": [],
+      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true }
+    }
+  }
+}

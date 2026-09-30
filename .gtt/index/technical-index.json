@@ -1254,13 +1254,88 @@
       }
     },
     {
+      "id": "DOC-BOOTSTRAP-CONTRACT",
+      "type": "documentation",
+      "path": ".gtt/docs/bootstrap-contract.md",
+      "title": "GTT Bootstrap 1.0 — the contract for the CLI",
+      "authority": "human-reference",
+      "version": "v2.1",
+      "sha256": "6224ee377fff3d67f8699aacf0c3ac1282f83d6ac6caa3f946aa5f41d1e7b2e1",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "GTT Bootstrap 1.0 — the contract for the CLI",
+          "level": 1,
+          "anchor": "gtt-bootstrap-10--the-contract-for-the-cli",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI",
+          "line_start": 1,
+          "line_end": 95
+        },
+        {
+          "heading": "How a CLI uses it",
+          "level": 2,
+          "anchor": "how-a-cli-uses-it",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > How a CLI uses it",
+          "line_start": 15,
+          "line_end": 30
+        },
+        {
+          "heading": "Contract map",
+          "level": 2,
+          "anchor": "contract-map",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > Contract map",
+          "line_start": 31,
+          "line_end": 54
+        },
+        {
+          "heading": "Methodology profiles — who decides what",
+          "level": 2,
+          "anchor": "methodology-profiles--who-decides-what",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > Methodology profiles — who decides what",
+          "line_start": 55,
+          "line_end": 71
+        },
+        {
+          "heading": "What a snapshot preserves — and what it does not",
+          "level": 2,
+          "anchor": "what-a-snapshot-preserves--and-what-it-does-not",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > What a snapshot preserves — and what it does not",
+          "line_start": 72,
+          "line_end": 79
+        },
+        {
+          "heading": "Evolution without CLI changes",
+          "level": 2,
+          "anchor": "evolution-without-cli-changes",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > Evolution without CLI changes",
+          "line_start": 80,
+          "line_end": 87
+        },
+        {
+          "heading": "Honest limits",
+          "level": 2,
+          "anchor": "honest-limits",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > Honest limits",
+          "line_start": 88,
+          "line_end": 95
+        }
+      ],
+      "references": [],
+      "referenced_by": [],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "DOC-DOCS",
       "type": "documentation",
       "path": ".gtt/docs/docs.md",
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "d14c656d39183a642a64b5a94c5d1b15c149c5e7ec951ccd772241f08b331d01",
+      "sha256": "e0f5fecae4c48ae1421649579aa199d6474741081e2f95b4148750485bcd020b",
       "aliases": [],
       "sections": [
         {
@@ -1269,7 +1344,7 @@
           "anchor": "gtt--reference-docs",
           "path": "GTT — Reference Docs",
           "line_start": 1,
-          "line_end": 916
+          "line_end": 917
         },
         {
           "heading": "Methodology",
@@ -1277,7 +1352,7 @@
           "anchor": "methodology",
           "path": "GTT — Reference Docs > Methodology",
           "line_start": 19,
-          "line_end": 613
+          "line_end": 614
         },
         {
           "heading": "The premise",
@@ -1429,143 +1504,143 @@
           "anchor": "capability-status",
           "path": "GTT — Reference Docs > Methodology > Capability status",
           "line_start": 580,
-          "line_end": 602
+          "line_end": 603
         },
         {
           "heading": "Operational boundary",
           "level": 3,
           "anchor": "operational-boundary",
           "path": "GTT — Reference Docs > Methodology > Operational boundary",
-          "line_start": 603,
-          "line_end": 613
+          "line_start": 604,
+          "line_end": 614
         },
         {
           "heading": "Portability: Claude Code, Kiro, Codex, Copilot",
           "level": 2,
           "anchor": "portability-claude-code-kiro-codex-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot",
-          "line_start": 614,
-          "line_end": 805
+          "line_start": 615,
+          "line_end": 806
         },
         {
           "heading": "Compatibility matrix",
           "level": 3,
           "anchor": "compatibility-matrix",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Compatibility matrix",
-          "line_start": 631,
-          "line_end": 658
+          "line_start": 632,
+          "line_end": 659
         },
         {
           "heading": "Claude Code",
           "level": 3,
           "anchor": "claude-code",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Claude Code",
-          "line_start": 659,
-          "line_end": 671
+          "line_start": 660,
+          "line_end": 672
         },
         {
           "heading": "Kiro",
           "level": 3,
           "anchor": "kiro",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Kiro",
-          "line_start": 672,
-          "line_end": 703
+          "line_start": 673,
+          "line_end": 704
         },
         {
           "heading": "Codex",
           "level": 3,
           "anchor": "codex",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > Codex",
-          "line_start": 704,
-          "line_end": 744
+          "line_start": 705,
+          "line_end": 745
         },
         {
           "heading": "GitHub Copilot",
           "level": 3,
           "anchor": "github-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > GitHub Copilot",
-          "line_start": 745,
-          "line_end": 773
+          "line_start": 746,
+          "line_end": 774
         },
         {
           "heading": "If your team uses more than one ADE",
           "level": 3,
           "anchor": "if-your-team-uses-more-than-one-ade",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If your team uses more than one ADE",
-          "line_start": 774,
-          "line_end": 793
+          "line_start": 775,
+          "line_end": 794
         },
         {
           "heading": "If you use only one",
           "level": 3,
           "anchor": "if-you-use-only-one",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot > If you use only one",
-          "line_start": 794,
-          "line_end": 805
+          "line_start": 795,
+          "line_end": 806
         },
         {
           "heading": "Migrating from GTT v1",
           "level": 2,
           "anchor": "migrating-from-gtt-v1",
           "path": "GTT — Reference Docs > Migrating from GTT v1",
-          "line_start": 806,
-          "line_end": 916
+          "line_start": 807,
+          "line_end": 917
         },
         {
           "heading": "What changed and why",
           "level": 3,
           "anchor": "what-changed-and-why",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > What changed and why",
-          "line_start": 808,
-          "line_end": 824
+          "line_start": 809,
+          "line_end": 825
         },
         {
           "heading": "File mapping",
           "level": 3,
           "anchor": "file-mapping",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > File mapping",
-          "line_start": 825,
-          "line_end": 843
+          "line_start": 826,
+          "line_end": 844
         },
         {
           "heading": "Scaffold restructure (layout change within v2.1)",
           "level": 3,
           "anchor": "scaffold-restructure-layout-change-within-v21",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Scaffold restructure (layout change within v2.1)",
-          "line_start": 844,
-          "line_end": 864
+          "line_start": 845,
+          "line_end": 865
         },
         {
           "heading": "Layout migration to         and               (ADR-004)",
           "level": 3,
           "anchor": "layout-migration-to---------and---------------adr-004",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Layout migration to         and               (ADR-004)",
-          "line_start": 865,
-          "line_end": 877
+          "line_start": 866,
+          "line_end": 878
         },
         {
           "heading": "Steps",
           "level": 3,
           "anchor": "steps",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Steps",
-          "line_start": 878,
-          "line_end": 898
+          "line_start": 879,
+          "line_end": 899
         },
         {
           "heading": "If you use other agents too",
           "level": 3,
           "anchor": "if-you-use-other-agents-too",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > If you use other agents too",
-          "line_start": 899,
-          "line_end": 909
+          "line_start": 900,
+          "line_end": 910
         },
         {
           "heading": "Verifying the token saving",
           "level": 3,
           "anchor": "verifying-the-token-saving",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Verifying the token saving",
-          "line_start": 910,
-          "line_end": 916
+          "line_start": 911,
+          "line_end": 917
         }
       ],
       "references": [],
@@ -2570,7 +2645,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "555065b6617177f5cf5d1ba8e8e8812c0a4f9cf5c3e9ee25d9fa2f5445b64add",
+      "sha256": "26d7539e75d56bfde2408bf6ff3e2d73b16f7abfc4e02b7ee58f5945bdf91ee6",
       "aliases": [],
       "sections": [
         {
@@ -2579,7 +2654,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 230
+          "line_end": 237
         },
         {
           "heading": "Quick links",
@@ -2675,31 +2750,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 157,
-          "line_end": 191
+          "line_end": 197
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 192,
-          "line_end": 204
+          "line_start": 198,
+          "line_end": 211
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 205,
-          "line_end": 219
+          "line_start": 212,
+          "line_end": 226
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 220,
-          "line_end": 230
+          "line_start": 227,
+          "line_end": 237
         }
       ],
       "references": [
@@ -5474,6 +5549,9 @@
       "GTT-USAGE#context-layers",
       "README-GTT#context-layers"
     ],
+    "contract map": [
+      "DOC-BOOTSTRAP-CONTRACT#contract-map"
+    ],
     "current focus": [
       "BACKLOG#current-focus"
     ],
@@ -5554,6 +5632,9 @@
     "evolution": [
       "README-GTT#evolution"
     ],
+    "evolution without cli changes": [
+      "DOC-BOOTSTRAP-CONTRACT#evolution-without-cli-changes"
+    ],
     "example": [
       "CHANGE-REQUEST#example"
     ],
@@ -5620,6 +5701,9 @@
       "README-GTT#gtt-bootstrap",
       "README-GTT-ES#gtt-bootstrap"
     ],
+    "gtt bootstrap 1.0 — the contract for the cli": [
+      "DOC-BOOTSTRAP-CONTRACT#gtt-bootstrap-10--the-contract-for-the-cli"
+    ],
     "gtt bootstrap — completion report": [
       "GTT-GTT-COMPLETION#gtt-bootstrap--completion-report"
     ],
@@ -5673,6 +5757,12 @@
     ],
     "higiene del workspace": [
       "README-GTT-ES#higiene-del-workspace"
+    ],
+    "honest limits": [
+      "DOC-BOOTSTRAP-CONTRACT#honest-limits"
+    ],
+    "how a cli uses it": [
+      "DOC-BOOTSTRAP-CONTRACT#how-a-cli-uses-it"
     ],
     "how to use this": [
       "CHANGE-REQUEST#how-to-use-this"
@@ -5810,6 +5900,9 @@
     ],
     "methodology": [
       "DOC-DOCS#methodology"
+    ],
+    "methodology profiles — who decides what": [
+      "DOC-BOOTSTRAP-CONTRACT#methodology-profiles--who-decides-what"
     ],
     "migrating from gtt v1": [
       "DOC-DOCS#migrating-from-gtt-v1"
@@ -6153,6 +6246,9 @@
     ],
     "verifying the token saving": [
       "DOC-DOCS#verifying-the-token-saving"
+    ],
+    "what a snapshot preserves — and what it does not": [
+      "DOC-BOOTSTRAP-CONTRACT#what-a-snapshot-preserves--and-what-it-does-not"
     ],
     "what changed and why": [
       "DOC-DOCS#what-changed-and-why"

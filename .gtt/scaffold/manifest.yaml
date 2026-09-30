@@ -47,6 +47,17 @@ engine:
   - { path: .gtt/scaffold/manifest.yaml, kind: file, required: true, role: this file }
   - { path: .gtt/scaffold/templates/, kind: dir, required: true, role: Bootstrap-owned templates a CLI may request - see `templates` }
   - { path: .gtt/local/preferences.md, kind: file, required: false, state: true, role: user-level working preferences - local to one person, never committed, never authority; below governed context }
+  - { path: .gtt/contract/, kind: dir, required: true, role: Bootstrap 1.0 contracts consumed by the CLI - release identity, compatibility, capabilities, operations, methodology profiles, export policy, recovery, elicitation (data only) }
+  - { path: .gtt/contract/release.json, kind: file, required: true, role: Bootstrap release identity (version, schema, channel), CLI compatibility and the version of every contract - distinct from scaffold.version }
+  - { path: .gtt/contract/capabilities.json, kind: file, required: true, role: capability registry - what the Bootstrap offers, negotiable by a CLI }
+  - { path: .gtt/contract/operations.json, kind: file, required: true, role: operation registry - logical operation to trusted implementation, typed arguments, no arbitrary shell }
+  - { path: .gtt/contract/profiles.json, kind: file, required: true, role: methodology profiles Light, Medium, Hard - semantics, gates and the non-relaxable invariants }
+  - { path: .gtt/contract/export-policy.json, kind: file, required: true, role: clean-export and clean ownership policy }
+  - { path: .gtt/contract/recovery.json, kind: file, required: true, role: recovery snapshot schema and restore rules }
+  - { path: .gtt/contract/elicitation.json, kind: file, required: true, role: guided ADE elicitation contract for the Initial Design Questionnaire }
+  - { path: .gtt/tests/, kind: dir, required: true, role: Bootstrap acceptance tests - drive the contracts on disposable copies; never modify the project }
+  - { path: .gtt/methodology.json, kind: file, required: false, state: true, role: per-project methodology profile (light, medium, hard) and language; written only by gtt-project.sh }
+  - { path: .gtt/selected-sources.json, kind: file, required: false, state: true, role: initial sources selected for the project - selection metadata only, never a governed authority; written only by gtt-project.sh }
   - { path: .gtt/ade.json, kind: file, required: false, state: true, role: per-project ADE state - participating, primary, excluded and the ledger of GTT-installed ADE files; written only by gtt-ade.sh, required in an installed project, absent in the catalog }
   - { path: .gtt/README.md, kind: file, required: false, role: project-facing README of the Engine (installed into host projects; absent in the catalog repository) }
   - { path: .gtt/docs/, kind: dir, required: true, role: GTT documentation - never loaded by any agent, outside the freeze regime }
@@ -59,6 +70,7 @@ engine:
   - { path: .gtt/docs/evidence.md, kind: file, required: true, role: technical claims classified by verification level }
   - { path: .gtt/docs/docs.md, kind: file, required: true, role: methodology and portability }
   - { path: .gtt/docs/session-adapter-contract.md, kind: file, required: true, role: contract every Session Memory adapter must meet }
+  - { path: .gtt/docs/bootstrap-contract.md, kind: file, required: true, role: the Bootstrap 1.0 contract for the CLI - what each contract is, where it lives, how it is invoked }
 
 domain:
   - { path: gtt-domain/context/, kind: dir, required: true, role: L0 governed context }
@@ -100,10 +112,10 @@ overlays:
   #   detect       paths whose presence makes the ADE a CANDIDATE - never participation
   #   enforcement  realtime-hook | ci-gate - what actually blocks an ungoverned write for that ADE
   #   scaffold     layout version the overlay is built for
-  - { id: claude, name: Claude Code, path: .claude/, entry: .claude/CLAUDE.md, owned: [.claude/], detect: [.claude/, CLAUDE.md], enforcement: realtime-hook, scaffold: 2, kind: dir, required: false, role: Claude Code overlay }
-  - { id: kiro, name: Kiro, path: .kiro/, entry: .kiro/steering/gtt-guard.md, owned: [.kiro/], detect: [.kiro/], enforcement: ci-gate, scaffold: 2, kind: dir, required: false, role: Kiro overlay }
-  - { id: copilot, name: GitHub Copilot, path: .copilot/copilot-instructions.md, entry: .copilot/copilot-instructions.md, owned: [.copilot/copilot-instructions.md], detect: [.copilot/, .github/copilot-instructions.md], enforcement: ci-gate, scaffold: 2, kind: file, required: false, role: GitHub Copilot overlay }
-  - { id: codex, name: Codex, path: AGENTS.md, entry: AGENTS.md, owned: [], detect: [.codex/], enforcement: ci-gate, scaffold: 2, kind: file, required: false, role: Codex takes no overlay beyond the core entry point }
+  - { id: claude, name: Claude Code, path: .claude/, entry: .claude/CLAUDE.md, owned: [.claude/], detect: [.claude/, CLAUDE.md], enforcement: realtime-hook, scaffold: 2, version: 1, kind: dir, required: false, role: Claude Code overlay }
+  - { id: kiro, name: Kiro, path: .kiro/, entry: .kiro/steering/gtt-guard.md, owned: [.kiro/], detect: [.kiro/], enforcement: ci-gate, scaffold: 2, version: 1, kind: dir, required: false, role: Kiro overlay }
+  - { id: copilot, name: GitHub Copilot, path: .copilot/copilot-instructions.md, entry: .copilot/copilot-instructions.md, owned: [.copilot/copilot-instructions.md], detect: [.copilot/, .github/copilot-instructions.md], enforcement: ci-gate, scaffold: 2, version: 1, kind: file, required: false, role: GitHub Copilot overlay }
+  - { id: codex, name: Codex, path: AGENTS.md, entry: AGENTS.md, owned: [], detect: [.codex/], enforcement: ci-gate, scaffold: 2, version: 1, kind: file, required: false, role: Codex takes no overlay beyond the core entry point }
 
 templates:
   # Bootstrap-owned templates. The Bootstrap owns each template, its contract and its
@@ -115,9 +127,9 @@ templates:
   #   when            the condition under which a caller should offer it
   #   materialize_to  where the working copy goes in a project (never overwritten)
   #   becomes         what the filled copy is afterwards
-  - { id: initial-design-questionnaire, path: .gtt/scaffold/templates/gtt-initial-design-questionnaire.md, kind: file, required: true, use: ADE-guided design elicitation, when: no sufficient design source document exists, materialize_to: gtt-domain/proposals/bootstrap/initial-design-questionnaire.md, becomes: source-material, scaffold: 2, role: Initial Design Questionnaire - the instrument that lets a project without a design document reach a Minimum Viable Governed Design }
-  - { id: source-manifest, path: .gtt/scaffold/templates/gtt-sources-manifest.md, kind: file, required: false, use: declare authorised sources with authority and precedence, when: more than one design source exists or a provenance policy is wanted, materialize_to: gtt-domain/proposals/bootstrap/sources.md, becomes: governed-context-draft, scaffold: 2, role: Source manifest template - moved to gtt-domain/context/sources.md before freeze (or through the governed path after it) }
-  - { id: working-agreements, path: .gtt/scaffold/templates/gtt-working-agreements.md, kind: file, required: false, use: record how a team prefers to work, when: a team wants written working agreements, materialize_to: gtt-domain/working-agreements.md, becomes: working-agreement, scaffold: 2, role: Working agreements template - a human requests it; an agent never authors its own preferences }
+  - { id: initial-design-questionnaire, path: .gtt/scaffold/templates/gtt-initial-design-questionnaire.md, kind: file, required: true, use: ADE-guided design elicitation, when: no sufficient design source document exists, materialize_to: gtt-domain/proposals/bootstrap/initial-design-questionnaire.md, becomes: source-material, scaffold: 2, version: 1, contract_version: 1, role: Initial Design Questionnaire - the instrument that lets a project without a design document reach a Minimum Viable Governed Design }
+  - { id: source-manifest, path: .gtt/scaffold/templates/gtt-sources-manifest.md, kind: file, required: false, use: declare authorised sources with authority and precedence, when: more than one design source exists or a provenance policy is wanted, materialize_to: gtt-domain/proposals/bootstrap/sources.md, becomes: governed-context-draft, scaffold: 2, version: 1, contract_version: 1, role: Source manifest template - moved to gtt-domain/context/sources.md before freeze (or through the governed path after it) }
+  - { id: working-agreements, path: .gtt/scaffold/templates/gtt-working-agreements.md, kind: file, required: false, use: record how a team prefers to work, when: a team wants written working agreements, materialize_to: gtt-domain/working-agreements.md, becomes: working-agreement, scaffold: 2, version: 1, contract_version: 1, role: Working agreements template - a human requests it; an agent never authors its own preferences }
 
 naming:
   # Lowercase applies to every name this scaffold defines. These follow an external

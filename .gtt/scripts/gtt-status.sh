@@ -73,6 +73,14 @@ if [ -f ".gtt/scripts/gtt_provenance.py" ] && [ -f ".gtt/scripts/gtt-run-python.
   GOV_STATE="$(bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_provenance.py summary 2>&1 || true)"
 fi
 
+# Bootstrap release identity and methodology profile (Bootstrap 1.0 contracts). The full structured
+# view is `gtt-project.sh status --json`; this is the human-readable line.
+BOOTSTRAP_STATE="not available (.gtt/scripts/gtt-contract.sh not found)"
+if [ -f ".gtt/scripts/gtt-contract.sh" ] && [ -f ".gtt/scripts/gtt-project.sh" ]; then
+  BOOTSTRAP_STATE="$(bash .gtt/scripts/gtt-contract.sh release 2>&1 || true)
+$(bash .gtt/scripts/gtt-project.sh profile get 2>&1 || true)"
+fi
+
 # Artifact identity/index state and repository resume hints. Both are derived
 # from the repository (manifest, index, git) - never from ADE memory.
 PY=""
@@ -129,6 +137,9 @@ GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
   echo
   echo "## Evidence / Governance (derived state - never agent notes, never authority)"
   echo "${GOV_STATE}"
+  echo
+  echo "## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)"
+  echo "${BOOTSTRAP_STATE}"
   echo
   echo "## Artifact identity and technical index"
   echo "${ARTIFACT_STATE}"

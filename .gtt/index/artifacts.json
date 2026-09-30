@@ -242,6 +242,14 @@
       "aliases": []
     },
     {
+      "id": "DOC-BOOTSTRAP-CONTRACT",
+      "type": "documentation",
+      "path": ".gtt/docs/bootstrap-contract.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-DOCS",
       "type": "documentation",
       "path": ".gtt/docs/docs.md",

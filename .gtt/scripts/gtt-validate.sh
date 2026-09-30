@@ -98,6 +98,14 @@ if [ -f .gtt/scripts/gtt-check-provenance.sh ]; then
   rm -f /tmp/gtt-validate-provenance.$$
 fi
 
+if [ -f .gtt/scripts/gtt-check-contract.sh ]; then
+  bash .gtt/scripts/gtt-check-contract.sh >/tmp/gtt-validate-contract.$$ 2>&1
+  CONTRACT_RC=$?
+  report "gtt-check-contract.sh" "$CONTRACT_RC"
+  [ "$CONTRACT_RC" -ne 0 ] && cat /tmp/gtt-validate-contract.$$
+  rm -f /tmp/gtt-validate-contract.$$
+fi
+
 bash .gtt/scripts/gtt-check-integrity.sh >/tmp/gtt-validate-integrity.$$ 2>&1
 INTEGRITY_RC=$?
 report "gtt-check-integrity.sh" "$INTEGRITY_RC"

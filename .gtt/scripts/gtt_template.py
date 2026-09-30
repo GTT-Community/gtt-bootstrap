@@ -111,9 +111,14 @@ def cmd_materialize(args):
         done = subprocess.run(["bash", index], capture_output=True, text=True, encoding="utf-8",
                               errors="replace")
         if done.returncode != 0:
+            # The working copy is the result of this operation; the index is derived state. In a host project
+            # whose index still lists artifacts of overlays that were not installed, registration is refused
+            # until `gtt-index.sh` / `gtt-reconcile.sh` is run - say so, but do not fail a materialisation that worked.
             print(done.stdout + done.stderr, file=sys.stderr)
-            die(f"{dst} was created but registering it failed; run {index} and fix what it reports.", 1)
-        print("registered in the artifact index (gtt-index.sh).")
+            print(f"WARNING: {dst} was created but is NOT registered in the artifact index; run {index} "
+                  "(after gtt-reconcile.sh if it reports missing paths).", file=sys.stderr)
+        else:
+            print("registered in the artifact index (gtt-index.sh).")
     return 0
 
 

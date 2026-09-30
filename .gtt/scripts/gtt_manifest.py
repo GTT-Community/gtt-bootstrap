@@ -131,6 +131,7 @@ def overlays(manifest):
             "detect": list(entry.get("detect", [])),
             "enforcement": str(entry.get("enforcement", "ci-gate")),
             "scaffold": entry.get("scaffold"),
+            "version": entry.get("version", 1),
             "role": str(entry.get("role", "")),
         }
     return out

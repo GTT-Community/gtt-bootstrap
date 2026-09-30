@@ -33,6 +33,7 @@ Exit 0 = no FAIL (WARN allowed), 1 = at least one FAIL, 2 = cannot run.
 
 import argparse
 import glob
+import json
 import os
 import re
 import subprocess
@@ -74,6 +75,25 @@ def read(path):
 
 def frozen():
     return os.path.isfile(FROZEN)
+
+
+DEFAULT_GATES = {"provenance_policy": "advisory", "warnings_block_freeze": False,
+                 "sources_manifest_required_for_freeze": False, "open_gap_requires_affects": False}
+
+
+def profile_gates():
+    """(profile id, gates) of the project's methodology profile. Without .gtt/methodology.json this is
+    `medium`, whose gates equal the behaviour before profiles existed. What each profile MEANS is defined by
+    the Bootstrap in .gtt/contract/profiles.json; this module only applies its machine-enforced gates."""
+    profile = "medium"
+    try:
+        with open(".gtt/methodology.json", encoding="utf-8") as handle:
+            profile = json.load(handle).get("profile") or "medium"
+        with open(".gtt/contract/profiles.json", encoding="utf-8") as handle:
+            spec = json.load(handle)
+        return profile, dict(DEFAULT_GATES, **spec["profiles"][profile]["gates"])
+    except (OSError, ValueError, KeyError):
+        return profile, dict(DEFAULT_GATES)
 
 
 def mask(text):
@@ -270,6 +290,8 @@ def run_checks(only=None, prefreeze=False):
     agreements = load_agreements(findings)
     is_frozen = frozen()
     policy = manifest["policy"] if manifest else "none"
+    profile, gates = profile_gates()
+    strict = policy == "required" or gates["provenance_policy"] == "required"
     known_ids = {s["id"] for s in manifest["sources"]} if manifest else set()
     gap_ids = {g["id"] for g in gaps if g["kind"] != "RESOLVED"}
 
@@ -282,7 +304,9 @@ def run_checks(only=None, prefreeze=False):
                 findings.add("FAIL", "gaps", gap["where"],
                              f"{gap['id']}: OPEN is 'not decided yet', never an authorisation - narrow the scope")
             if not gap["affects"]:
-                findings.add("WARN", "gaps", gap["where"], f"{gap['id']}: no `affects:` (context it touches)")
+                findings.add("FAIL" if gates["open_gap_requires_affects"] else "WARN", "gaps", gap["where"],
+                             f"{gap['id']}: no `affects:` (context it touches)"
+                             + (f" - required by the {profile} profile" if gates["open_gap_requires_affects"] else ""))
         elif gap["kind"] == "BLOCKING":
             if not gap["scope"]:
                 findings.add("FAIL", "gaps", gap["where"], f"{gap['id']}: a BLOCKING needs an explicit `scope:`")
@@ -321,11 +345,11 @@ def run_checks(only=None, prefreeze=False):
             head = token.split(":")[0]
             ok = head in known_ids or bool(glob.glob(head))
             if not ok:
-                level = "FAIL" if (manifest or policy == "required") else "WARN"
+                level = "FAIL" if (manifest or strict) else "WARN"
                 findings.add(level, "tags", where, f"[FUENTE: {arg}] does not resolve to a declared source or an existing path")
         elif name == "VACIO":
             if not arg:
-                level = "FAIL" if policy == "required" else "WARN"
+                level = "FAIL" if strict else "WARN"
                 findings.add(level, "tags", where, "[VACÍO] is not classified: cite the gap it belongs to ([VACÍO: GAP-001])")
             elif arg not in gap_ids:
                 findings.add("FAIL", "tags", where, f"[VACÍO: {arg}] names a gap that is not OPEN or BLOCKING in the register")
@@ -340,17 +364,23 @@ def run_checks(only=None, prefreeze=False):
             level = "FAIL" if (is_frozen or prefreeze) else "WARN"
             findings.add(level, "tags", where, "unresolved [CONFLICTO] in governed context: "
                          "resolve it through the governed path; precedence orders sources but never erases a conflict")
-    if policy == "required":
+    if strict:
         for layer, tech, locked, number in stack_rows():
             has_tag = any(p == STACK and l == number and n == "FUENTE" for p, l, n, _ in tags)
             if tech and not has_tag and not re.search(r"ADR-\d{3,}", locked):
                 findings.add("FAIL", "tags", f"{STACK}:{number}",
-                             f"policy provenance=required: `{layer}` has neither a [FUENTE] nor a `Locked by` ADR")
+                             f"provenance required ({'manifest policy' if policy == 'required' else profile + ' profile'}): "
+                             f"`{layer}` has neither a [FUENTE] nor a `Locked by` ADR")
 
+    if prefreeze and gates["sources_manifest_required_for_freeze"] and not manifest:
+        findings.add("FAIL", "sources", SOURCES, f"the {profile} profile requires a source manifest before freeze")
+    if prefreeze and gates["warnings_block_freeze"]:
+        findings.items = [("FAIL" if lvl == "WARN" else lvl, sub, where, msg + (" [warning blocks freeze: " + profile + " profile]" if lvl == "WARN" else ""))
+                          for lvl, sub, where, msg in findings.items]
     if only:
         findings.items = [i for i in findings.items if i[1] == only]
     return findings, {"gaps": gaps, "gaps_declared": gaps_declared, "manifest": manifest,
-                      "tags": tags, "agreements": agreements, "policy": policy}
+                      "tags": tags, "agreements": agreements, "policy": policy, "profile": profile, "gates": gates}
 
 
 # ------------------------------------------------------------------- outputs
@@ -363,6 +393,7 @@ def summary_lines(state):
     team = sum(1 for a in state["agreements"] if a["scope"] == "team")
     user = sum(1 for a in state["agreements"] if a["scope"] == "user")
     return [
+        f"methodology profile: {state['profile']} (provenance gate: {state['gates']['provenance_policy']})",
         f"sources: {len(manifest['sources']) if manifest else 0} declared (provenance policy: {state['policy']})",
         f"gaps: OPEN {count('OPEN')}, BLOCKING {count('BLOCKING')}, RESOLVED {count('RESOLVED')}"
         + ("" if state["gaps_declared"] else " (no gap register in stack.md)"),
