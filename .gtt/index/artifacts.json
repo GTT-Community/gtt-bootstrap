@@ -660,7 +660,7 @@
       "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
       "type": "proposal",
       "path": "gtt-domain/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
         "proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md"
@@ -681,7 +681,7 @@
       "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-artifact-identity-followups.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
         "proposals/PROPOSAL-artifact-identity-followups.md"
@@ -718,7 +718,7 @@
       "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
       "type": "proposal",
       "path": "gtt-domain/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
         "proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md"

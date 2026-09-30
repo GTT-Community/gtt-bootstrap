@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-09-29T21:45:27Z
+# Generated: 2026-09-30T13:07:15Z
 
 ## Freeze state
 frozen (2026-09-28T17:18:49Z)
@@ -20,9 +20,6 @@ none
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
-GOVERNANCE-PACKAGE-gtt-v2-1.md
-PROPOSAL-artifact-identity-followups.md
-PROPOSAL-gtt-v2-1-backlog-epic-stories.md
 
 ## Change request
 empty (still template placeholders)
@@ -49,15 +46,15 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Artifact identity and technical index
-identity: 55 active artifact(s), 37 retired
+identity: 52 active artifact(s), 40 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 6
+branch: main; uncommitted paths: 5
 recent commits:
+8657b01 docs(backlog): add EPIC-002 (Multi-ADE and Initial Design Questionnaire), STORY-006..009 Done
 41c5b5b docs: evidence entry for ADR-006 promotion and staging cleanup
 a94c7a4 chore: clean up ratified ADR-005/006 staging (drafts, promotion scripts, rehearsal packages)
 947c24a feat: ratify ADR-006 provenance, gaps (OPEN/BLOCKING), source manifest and working agreements
 3f35a95 feat: ratify ADR-005 Multi-ADE overlays and Initial Design Questionnaire contracts
-5ef21f6 chore: remove .gitignore and the scaffold-restructure task file from the product

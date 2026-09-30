@@ -4300,200 +4300,6 @@
       }
     },
     {
-      "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
-      "title": "GTT v2.1 — Governance package (for human review)",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "c82d62d149290157997c03b4bfcf21ecc75d3c032a9729e91c478313883c207c",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "GTT v2.1 — Governance package (for human review)",
-          "level": 1,
-          "anchor": "gtt-v21--governance-package-for-human-review",
-          "path": "GTT v2.1 — Governance package (for human review)",
-          "line_start": 1,
-          "line_end": 117
-        },
-        {
-          "heading": "Contents",
-          "level": 2,
-          "anchor": "contents",
-          "path": "GTT v2.1 — Governance package (for human review) > Contents",
-          "line_start": 21,
-          "line_end": 32
-        },
-        {
-          "heading": "Evidence register",
-          "level": 2,
-          "anchor": "evidence-register",
-          "path": "GTT v2.1 — Governance package (for human review) > Evidence register",
-          "line_start": 33,
-          "line_end": 63
-        },
-        {
-          "heading": "Pending items",
-          "level": 2,
-          "anchor": "pending-items",
-          "path": "GTT v2.1 — Governance package (for human review) > Pending items",
-          "line_start": 64,
-          "line_end": 86
-        },
-        {
-          "heading": "What the human needs to review and ratify",
-          "level": 2,
-          "anchor": "what-the-human-needs-to-review-and-ratify",
-          "path": "GTT v2.1 — Governance package (for human review) > What the human needs to review and ratify",
-          "line_start": 87,
-          "line_end": 113
-        },
-        {
-          "heading": "Status",
-          "level": 2,
-          "anchor": "status",
-          "path": "GTT v2.1 — Governance package (for human review) > Status",
-          "line_start": 114,
-          "line_end": 117
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
-          "proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-artifact-identity-followups.md",
-      "title": "Proposal — artifact identity: items that need the Solution Designer",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "f5eadc66840c80aef7d834d8f7ba838b265516226a850bbbbf6ce87922e3a801",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Proposal — artifact identity: items that need the Solution Designer",
-          "level": 1,
-          "anchor": "proposal--artifact-identity-items-that-need-the-solution-designer",
-          "path": "Proposal — artifact identity: items that need the Solution Designer",
-          "line_start": 1,
-          "line_end": 167
-        },
-        {
-          "heading": "1. Root             — add after *Session continuity*",
-          "level": 2,
-          "anchor": "1-root--------------add-after-session-continuity",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 1. Root             — add after *Session continuity*",
-          "line_start": 12,
-          "line_end": 30
-        },
-        {
-          "heading": "2. SessionStart hook — warm start for Claude Code",
-          "level": 2,
-          "anchor": "2-sessionstart-hook--warm-start-for-claude-code",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 2. SessionStart hook — warm start for Claude Code",
-          "line_start": 31,
-          "line_end": 62
-        },
-        {
-          "heading": "2b. Update — SessionStart adapter (supersedes the hook in §2)",
-          "level": 2,
-          "anchor": "2b-update--sessionstart-adapter-supersedes-the-hook-in-2",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 2b. Update — SessionStart adapter (supersedes the hook in §2)",
-          "line_start": 63,
-          "line_end": 75
-        },
-        {
-          "heading": "2c. Multi-ADE Session Memory adapters",
-          "level": 2,
-          "anchor": "2c-multi-ade-session-memory-adapters",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 2c. Multi-ADE Session Memory adapters",
-          "line_start": 76,
-          "line_end": 131
-        },
-        {
-          "heading": "2d.             — manual change required (stale reference)",
-          "level": 2,
-          "anchor": "2d--------------manual-change-required-stale-reference",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 2d.             — manual change required (stale reference)",
-          "line_start": 132,
-          "line_end": 158
-        },
-        {
-          "heading": "3. Decision points",
-          "level": 2,
-          "anchor": "3-decision-points",
-          "path": "Proposal — artifact identity: items that need the Solution Designer > 3. Decision points",
-          "line_start": 159,
-          "line_end": 167
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
-          "proposals/PROPOSAL-artifact-identity-followups.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
-      "title": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
-      "authority": "draft",
-      "version": "v2.1",
-      "sha256": "7134237898257c603160e01879625c0b0095f2577c9d02c8b3cf6d15b80093dd",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
-          "level": 1,
-          "anchor": "proposed-backlog-change--gtt-v21-epic-and-stories",
-          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories",
-          "line_start": 1,
-          "line_end": 210
-        },
-        {
-          "heading": "Ground rules used to write this",
-          "level": 2,
-          "anchor": "ground-rules-used-to-write-this",
-          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories > Ground rules used to write this",
-          "line_start": 39,
-          "line_end": 53
-        },
-        {
-          "heading": "Backlog-ready block",
-          "level": 2,
-          "anchor": "backlog-ready-block",
-          "path": "Proposed Backlog Change — GTT v2.1 Epic and Stories > Backlog-ready block",
-          "line_start": 54,
-          "line_end": 210
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
-          "proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md"
-        ],
-        "referenced_by_proposals": []
-      }
-    },
-    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",
@@ -5728,9 +5534,6 @@
     "1. reconciliation": [
       "GTT-EVIDENCE#1-reconciliation"
     ],
-    "1. root             — add after *session continuity*": [
-      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#1-root--------------add-after-session-continuity"
-    ],
     "1. stack at a glance": [
       "CTX-STACK#1-stack-at-a-glance"
     ],
@@ -5885,9 +5688,6 @@
     "2. manual installation": [
       "README-GTT#2-manual-installation"
     ],
-    "2. sessionstart hook — warm start for claude code": [
-      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2-sessionstart-hook--warm-start-for-claude-code"
-    ],
     "2. still not verified": [
       "GTT-EVIDENCE#2-still-not-verified",
       "GTT-EVIDENCE#2-still-not-verified-1"
@@ -5952,12 +5752,6 @@
     "29. versioning": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#29-versioning"
     ],
-    "2c. multi-ade session memory adapters": [
-      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2c-multi-ade-session-memory-adapters"
-    ],
-    "2d.             — manual change required (stale reference)": [
-      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#2d--------------manual-change-required-stale-reference"
-    ],
     "3. agent-assisted installation": [
       "README-GTT#3-agent-assisted-installation"
     ],
@@ -5969,9 +5763,6 @@
     ],
     "3. context conflict": [
       "SKILL-GTT-PROPOSE-CHANGE#3-context-conflict"
-    ],
-    "3. decision points": [
-      "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS#3-decision-points"
     ],
     "3. deployment topology": [
       "CTX-STACK#3-deployment-topology"
@@ -6266,9 +6057,6 @@
     "backlog reconciliation": [
       "SKILL-GTT-AUDIT#backlog-reconciliation"
     ],
-    "backlog-ready block": [
-      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#backlog-ready-block"
-    ],
     "before changing anything": [
       "AGENTS#before-changing-anything"
     ],
@@ -6381,9 +6169,6 @@
       "CTX-CONSTRAINTS#constraints",
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#constraints"
     ],
-    "contents": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#contents"
-    ],
     "context": [
       "ADR-001#context",
       "ADR-003#context",
@@ -6493,9 +6278,6 @@
     "evidence": [
       "CTX-GLOSSARY#glossary"
     ],
-    "evidence register": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#evidence-register"
-    ],
     "evolución": [
       "README-GTT-ES#evolución"
     ],
@@ -6567,9 +6349,6 @@
       "AGENTS#governed-regime",
       "GTT-USAGE#governed-regime"
     ],
-    "ground rules used to write this": [
-      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#ground-rules-used-to-write-this"
-    ],
     "gtt bootstrap": [
       "README-GTT#gtt-bootstrap",
       "README-GTT-ES#gtt-bootstrap"
@@ -6612,9 +6391,6 @@
     ],
     "gtt technical evidence log": [
       "GTT-EVIDENCE#gtt-technical-evidence-log"
-    ],
-    "gtt v2.1 — governance package (for human review)": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#gtt-v21--governance-package-for-human-review"
     ],
     "gtt v2.1 — technical closure detail": [
       "GTT-GTT-COMPLETION#gtt-v21--technical-closure-detail"
@@ -6832,9 +6608,6 @@
     "participating ade": [
       "CTX-GLOSSARY#glossary"
     ],
-    "pending items": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#pending-items"
-    ],
     "platform": [
       "CTX-CONSTRAINTS#platform"
     ],
@@ -6894,9 +6667,6 @@
     ],
     "proposals — staging area": [
       "PROP-README#proposals--staging-area"
-    ],
-    "proposed backlog change — gtt v2.1 epic and stories": [
-      "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES#proposed-backlog-change--gtt-v21-epic-and-stories"
     ],
     "protected artifacts (gttguard)": [
       "AGENTS#protected-artifacts-gttguard",
@@ -7059,9 +6829,6 @@
     "starting without a design document": [
       "README-GTT#starting-without-a-design-document"
     ],
-    "status": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#status"
-    ],
     "status and validation": [
       "DOC-DOCS#status-and-validation"
     ],
@@ -7213,9 +6980,6 @@
     ],
     "what success looks like": [
       "CTX-SOLUTION-VISION#what-success-looks-like"
-    ],
-    "what the human needs to review and ratify": [
-      "PROP-GOVERNANCE-PACKAGE-GTT-V2-1#what-the-human-needs-to-review-and-ratify"
     ],
     "what you maintain": [
       "README-GTT#what-you-maintain"
