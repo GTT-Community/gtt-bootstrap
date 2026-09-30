@@ -1260,7 +1260,7 @@
       "title": "GTT Bootstrap 1.0 — the contract for the CLI",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "6224ee377fff3d67f8699aacf0c3ac1282f83d6ac6caa3f946aa5f41d1e7b2e1",
+      "sha256": "bc77948a2681548cbee074ad5987762df9428ee0e58de894d5d116de0e55fed9",
       "aliases": [],
       "sections": [
         {
@@ -1269,7 +1269,7 @@
           "anchor": "gtt-bootstrap-10--the-contract-for-the-cli",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI",
           "line_start": 1,
-          "line_end": 95
+          "line_end": 100
         },
         {
           "heading": "How a CLI uses it",
@@ -1277,47 +1277,47 @@
           "anchor": "how-a-cli-uses-it",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > How a CLI uses it",
           "line_start": 15,
-          "line_end": 30
+          "line_end": 35
         },
         {
           "heading": "Contract map",
           "level": 2,
           "anchor": "contract-map",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Contract map",
-          "line_start": 31,
-          "line_end": 54
+          "line_start": 36,
+          "line_end": 59
         },
         {
           "heading": "Methodology profiles — who decides what",
           "level": 2,
           "anchor": "methodology-profiles--who-decides-what",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Methodology profiles — who decides what",
-          "line_start": 55,
-          "line_end": 71
+          "line_start": 60,
+          "line_end": 76
         },
         {
           "heading": "What a snapshot preserves — and what it does not",
           "level": 2,
           "anchor": "what-a-snapshot-preserves--and-what-it-does-not",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > What a snapshot preserves — and what it does not",
-          "line_start": 72,
-          "line_end": 79
+          "line_start": 77,
+          "line_end": 84
         },
         {
           "heading": "Evolution without CLI changes",
           "level": 2,
           "anchor": "evolution-without-cli-changes",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Evolution without CLI changes",
-          "line_start": 80,
-          "line_end": 87
+          "line_start": 85,
+          "line_end": 92
         },
         {
           "heading": "Honest limits",
           "level": 2,
           "anchor": "honest-limits",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Honest limits",
-          "line_start": 88,
-          "line_end": 95
+          "line_start": 93,
+          "line_end": 100
         }
       ],
       "references": [],

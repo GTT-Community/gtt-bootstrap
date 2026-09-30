@@ -645,6 +645,7 @@ def rewrite_links(state, moves):
 
 def cmd_reconcile(args):
     apply = "--apply" in args
+    retire_all = "--retire-missing" in args      # explicit: every registered path that is gone (fresh host project)
     forced, retire = {}, set()
     it = iter(args)
     for a in it:
@@ -666,7 +667,7 @@ def cmd_reconcile(args):
         if n not in state.disk_set:
             die(f"--map: {n} does not exist (or is outside the GTT kit)")
     pairs, ambiguous, gone = match_moves(state, forced)
-    retire_paths = {p for p in gone if state.by_path[p]["id"] in retire}
+    retire_paths = set(gone) if retire_all else {p for p in gone if state.by_path[p]["id"] in retire}
 
     for old, (new, how) in sorted(pairs.items()):
         print(f"MOVE       {state.by_path[old]['id']}: {old} -> {new}  [{how}]")
@@ -681,7 +682,7 @@ def cmd_reconcile(args):
 
     if not apply:
         print("\ngtt-reconcile: dry run. Re-run with --apply to update identity and references.")
-        return 1 if (ambiguous or (gone and not retire)) else 0
+        return 1 if (ambiguous or (gone and not (retire or retire_all))) else 0
 
     moves = {o: n for o, (n, _) in pairs.items()}
     for old, (new, _) in pairs.items():

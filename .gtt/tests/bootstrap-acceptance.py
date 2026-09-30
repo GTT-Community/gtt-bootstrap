@@ -414,9 +414,30 @@ def session_status_validation(project, tmp):
     write(os.path.join(p, "gtt-domain/context/architecture.md"), "# Architecture\n\n[PROPUESTA] something\n")
     rc, env, _ = op(p, "validation.run")
     v = data(env)
-    check(rc == 1 and v["result"] == "fail" and any("provenance" in c for c in v["failing"]), "a violation surfaces as a failing check", str(v)[:200])
+    check(rc == 1 and v["result"] == "fail" and "gtt-check-provenance.sh" in v["failing"], "a violation surfaces as a failing check", str(v)[:200])
+    check(any("[PROPUESTA]" in m for m in v["messages"]) and not any(c["check"].startswith(("FAIL", "WARN")) for c in v["checks"]),
+          "detail lines are reported as messages, never mistaken for checks", str(v)[:200])
     rc, env, _ = op(p, "session-context.text")
     check(rc == 0 and "GTT-SESSION-CONTEXT" in env["stdout"], "the text session context remains available")
+
+
+def fresh_host(project, tmp):
+    print("[fresh host] install -> reconcile the catalog identity -> index -> validation.run")
+    host = make_host(project, tmp, "fresh-host")
+    for kit in ("readme-gtt.md", "readme-gtt.es.md"):
+        shutil.copy2(os.path.join(project, kit), host)
+    rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "claude", "primary": "claude", "apply": True})
+    rc, env, _ = op(host, "validation.run")
+    check(env["exit_code"] == 1 and "gtt-check-integrity.sh" in data(env)["failing"],
+          "a fresh host still carries the catalog's identity manifest: integrity fails until it is reconciled")
+    before = tree_hash(host)
+    rc, env, _ = op(host, "reconcile", retire_missing=True)
+    check(rc == 0 and "dry run" in env["stdout"] and tree_hash(host) == before, "reconcile retire_missing is a dry run by default")
+    rc, env, _ = op(host, "reconcile", retire_missing=True, apply=True)
+    check(rc == 0, "reconcile retire_missing apply=true retires only registered paths that are gone", env["stderr"][:200])
+    rc, env, _ = op(host, "index")
+    rc, env, _ = op(host, "validation.run")
+    check(env["exit_code"] == 0 and data(env)["result"] == "pass", "after reconcile and index the fresh host validates", str(data(env))[:200])
 
 
 def registry_safety(project, tmp):
@@ -533,7 +554,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, ade, questionnaire, sources, export_and_clean, recovery,
-                         session_status_validation, registry_safety, evolution, unsupported, guard_and_retrieval):
+                         session_status_validation, fresh_host, registry_safety, evolution, unsupported, guard_and_retrieval):
             scenario(project, tmp)
     finally:
         if args.keep:

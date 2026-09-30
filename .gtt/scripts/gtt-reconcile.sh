@@ -7,7 +7,11 @@
 # governed files are never rewritten; they are reported instead.
 #
 # Usage:
-#   .gtt/scripts/gtt-reconcile.sh [--apply] [--map OLD=NEW] [--retire ID]
+#   .gtt/scripts/gtt-reconcile.sh [--apply] [--map OLD=NEW] [--retire ID] [--retire-missing]
+#
+# --retire-missing retires EVERY registered artifact whose path is gone (never a detected move).
+# It is for a fresh host project whose identity manifest still lists artifacts of overlays/documents
+# that were not installed; use it deliberately, dry run first.
 #
 # Exit 0 = ok, 1 = violation / unresolved, 2 = cannot run.
 

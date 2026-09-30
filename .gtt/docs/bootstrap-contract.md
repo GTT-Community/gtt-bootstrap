@@ -23,6 +23,11 @@ bash .gtt/scripts/gtt-contract.sh operations --json                    # how do 
 bash .gtt/scripts/gtt-contract.sh run <operation> name=value ... --envelope
 ```
 
+After installing into a **host** project the identity manifest still lists the catalog's artifacts that were not installed
+(other overlays, documents). The CLI reconciles it once, deliberately — `run reconcile retire_missing=true` (dry run), then
+`apply=true`, then `run index` — and only then `run validation.run` passes. `validation.run` reports one entry per check in
+`checks` and the detail lines of failing checks in `messages`.
+
 Exit codes of `gtt-contract.sh`: `0` ok, `1` violation, `2` usage, `3` **REFUSED** (incompatible — the CLI must not touch
 the project), `4` a human decision is required (`confirmed_by_human=true` only after the human confirmed), `5` invalid
 arguments or an operation this Bootstrap does not declare (nothing was run). Negotiation is fail-closed: a missing CLI

@@ -302,14 +302,18 @@ def governance():
 
 def run_validation():
     rc, out, err = sh(".gtt/scripts/gtt-validate.sh")
-    checks = []
+    checks, messages = [], []
     for line in out.splitlines():
-        m = re.match(r"^(PASS|FAIL|SKIPPED|CANNOT-DETERMINE)\s+(.*)$", line)
+        # the summary lines gtt-validate.sh prints per check are fixed-width ("PASS" + 15 spaces, ...); the detail
+        # lines a failing check adds start with the level and TWO spaces and must not be mistaken for checks
+        m = re.match(r"^(PASS {15}|FAIL {15}|SKIPPED {12}|CANNOT-DETERMINE {3})(\S.*)$", line)
         if m:
-            checks.append({"result": m.group(1).lower(), "check": m.group(2).strip()})
+            checks.append({"result": m.group(1).strip().lower(), "check": m.group(2).strip()})
+        elif re.match(r"^(FAIL|WARN) {2,}\S", line):
+            messages.append(line.strip())
     result = "pass" if rc == 0 else "fail"
     return {"schema": 1, "kind": "gtt-validation", "result": result, "exit_code": rc, "checks": checks,
-            "failing": [c["check"] for c in checks if c["result"] == "fail"]}, rc
+            "failing": [c["check"] for c in checks if c["result"] == "fail"], "messages": messages}, rc
 
 
 def cmd_validation(args):
