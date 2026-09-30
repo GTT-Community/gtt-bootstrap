@@ -13,7 +13,7 @@
 # There is exactly ONE scaffold. ADEs contribute overlays to it (see
 # `overlays`); they never define one of their own.
 #
-# Layout version 2 (ADR-004): the Engine lives in `.gtt/` (with GTT's own
+# Layout version 2: the Engine lives in `.gtt/` (with GTT's own
 # documentation in `.gtt/docs/`), the project's governed state in `gtt-domain/`.
 # Neither directory holds the other's kind of content: architectural authority
 # (L0/L1) exists only in `gtt-domain/context/` and `gtt-domain/adr/`; executable

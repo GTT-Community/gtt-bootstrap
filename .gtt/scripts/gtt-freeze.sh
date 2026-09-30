@@ -43,7 +43,7 @@ if ! ls gtt-domain/adr/ADR-001*.md >/dev/null 2>&1; then
   fail=1
 fi
 
-# Provenance / gap / source rules (ADR-006): a pending BLOCKING gap, an unresolved
+# Provenance / gap / source rules: a pending BLOCKING gap, an unresolved
 # [CONFLICTO], a [PROPUESTA] inside governed context or a malformed source manifest
 # refuse the freeze. A valid OPEN gap does not: it is known, scoped and visible.
 if [ -f .gtt/scripts/gtt-check-provenance.sh ]; then

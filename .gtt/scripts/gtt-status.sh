@@ -65,7 +65,7 @@ if [ -f ".gtt/scripts/gtt-ade.sh" ]; then
   ADE_STATE="$(bash .gtt/scripts/gtt-ade.sh state 2>&1 || true)"
 fi
 
-# Evidence / governance state (ADR-006): sources, gaps, conflicts, provenance tags, working
+# Evidence / governance state: sources, gaps, conflicts, provenance tags, working
 # agreements - counted from the governed artifacts by the provenance engine. Derived state,
 # never agent notes and never authority.
 GOV_STATE="not available (.gtt/scripts/gtt_provenance.py not found)"

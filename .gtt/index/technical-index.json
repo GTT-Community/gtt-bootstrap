@@ -1260,7 +1260,7 @@
       "title": "GTT Bootstrap 1.0 — the contract for the CLI",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "bc77948a2681548cbee074ad5987762df9428ee0e58de894d5d116de0e55fed9",
+      "sha256": "747cff1ecccfe795bc8730760f2f8ba1c75d1ce5d6a24a086d8c6f25cec0d53b",
       "aliases": [],
       "sections": [
         {
@@ -1335,7 +1335,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e0f5fecae4c48ae1421649579aa199d6474741081e2f95b4148750485bcd020b",
+      "sha256": "ca82d878df7a38d1006d618cdc2a76e2477dbf1c1074ac6beb2d3b191ca8bf57",
       "aliases": [],
       "sections": [
         {

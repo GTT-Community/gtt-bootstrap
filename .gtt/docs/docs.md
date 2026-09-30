@@ -353,7 +353,7 @@ decision: *what* the project commits to building, not *how far along* it is.
 
 Recovered from CDAD as semantics, not as a parallel system: they reuse the governed artifacts, the
 index stays derived and no new authority appears. The rules are in `AGENTS.md` → *Provenance, gaps,
-sources and working agreements*; the decision is ADR-006. In short: `[FUENTE: ref]` / `[VACÍO: GAP-id]` /
+sources and working agreements*. In short: `[FUENTE: ref]` / `[VACÍO: GAP-id]` /
 `[CONFLICTO: a vs b]` are allowed in governed context, `[PROPUESTA]` is not; a BLOCKING gap refuses freeze
 and an OPEN gap (always scoped) does not and authorises nothing; sources carry authority and an
 unambiguous precedence that orders a conflict without erasing it; working agreements sit below governed
@@ -596,8 +596,8 @@ exists to prevent:
 | Session continuity (`gtt-status.sh` / `gtt-domain/session.md`) | IMPLEMENTED | Satisfies the Canon's ADE-independence requirement for resuming work; the snapshot format is this repo's choice |
 | `gtt status` / `gtt validate` | IMPLEMENTED | Deterministic aggregation the Canon asks for; implemented here as bash scripts because that is what this repo already uses, not because the Canon mandates a shell script |
 | Artifact identity, integrity & technical index (`.gtt/index/`) | IMPLEMENTED | Canon v2.1 capability; JSON manifest/index, `[[ID]]` reference syntax, and the reconcile heuristics are this repo's choices. The index is derived, never authoritative |
-| Working preferences (separate from session state) | IMPLEMENTED (ADR-006) | Team file and local user file, both below governed context; `gtt-check-provenance.sh` rejects one that tries to override it. Not runtime-verified outside the rehearsal |
-| Provenance, OPEN/BLOCKING gaps, source manifest | IMPLEMENTED (ADR-006) | One gate (`gtt-check-provenance.sh`), the gap register in `stack.md`, `gtt-domain/context/sources.md`; wired into `gtt-validate.sh`, `gtt-freeze.sh`, `gtt-status.sh` and `gtt-query.sh --governance`. Optional per project; rehearsed, not run on an installed project |
+| Working preferences (separate from session state) | IMPLEMENTED | Team file and local user file, both below governed context; `gtt-check-provenance.sh` rejects one that tries to override it. Not runtime-verified outside the rehearsal |
+| Provenance, OPEN/BLOCKING gaps, source manifest | IMPLEMENTED | One gate (`gtt-check-provenance.sh`), the gap register in `stack.md`, `gtt-domain/context/sources.md`; wired into `gtt-validate.sh`, `gtt-freeze.sh`, `gtt-status.sh` and `gtt-query.sh --governance`. Optional per project; rehearsed, not run on an installed project |
 | Bootstrap 1.0 CLI contracts (`.gtt/contract/`, `gtt-contract.sh`, `gtt-project.sh`) | IMPLEMENTED | Release identity, compatibility negotiation, capability and operation registries, methodology profiles, export policy, recovery, structured status/session/validation; see `.gtt/docs/bootstrap-contract.md`. Rehearsed on disposable copies by `.gtt/tests/bootstrap-acceptance.py`; not run against a real CLI, on Linux/macOS or on an installed project |
 | RAG/vector-backed grounding | NOT IMPLEMENTED | Not required by the Canon or this repo's directives; would need its own proposal if ever needed |
 
