@@ -72,7 +72,7 @@ for ade in "$@"; do
 done
 bash .gtt/scripts/gtt-validate.sh || rollback
 
-# One ownership contract for clean / export --clean (ADR-005): attribute the files just
+# One ownership contract for clean / export --clean: attribute the files just
 # installed to their ADE in the .gtt/ade.json ledger. Only meaningful when that ADE
 # participates; otherwise say so - never guess, never fail the install over it.
 if [ -f .gtt/ade.json ] && [ -f .gtt/scripts/gtt-ade.sh ]; then

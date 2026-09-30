@@ -4,42 +4,21 @@
 
 ## Problem
 
-As stated in `gtt-domain/adr/ADR-001-context-governance.md` → *Context*: "AI agents
-generate implementation faster than humans review it. Without a governed
-reference, the codebase becomes the de facto specification, and
-architectural intent erodes one reasonable-looking commit at a time. The
-erosion is invisible because every individual change is defensible."
-
-GTT's Artifact Identity, Technical Index, and Session Memory Service (see
-`.gtt/docs/docs.md` → *Artifact identity and the technical index* and
-`.gtt/docs/session-adapter-contract.md`) address three further, related gaps:
-identity tied to a file's path (a move looked like delete + create),
-retrieval requiring whole-document scans, and session continuity with no
-delivery contract to any ADE.
+What is broken today, for whom, and what it costs them.
 
 ## Users
 
-Per `AGENTS.md` (Mission, Agent roles, and throughout): the **Solution
-Designer** (the human who owns architectural decisions, ratifies ADRs, and
-runs promotion scripts and `gtt-freeze.sh`), and **AI coding agents**
-operating under the Grounding/Reasoning/Validation split across the
-supported ADEs — Claude Code, Codex, Kiro, and GitHub Copilot
-(`AGENTS.md` → *Adapters vs. portable core*).
+Who uses this and what they are trying to accomplish.
 
 ## What success looks like
 
-None declared as a dedicated success-criteria statement. The closest
-already-ratified, explicit statement is `ADR-001` → *Decision* and
-*Consequences*: the governed context under `gtt-domain/context/` stays the source
-of truth, generated code never replaces it, and disagreement between code
-and context is escalated to a human rather than resolved by an agent. This
-is cited here as the nearest existing signal, not restated as a new vision.
+Observable outcomes, not features.
 
 ## Non-goals
 
-See `gtt-domain/context/constraints.md` → *Explicitly out of scope* — established
-during this Bootstrap by the Solution Designer. Not duplicated here to avoid
-two documents that could drift apart; that section is authoritative.
+What this solution deliberately will not become. This section does more work
+than the rest of the file: it is what stops scope creep from being rationalized
+as a natural extension.
 
 ---
 Governance: L0. Read-only for AI agents.

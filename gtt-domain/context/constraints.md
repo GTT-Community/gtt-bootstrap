@@ -8,43 +8,25 @@ decision. Delete every line you have not actually committed to.
 
 ## Platform
 
-- Cloud provider: none
-- Compute model: none — runs as scripts/tooling inside the repository; not
-  deployed as a service (see `stack.md` → *Compute model*)
-- IaC tooling: none: no infrastructure is provisioned
+- Cloud provider: <locked to X — reason>
+- Compute model: <locked to X — reason>
+- IaC tooling: <X, or "none: infrastructure is provisioned manually">
 
 ## Technical
 
-- Runtime and language version: Bash (Core scripts, CI gate) + Python 3
-  (engine components, hooks); no version pinned, no single application
-  runtime (see `stack.md` → *Language / Runtime*)
-- Datastore: none — filesystem-based; `.gtt/index/artifacts.json` (identity
-  manifest) and `.gtt/index/technical-index.json` (derived index, never a
-  source of truth) are the closest equivalent
-- Communication style: neither — no network API and no messaging; components
-  communicate via filesystem, Bash/Python script invocation, and
-  Markdown/JSON artifacts (ADE adapters invoke `gtt-session-context.sh`
-  directly)
+- Runtime and language version: <X>
+- Datastore: <X — reason>
+- Communication style: <sync REST / async events / both, and where each applies>
 
 ## Regulatory and organizational
 
-- Data residency: not applicable
-- Compliance regime: none declared
-- Budget or quota ceilings that constrain design: none declared
+- Data residency: <region, reason>
+- Compliance regime: <X>
+- Budget or quota ceilings that constrain design: <X>
 
 ## Explicitly out of scope
 
-- Not a deployable business application.
-- Does not provision infrastructure.
-- Does not define or implement an external identity service.
-- Does not implement an external datastore.
-- Does not implement messaging/events.
-- Does not claim to verify the runtime of an ADE that is not
-  installed/available.
-- Does not turn Session Memory into agent memory or authority.
-- Does not allow agents to ratify or freeze human decisions.
-- Does not let an OPEN gap, a source's precedence or a working preference authorise a change to a frozen design or override governed context.
-- Does not create ADE or agent governance: no ADE hierarchy, voting or arbitration. The Primary ADE is a workflow identifier and holds no authority; instruction files, overlays and ADE memory are integration surfaces, never governance authority.
+- <thing the solution deliberately does not do>
 
 ---
 Governance: L0. Read-only for AI agents. Changes require Solution Designer

@@ -9,7 +9,7 @@
       "title": "ADR-001 — Context is the source of truth",
       "authority": "L1",
       "version": "v2.1",
-      "sha256": "7fbdcb5f12d88dbe0816e120451054ae818b1ccdf5c2e95e6212acb788d886ed",
+      "sha256": "6b556d0818386bd5769d576243af90dc51d8129da13324cf9c2f68943fabacfb",
       "aliases": [],
       "sections": [
         {
@@ -70,10 +70,7 @@
         }
       ],
       "references": [],
-      "referenced_by": [
-        "ADR-003",
-        "ADR-004"
-      ],
+      "referenced_by": [],
       "relationships": [],
       "provenance": {
         "history": [
@@ -84,385 +81,6 @@
           "status": "Accepted",
           "date": "2026-01-01",
           "approved_by": "Solution Designer",
-          "supersedes": "none"
-        },
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "ADR-003",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-003-scaffold-restructure.md",
-      "title": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold",
-      "authority": "L1",
-      "version": "v2.1",
-      "sha256": "7b4e9a6003978ebb6412fff469a86d1a3ff66b70fdb25c1f07e71ee363e8d979",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold",
-          "level": 1,
-          "anchor": "adr-003--scaffold-restructure-four-layers-one-canonical-scaffold",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold",
-          "line_start": 1,
-          "line_end": 160
-        },
-        {
-          "heading": "Context",
-          "level": 2,
-          "anchor": "context",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Context",
-          "line_start": 10,
-          "line_end": 44
-        },
-        {
-          "heading": "Decision",
-          "level": 2,
-          "anchor": "decision",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Decision",
-          "line_start": 45,
-          "line_end": 77
-        },
-        {
-          "heading": "Alternatives considered",
-          "level": 2,
-          "anchor": "alternatives-considered",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Alternatives considered",
-          "line_start": 78,
-          "line_end": 86
-        },
-        {
-          "heading": "Consequences",
-          "level": 2,
-          "anchor": "consequences",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Consequences",
-          "line_start": 87,
-          "line_end": 101
-        },
-        {
-          "heading": "Risks",
-          "level": 2,
-          "anchor": "risks",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Risks",
-          "line_start": 102,
-          "line_end": 121
-        },
-        {
-          "heading": "Stack map delta",
-          "level": 2,
-          "anchor": "stack-map-delta",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Stack map delta",
-          "line_start": 122,
-          "line_end": 138
-        },
-        {
-          "heading": "Affected context",
-          "level": 2,
-          "anchor": "affected-context",
-          "path": "ADR-003 — Scaffold restructure: four layers, one canonical scaffold > Affected context",
-          "line_start": 139,
-          "line_end": 160
-        }
-      ],
-      "references": [
-        "ADR-001"
-      ],
-      "referenced_by": [
-        "ADR-004"
-      ],
-      "relationships": [],
-      "provenance": {
-        "history": [
-          "adr/ADR-003-scaffold-restructure.md"
-        ],
-        "adr": {
-          "status": "Accepted",
-          "date": "2026-09-28",
-          "approved_by": "Solution Designer (mgriott) - ratified by executing apply-ADR-003-scaffold-restructure.sh on 2026-09-29",
-          "supersedes": "none"
-        },
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "ADR-004",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-004-gtt-domain-and-dot-gtt-engine.md",
-      "title": "ADR-004 —         Engine and               governed domain",
-      "authority": "L1",
-      "version": "v2.1",
-      "sha256": "d96d005d223984f43751ea1b0fc5703a08c2739325ac9340b3f68c0d6a245e72",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "ADR-004 —         Engine and               governed domain",
-          "level": 1,
-          "anchor": "adr-004----------engine-and---------------governed-domain",
-          "path": "ADR-004 —         Engine and               governed domain",
-          "line_start": 1,
-          "line_end": 162
-        },
-        {
-          "heading": "Context",
-          "level": 2,
-          "anchor": "context",
-          "path": "ADR-004 —         Engine and               governed domain > Context",
-          "line_start": 10,
-          "line_end": 33
-        },
-        {
-          "heading": "Decision",
-          "level": 2,
-          "anchor": "decision",
-          "path": "ADR-004 —         Engine and               governed domain > Decision",
-          "line_start": 34,
-          "line_end": 76
-        },
-        {
-          "heading": "Alternatives considered",
-          "level": 2,
-          "anchor": "alternatives-considered",
-          "path": "ADR-004 —         Engine and               governed domain > Alternatives considered",
-          "line_start": 77,
-          "line_end": 85
-        },
-        {
-          "heading": "Consequences",
-          "level": 2,
-          "anchor": "consequences",
-          "path": "ADR-004 —         Engine and               governed domain > Consequences",
-          "line_start": 86,
-          "line_end": 99
-        },
-        {
-          "heading": "Risks",
-          "level": 2,
-          "anchor": "risks",
-          "path": "ADR-004 —         Engine and               governed domain > Risks",
-          "line_start": 100,
-          "line_end": 114
-        },
-        {
-          "heading": "Stack map delta",
-          "level": 2,
-          "anchor": "stack-map-delta",
-          "path": "ADR-004 —         Engine and               governed domain > Stack map delta",
-          "line_start": 115,
-          "line_end": 138
-        },
-        {
-          "heading": "Affected context",
-          "level": 2,
-          "anchor": "affected-context",
-          "path": "ADR-004 —         Engine and               governed domain > Affected context",
-          "line_start": 139,
-          "line_end": 162
-        }
-      ],
-      "references": [
-        "ADR-001",
-        "ADR-003"
-      ],
-      "referenced_by": [],
-      "relationships": [
-        {
-          "rel": "supersedes",
-          "target": "ADR-003"
-        }
-      ],
-      "provenance": {
-        "history": [],
-        "adr": {
-          "status": "Accepted",
-          "date": "2026-09-29",
-          "approved_by": "Solution Designer (mgriott) - ratified by executing apply-ADR-004-gtt-domain-and-dot-gtt-engine.sh on 2026-09-29",
-          "supersedes": "ADR-003 (in part: its layout decisions — where the Engine, Project Governance and GTT documentation live; see Decision)"
-        },
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "ADR-005",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-005-bootstrap-integration-contracts.md",
-      "title": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire",
-      "authority": "L1",
-      "version": "v2.1",
-      "sha256": "825e0874f7bb3c75808dda3124cbf10ce38c3ae78ee5241a9797fdd850cf6c4c",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire",
-          "level": 1,
-          "anchor": "adr-005--bootstrap-integration-contracts-multi-ade-with-one-primary-ade-and-the-initial-design-questionnaire",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire",
-          "line_start": 1,
-          "line_end": 184
-        },
-        {
-          "heading": "Context",
-          "level": 2,
-          "anchor": "context",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Context",
-          "line_start": 11,
-          "line_end": 30
-        },
-        {
-          "heading": "Decision",
-          "level": 2,
-          "anchor": "decision",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Decision",
-          "line_start": 31,
-          "line_end": 102
-        },
-        {
-          "heading": "Alternatives considered",
-          "level": 2,
-          "anchor": "alternatives-considered",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Alternatives considered",
-          "line_start": 103,
-          "line_end": 121
-        },
-        {
-          "heading": "Consequences",
-          "level": 2,
-          "anchor": "consequences",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Consequences",
-          "line_start": 122,
-          "line_end": 133
-        },
-        {
-          "heading": "Risks",
-          "level": 2,
-          "anchor": "risks",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Risks",
-          "line_start": 134,
-          "line_end": 151
-        },
-        {
-          "heading": "Stack map delta",
-          "level": 2,
-          "anchor": "stack-map-delta",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Stack map delta",
-          "line_start": 152,
-          "line_end": 167
-        },
-        {
-          "heading": "Affected context",
-          "level": 2,
-          "anchor": "affected-context",
-          "path": "ADR-005 — Bootstrap integration contracts: Multi-ADE with one Primary ADE, and the Initial Design Questionnaire > Affected context",
-          "line_start": 168,
-          "line_end": 184
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [
-        {
-          "rel": "supersedes",
-          "target": "ADR-003"
-        },
-        {
-          "rel": "supersedes",
-          "target": "ADR-004"
-        }
-      ],
-      "provenance": {
-        "history": [],
-        "adr": {
-          "status": "Accepted",
-          "date": "2026-09-29",
-          "approved_by": "Solution Designer (mgriott) - ratified by executing apply-ADR-005-bootstrap-integration-contracts.sh on 2026-09-29",
-          "supersedes": "ADR-003 and ADR-004 in part (only their overlay row, \"exactly one per installed project\"; their layout decisions stand)"
-        },
-        "referenced_by_proposals": []
-      }
-    },
-    {
-      "id": "ADR-006",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md",
-      "title": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
-      "authority": "L1",
-      "version": "v2.1",
-      "sha256": "19a52acfdcd4793105a2d72410e4e7263818f54e8f5012f2890ddefb0d2b0f85",
-      "aliases": [],
-      "sections": [
-        {
-          "heading": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
-          "level": 1,
-          "anchor": "adr-006--provenance-gaps-openblocking-source-manifest-and-working-agreements",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements",
-          "line_start": 1,
-          "line_end": 109
-        },
-        {
-          "heading": "Context",
-          "level": 2,
-          "anchor": "context",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Context",
-          "line_start": 11,
-          "line_end": 27
-        },
-        {
-          "heading": "Decision",
-          "level": 2,
-          "anchor": "decision",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Decision",
-          "line_start": 28,
-          "line_end": 54
-        },
-        {
-          "heading": "Alternatives considered",
-          "level": 2,
-          "anchor": "alternatives-considered",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Alternatives considered",
-          "line_start": 55,
-          "line_end": 67
-        },
-        {
-          "heading": "Consequences",
-          "level": 2,
-          "anchor": "consequences",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Consequences",
-          "line_start": 68,
-          "line_end": 78
-        },
-        {
-          "heading": "Risks",
-          "level": 2,
-          "anchor": "risks",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Risks",
-          "line_start": 79,
-          "line_end": 89
-        },
-        {
-          "heading": "Stack map delta",
-          "level": 2,
-          "anchor": "stack-map-delta",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Stack map delta",
-          "line_start": 90,
-          "line_end": 100
-        },
-        {
-          "heading": "Affected context",
-          "level": 2,
-          "anchor": "affected-context",
-          "path": "ADR-006 — Provenance, gaps (OPEN/BLOCKING), source manifest and working agreements > Affected context",
-          "line_start": 101,
-          "line_end": 109
-        }
-      ],
-      "references": [],
-      "referenced_by": [],
-      "relationships": [],
-      "provenance": {
-        "history": [],
-        "adr": {
-          "status": "Accepted",
-          "date": "2026-09-29",
-          "approved_by": "Solution Designer (mgriott) - ratified by executing apply-ADR-006-provenance-gaps-sources-agreements.sh on 2026-09-29",
           "supersedes": "none"
         },
         "referenced_by_proposals": []
@@ -1008,7 +626,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "89d6ea04e0095fb473922d4cf87d83481dec6a9210836ddee0c93c8fb6a4bc4a",
+      "sha256": "7ea4280256698e02facb4962652ebc01b136434b86feab1df02637cbe5318814",
       "aliases": [],
       "sections": [
         {
@@ -1017,7 +635,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 276
+          "line_end": 93
         },
         {
           "heading": "Development Line",
@@ -1041,143 +659,63 @@
           "anchor": "epics",
           "path": "Project Backlog > Epics",
           "line_start": 37,
-          "line_end": 245
+          "line_end": 62
         },
         {
-          "heading": "EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory",
+          "heading": "EPIC-001 — <Epic title (example)>",
           "level": 3,
-          "anchor": "epic-001--gtt-v21--artifact-identity-technical-index--session-memory",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory",
-          "line_start": 46,
-          "line_end": 176
+          "anchor": "epic-001--epic-title-example",
+          "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)>",
+          "line_start": 43,
+          "line_end": 62
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories",
-          "line_start": 59,
-          "line_end": 176
+          "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories",
+          "line_start": 48,
+          "line_end": 62
         },
         {
-          "heading": "STORY-001 — Artifact Identity",
+          "heading": "STORY-001 — <Story title (example)>",
           "level": 5,
-          "anchor": "story-001--artifact-identity",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-001 — Artifact Identity",
-          "line_start": 61,
-          "line_end": 83
-        },
-        {
-          "heading": "STORY-002 — Repository Reconciliation",
-          "level": 5,
-          "anchor": "story-002--repository-reconciliation",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-002 — Repository Reconciliation",
-          "line_start": 84,
-          "line_end": 108
-        },
-        {
-          "heading": "STORY-003 — Technical Index",
-          "level": 5,
-          "anchor": "story-003--technical-index",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-003 — Technical Index",
-          "line_start": 109,
-          "line_end": 129
-        },
-        {
-          "heading": "STORY-004 — Session Memory Service",
-          "level": 5,
-          "anchor": "story-004--session-memory-service",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-004 — Session Memory Service",
-          "line_start": 130,
-          "line_end": 153
-        },
-        {
-          "heading": "STORY-005 — ADE Adapter Contract and integration boundary",
-          "level": 5,
-          "anchor": "story-005--ade-adapter-contract-and-integration-boundary",
-          "path": "Project Backlog > Epics > EPIC-001 — GTT v2.1 — Artifact Identity, Technical Index & Session Memory > Stories > STORY-005 — ADE Adapter Contract and integration boundary",
-          "line_start": 154,
-          "line_end": 176
-        },
-        {
-          "heading": "EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
-          "level": 3,
-          "anchor": "epic-002--multi-ade-participation-and-the-initial-design-questionnaire",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire",
-          "line_start": 177,
-          "line_end": 245
-        },
-        {
-          "heading": "Stories",
-          "level": 4,
-          "anchor": "stories-1",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories",
-          "line_start": 185,
-          "line_end": 245
-        },
-        {
-          "heading": "STORY-006 — ADE registry and per-project ADE state",
-          "level": 5,
-          "anchor": "story-006--ade-registry-and-per-project-ade-state",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-006 — ADE registry and per-project ADE state",
-          "line_start": 187,
-          "line_end": 200
-        },
-        {
-          "heading": "STORY-007 — Multi-ADE lifecycle contract",
-          "level": 5,
-          "anchor": "story-007--multi-ade-lifecycle-contract",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-007 — Multi-ADE lifecycle contract",
-          "line_start": 201,
-          "line_end": 215
-        },
-        {
-          "heading": "STORY-008 — Migration and ownership ledger",
-          "level": 5,
-          "anchor": "story-008--migration-and-ownership-ledger",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-008 — Migration and ownership ledger",
-          "line_start": 216,
-          "line_end": 229
-        },
-        {
-          "heading": "STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
-          "level": 5,
-          "anchor": "story-009--initial-design-questionnaire-as-a-bootstrap-contract",
-          "path": "Project Backlog > Epics > EPIC-002 — Multi-ADE participation and the Initial Design Questionnaire > Stories > STORY-009 — Initial Design Questionnaire as a Bootstrap contract",
-          "line_start": 230,
-          "line_end": 245
+          "anchor": "story-001--story-title-example",
+          "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories > STORY-001 — <Story title (example)>",
+          "line_start": 50,
+          "line_end": 62
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 246,
-          "line_end": 251
+          "line_start": 63,
+          "line_end": 68
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 252,
-          "line_end": 257
+          "line_start": 69,
+          "line_end": 74
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 258,
-          "line_end": 263
+          "line_start": 75,
+          "line_end": 80
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 264,
-          "line_end": 276
+          "line_start": 81,
+          "line_end": 93
         }
       ],
       "references": [],
@@ -1342,7 +880,7 @@
       "title": "Architecture",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "8fce43ccb87903a37f6f25e0b1a537573f8f6e9813aed330e660b846b63f010c",
+      "sha256": "219afcb9049d1e1539f5174bd82a193889430b4ac4f7062e68ac83cf7a285c5e",
       "aliases": [],
       "sections": [
         {
@@ -1351,7 +889,7 @@
           "anchor": "architecture",
           "path": "Architecture",
           "line_start": 1,
-          "line_end": 76
+          "line_end": 41
         },
         {
           "heading": "Architectural style",
@@ -1359,47 +897,47 @@
           "anchor": "architectural-style",
           "path": "Architecture > Architectural style",
           "line_start": 9,
-          "line_end": 14
+          "line_end": 15
         },
         {
           "heading": "Modules and boundaries",
           "level": 2,
           "anchor": "modules-and-boundaries",
           "path": "Architecture > Modules and boundaries",
-          "line_start": 15,
-          "line_end": 39
+          "line_start": 16,
+          "line_end": 20
         },
         {
           "heading": "Integration strategy",
           "level": 2,
           "anchor": "integration-strategy",
           "path": "Architecture > Integration strategy",
-          "line_start": 40,
-          "line_end": 46
+          "line_start": 21,
+          "line_end": 25
         },
         {
           "heading": "Data model ownership",
           "level": 2,
           "anchor": "data-model-ownership",
           "path": "Architecture > Data model ownership",
-          "line_start": 47,
-          "line_end": 58
+          "line_start": 26,
+          "line_end": 29
         },
         {
           "heading": "Deployment topology",
           "level": 2,
           "anchor": "deployment-topology",
           "path": "Architecture > Deployment topology",
-          "line_start": 59,
-          "line_end": 64
+          "line_start": 30,
+          "line_end": 33
         },
         {
           "heading": "Known deviations",
           "level": 2,
           "anchor": "known-deviations",
           "path": "Architecture > Known deviations",
-          "line_start": 65,
-          "line_end": 76
+          "line_start": 34,
+          "line_end": 41
         }
       ],
       "references": [],
@@ -1420,7 +958,7 @@
       "title": "Constraints",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "8bebcec669cd6613d80f7062ba0b8463fe6c2854e3db10370e3873c394abfcf7",
+      "sha256": "bbf248c21fe50e569a0860ace2b3a71f3ef67fead9604a026ae71f3def7bced8",
       "aliases": [],
       "sections": [
         {
@@ -1429,7 +967,7 @@
           "anchor": "constraints",
           "path": "Constraints",
           "line_start": 1,
-          "line_end": 52
+          "line_end": 34
         },
         {
           "heading": "Platform",
@@ -1437,31 +975,31 @@
           "anchor": "platform",
           "path": "Constraints > Platform",
           "line_start": 9,
-          "line_end": 15
+          "line_end": 14
         },
         {
           "heading": "Technical",
           "level": 2,
           "anchor": "technical",
           "path": "Constraints > Technical",
-          "line_start": 16,
-          "line_end": 28
+          "line_start": 15,
+          "line_end": 20
         },
         {
           "heading": "Regulatory and organizational",
           "level": 2,
           "anchor": "regulatory-and-organizational",
           "path": "Constraints > Regulatory and organizational",
-          "line_start": 29,
-          "line_end": 34
+          "line_start": 21,
+          "line_end": 26
         },
         {
           "heading": "Explicitly out of scope",
           "level": 2,
           "anchor": "explicitly-out-of-scope",
           "path": "Constraints > Explicitly out of scope",
-          "line_start": 35,
-          "line_end": 52
+          "line_start": 27,
+          "line_end": 34
         }
       ],
       "references": [],
@@ -1482,7 +1020,7 @@
       "title": "Glossary",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "b14609cf89c8116802cd901c9a65a2a0559f00c1b08dce583b3a38c3f18779f3",
+      "sha256": "d7ff0a5cfe436e66877c18cdbd860d74c36701822127b6a86eb37ff8aba54785",
       "aliases": [],
       "sections": [
         {
@@ -1491,7 +1029,7 @@
           "anchor": "glossary",
           "path": "Glossary",
           "line_start": 1,
-          "line_end": 38
+          "line_end": 13
         }
       ],
       "references": [],
@@ -1512,7 +1050,7 @@
       "title": "Principles",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "35e3dab738d921ea4862cd9cbd2b238dd321845d72037208df3f0cfd1e2f159a",
+      "sha256": "66c894287c8f87606d9f570a3ace74037e43015b1bdff4686481f64d10b7877f",
       "aliases": [],
       "sections": [
         {
@@ -1521,7 +1059,7 @@
           "anchor": "principles",
           "path": "Principles",
           "line_start": 1,
-          "line_end": 74
+          "line_end": 30
         },
         {
           "heading": "Format",
@@ -1529,31 +1067,23 @@
           "anchor": "format",
           "path": "Principles > Format",
           "line_start": 9,
-          "line_end": 13
-        },
-        {
-          "heading": "Principles in force",
-          "level": 2,
-          "anchor": "principles-in-force",
-          "path": "Principles > Principles in force",
-          "line_start": 14,
-          "line_end": 58
+          "line_end": 14
         },
         {
           "heading": "Examples of the right shape",
           "level": 2,
           "anchor": "examples-of-the-right-shape",
           "path": "Principles > Examples of the right shape",
-          "line_start": 59,
-          "line_end": 66
+          "line_start": 15,
+          "line_end": 22
         },
         {
           "heading": "Anti-examples",
           "level": 2,
           "anchor": "anti-examples",
           "path": "Principles > Anti-examples",
-          "line_start": 67,
-          "line_end": 74
+          "line_start": 23,
+          "line_end": 30
         }
       ],
       "references": [],
@@ -1574,7 +1104,7 @@
       "title": "Solution Vision",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "200878a6f0d03ce7fd205c4568c722d04375e4e1bfe6257a3c5102b7249e3708",
+      "sha256": "a0a9f2d7c446e0f7ce82e456b5c6ab46ccb45690395bb65546ff53a02767de4f",
       "aliases": [],
       "sections": [
         {
@@ -1583,7 +1113,7 @@
           "anchor": "solution-vision",
           "path": "Solution Vision",
           "line_start": 1,
-          "line_end": 46
+          "line_end": 25
         },
         {
           "heading": "Problem",
@@ -1591,31 +1121,31 @@
           "anchor": "problem",
           "path": "Solution Vision > Problem",
           "line_start": 5,
-          "line_end": 19
+          "line_end": 8
         },
         {
           "heading": "Users",
           "level": 2,
           "anchor": "users",
           "path": "Solution Vision > Users",
-          "line_start": 20,
-          "line_end": 28
+          "line_start": 9,
+          "line_end": 12
         },
         {
           "heading": "What success looks like",
           "level": 2,
           "anchor": "what-success-looks-like",
           "path": "Solution Vision > What success looks like",
-          "line_start": 29,
-          "line_end": 37
+          "line_start": 13,
+          "line_end": 16
         },
         {
           "heading": "Non-goals",
           "level": 2,
           "anchor": "non-goals",
           "path": "Solution Vision > Non-goals",
-          "line_start": 38,
-          "line_end": 46
+          "line_start": 17,
+          "line_end": 25
         }
       ],
       "references": [],
@@ -1636,7 +1166,7 @@
       "title": "Stack & Architecture Map",
       "authority": "L0",
       "version": "v2.1",
-      "sha256": "57162d04844b40895ea5c3b52e96a6956a60fc113a09e8f58db8085c0f636959",
+      "sha256": "cfd4c5c099bb24a25acf6ac76e8540b544a19e328c69c0233ff77f3505fe1a5d",
       "aliases": [],
       "sections": [
         {
@@ -1645,7 +1175,7 @@
           "anchor": "stack--architecture-map",
           "path": "Stack & Architecture Map",
           "line_start": 1,
-          "line_end": 153
+          "line_end": 218
         },
         {
           "heading": "1. Stack at a glance",
@@ -1653,63 +1183,63 @@
           "anchor": "1-stack-at-a-glance",
           "path": "Stack & Architecture Map > 1. Stack at a glance",
           "line_start": 14,
-          "line_end": 42
+          "line_end": 41
         },
         {
           "heading": "2. Component map",
           "level": 2,
           "anchor": "2-component-map",
           "path": "Stack & Architecture Map > 2. Component map",
-          "line_start": 43,
-          "line_end": 51
+          "line_start": 42,
+          "line_end": 79
         },
         {
           "heading": "3. Deployment topology",
           "level": 2,
           "anchor": "3-deployment-topology",
           "path": "Stack & Architecture Map > 3. Deployment topology",
-          "line_start": 52,
-          "line_end": 59
+          "line_start": 80,
+          "line_end": 108
         },
         {
           "heading": "4. Observability",
           "level": 2,
           "anchor": "4-observability",
           "path": "Stack & Architecture Map > 4. Observability",
-          "line_start": 60,
-          "line_end": 68
+          "line_start": 109,
+          "line_end": 163
         },
         {
           "heading": "5. Dependency rules",
           "level": 2,
           "anchor": "5-dependency-rules",
           "path": "Stack & Architecture Map > 5. Dependency rules",
-          "line_start": 69,
-          "line_end": 97
+          "line_start": 164,
+          "line_end": 174
         },
         {
           "heading": "6. Map change log",
           "level": 2,
           "anchor": "6-map-change-log",
           "path": "Stack & Architecture Map > 6. Map change log",
-          "line_start": 98,
-          "line_end": 117
+          "line_start": 175,
+          "line_end": 185
         },
         {
           "heading": "7. Drift signals",
           "level": 2,
           "anchor": "7-drift-signals",
           "path": "Stack & Architecture Map > 7. Drift signals",
-          "line_start": 118,
-          "line_end": 135
+          "line_start": 186,
+          "line_end": 202
         },
         {
           "heading": "8. Gap register",
           "level": 2,
           "anchor": "8-gap-register",
           "path": "Stack & Architecture Map > 8. Gap register",
-          "line_start": 136,
-          "line_end": 153
+          "line_start": 203,
+          "line_end": 218
         }
       ],
       "references": [],
@@ -2129,7 +1659,7 @@
       "title": "GTT Technical Evidence Log",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e909d3e17c3d219cdc0b6eaf50d8747e468cb5ca28ed29405b614fec4f97c1e1",
+      "sha256": "6e89d881d901ccfa386e583db08a812f562697707432d895b06c1a68334d4405",
       "aliases": [],
       "sections": [
         {
@@ -2138,135 +1668,7 @@
           "anchor": "gtt-technical-evidence-log",
           "path": "GTT Technical Evidence Log",
           "line_start": 1,
-          "line_end": 181
-        },
-        {
-          "heading": "Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory)",
-          "level": 2,
-          "anchor": "entry-2026-09-28t1419--reproducible-evidence-pass-v21-artifact-identity--technical-index--session-memory",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory)",
-          "line_start": 21,
-          "line_end": 92
-        },
-        {
-          "heading": "1. Reconciliation",
-          "level": 3,
-          "anchor": "1-reconciliation",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 1. Reconciliation",
-          "line_start": 25,
-          "line_end": 33
-        },
-        {
-          "heading": "2. Technical Index — reconstruction determinism",
-          "level": 3,
-          "anchor": "2-technical-index--reconstruction-determinism",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 2. Technical Index — reconstruction determinism",
-          "line_start": 34,
-          "line_end": 44
-        },
-        {
-          "heading": "3. Artifact Identity — stability",
-          "level": 3,
-          "anchor": "3-artifact-identity--stability",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 3. Artifact Identity — stability",
-          "line_start": 45,
-          "line_end": 55
-        },
-        {
-          "heading": "4. Session Memory — reproducibility",
-          "level": 3,
-          "anchor": "4-session-memory--reproducibility",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 4. Session Memory — reproducibility",
-          "line_start": 56,
-          "line_end": 72
-        },
-        {
-          "heading": "5. This entry",
-          "level": 3,
-          "anchor": "5-this-entry",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 5. This entry",
-          "line_start": 73,
-          "line_end": 76
-        },
-        {
-          "heading": "6. Final validation (same state, after registering this file)",
-          "level": 3,
-          "anchor": "6-final-validation-same-state-after-registering-this-file",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-28T14:19 — Reproducible evidence pass (v2.1 Artifact Identity / Technical Index / Session Memory) > 6. Final validation (same state, after registering this file)",
-          "line_start": 77,
-          "line_end": 92
-        },
-        {
-          "heading": "Entry 2026-09-29T17:44 — ADR-005 package (Multi-ADE, Initial Design Questionnaire): pre-ratification checks",
-          "level": 2,
-          "anchor": "entry-2026-09-29t1744--adr-005-package-multi-ade-initial-design-questionnaire-pre-ratification-checks",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:44 — ADR-005 package (Multi-ADE, Initial Design Questionnaire): pre-ratification checks",
-          "line_start": 93,
-          "line_end": 123
-        },
-        {
-          "heading": "1. What was run",
-          "level": 3,
-          "anchor": "1-what-was-run",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:44 — ADR-005 package (Multi-ADE, Initial Design Questionnaire): pre-ratification checks > 1. What was run",
-          "line_start": 97,
-          "line_end": 108
-        },
-        {
-          "heading": "2. What was not verified",
-          "level": 3,
-          "anchor": "2-what-was-not-verified",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:44 — ADR-005 package (Multi-ADE, Initial Design Questionnaire): pre-ratification checks > 2. What was not verified",
-          "line_start": 109,
-          "line_end": 123
-        },
-        {
-          "heading": "Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks",
-          "level": 2,
-          "anchor": "entry-2026-09-29t1754--adr-005-promoted-multi-ade-initial-design-questionnaire-post-ratification-checks",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks",
-          "line_start": 124,
-          "line_end": 153
-        },
-        {
-          "heading": "1. What was run on the promoted tree",
-          "level": 3,
-          "anchor": "1-what-was-run-on-the-promoted-tree",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks > 1. What was run on the promoted tree",
-          "line_start": 128,
-          "line_end": 139
-        },
-        {
-          "heading": "2. Still not verified",
-          "level": 3,
-          "anchor": "2-still-not-verified",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T17:54 — ADR-005 promoted (Multi-ADE, Initial Design Questionnaire): post-ratification checks > 2. Still not verified",
-          "line_start": 140,
-          "line_end": 153
-        },
-        {
-          "heading": "Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks",
-          "level": 2,
-          "anchor": "entry-2026-09-29t2200--adr-006-promoted-provenance-gaps-sources-working-agreements-and-staging-cleanup-post-ratification-checks",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks",
-          "line_start": 154,
-          "line_end": 181
-        },
-        {
-          "heading": "1. What was run on the promoted tree",
-          "level": 3,
-          "anchor": "1-what-was-run-on-the-promoted-tree-1",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks > 1. What was run on the promoted tree",
-          "line_start": 158,
-          "line_end": 168
-        },
-        {
-          "heading": "2. Still not verified",
-          "level": 3,
-          "anchor": "2-still-not-verified-1",
-          "path": "GTT Technical Evidence Log > Entry 2026-09-29T22:00 — ADR-006 promoted (provenance, gaps, sources, working agreements) and staging cleanup: post-ratification checks > 2. Still not verified",
-          "line_start": 169,
-          "line_end": 181
+          "line_end": 20
         }
       ],
       "references": [],
@@ -2287,7 +1689,7 @@
       "title": "GTT Bootstrap — Completion Report",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "3bdab089d7a31bafad3213aa5f8127efda1b693d3f81321f82e177cc6f0b4b43",
+      "sha256": "5b64778727bf0a210dc562bbd7833609f749cdf42d37a796871e03fb8ffb853e",
       "aliases": [],
       "sections": [
         {
@@ -2296,63 +1698,7 @@
           "anchor": "gtt-bootstrap--completion-report",
           "path": "GTT Bootstrap — Completion Report",
           "line_start": 1,
-          "line_end": 233
-        },
-        {
-          "heading": "Entry 2026-09-28 — GTT v2.1 context Bootstrap + freeze",
-          "level": 2,
-          "anchor": "entry-2026-09-28--gtt-v21-context-bootstrap--freeze",
-          "path": "GTT Bootstrap — Completion Report > Entry 2026-09-28 — GTT v2.1 context Bootstrap + freeze",
-          "line_start": 14,
-          "line_end": 95
-        },
-        {
-          "heading": "Entry 2026-09-28 — Virgin/Product closure",
-          "level": 2,
-          "anchor": "entry-2026-09-28--virginproduct-closure",
-          "path": "GTT Bootstrap — Completion Report > Entry 2026-09-28 — Virgin/Product closure",
-          "line_start": 96,
-          "line_end": 116
-        },
-        {
-          "heading": "GTT v2.1 — Technical closure detail",
-          "level": 2,
-          "anchor": "gtt-v21--technical-closure-detail",
-          "path": "GTT Bootstrap — Completion Report > GTT v2.1 — Technical closure detail",
-          "line_start": 117,
-          "line_end": 151
-        },
-        {
-          "heading": "Scaffold restructure — 2026-09-29T14:27:13Z",
-          "level": 2,
-          "anchor": "scaffold-restructure--2026-09-29t142713z",
-          "path": "GTT Bootstrap — Completion Report > Scaffold restructure — 2026-09-29T14:27:13Z",
-          "line_start": 152,
-          "line_end": 169
-        },
-        {
-          "heading": "Layout migration to .gtt/ and gtt-domain/ — 2026-09-29T17:32:28Z",
-          "level": 2,
-          "anchor": "layout-migration-to-gtt-and-gtt-domain--2026-09-29t173228z",
-          "path": "GTT Bootstrap — Completion Report > Layout migration to .gtt/ and gtt-domain/ — 2026-09-29T17:32:28Z",
-          "line_start": 170,
-          "line_end": 186
-        },
-        {
-          "heading": "Bootstrap integration contracts (Multi-ADE and Initial Design Questionnaire) - 2026-09-29T20:50:59Z",
-          "level": 2,
-          "anchor": "bootstrap-integration-contracts-multi-ade-and-initial-design-questionnaire---2026-09-29t205059z",
-          "path": "GTT Bootstrap — Completion Report > Bootstrap integration contracts (Multi-ADE and Initial Design Questionnaire) - 2026-09-29T20:50:59Z",
-          "line_start": 187,
-          "line_end": 210
-        },
-        {
-          "heading": "Provenance, gaps, sources and working agreements - 2026-09-29T21:30:25Z",
-          "level": 2,
-          "anchor": "provenance-gaps-sources-and-working-agreements---2026-09-29t213025z",
-          "path": "GTT Bootstrap — Completion Report > Provenance, gaps, sources and working agreements - 2026-09-29T21:30:25Z",
-          "line_start": 211,
-          "line_end": 233
+          "line_end": 20
         }
       ],
       "references": [],
@@ -5531,21 +4877,11 @@
     "1. operating contract for the ade": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#1-operating-contract-for-the-ade"
     ],
-    "1. reconciliation": [
-      "GTT-EVIDENCE#1-reconciliation"
-    ],
     "1. stack at a glance": [
       "CTX-STACK#1-stack-at-a-glance"
     ],
     "1. start from governed context": [
       "GTT-USAGE#1-start-from-governed-context"
-    ],
-    "1. what was run": [
-      "GTT-EVIDENCE#1-what-was-run"
-    ],
-    "1. what was run on the promoted tree": [
-      "GTT-EVIDENCE#1-what-was-run-on-the-promoted-tree",
-      "GTT-EVIDENCE#1-what-was-run-on-the-promoted-tree-1"
     ],
     "10. security": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#10-security"
@@ -5688,18 +5024,8 @@
     "2. manual installation": [
       "README-GTT#2-manual-installation"
     ],
-    "2. still not verified": [
-      "GTT-EVIDENCE#2-still-not-verified",
-      "GTT-EVIDENCE#2-still-not-verified-1"
-    ],
-    "2. technical index — reconstruction determinism": [
-      "GTT-EVIDENCE#2-technical-index--reconstruction-determinism"
-    ],
     "2. trabajar en la implementación": [
       "GTT-USAGE-ES#2-trabajar-en-la-implementación"
-    ],
-    "2. what was not verified": [
-      "GTT-EVIDENCE#2-what-was-not-verified"
     ],
     "2. work on implementation": [
       "GTT-USAGE#2-work-on-implementation"
@@ -5754,9 +5080,6 @@
     ],
     "3. agent-assisted installation": [
       "README-GTT#3-agent-assisted-installation"
-    ],
-    "3. artifact identity — stability": [
-      "GTT-EVIDENCE#3-artifact-identity--stability"
     ],
     "3. confirm the document is finished — or stop": [
       "SKILL-GTT-BOOTSTRAP#3-confirm-the-document-is-finished--or-stop"
@@ -5815,9 +5138,6 @@
     "4. propose the change": [
       "GTT-USAGE#4-propose-the-change"
     ],
-    "4. session memory — reproducibility": [
-      "GTT-EVIDENCE#4-session-memory--reproducibility"
-    ],
     "4.1 project name": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#41-project-name"
     ],
@@ -5853,9 +5173,6 @@
     ],
     "5. scope": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#5-scope"
-    ],
-    "5. this entry": [
-      "GTT-EVIDENCE#5-this-entry"
     ],
     "5.1 in scope": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#51-in-scope"
@@ -5963,27 +5280,17 @@
     "adding a marker": [
       "SKILL-GTT-GUARD#adding-a-marker"
     ],
-    "ade adapter": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "ade adapters": [
       "README-GTT#ade-adapters"
     ],
     "adr-001 — context is the source of truth": [
       "ADR-001#adr-001--context-is-the-source-of-truth"
     ],
-    "adr-004 —         engine and               governed domain": [
-      "ADR-004#adr-004----------engine-and---------------governed-domain"
-    ],
     "adr-nnn — <title>": [
       "ADR-TEMPLATE#adr-nnn--title"
     ],
     "affected context": [
       "ADR-001#affected-context",
-      "ADR-003#affected-context",
-      "ADR-004#affected-context",
-      "ADR-005#affected-context",
-      "ADR-006#affected-context",
       "ADR-TEMPLATE#affected-context"
     ],
     "after adding or removing a marker": [
@@ -6015,10 +5322,6 @@
     ],
     "alternatives considered": [
       "ADR-001#alternatives-considered",
-      "ADR-003#alternatives-considered",
-      "ADR-004#alternatives-considered",
-      "ADR-005#alternatives-considered",
-      "ADR-006#alternatives-considered",
       "ADR-TEMPLATE#alternatives-considered"
     ],
     "anti-examples": [
@@ -6033,9 +5336,6 @@
     "artefactos protegidos (gttguard)": [
       "GTT-USAGE-ES#artefactos-protegidos-gttguard",
       "README-GTT-ES#artefactos-protegidos-gttguard"
-    ],
-    "artifact identity": [
-      "CTX-GLOSSARY#glossary"
     ],
     "artifact identity and technical index": [
       "AGENTS#artifact-identity-and-technical-index"
@@ -6065,9 +5365,6 @@
     ],
     "blocked": [
       "BACKLOG#blocked"
-    ],
-    "blocking gap": [
-      "CTX-GLOSSARY#glossary"
     ],
     "bootstrap behavior": [
       "AGENTS#bootstrap-behavior"
@@ -6159,10 +5456,6 @@
     ],
     "consequences": [
       "ADR-001#consequences",
-      "ADR-003#consequences",
-      "ADR-004#consequences",
-      "ADR-005#consequences",
-      "ADR-006#consequences",
       "ADR-TEMPLATE#consequences"
     ],
     "constraints": [
@@ -6171,10 +5464,6 @@
     ],
     "context": [
       "ADR-001#context",
-      "ADR-003#context",
-      "ADR-004#context",
-      "ADR-005#context",
-      "ADR-006#context",
       "ADR-TEMPLATE#context"
     ],
     "context freshness": [
@@ -6193,10 +5482,6 @@
     ],
     "decision": [
       "ADR-001#decision",
-      "ADR-003#decision",
-      "ADR-004#decision",
-      "ADR-005#decision",
-      "ADR-006#decision",
       "ADR-TEMPLATE#decision"
     ],
     "decisions": [
@@ -6215,9 +5500,6 @@
     "design principle": [
       "README-GTT#design-principle"
     ],
-    "detected ade": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "development line": [
       "BACKLOG#development-line"
     ],
@@ -6226,9 +5508,6 @@
     ],
     "documents": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#documents"
-    ],
-    "domain (            )": [
-      "CTX-GLOSSARY#glossary"
     ],
     "draft an adr and its promotion package": [
       "SKILL-GTT-ADR#draft-an-adr-and-its-promotion-package"
@@ -6260,23 +5539,14 @@
     "enforcement — costs zero context": [
       "GTT-INDEX#enforcement--costs-zero-context"
     ],
-    "engine": [
-      "CTX-GLOSSARY#glossary"
-    ],
-    "entry 2026-09-28 — gtt v2.1 context bootstrap + freeze": [
-      "GTT-GTT-COMPLETION#entry-2026-09-28--gtt-v21-context-bootstrap--freeze"
-    ],
-    "entry 2026-09-28 — virgin/product closure": [
-      "GTT-GTT-COMPLETION#entry-2026-09-28--virginproduct-closure"
+    "epic-001 — <epic title (example)>": [
+      "BACKLOG#epic-001--epic-title-example"
     ],
     "epics": [
       "BACKLOG#epics"
     ],
     "estructura": [
       "README-GTT-ES#estructura"
-    ],
-    "evidence": [
-      "CTX-GLOSSARY#glossary"
     ],
     "evolución": [
       "README-GTT-ES#evolución"
@@ -6314,9 +5584,6 @@
     ],
     "forms": [
       "SKILL-GTT-PROPOSE-CHANGE#forms"
-    ],
-    "freeze": [
-      "CTX-GLOSSARY#glossary"
     ],
     "freeze and the two-regime model": [
       "GTT-USAGE#freeze-and-the-two-regime-model"
@@ -6371,9 +5638,6 @@
     "gtt change proposal": [
       "SKILL-GTT-PROPOSE-CHANGE#gtt-change-proposal"
     ],
-    "gtt core": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "gtt drift response": [
       "SKILL-GTT-DRIFT-RESPONSE#gtt-drift-response"
     ],
@@ -6391,9 +5655,6 @@
     ],
     "gtt technical evidence log": [
       "GTT-EVIDENCE#gtt-technical-evidence-log"
-    ],
-    "gtt v2.1 — technical closure detail": [
-      "GTT-GTT-COMPLETION#gtt-v21--technical-closure-detail"
     ],
     "gtt — github copilot integration": [
       "COPILOT-COPILOT-INSTRUCTIONS#gtt--github-copilot-integration"
@@ -6452,8 +5713,7 @@
       "RULE-INFRASTRUCTURE#infrastructure-and-deployment"
     ],
     "initial design questionnaire": [
-      "AGENTS#initial-design-questionnaire",
-      "CTX-GLOSSARY#glossary"
+      "AGENTS#initial-design-questionnaire"
     ],
     "instalación asistida por agente": [
       "GTT-INSTALLATION-ES#instalación-asistida-por-agente"
@@ -6472,9 +5732,6 @@
     ],
     "integration strategy": [
       "CTX-ARCHITECTURE#integration-strategy"
-    ],
-    "integration surface": [
-      "CTX-GLOSSARY#glossary"
     ],
     "keeping context useful": [
       "GTT-USAGE#keeping-context-useful"
@@ -6593,9 +5850,6 @@
     "numbering": [
       "SKILL-GTT-ADR#numbering"
     ],
-    "open gap": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "operational boundary": [
       "DOC-DOCS#operational-boundary"
     ],
@@ -6604,9 +5858,6 @@
     ],
     "output": [
       "SKILL-GTT-AUDIT#output"
-    ],
-    "participating ade": [
-      "CTX-GLOSSARY#glossary"
     ],
     "platform": [
       "CTX-CONSTRAINTS#platform"
@@ -6623,9 +5874,6 @@
     "prerequisites": [
       "GTT-INSTALLATION#prerequisites"
     ],
-    "primary ade": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "primeros pasos": [
       "README-GTT-ES#primeros-pasos"
     ],
@@ -6637,9 +5885,6 @@
     ],
     "principles": [
       "CTX-PRINCIPLES#principles"
-    ],
-    "principles in force": [
-      "CTX-PRINCIPLES#principles-in-force"
     ],
     "problem": [
       "CTX-SOLUTION-VISION#problem"
@@ -6659,9 +5904,6 @@
     "project backlog": [
       "BACKLOG#project-backlog"
     ],
-    "proposal": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "proposals": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#proposals"
     ],
@@ -6680,9 +5922,6 @@
     "protection registry — derived, self-correcting": [
       "GTT-INDEX#protection-registry--derived-self-correcting"
     ],
-    "provenance tag": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "provenance, gaps, sources and working agreements": [
       "AGENTS#provenance-gaps-sources-and-working-agreements",
       "DOC-DOCS#provenance-gaps-sources-and-working-agreements"
@@ -6698,9 +5937,6 @@
     ],
     "quick navigation": [
       "README-GTT#quick-navigation"
-    ],
-    "ratification": [
-      "CTX-GLOSSARY#glossary"
     ],
     "read first": [
       "COPILOT-COPILOT-INSTRUCTIONS#read-first"
@@ -6744,10 +5980,6 @@
     ],
     "risks": [
       "ADR-001#risks",
-      "ADR-003#risks",
-      "ADR-004#risks",
-      "ADR-005#risks",
-      "ADR-006#risks",
       "ADR-TEMPLATE#risks"
     ],
     "rules": [
@@ -6759,17 +5991,11 @@
     "régimen gobernado": [
       "GTT-USAGE-ES#régimen-gobernado"
     ],
-    "scaffold": [
-      "CTX-GLOSSARY#glossary"
-    ],
     "scaffold definition — declarative, canonical": [
       "GTT-INDEX#scaffold-definition--declarative-canonical"
     ],
     "scaffold restructure (layout change within v2.1)": [
       "DOC-DOCS#scaffold-restructure-layout-change-within-v21"
-    ],
-    "scaffold restructure — 2026-09-29t14:27:13z": [
-      "GTT-GTT-COMPLETION#scaffold-restructure--2026-09-29t142713z"
     ],
     "scaffolding obligatorio del workspace gtt": [
       "README-GTT-ES#scaffolding-obligatorio-del-workspace-gtt"
@@ -6779,9 +6005,6 @@
     ],
     "session continuity": [
       "AGENTS#session-continuity"
-    ],
-    "session memory": [
-      "CTX-GLOSSARY#glossary"
     ],
     "session memory adapter matrix": [
       "DOC-DOCS#session-memory-adapter-matrix"
@@ -6799,7 +6022,6 @@
       "CTX-SOLUTION-VISION#solution-vision"
     ],
     "source manifest": [
-      "CTX-GLOSSARY#glossary",
       "GTT-GTT-SOURCES-MANIFEST#source-manifest"
     ],
     "source preservation": [
@@ -6810,12 +6032,6 @@
     ],
     "stack & architecture map": [
       "CTX-STACK#stack--architecture-map"
-    ],
-    "stack map delta": [
-      "ADR-003#stack-map-delta",
-      "ADR-004#stack-map-delta",
-      "ADR-005#stack-map-delta",
-      "ADR-006#stack-map-delta"
     ],
     "stage the affected context files": [
       "SKILL-GTT-ADR#stage-the-affected-context-files"
@@ -6845,32 +6061,10 @@
       "DOC-DOCS#steps"
     ],
     "stories": [
-      "BACKLOG#stories",
-      "BACKLOG#stories-1"
+      "BACKLOG#stories"
     ],
-    "story-001 — artifact identity": [
-      "BACKLOG#story-001--artifact-identity"
-    ],
-    "story-002 — repository reconciliation": [
-      "BACKLOG#story-002--repository-reconciliation"
-    ],
-    "story-003 — technical index": [
-      "BACKLOG#story-003--technical-index"
-    ],
-    "story-004 — session memory service": [
-      "BACKLOG#story-004--session-memory-service"
-    ],
-    "story-005 — ade adapter contract and integration boundary": [
-      "BACKLOG#story-005--ade-adapter-contract-and-integration-boundary"
-    ],
-    "story-006 — ade registry and per-project ade state": [
-      "BACKLOG#story-006--ade-registry-and-per-project-ade-state"
-    ],
-    "story-007 — multi-ade lifecycle contract": [
-      "BACKLOG#story-007--multi-ade-lifecycle-contract"
-    ],
-    "story-008 — migration and ownership ledger": [
-      "BACKLOG#story-008--migration-and-ownership-ledger"
+    "story-001 — <story title (example)>": [
+      "BACKLOG#story-001--story-title-example"
     ],
     "structure": [
       "README-GTT#structure"
@@ -6880,9 +6074,6 @@
     ],
     "technical": [
       "CTX-CONSTRAINTS#technical"
-    ],
-    "technical index": [
-      "CTX-GLOSSARY#glossary"
     ],
     "tell the user": [
       "SKILL-GTT-ADR#tell-the-user"
@@ -6992,9 +6183,6 @@
     ],
     "why some files stay at the root": [
       "README-GTT#why-some-files-stay-at-the-root"
-    ],
-    "working agreement": [
-      "CTX-GLOSSARY#glossary"
     ],
     "working agreements": [
       "GTT-GTT-WORKING-AGREEMENTS#working-agreements"

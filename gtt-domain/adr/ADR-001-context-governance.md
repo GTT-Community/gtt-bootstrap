@@ -16,7 +16,7 @@ is invisible because every individual change is defensible.
 
 ## Decision
 
-The governed context under `gtt/context/` is the source of truth for this
+The governed context under `gtt-domain/context/` is the source of truth for this
 project. Generated code is an artifact of that context, never a replacement for
 it. Where code and context disagree, the disagreement is escalated to a human
 rather than resolved by an agent.
@@ -36,7 +36,7 @@ drift as a discrete event rather than a slow slide.
 
 Makes hard: fast unilateral architectural change — deliberately.
 
-Locked in: `gtt/context/` is write-protected for agents at the permission and
+Locked in: `gtt-domain/context/` is write-protected for agents at the permission and
 hook layers, not merely by instruction.
 
 ## Risks

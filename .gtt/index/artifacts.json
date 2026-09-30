@@ -24,7 +24,7 @@
       "id": "ADR-003",
       "type": "architecture-decision",
       "path": "gtt-domain/adr/ADR-003-scaffold-restructure.md",
-      "status": "active",
+      "status": "retired",
       "history": [
         "adr/ADR-003-scaffold-restructure.md"
       ],
@@ -34,7 +34,7 @@
       "id": "ADR-004",
       "type": "architecture-decision",
       "path": "gtt-domain/adr/ADR-004-gtt-domain-and-dot-gtt-engine.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -42,7 +42,7 @@
       "id": "ADR-005",
       "type": "architecture-decision",
       "path": "gtt-domain/adr/ADR-005-bootstrap-integration-contracts.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -50,7 +50,7 @@
       "id": "ADR-006",
       "type": "architecture-decision",
       "path": "gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },

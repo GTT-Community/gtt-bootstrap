@@ -6,8 +6,8 @@
 > the architecture. Every approved architectural change updates this file in the
 > same commit as the ADR that approves it.
 
-- **Last verified:** `2026-09-28`
-- **Governing ADRs:** ADR-001, ADR-003, ADR-004, ADR-005, ADR-006
+- **Last verified:** `<date>`
+- **Governing ADRs:** ADR-001
 
 ---
 
@@ -18,51 +18,146 @@ rather than leaving a plausible guess in place.
 
 | Layer | Technology | Version | Locked by |
 |---|---|---|---|
-| Language | Bash (Core scripts, CI gate) + Python 3 (engine components, hooks) | not pinned | |
-| Runtime | none — no single application runtime; GTT executes as repository tooling | | |
-| Application framework | none | | |
-| Compute model | none — runs as scripts/tooling inside the repository; not deployed as a service | | |
-| Datastore (primary) | none — filesystem-based; `.gtt/index/artifacts.json` is the identity manifest | | |
-| Datastore (cache) | none | | |
-| Messaging / events | none | | |
-| Identity & authz | none as an application identity service — authorization is repository governance/protection plus each ADE's own permission/hook mechanism | | |
-| Secrets | none | | |
-| IaC | none — no infrastructure to provision | | |
-| CI/CD | Bash-based repository CI gate (`gtt-validate.sh` and its specialized checks); no specific CI/CD platform declared | | |
-| Observability | none — deterministic PASS/FAIL/SKIPPED results and operational evidence from GTT scripts; no logs/metrics/traces infrastructure | | |
-| Testing | deterministic validation via GTT scripts (`gtt-validate.sh` + specialized checks); no separate formal test framework | | |
+| Language | | | |
+| Runtime | | | |
+| Application framework | | | |
+| Compute model | | | |
+| Datastore (primary) | | | |
+| Datastore (cache) | | | |
+| Messaging / events | | | |
+| Identity & authz | | | |
+| Secrets | | | |
+| IaC | | | |
+| CI/CD | | | |
+| Observability | | | |
+| Testing | | | |
 
-"Locked by" points at the ADR that made the decision. Every cell above is
-empty on purpose: no ADR has formally locked any of these choices yet
-(ADR-001 governs the context mechanism itself, not these choices). A row
-with no ADR is a decision nobody made on purpose — treat it as technical
-debt.
+"Locked by" points at the ADR that made the decision. A row with no ADR is a
+decision nobody made on purpose — treat it as technical debt. An empty row is a
+decision not made yet: classify it in the gap register (section 8) as BLOCKING
+or OPEN.
 
 ---
 
 ## 2. Component map
 
-Not applicable. GTT has no client/server component graph: it is
-repository-native tooling (Bash/Python scripts operating on Markdown/JSON
-files), with no network API and no messaging between components (see
-`architecture.md` → *Integration strategy*).
+What talks to what, and over which protocol. Keep it to components that exist;
+this is not a roadmap.
+
+```mermaid
+flowchart LR
+    Client["Client"]
+
+    subgraph Edge["Edge"]
+        GW["API Gateway"]
+    end
+
+    subgraph App["Application"]
+        SvcA["Service A"]
+        SvcB["Service B"]
+    end
+
+    subgraph Data["Data"]
+        DB[("Primary store")]
+        Cache[("Cache")]
+    end
+
+    Ext["External system"]
+
+    Client -->|HTTPS| GW
+    GW -->|HTTP| SvcA
+    SvcA -->|async| SvcB
+    SvcA --> DB
+    SvcA --> Cache
+    SvcB -->|HTTPS| Ext
+```
+
+Label every edge with its protocol. An unlabelled edge is where paradigm drift
+starts: sync and async look identical in a box diagram and behave nothing alike.
 
 ---
 
 ## 3. Deployment topology
 
-Not applicable as a deployed service. GTT lives and runs inside the
-repository; its scripts execute locally or within the repository's own
-CI/automation context (see `architecture.md` → *Deployment topology*).
+Where each component actually runs, and what the trust boundaries are.
+
+```mermaid
+flowchart TB
+    subgraph Cloud["Cloud provider — region"]
+        subgraph Net["Network boundary"]
+            C1["Container / function 1"]
+            C2["Container / function 2"]
+            DB[("Managed datastore")]
+        end
+        Registry["Image registry"]
+        Secrets["Secret store"]
+        Obs["Logs & metrics"]
+    end
+
+    CI["CI/CD pipeline"] -->|push image| Registry
+    Registry -->|pull| C1
+    Registry -->|pull| C2
+    C1 --> DB
+    C2 --> DB
+    C1 -.->|read| Secrets
+    C1 -.->|emit| Obs
+    C2 -.->|emit| Obs
+```
 
 ---
 
 ## 4. Observability
 
-Not applicable as an external observability stack. GTT scripts produce
-deterministic PASS/FAIL/SKIPPED results and operational evidence (see
-`.gtt/docs/evidence.md`); there is no logs/metrics/traces collection pipeline,
-and nothing pages anyone.
+Where signals come from and where they land. This view answers "if it breaks at
+3am, what do I look at" — keep it accurate or it is worse than absent.
+
+```mermaid
+flowchart LR
+    subgraph Sources["Signal sources"]
+        App["Application"]
+        Infra["Platform / runtime"]
+    end
+
+    subgraph Pipeline["Collection"]
+        Agent["Collector / agent"]
+    end
+
+    subgraph Sinks["Destinations"]
+        Logs[("Logs")]
+        Metrics[("Metrics")]
+        Traces[("Traces")]
+    end
+
+    Alerts["Alerting"]
+    Dash["Dashboards"]
+
+    App -->|structured logs| Agent
+    App -->|metrics| Agent
+    App -->|spans| Agent
+    Infra -->|platform logs| Agent
+    Agent --> Logs
+    Agent --> Metrics
+    Agent --> Traces
+    Metrics --> Alerts
+    Logs --> Dash
+    Metrics --> Dash
+    Traces --> Dash
+```
+
+| Signal | Emitted by | Collected via | Stored in | Retention |
+|---|---|---|---|---|
+| Logs | | | | |
+| Metrics | | | | |
+| Traces | | | | |
+| Audit events | | | | |
+
+**What is alerted on, and who receives it:**
+
+| Condition | Threshold | Routed to |
+|---|---|---|
+
+An observability stack with no row in the alerting table is a dashboard nobody
+watches. Record what actually pages someone.
 
 ---
 
@@ -73,25 +168,7 @@ detectable — without it, "Service A calls the database directly" is an opinion
 
 | Module | May depend on | Must not depend on |
 |---|---|---|
-| `.gtt/scripts/` (Core) | — | any specific ADE |
-| ADE adapters (`.claude/`, `.kiro/`, `.copilot/`, staged `.codex/`) | `.gtt/scripts/` (via `gtt-session-context.sh` and the other Core entry points) | duplicating Core logic |
-| `.gtt/session-adapters/` | — | containing GTT logic (declarations are data only) |
-| ADE registry (`overlays:` in `.gtt/scaffold/manifest.yaml`) and per-project ADE state (`.gtt/ade.json`) | `.gtt/scripts/gtt_ade.py` (through `gtt-ade.sh`, the only writer of `.gtt/ade.json`) | containing logic (the manifest is data only), being hand-edited (`.gtt/ade.json`), or granting any ADE — the Primary included — authority over a governed artifact |
-| `.gtt/scripts/gtt_provenance.py` (through `gtt-check-provenance.sh`), the gap register (section 8), `sources.md`, working agreements | reads governed artifacts only | owning or duplicating any of them, being read as authority, or writing to `gtt-domain/` (it only reports) |
-| `.gtt/scaffold/templates/` (the Initial Design Questionnaire and the two ADR-006 templates) | `.gtt/scripts/gtt_template.py` (through `gtt-template.sh`) | being copied into a CLI, or a filled copy becoming governed context other than through the governed process |
-| `.gtt/index/` (identity manifest + derived technical index) | `.gtt/scripts/gtt_artifacts.py` | being hand-edited, or the derived index being treated as a source of truth |
-| `.gtt/protection/` (GTTGuard registry) | `.gtt/scripts/gtt_guard.py` | being hand-edited |
-| `gtt-domain/context/`, `gtt-domain/adr/` | — | direct agent writes once frozen |
-| `gtt-domain/proposals/` | — | — |
-
-Restates, as a table, the rule from `architecture.md` → *Modules and
-boundaries*: **GTT Core provides the service; ADE adapters provide the
-integration.** Adapters must not duplicate Core logic. Likewise the Engine/domain rule of
-`architecture.md`: **architectural authority stays in the domain, and executable GTT logic stays in the Engine.**
-And the Multi-ADE rule: **one governance model, several ADE integration surfaces, one Primary ADE** — the Primary is a
-workflow identifier, and no ADE, instruction file or overlay is a governance authority.
-And the evidence rule: **provenance, gaps and sources are read from the governed artifacts; the engine that
-checks them owns none of them, an OPEN gap authorises nothing and a working preference never overrides governed context.**
+| | | |
 
 ---
 
@@ -102,16 +179,7 @@ happened without a row, the governance loop was skipped.
 
 | Date | ADR | What changed in this map |
 |---|---|---|
-| 2026-09-28 | ADR-003 | Scaffold restructure: Project Governance (`context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`) moves from `gtt/` to the project root; GTT Documentation moves to `docs/`; `gtt/` keeps only the Engine and gains `scaffold/manifest.yaml`. Rows of the dependency-rule table are re-pathed; no module boundary is added, removed, or relaxed. |
-| 2026-09-29 | ADR-004 | `.gtt/` Engine and `gtt-domain/` governed domain: the Engine directory `gtt/` is renamed `.gtt/` and gains GTT's own documentation (`docs/` → `.gtt/docs/`); Project Governance (`context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`) moves from the project root into `gtt-domain/`, the contextual space over which GTT applies the method. Rows of the dependency-rule table are re-pathed; architectural authority stays in the domain and executable logic in the Engine (the domain's `proposals/` holds governed drafts, not logic in operation); no module boundary is added, removed, or relaxed. Amends the layout of ADR-003. |
-| 2026-09-29 | ADR-005 | Multi-ADE and the Initial Design Questionnaire as Bootstrap contracts: the ADE overlay layer is no longer "exactly one" but one overlay per participating ADE, with exactly one Primary ADE (a workflow identifier that carries no authority); the ADE registry is the `overlays:` section of the manifest and the per-project choice is `.gtt/ade.json`, written only through `gtt-ade.sh`; the Initial Design Questionnaire is exposed as a Bootstrap-owned template (`templates:` in the manifest, `gtt-template.sh`). Two rows are added to the dependency-rule table; no module boundary is relaxed and the Core stays ADE-agnostic. Amends the overlay rows of ADR-003 and ADR-004 ("exactly one per installed project"). |
-
-| 2026-09-29 | ADR-006 | Provenance, gaps, sources and working agreements recovered as one deterministic gate: the gap register (this file, section 8) with OPEN/BLOCKING semantics, the optional source manifest `gtt-domain/context/sources.md`, canonical provenance tags in governed context, and working agreements below governed context. One dependency-rule row added; no module boundary relaxed; the Core stays ADE-agnostic and the index stays derived. |
-
-No other ADR has changed this map. The Artifact Identity, Technical Index,
-and Session Memory Service capabilities documented in `.gtt/docs/docs.md` and
-`.gtt/docs/session-adapter-contract.md` are GTT Core functionality, not a
-decision recorded against this map (Virgin/Product closure, 2026-09-28).
+| | | |
 
 ---
 
@@ -119,17 +187,16 @@ decision recorded against this map (Virgin/Product closure, 2026-09-28).
 
 Paths outside the scaffold — the code the project builds and its infrastructure
 (`src/`, `infra/`, dependency manifests, …) — that carry architectural weight even
-though they are not themselves governed. (The root entry points and the ADE overlay
-are not drift signals: `AGENTS.md` is protected by filename and the overlay is
-machinery.) `detect-drift.py` and the `gtt-audit` sweep read this
-block to know what to watch; without it, the detector is blind. One line per
+though they are not themselves governed. `detect-drift.py` and the `gtt-audit` sweep
+read this block to know what to watch; without it, the detector is blind. One line per
 signal: a glob, then the decision or view it guards.
 
 ```gtt-drift-signals
+# <glob>  ->  <what it guards, referencing a view above or an ADR>
 ```
 
-None declared. GTT has no `src/`/`infra/`-style application code for this
-block to watch (see *Explicitly out of scope* in `constraints.md`).
+Leave the block empty (as above) rather than inventing paths that do not
+carry a real decision yet. A signal with no matching decision above is noise.
 
 ---
 
@@ -144,8 +211,6 @@ Format, one per line: `KIND | ID | topic | scope: ... | affects: ...`, or
 
 ```gtt-gaps
 ```
-
-None declared: every decision this map states is made, or is not applicable (see *Explicitly out of scope* in `constraints.md`).
 
 ---
 Governance: L0. Read-only for AI agents. Changes require an approved ADR and are
