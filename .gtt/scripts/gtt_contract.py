@@ -398,10 +398,21 @@ def check_contracts():
             add(f"required capability `{required}` is not registered")
     # profiles
     supported = [p["id"] for p in prof["supported"]]
-    if sorted(supported) != ["hard", "light", "medium"]:
-        add("profiles.supported must be exactly light, medium and hard")
+    if sorted(supported) != ["hard", "light", "medium", "team"]:
+        add("profiles.supported must be exactly light, medium, hard and team")
     if prof.get("default") not in supported:
         add("profiles.default must be a supported profile")
+    if sorted(prof.get("strictness_order", [])) != sorted(supported):
+        add("profiles.strictness_order must order every supported profile exactly once")
+    selection = prof.get("selection", {})
+    if selection.get("policy") != "ask":
+        add("profiles.selection.policy must be `ask`: the plan is the human's choice and is never inferred")
+    if selection.get("unselected", {}).get("gates_from") != prof.get("default"):
+        add("profiles.selection.unselected.gates_from must equal profiles.default (one fallback, stated once)")
+    values = prof.get("policy_values", {})
+    for term in ("deterministic_operation", "relevant_change", "destructive_operation", "governed_decision"):
+        if not prof.get("definitions", {}).get(term):
+            add(f"profiles.definitions.{term} missing (a plan must not use an undefined term)")
     for pid in supported:
         p = prof["profiles"].get(pid)
         if not p:
@@ -414,6 +425,24 @@ def check_contracts():
         for gate in ("provenance_policy", "warnings_block_freeze", "sources_manifest_required_for_freeze", "open_gap_requires_affects"):
             if gate not in p["gates"]:
                 add(f"profile `{pid}`: gates.{gate} missing")
+        plan = p.get("plan", {})
+        for key in ("label", "summary", "delegates", "policy_enforcement"):
+            if not plan.get(key):
+                add(f"profile `{pid}`: plan.{key} missing (every plan states plainly what it is)")
+        policy = plan.get("policy", {})
+        for group, keys in (("automation", ("identity_resolution", "reference_updates", "index_rebuild", "validation",
+                                            "agent_context_sync")),
+                            ("collaboration", ("ci", "multi_user", "traceability"))):
+            for key in keys:
+                value = policy.get(group, {}).get(key)
+                if value not in values:
+                    add(f"profile `{pid}`: plan.policy.{group}.{key} must be a value defined in profiles.policy_values")
+        confirmation = policy.get("human", {}).get("confirmation", {})
+        for key in ("governed_decision", "destructive"):
+            if confirmation.get(key) != "required":
+                add(f"profile `{pid}`: human confirmation of `{key}` must be required (no plan delegates it)")
+        if confirmation.get("relevant_change") not in values:
+            add(f"profile `{pid}`: plan.policy.human.confirmation.relevant_change must be a value defined in profiles.policy_values")
         invariant_ids = {i["id"] for i in prof["invariants"]}
         for relax in p.get("relaxes", []):
             if relax["control"] in invariant_ids:
@@ -421,9 +450,12 @@ def check_contracts():
     for inv in prof["invariants"]:
         if inv.get("relaxable"):
             add(f"invariant `{inv['id']}` must not be relaxable")
-    for pid in ("medium", "hard"):
+    for pid in ("medium", "hard", "team"):
         if prof["profiles"].get(pid, {}).get("relaxes"):
             add(f"profile `{pid}` must not relax anything (only Light may)")
+    hard_gates, team_gates = (prof["profiles"].get(pid, {}).get("gates", {}) for pid in ("hard", "team"))
+    if team_gates != hard_gates:
+        add("profile `team`: gates must equal the Hard gates (Team is Hard plus collaboration requirements)")
     # export policy / recovery / elicitation
     if not exp["ownership"]["static"]:
         add("export-policy.ownership.static is empty")

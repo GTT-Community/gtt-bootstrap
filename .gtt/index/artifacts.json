@@ -261,6 +261,22 @@
       "aliases": []
     },
     {
+      "id": "DOC-METHOD-PLANS",
+      "type": "documentation",
+      "path": ".gtt/docs/method-plans.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-METHOD-PLANS-ES",
+      "type": "documentation",
+      "path": ".gtt/docs/method-plans.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-SESSION-ADAPTER-CONTRACT",
       "type": "documentation",
       "path": ".gtt/docs/session-adapter-contract.md",

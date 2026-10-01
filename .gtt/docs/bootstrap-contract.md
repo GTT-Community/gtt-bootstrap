@@ -37,11 +37,11 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.0.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.1.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
 | 4 Capability registry | 14 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |
-| 5–7 Profiles | Light / Medium / Hard, default Medium; semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
+| 5–7 Method Plans (profiles) | Light / Medium / Hard / Team, selected by the human and never inferred (unselected: Medium gates as a fallback, reported as not selected); operating policy, semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
 | 8, 9, 10 ADE registry, participation, Primary | `id, name, detect, install, validate, owned_paths, handoff, invoke, version`; detected / participating / primary / excluded; set, validate, change Primary preserving secondaries | manifest `overlays:` + `.gtt/ade.json` | `show ade-registry`, `ade.*` |
 | 11, 12 Questionnaire | `scaffold.initial_design.questionnaire{template, output, version, contract_version}`; materialize | manifest `templates:` | `show initial-design`, `template.materialize` |
 | 13 Guided elicitation | nine directives, each tied to the questionnaire's own section | `elicitation.json` | `show elicitation` |
@@ -57,10 +57,22 @@ version, a missing schema declaration or a missing required capability is a refu
 | 29 Versioning | every consumed contract carries an integer version | `release.json` → `contracts` | `check` |
 | 30 Acceptance | tests that drive the contracts as a CLI would, on disposable copies | `.gtt/tests/bootstrap-acceptance.py` | `python .gtt/tests/bootstrap-acceptance.py` |
 
-## Methodology profiles — who decides what
+## Method Plans (methodology profiles) — who decides what
 
-The CLI **selects** (`methodology.profile.set profile=light|medium|hard [language=en|es]`); the Bootstrap defines the
-meaning. Each rule in `profiles.json` is honest about where it is enforced:
+The **human** selects the plan; the CLI records it (`methodology.profile.set profile=light|medium|hard|team
+[language=en|es]`); the Bootstrap defines the meaning. *Plan* is the human-facing word and *profile* the name the 1.0
+operations keep; they are the same thing. The plain-words rendering is [method-plans.md](method-plans.md). Each rule in
+`profiles.json` is honest about where it is enforced:
+
+- **Selection** (`selection.policy: ask`). The CLI asks for one of the four plans — methodological intent, never the
+  derived technical policies — and never infers one. `methodology.profile.get` returns `selected: false` and
+  `source: default` while nothing is selected; `profile` then names the plan whose gates apply as a fallback (`medium`),
+  which a CLI must present as *not selected*, not as a choice.
+- **Operating policy** (`profiles.<id>.plan.policy`: what is automatic, confirmed, proposed or left to team policy; CI,
+  multi-user, traceability; vocabulary in `definitions` and `policy_values`). Declared by the Bootstrap, **executed by
+  the CLI** — the Bootstrap does not implement these rules a second time, and nothing here verifies that a CLI honours
+  them. Confirmation of a governed decision and of a destructive operation is `required` in every plan; the contract
+  check fails otherwise.
 
 - **Gates** (`provenance_policy`, `warnings_block_freeze`, `sources_manifest_required_for_freeze`, `open_gap_requires_affects`)
   are applied by the deterministic provenance gate. Medium equals the behaviour before profiles existed; Hard requires
@@ -72,7 +84,11 @@ meaning. Each rule in `profiles.json` is honest about where it is enforced:
 - **Invariants** that no profile weakens: human decision authority, provenance tags, evidence boundary, proposal
   distinction, conflict visibility, OPEN is not authorisation, freeze semantics, protected artifacts, selected ≠ authority.
   Only Light relaxes anything (documentation depth, ADR expectations, batching of the two confirmations, audit cadence),
-  and `relaxes` states exactly how. In a frozen project selecting a **less** strict profile is refused: it is a governed change.
+  and `relaxes` states exactly how. In a frozen project selecting a **less** strict plan is refused: it is a governed
+  change. The order is light < medium < hard < team.
+- **Team** carries the Hard gates (the check fails if they differ) plus collaboration requirements — CI required, actor
+  traceability, second-person review — which are semantics and operating policy, not gates. It is marked
+  `maturity: baseline`: dedicated team plans are planned and will refine it.
 
 ## What a snapshot preserves — and what it does not
 
@@ -95,5 +111,7 @@ version) and the CLI refuses before touching the project.
 - The contracts are data and deterministic scripts; whether a CLI (or an ADE) behaves accordingly is theirs to prove.
   The acceptance tests exercise the Bootstrap side only, on Windows/Git Bash with Python 3.13.
 - Profile `semantics` and the elicitation directives are instructions to agents; nothing verifies an ADE follows them.
+- A plan's operating policy (`plan.policy`) is data for the CLI; the Bootstrap's own scripts do not change behaviour
+  with it. Team's CI and actor-traceability requirements are therefore not machine-enforced by the Bootstrap.
 - `contract.negotiate.v1` and `operation.execute.v1` are the CLI capability ids this Bootstrap requires; they name the
   behaviours defined here, not a published CLI version.

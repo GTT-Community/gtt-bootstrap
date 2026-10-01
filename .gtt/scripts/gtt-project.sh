@@ -6,7 +6,7 @@
 #   status [--with-validation]  structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
 #   session                     structured session context (operational-only, never authority)
 #   validation                  gtt-validate.sh as one structured result
-#   profile get|set             methodology profile light|medium|hard and language (meaning: .gtt/contract/profiles.json)
+#   profile get|set             Method Plan light|medium|hard|team and language (meaning: .gtt/contract/profiles.json)
 #   source select|list          initial sources; a selected source is never a governed authority
 #   export-policy | clean-plan  clean-export policy / what `clean` would remove (removes nothing)
 #   recovery snapshot|restore   preserve / re-apply GTT configuration

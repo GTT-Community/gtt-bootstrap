@@ -3,7 +3,7 @@
 #
 # Deterministic consistency of .gtt/contract/: release identity and versions, capability and operation
 # registries (implementations exist under .gtt/scripts/, no shell syntax, typed arguments, mutating
-# operations dry-run by default, no unfreeze operation), the three methodology profiles and their
+# operations dry-run by default, no unfreeze operation), the four Method Plans and their
 # invariants (none relaxable, only Light may relax anything), export policy, recovery, elicitation
 # references into the questionnaire, ADE integration versions. Makes no architectural judgment.
 #

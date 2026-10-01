@@ -61,7 +61,7 @@ The GTT bootstrap contract is:
 │   ├── scaffold/templates/       #   Bootstrap-owned templates (the Initial Design Questionnaire)
 │   ├── scripts/
 │   ├── session-adapters/
-│   └── docs/                     #   GTT's own documentation: index, installation, usage, docs, evidence,
+│   └── docs/                     #   GTT's own documentation: index, installation, usage, method-plans, docs, evidence,
 │                                 #   gtt-completion, session-adapter-contract
 │
 ├── gtt-domain/                   # THE DOMAIN GOVERNED BY GTT-METHOD
@@ -332,6 +332,42 @@ During initial bootstrap:
 11. Ask the user to review.
 12. Freeze only after explicit confirmation.
 
+Before step 4, have the human select the Method Plan (see *Method Plans*): ask, never infer.
+
+## Method Plans
+
+A Method Plan is the human's answer to one question: how much operational work is
+delegated to GTT. There are four - **Light**, **Medium**, **Hard**, **Team** - and
+`.gtt/contract/profiles.json` is the single definition of what each one means;
+`.gtt/docs/method-plans.md` renders it in plain words. A plan is an operating and
+collaboration profile, never a quality level, and no plan turns governance off.
+
+- **The human selects; nobody infers.** During bootstrap, ask for the plan, showing
+  the four with the `label` and `summary` the contract gives them. Never choose,
+  default or infer one - not from the project, the ADE or a previous project. Ask
+  for the methodological intent only, never for the technical policies derived
+  from it.
+- **Not selected is a state, said plainly.** Until the human chooses,
+  `gtt-project.sh profile get` reports `plan: not selected`; the Medium gates apply
+  only as a fallback so validation keeps working. Never report that fallback as a
+  choice.
+- **What never varies.** In every plan a governed decision and a destructive
+  operation need the human's explicit confirmation, and every invariant in the
+  contract holds. Only Light relaxes anything, and only the four controls its
+  `relaxes` names.
+- **What varies.** The gates (`gates`, enforced by `gtt-check-provenance.sh`), the
+  rigor an agent applies (`semantics`: proposal, documentation depth, ADR, audit,
+  promotion, evidence - follow the selected plan's), and the operating policy
+  (`plan.policy`: what is automatic, confirmed, proposed or left to team policy),
+  which the CLI executes; the Bootstrap declares it and does not implement it twice.
+- **Team** is the Hard gates plus collaboration requirements (CI, actor
+  traceability, second-person review). It is a baseline: dedicated team plans are
+  planned. Promise nothing beyond what the contract states.
+- **Changing it later** writes only `.gtt/methodology.json`
+  (`gtt-project.sh profile set --profile <id>`, a dry run without `--apply`) and
+  recreates nothing. In a frozen project a *less* strict plan is refused: it is a
+  governed change. The order is light < medium < hard < team.
+
 ## Initial Design Questionnaire
 
 When a project has no sufficient design source document, the Bootstrap offers its
@@ -590,6 +626,9 @@ Adapters excluded:
 Native support:
 - yes / no — ...
 
+Method plan:
+- light / medium / hard / team - selected by the human / not selected
+
 Backlog:
 - defined / not yet defined — reconciled: yes / no / not applicable
 
@@ -634,6 +673,7 @@ Human action required:
 - Never treat an instruction file or ADE overlay (`AGENTS.md`, `.claude/`, `.kiro/`, `.copilot/`, `.codex/`, ADE memory or session history) as governance authority.
 - Never hand-edit `.gtt/ade.json`; write it only through `.gtt/scripts/gtt-ade.sh`. Never remove an ADE path GTT did not install.
 - Never copy the Initial Design Questionnaire, or its methodology, out of the Bootstrap, and never write a `[PROPUESTA]` or an ADE inference as a confirmed decision.
+- Never select, default, infer or change the Method Plan on the human's behalf; never present a plan as a quality level; never report the unselected fallback as a choice; and never treat any plan as weakening an invariant or as permission to skip a human confirmation.
 - Never invent Epics or Stories and present them as user-defined requirements.
 - Never let a Story in `gtt-domain/backlog.md` silently override governed context or an accepted ADR.
 - Never add or remove an Epic/Story, or materially change one, outside the `gtt-domain/change-request.md` flow.
@@ -674,7 +714,7 @@ When an agent installs/bootstraps GTT into a **host project**, it MUST organize 
 │   ├── scaffold/templates/       #   Bootstrap-owned templates (the Initial Design Questionnaire)
 │   ├── scripts/
 │   ├── session-adapters/
-│   └── docs/                     #   GTT's own documentation: index, installation, usage, docs, evidence,
+│   └── docs/                     #   GTT's own documentation: index, installation, usage, method-plans, docs, evidence,
 │                                 #   gtt-completion, session-adapter-contract
 │
 ├── gtt-domain/                   # THE DOMAIN GOVERNED BY GTT-METHOD

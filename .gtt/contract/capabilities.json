@@ -7,7 +7,7 @@
     { "id": "ade.detect", "version": 1, "operations": ["ade.registry", "ade.detect", "ade.state", "ade.owned"], "summary": "Supported ADEs, candidates, participation state and GTT-owned ADE surfaces." },
     { "id": "ade.install", "version": 1, "operations": ["ade.install", "ade.adopt", "ade.validate", "ade.set-primary", "ade.update", "ade.remove", "ade.record"], "summary": "Install, validate, change Primary and remove ADE integrations without touching unrelated ones." },
     { "id": "template.materialize", "version": 1, "operations": ["template.list", "template.show", "template.materialize"], "summary": "Bootstrap-owned templates, including the Initial Design Questionnaire." },
-    { "id": "methodology.profile", "version": 1, "operations": ["methodology.profile.get", "methodology.profile.set"], "summary": "Light / Medium / Hard: selection is the CLI's, meaning is the Bootstrap's." },
+    { "id": "methodology.profile", "version": 1, "operations": ["methodology.profile.get", "methodology.profile.set"], "summary": "Method Plans - Light / Medium / Hard / Team: the human selects, the CLI records the selection, the Bootstrap defines the meaning." },
     { "id": "source.select", "version": 1, "operations": ["source.select", "source.list"], "summary": "Record initial sources; a selected source is never a governed authority." },
     { "id": "validation", "version": 1, "operations": ["validation.run", "contract.check"], "summary": "One authoritative validation entry point with structured results." },
     { "id": "status", "version": 1, "operations": ["status"], "summary": "Structured project status." },

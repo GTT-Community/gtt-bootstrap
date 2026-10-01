@@ -1,15 +1,48 @@
 {
   "schema": 1,
-  "contract_version": 1,
-  "notice": "Methodology application profiles. The CLI only SELECTS a profile (gtt-project.sh profile set); what Light, Medium and Hard MEAN is defined here, by the Bootstrap. `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane) - each rule says which. No profile weakens an invariant.",
+  "contract_version": 2,
+  "notice": "GTT Method Plans (methodology profiles). The human SELECTS a plan; the CLI records it (gtt-project.sh profile set); what Light, Medium, Hard and Team MEAN is defined here, by the Bootstrap, and nowhere else. A plan is an operating and collaboration profile - how much deterministic work the human delegates to GTT - never a quality level. Each rule says where it is enforced: `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane); `plan.policy` is declared here and executed by the CLI (the Bootstrap does not re-implement it). No plan weakens an invariant. Human-readable rendering: .gtt/docs/method-plans.md.",
   "supported": [
-    { "id": "light", "label": "Light" },
-    { "id": "medium", "label": "Medium" },
-    { "id": "hard", "label": "Hard" }
+    { "id": "light", "label": "Light Method" },
+    { "id": "medium", "label": "Medium Method" },
+    { "id": "hard", "label": "Hard Method" },
+    { "id": "team", "label": "Team Method" }
   ],
   "default": "medium",
-  "strictness_order": ["light", "medium", "hard"],
-  "after_freeze": "Selecting a LESS strict profile in a frozen project is refused: it is a governed change (change request -> proposal -> human decision). Selecting a stricter one is allowed.",
+  "selection": {
+    "policy": "ask",
+    "statement": "The plan is the human's choice. The Bootstrap asks for it and never infers one silently - not from the project, not from the ADE, not from a previous project.",
+    "asks_for": "methodological intent (one of the four plans), never the technical policies derived from it",
+    "unselected": {
+      "reported_as": "not selected",
+      "gates_from": "medium",
+      "reason": "`default` is only the gate fallback of a project where no plan has been selected yet (the behaviour before plans existed). It is never a selection, is always reported as `not selected`, and does not excuse the Bootstrap from asking."
+    },
+    "change": "A plan can be selected or changed later without recreating the project: only .gtt/methodology.json is written; governed context, ADRs, proposals, backlog, index and history are untouched."
+  },
+  "strictness_order": ["light", "medium", "hard", "team"],
+  "after_freeze": "Selecting a LESS strict plan in a frozen project is refused: it is a governed change (change request -> proposal -> human decision). Selecting a stricter one is allowed.",
+  "definitions": {
+    "deterministic_operation": "An operation whose result follows entirely from repository state and declared policy, with no judgment: allocating the next free id, rebuilding the index, regenerating the GTTGuard registry, running validation.",
+    "relevant_change": "An automated operation that rewrites human-authored or ADE-facing files rather than derived ones: updating references across documents after a move, synchronising ADE context files.",
+    "destructive_operation": "An operation that removes or overwrites something that cannot be regenerated: clean, removing an ADE, overwriting a file.",
+    "governed_decision": "Anything that changes L0/L1 (gtt-domain/context/, gtt-domain/adr/), the structure of the backlog, a GTTGuard-protected artifact, or the freeze. Always a human decision, in every plan."
+  },
+  "policy_values": {
+    "automatic": "GTT does it without asking and reports what it did.",
+    "automatic_safe": "GTT does it without asking only when nothing human-authored would be overwritten; otherwise it stops and asks.",
+    "confirm": "GTT prepares the change, shows it, and applies it after the human confirms.",
+    "propose_confirm": "GTT proposes the value or change with its reasoning; nothing is reserved or written until the human confirms.",
+    "team_policy": "As the team declares in gtt-domain/working-agreements.md; where the team has declared nothing, `propose_confirm` applies.",
+    "required": "Always needs an explicit human confirmation.",
+    "not_required": "No separate confirmation; the operation is reported.",
+    "optional": "Supported, not expected.",
+    "recommended": "Expected; its absence is reported, never a failure.",
+    "possible": "Supported; the plan is not designed around it.",
+    "central": "The plan is designed around it.",
+    "standard": "Every governed change is traceable through its proposal, ADR and promotion script.",
+    "reinforced": "Standard traceability plus the acting person recorded for each governed change and its review."
+  },
   "invariants": [
     { "id": "human-decision-authority", "statement": "Agents prepare; only a human decides, ratifies and freezes. No profile, ADE or Primary ADE changes that.", "enforcement": "hook+script+instruction", "relaxable": false },
     { "id": "provenance-tags", "statement": "[PROPUESTA] never appears inside governed context; [FUENTE], [VACIO] and [CONFLICTO] must be well formed wherever they are used.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
@@ -23,7 +56,18 @@
   ],
   "profiles": {
     "light": {
-      "intended_for": ["POCs", "experiments", "spikes", "disposable tests", "exploratory development", "short-lived technical work"],
+      "plan": {
+        "label": "Light Method",
+        "summary": "Maximum safe automation and the fewest interruptions, for one developer or a governed prototype.",
+        "delegates": "Every deterministic operation and every relevant change that is safe. You are asked only for governed decisions and destructive operations.",
+        "policy_enforcement": "cli",
+        "policy": {
+          "automation": { "level": "high", "identity_resolution": "automatic", "reference_updates": "automatic", "index_rebuild": "automatic", "validation": "automatic", "agent_context_sync": "automatic_safe" },
+          "human": { "confirmation": { "governed_decision": "required", "destructive": "required", "relevant_change": "not_required" } },
+          "collaboration": { "ci": "optional", "multi_user": "optional", "traceability": "standard" }
+        }
+      },
+      "intended_for": ["an individual developer", "personal projects", "governed prototypes", "POCs", "experiments", "spikes", "exploratory or short-lived technical work"],
       "semantics": {
         "proposal_rigor": "A proposal may be a short note in gtt-domain/proposals/; alternatives and risk may be one line each.",
         "confirmation_requirements": "Confirmation A (source) and Confirmation B (context) stay explicit and separate, but may be requested in the same interaction.",
@@ -45,7 +89,18 @@
       "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
     },
     "medium": {
-      "intended_for": ["normal development", "features", "integrations", "internal services", "controlled prototypes"],
+      "plan": {
+        "label": "Medium Method",
+        "summary": "Automation with confirmation of relevant changes, for an individual project or a small team.",
+        "delegates": "Every deterministic operation. You confirm relevant changes before they are applied, as well as governed decisions and destructive operations.",
+        "policy_enforcement": "cli",
+        "policy": {
+          "automation": { "level": "medium-high", "identity_resolution": "automatic", "reference_updates": "confirm", "index_rebuild": "automatic", "validation": "automatic", "agent_context_sync": "confirm" },
+          "human": { "confirmation": { "governed_decision": "required", "destructive": "required", "relevant_change": "required" } },
+          "collaboration": { "ci": "recommended", "multi_user": "optional", "traceability": "standard" }
+        }
+      },
+      "intended_for": ["normal development", "features", "integrations", "internal services", "controlled prototypes", "individual projects or small teams that want to confirm relevant changes"],
       "semantics": {
         "proposal_rigor": "Full proposal: current decision, requested change, reason, impact, risk, alternatives.",
         "confirmation_requirements": "Confirmation A and B, each explicit and separate.",
@@ -62,6 +117,17 @@
       "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
     },
     "hard": {
+      "plan": {
+        "label": "Hard Method",
+        "summary": "Explicit human authorization of every governed operation, for production and critical systems.",
+        "delegates": "Derived state only (index, validation). Ids and relevant changes are proposed and wait for your confirmation. Hard is explicit control, not manual work.",
+        "policy_enforcement": "cli",
+        "policy": {
+          "automation": { "level": "controlled", "identity_resolution": "propose_confirm", "reference_updates": "confirm", "index_rebuild": "automatic", "validation": "automatic", "agent_context_sync": "confirm" },
+          "human": { "confirmation": { "governed_decision": "required", "destructive": "required", "relevant_change": "required" } },
+          "collaboration": { "ci": "recommended", "multi_user": "possible", "traceability": "standard" }
+        }
+      },
       "intended_for": ["production", "critical systems", "security-sensitive changes", "high-consequence architecture", "regulated work"],
       "semantics": {
         "proposal_rigor": "Full proposal with explicit alternatives, rollback and blast radius; no promotion from an informal note.",
@@ -74,6 +140,36 @@
         "audit_requirements": "gtt-audit before every promotion and on a schedule.",
         "promotion_rigor": "Promotion script reviewed by a second person where the team has one; hashes verified before and after.",
         "evidence_requirements": "Every verification claim recorded with command, result and evidence type; NO EVIDENCE stated for what was not run."
+      },
+      "relaxes": [],
+      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true }
+    },
+    "team": {
+      "plan": {
+        "label": "Team Method",
+        "summary": "Collaborative governance: the Hard gates plus CI, actor traceability and shared team policy.",
+        "delegates": "What the team declares in gtt-domain/working-agreements.md. Until the team declares it, ids and relevant changes are proposed and wait for confirmation, as in Hard.",
+        "maturity": "baseline",
+        "maturity_note": "Today Team is the Hard gates plus the collaboration requirements below. Dedicated team plans are planned and will refine this definition; until they ship, nothing beyond what is written here is promised.",
+        "policy_enforcement": "cli",
+        "policy": {
+          "automation": { "level": "high", "identity_resolution": "team_policy", "reference_updates": "team_policy", "index_rebuild": "automatic", "validation": "automatic", "agent_context_sync": "team_policy" },
+          "human": { "confirmation": { "governed_decision": "required", "destructive": "required", "relevant_change": "team_policy" } },
+          "collaboration": { "ci": "required", "multi_user": "central", "traceability": "reinforced" }
+        }
+      },
+      "intended_for": ["teams", "collaborative projects", "several people or several ADEs changing the same governed project"],
+      "semantics": {
+        "proposal_rigor": "Full proposal with explicit alternatives, rollback and blast radius, naming its author; no promotion from an informal note.",
+        "confirmation_requirements": "Confirmation A and B, each explicit and separate, recorded in gtt-completion.md with the person who gave it.",
+        "documentation_depth": "All six governed context files real, every technology row cited ([FUENTE] or a Locked-by ADR), a source manifest declared.",
+        "adr_expectations": "An ADR for every change to governed context, including small ones, naming who decided; the stack map delta is exact.",
+        "change_process": "Change request -> analysis -> proposal -> review by a second person -> human decision -> promotion package -> human execution -> validation in CI; no shortcuts.",
+        "validation_gates": "gtt-validate.sh with provenance policy required, run in CI on every change; warnings block freeze.",
+        "freeze_expectations": "Freeze only with a source manifest, every OPEN gap scoped and carrying `affects`, no BLOCKING gap, no unresolved conflict, no warning, and the CI gate configured.",
+        "audit_requirements": "gtt-audit before every promotion and on a schedule the team declares in gtt-domain/working-agreements.md.",
+        "promotion_rigor": "Promotion script reviewed by a second person and run by a person other than its author where the team allows it; hashes verified before and after; the base revision checked so a concurrent change is detected, never overwritten.",
+        "evidence_requirements": "Every verification claim recorded with command, result, evidence type and who ran it; NO EVIDENCE stated for what was not run."
       },
       "relaxes": [],
       "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true }

@@ -82,18 +82,23 @@ DEFAULT_GATES = {"provenance_policy": "advisory", "warnings_block_freeze": False
 
 
 def profile_gates():
-    """(profile id, gates) of the project's methodology profile. Without .gtt/methodology.json this is
-    `medium`, whose gates equal the behaviour before profiles existed. What each profile MEANS is defined by
-    the Bootstrap in .gtt/contract/profiles.json; this module only applies its machine-enforced gates."""
-    profile = "medium"
+    """(plan id, gates, selected) of the project's Method Plan. Without a selection in .gtt/methodology.json the
+    gates are those of `medium` (the behaviour before plans existed) and `selected` is False: a fallback, never a
+    choice. What each plan MEANS is defined by the Bootstrap in .gtt/contract/profiles.json; this module only
+    applies its machine-enforced gates."""
+    profile, selected = "medium", False
     try:
-        with open(".gtt/methodology.json", encoding="utf-8") as handle:
-            profile = json.load(handle).get("profile") or "medium"
+        try:
+            with open(".gtt/methodology.json", encoding="utf-8") as handle:
+                chosen = json.load(handle).get("profile")
+        except OSError:
+            chosen = None
         with open(".gtt/contract/profiles.json", encoding="utf-8") as handle:
             spec = json.load(handle)
-        return profile, dict(DEFAULT_GATES, **spec["profiles"][profile]["gates"])
+        profile, selected = chosen or spec.get("default", "medium"), bool(chosen)
+        return profile, dict(DEFAULT_GATES, **spec["profiles"][profile]["gates"]), selected
     except (OSError, ValueError, KeyError):
-        return profile, dict(DEFAULT_GATES)
+        return profile, dict(DEFAULT_GATES), selected
 
 
 def mask(text):
@@ -290,7 +295,7 @@ def run_checks(only=None, prefreeze=False):
     agreements = load_agreements(findings)
     is_frozen = frozen()
     policy = manifest["policy"] if manifest else "none"
-    profile, gates = profile_gates()
+    profile, gates, plan_selected = profile_gates()
     strict = policy == "required" or gates["provenance_policy"] == "required"
     known_ids = {s["id"] for s in manifest["sources"]} if manifest else set()
     gap_ids = {g["id"] for g in gaps if g["kind"] != "RESOLVED"}
@@ -380,7 +385,8 @@ def run_checks(only=None, prefreeze=False):
     if only:
         findings.items = [i for i in findings.items if i[1] == only]
     return findings, {"gaps": gaps, "gaps_declared": gaps_declared, "manifest": manifest,
-                      "tags": tags, "agreements": agreements, "policy": policy, "profile": profile, "gates": gates}
+                      "tags": tags, "agreements": agreements, "policy": policy, "profile": profile, "plan_selected": plan_selected,
+                      "gates": gates}
 
 
 # ------------------------------------------------------------------- outputs
@@ -393,7 +399,9 @@ def summary_lines(state):
     team = sum(1 for a in state["agreements"] if a["scope"] == "team")
     user = sum(1 for a in state["agreements"] if a["scope"] == "user")
     return [
-        f"methodology profile: {state['profile']} (provenance gate: {state['gates']['provenance_policy']})",
+        (f"method plan: {state['profile']}" if state["plan_selected"]
+         else f"method plan: not selected ({state['profile']} gates apply until the human selects one)")
+        + f" (provenance gate: {state['gates']['provenance_policy']})",
         f"sources: {len(manifest['sources']) if manifest else 0} declared (provenance policy: {state['policy']})",
         f"gaps: OPEN {count('OPEN')}, BLOCKING {count('BLOCKING')}, RESOLVED {count('RESOLVED')}"
         + ("" if state["gaps_declared"] else " (no gap register in stack.md)"),

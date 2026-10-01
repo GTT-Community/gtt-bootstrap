@@ -111,7 +111,7 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.0.0" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.1.0" and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
@@ -158,19 +158,30 @@ def compatibility(project, tmp):
 
 
 def profiles(project, tmp):
-    print("[profiles] Light, Medium and Hard are Bootstrap-defined; the CLI only selects")
+    print("[profiles] Light, Medium, Hard and Team are Bootstrap-defined; the human selects, the CLI records")
     p = fresh(project, tmp, "prof")
     rc, out, _ = contract(p, "show", "profiles")
     spec = json.loads(out)
-    check([x["id"] for x in spec["supported"]] == ["light", "medium", "hard"] and spec["default"] == "medium", "three supported profiles, default medium")
+    check([x["id"] for x in spec["supported"]] == ["light", "medium", "hard", "team"] and spec["strictness_order"] == ["light", "medium", "hard", "team"],
+          "four supported plans, ordered light < medium < hard < team")
+    check(spec["selection"]["policy"] == "ask" and spec["selection"]["unselected"]["gates_from"] == spec["default"] == "medium",
+          "the plan is asked for, never inferred; medium is only the gate fallback of an unselected project")
+    check(all(spec["profiles"][x]["plan"]["policy"]["human"]["confirmation"][k] == "required"
+              for x in spec["strictness_order"] for k in ("governed_decision", "destructive")),
+          "no plan delegates a governed decision or a destructive operation")
+    check(spec["profiles"]["team"]["gates"] == spec["profiles"]["hard"]["gates"] and spec["profiles"]["team"]["plan"]["policy"]["collaboration"]["ci"] == "required",
+          "Team is the Hard gates plus collaboration requirements (CI required)")
     check(all(not i["relaxable"] for i in spec["invariants"]) and {"human-decision-authority", "provenance-tags", "freeze-semantics"} <= {i["id"] for i in spec["invariants"]},
           "the mandatory invariants are defined and none is relaxable")
-    check(spec["profiles"]["medium"]["relaxes"] == [] and spec["profiles"]["hard"]["relaxes"] == [] and spec["profiles"]["light"]["relaxes"],
+    check(all(spec["profiles"][x]["relaxes"] == [] for x in ("medium", "hard", "team")) and spec["profiles"]["light"]["relaxes"],
           "only Light relaxes anything, and says exactly how")
     rc, env, _ = op(p, "methodology.profile.get")
     got = data(env)
-    check(got["profile"] == "medium" and got["source"] == "default", "no selection -> medium by default")
-    for choice in ("light", "medium", "hard"):
+    check(got["profile"] == "medium" and got["source"] == "default" and got["selected"] is False,
+          "no selection -> reported as not selected; medium gates apply as a fallback")
+    rc, text, _ = bash(p, ".gtt/scripts/gtt-project.sh", "profile", "get")
+    check("plan: not selected" in text, "the unselected state is stated in plain words", text)
+    for choice in ("light", "medium", "team", "hard"):
         rc, env, _ = op(p, "methodology.profile.set", profile=choice, language="es", apply=True)
         state = read_json(os.path.join(p, ".gtt/methodology.json"))
         check(rc == 0 and state["profile"] == choice and state["language"] == "es", f"{choice} is valid and recorded")
@@ -180,11 +191,13 @@ def profiles(project, tmp):
     check(rc == 0 and read_json(os.path.join(p, ".gtt/methodology.json"))["profile"] == "hard", "without apply it is a dry run")
     # the Bootstrap applies the semantics: gates differ by profile
     results = {}
-    for choice in ("light", "medium", "hard"):
+    for choice in ("light", "medium", "team", "hard"):
         op(p, "methodology.profile.set", profile=choice, apply=True)
         results[choice] = bash(p, ".gtt/scripts/gtt-check-provenance.sh", "--pre-freeze")[0]
-    check(results["light"] == 0 and results["medium"] == 0 and results["hard"] == 1,
-          "Hard refuses freeze where Light and Medium accept (warnings block, manifest required)", str(results))
+    check(results["light"] == 0 and results["medium"] == 0 and results["hard"] == 1 and results["team"] == 1,
+          "Hard and Team refuse freeze where Light and Medium accept (warnings block, manifest required)", str(results))
+    got = data(op(p, "methodology.profile.get")[1])
+    check(got["selected"] is True and got["plan"]["label"] == "Hard Method", "a selected plan is reported with its label and policy")
     op(p, "methodology.profile.set", profile="hard", apply=True)
     hard = bash(p, ".gtt/scripts/gtt-check-provenance.sh", "--pre-freeze")
     out = hard[1] + hard[2]
@@ -194,6 +207,10 @@ def profiles(project, tmp):
     rc, env, err = op(p, "methodology.profile.set", profile="light", apply=True)
     check(env["exit_code"] == 1 and "governed change" in env["stderr"] and read_json(os.path.join(p, ".gtt/methodology.json"))["profile"] == "hard",
           "a frozen project refuses a less strict profile", env["stderr"][:200])
+    op(p, "methodology.profile.set", profile="team", apply=True)
+    rc, env, err = op(p, "methodology.profile.set", profile="hard", apply=True)
+    check(env["exit_code"] == 1 and read_json(os.path.join(p, ".gtt/methodology.json"))["profile"] == "team",
+          "a frozen project accepts a stricter plan (team) and then refuses to step back to hard")
     # the contracts themselves refuse to weaken an invariant
     bad = fresh(project, tmp, "prof-bad")
     spec = read_json(os.path.join(bad, ".gtt/contract/profiles.json"))
@@ -207,6 +224,14 @@ def profiles(project, tmp):
     save_json(os.path.join(bad, ".gtt/contract/profiles.json"), spec)
     rc, out, _ = contract(bad, "check")
     check(rc == 1 and "must not be relaxable" in out, "an invariant marked relaxable fails the check", out)
+    spec = read_json(os.path.join(bad, ".gtt/contract/profiles.json"))
+    spec["invariants"][0]["relaxable"] = False
+    spec["profiles"]["light"]["plan"]["policy"]["human"]["confirmation"]["destructive"] = "not_required"
+    spec["selection"]["policy"] = "infer"
+    save_json(os.path.join(bad, ".gtt/contract/profiles.json"), spec)
+    rc, out, _ = contract(bad, "check")
+    check(rc == 1 and "no plan delegates it" in out and "never inferred" in out,
+          "a plan that delegates a destructive operation, or a selection that is inferred, fails the check", out)
 
 
 def ade(project, tmp):
@@ -346,7 +371,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.0.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == "1.1.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -406,7 +431,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.0.0", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.1.0", "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),

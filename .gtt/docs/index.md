@@ -24,6 +24,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 - [Proposals](../../gtt-domain/proposals/) — agent drafts awaiting review
 - [Installation](installation.md) — detailed setup procedures
 - [Usage](usage.md) — the normal development loop
+- [Method Plans](method-plans.md) — Light, Medium, Hard, Team: what each one delegates, asks and requires
 - [Docs](./) — human reference, methodology
 - [Scripts](../scripts/) — CI gates and freeze
 - [AGENTS.md](../../AGENTS.md) — portable core rules (root)
@@ -190,7 +191,7 @@ source repository is the catalog, not an installed project.
 | `.gtt/scripts/gtt-project.sh` / `.gtt/scripts/gtt_project.py` | Structured project contracts: `detect`, `status`, `session`, `validation`, `profile get/set`, `source select/list`, `export-policy`, `clean-plan`, `recovery snapshot/restore` (dry run until `--apply`; derived from the project, never authority) |
 | `.gtt/scripts/gtt-check-contract.sh` | Gate: the contracts are consistent, versioned and fail closed (no unfreeze operation, no shell in argv, implementations confined to `.gtt/scripts/`, invariants not relaxable) |
 | `.gtt/contract/*.json` | The Bootstrap 1.0 contracts as data: `release`, `capabilities`, `operations`, `profiles`, `export-policy`, `recovery`, `elicitation` |
-| `.gtt/methodology.json` / `.gtt/selected-sources.json` | Per-project state written only by `gtt-project.sh`: methodology profile and language / initial sources selected (a selection is never an authority) |
+| `.gtt/methodology.json` / `.gtt/selected-sources.json` | Per-project state written only by `gtt-project.sh`: the Method Plan the human selected (absent = not selected) and language / initial sources selected (a selection is never an authority) |
 | `.gtt/tests/bootstrap-acceptance.py` | Bootstrap 1.0 acceptance tests: drives the contracts as a CLI would on disposable copies; never modifies the project |
 | `.gtt/scripts/gtt-status.sh` | Deterministic snapshot of current/governed/pending/proposed/blocked/frozen state, derived from repository artifacts; regenerates `gtt-domain/session.md` |
 | `.gtt/scripts/gtt-validate.sh` | Runs every `gtt-check-*.sh` above in sequence and reports pass/fail/cannot-determine; validates every participating ADE against `.gtt/ade.json` when it exists; otherwise skips (not fails) the adapter check when this repo's own multi-adapter catalog state is detected |
@@ -205,6 +206,7 @@ source repository is the catalog, not an installed project.
 | `.gtt/docs/session-adapter-contract.md` | Draft contract every Session Memory ADE adapter must meet; GTT Core is ADE-agnostic, adapters are integration-specific |
 | `.gtt/docs/installation.md` / `.gtt/docs/installation.es.md` | Detailed installation procedures, manual and agent-assisted |
 | `.gtt/docs/usage.md` / `.gtt/docs/usage.es.md` | The normal development loop, change requests, freeze model |
+| `.gtt/docs/method-plans.md` / `.gtt/docs/method-plans.es.md` | The four Method Plans in plain words: what GTT does without asking, what the human is asked, what each plan requires, and where each rule is enforced |
 | `.gtt/docs/docs.md` | Governance model, layers, enforcement planes, Claude Code vs Kiro vs Codex vs Copilot, upgrading from GTT v1 |
 
 ---

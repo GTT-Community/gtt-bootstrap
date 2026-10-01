@@ -8,7 +8,7 @@ actual project (never from an agent's recollection, never authority):
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
-  profile get|set            methodology profile (light|medium|hard) and language; meaning lives in .gtt/contract/profiles.json
+  profile get|set            Method Plan (light|medium|hard|team) and language; meaning lives in .gtt/contract/profiles.json
   source select|list         initial sources: a SELECTED source is never a governed authority
   export-policy              clean-export policy resolved against this project (ADE overlays from the ownership ledger)
   clean-plan                 what `clean` would remove; removes nothing
@@ -111,8 +111,10 @@ def current_profile():
     state = read_json(METHOD) or {}
     spec = profiles()
     profile = state.get("profile")
+    # No selection: the gates of spec["default"] apply, but that is a fallback, never a selection - the plan is
+    # reported as not selected and the Bootstrap still has to ask the human (profiles.json -> selection).
     return {"profile": profile or spec["default"], "source": "project" if profile else "default",
-            "language": state.get("language"), "state": state}
+            "selected": bool(profile), "language": state.get("language"), "state": state}
 
 
 def cmd_profile(args):
@@ -123,12 +125,16 @@ def cmd_profile(args):
         prof = spec["profiles"][cur["profile"]]
         out = {"schema": 1, "contract_version": spec["contract_version"], "profile": cur["profile"], "source": cur["source"],
                "language": cur["language"], "supported": [p["id"] for p in spec["supported"]], "default": spec["default"],
+               "selected": cur["selected"], "selection": spec["selection"], "plan": prof["plan"],
                "gates": prof["gates"], "relaxes": prof["relaxes"], "semantics": prof["semantics"],
                "invariants": [i["id"] for i in spec["invariants"]], "frozen": os.path.isfile(FROZEN)}
         if args.json:
             emit(out)
+        elif cur["selected"]:
+            print(f"plan: {prof['plan']['label']} ({out['profile']}); language: {out['language'] or 'unset'}; frozen: {out['frozen']}")
         else:
-            print(f"profile: {out['profile']} ({out['source']}); language: {out['language'] or 'unset'}; frozen: {out['frozen']}")
+            print(f"plan: not selected - the human must choose one of {', '.join(out['supported'])} "
+                  f"({out['profile']} gates apply meanwhile); language: {out['language'] or 'unset'}; frozen: {out['frozen']}")
         return 0
     if not args.profile and not args.language:
         die("give --profile and/or --language")
@@ -146,7 +152,8 @@ def cmd_profile(args):
             die(f"unsupported language `{args.language}` (supported: {', '.join(release()['supported_languages'])})")
         new["language"] = args.language
     new.update({"schema": 1, "set_at": now()})
-    print(f"methodology: profile {cur['profile']} -> {new.get('profile', cur['profile'])}; "
+    before = cur["profile"] if cur["selected"] else "not selected"
+    print(f"methodology: plan {before} -> {new.get('profile', before)}; "
           f"language {cur['language'] or 'unset'} -> {new.get('language') or 'unset'}")
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")

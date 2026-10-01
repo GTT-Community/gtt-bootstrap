@@ -107,6 +107,29 @@ Once resolved, note the detected ADEs, the participating ADEs, the Primary, the 
 will install, and the ADEs this will exclude — this becomes part of the report after
 step 6. Then continue to step 1.
 
+### Method Plan
+
+Before step 1, establish the project's Method Plan. It is the human's choice.
+
+1. Run `bash .gtt/scripts/gtt-project.sh profile get`. If it names a selected plan, state
+   it and do not ask again. If it says `plan: not selected`, ask.
+2. Show the four plans - Light, Medium, Hard, Team - each with the `label` and `summary`
+   it carries in `.gtt/contract/profiles.json` (`bash .gtt/scripts/gtt-contract.sh show
+   profiles`), in that order, as written. Do not paraphrase them into "basic" or
+   "advanced": a plan is an operating profile, not a quality level.
+3. Ask for that one choice only. Never ask the human to configure the derived policies
+   (index, identity, validation, ADE sync) one by one, and never pick, default or
+   recommend a plan on your own. If the human asks what the difference is, answer from
+   `.gtt/docs/method-plans.md` - what each plan does without asking, what it asks, what
+   it requires - including exactly what Light relaxes.
+4. Record the answer: `bash .gtt/scripts/gtt-project.sh profile set --profile <id>` (dry
+   run), then the same with `--apply`. If the human declines to choose now, leave it
+   unselected, say that the Medium gates apply meanwhile as a fallback, and list the
+   selection under *Human action required* in the report.
+5. For the rest of the bootstrap, apply the selected plan's `semantics` (for example,
+   Light may ask Confirmation A and B in one exchange; each still needs its own answer).
+   No plan lets you skip a confirmation, write governed context unconfirmed, or freeze.
+
 ## 1. Establish the regime
 
 Two independent questions. Cross them before doing anything.
@@ -298,7 +321,8 @@ Solution Designer to review and then run the freeze script to ratify.
 
 Report, then point out three things.
 
-**Report** (from step 0): detected ADEs, participating ADEs, the Primary ADE, files
+**Report** (from step 0): the Method Plan the human selected (or `not selected`), detected ADEs,
+participating ADEs, the Primary ADE, files
 installed, ADEs explicitly excluded, and whether native support exists for each
 participating ADE. Give this report in chat, and also append it to `.gtt/docs/gtt-completion.md`,
 following the exact shape in `AGENTS.md` → *Completion report* — that file

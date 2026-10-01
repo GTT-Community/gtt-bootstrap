@@ -103,6 +103,8 @@ La idea es simple:
 
 > Tú y el agente definen qué quieren construir y cómo debe construirse; tú lo confirmas; GTT convierte ese diseño acordado en contexto gobernado; después la IA desarrolla bajo ese contexto.
 
+**Plan de Método.** Durante el bootstrap se te pregunta cuánto trabajo operativo quieres delegar en GTT — una sola elección entre **Light**, **Medium**, **Hard** y **Team**. Es un perfil de operación, no un nivel de calidad; GTT deriva de él las políticas técnicas y nunca elige uno por ti. Ningún plan apaga el gobierno. Qué hace cada plan sin preguntar, qué te pregunta y qué exige está detallado en [.gtt/docs/method-plans.es.md](.gtt/docs/method-plans.es.md).
+
 Para los procedimientos detallados, consulta [.gtt/docs/installation.es.md](.gtt/docs/installation.es.md) y [.gtt/docs/usage.es.md](.gtt/docs/usage.es.md).
 
 ### 2. Instalación manual
@@ -293,7 +295,7 @@ Al realizar el bootstrap de GTT en un proyecto, **el agente de programación con
 
 - `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md` y `SOURCE-BRIEF.*` (cuando existe) DEBEN permanecer en la raíz.
 - El dominio gobernado — `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` — DEBE generarse directamente bajo `gtt-domain/`, nunca en otro lugar para moverlo después. `gtt-domain/.frozen` solo lo escribe `.gtt/scripts/gtt-freeze.sh`, tras confirmación humana; `gtt-domain/session.md` es derivado y lo regenera `.gtt/scripts/gtt-status.sh`.
-- El Motor de GTT (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`) y la documentación propia de GTT (`docs/`: `index.md`, `installation.md`, `usage.md` y sus pares `.es.md`, `gtt-completion.md`, `evidence.md`, `docs.md`, `session-adapter-contract.md`) DEBEN vivir bajo `.gtt/`, y el README de GTT Bootstrap DEBE instalarse como `.gtt/README.md`. `.gtt/scaffold/manifest.yaml` es la definición canónica y declarativa de este scaffold.
+- El Motor de GTT (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`) y la documentación propia de GTT (`docs/`: `index.md`, `installation.md`, `usage.md`, `method-plans.md` y sus pares `.es.md`, `gtt-completion.md`, `evidence.md`, `docs.md`, `session-adapter-contract.md`) DEBEN vivir bajo `.gtt/`, y el README de GTT Bootstrap DEBE instalarse como `.gtt/README.md`. `.gtt/scaffold/manifest.yaml` es la definición canónica y declarativa de este scaffold.
 
 - El agente NO DEBE mover, renombrar, duplicar ni redistribuir artefactos de GTT fuera de esta estructura.
 - El agente DEBE preservar la estructura existente del proyecto anfitrión y NO DEBE sobrescribir silenciosamente un archivo existente con el mismo nombre. Los conflictos DEBEN informarse y resolverse explícitamente.
@@ -598,6 +600,7 @@ SOURCE-BRIEF.*                  # diseño original, preservado tras el bootstrap
 │   ├── index.md                # mapa de todos los archivos — comienza aquí
 │   ├── installation.md         # procedimientos detallados de instalación (+ installation.es.md)
 │   ├── usage.md                # el flujo normal de desarrollo (+ usage.es.md)
+│   ├── method-plans.md         # Light / Medium / Hard / Team en palabras claras (+ method-plans.es.md)
 │   ├── gtt-completion.md       # registro durable de finalización del bootstrap
 │   ├── evidence.md
 │   ├── docs.md                 # metodología, portabilidad, migración

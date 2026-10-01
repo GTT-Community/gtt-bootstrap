@@ -73,7 +73,7 @@ if [ -f ".gtt/scripts/gtt_provenance.py" ] && [ -f ".gtt/scripts/gtt-run-python.
   GOV_STATE="$(bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_provenance.py summary 2>&1 || true)"
 fi
 
-# Bootstrap release identity and methodology profile (Bootstrap 1.0 contracts). The full structured
+# Bootstrap release identity and Method Plan (Bootstrap 1.0 contracts). The full structured
 # view is `gtt-project.sh status --json`; this is the human-readable line.
 BOOTSTRAP_STATE="not available (.gtt/scripts/gtt-contract.sh not found)"
 if [ -f ".gtt/scripts/gtt-contract.sh" ] && [ -f ".gtt/scripts/gtt-project.sh" ]; then
