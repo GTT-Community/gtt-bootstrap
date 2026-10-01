@@ -5,7 +5,7 @@ permissions.deny already blocks the Write/Edit tools for the unconditional
 machinery paths. This hook covers what static config can't express: shell
 commands (sed -i, tee, redirection, mv, rm, ...) reaching those same
 machinery paths and the three protected governance files - AGENTS.md,
-change-request.md (in gtt-domain/ since ADR-004), and
+change-request.md (in gtt-domain/), and
 SOURCE-BRIEF.* (stays at the project root, the one human-facing exception) -
 without going through a file tool, and the two-regime condition on
 gtt-domain/context/ and gtt-domain/adr/ - writable pre-freeze, denied once
@@ -34,8 +34,8 @@ into the effective permissions/hooks configuration, so it is exactly as
 capable of disabling this mechanism and must not be reachable by any path
 settings.json itself is denied on.
 
-Root-anchored paths (ADR-004): the governed directories moved from the
-project root (ADR-003) to gtt-domain/context/ and gtt-domain/adr/, and
+Root-anchored paths: the governed directories moved from the
+project root to gtt-domain/context/ and gtt-domain/adr/, and
 gtt-domain/proposals/ is the one directory agents may write. A bare
 substring test for "context/" would also fire on a host project's own
 src/context/ (a very common directory name) and deny legitimate edits, so

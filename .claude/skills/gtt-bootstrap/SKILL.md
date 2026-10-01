@@ -153,7 +153,7 @@ earlier GTT layout:
   `gtt/context/`, `gtt/adr/`, `gtt/proposals/`, `gtt/backlog.md`,
   `gtt/CHANGE-REQUEST.md`, `gtt/SESSION.md`, `gtt/.frozen`, or documentation
   directly under `gtt/` (`gtt/INDEX.md`, `gtt/INSTALLATION*.md`, ...).
-- layout of ADR-003 (v2.1 after the scaffold restructure, before ADR-004): the Engine in `gtt/` and governance and documentation at the project root (`context/`, `adr/`, `proposals/`, `docs/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`).
+- v2.1 layout after the scaffold restructure, before the move to `.gtt/` and `gtt-domain/`: the Engine in `gtt/` and governance and documentation at the project root (`context/`, `adr/`, `proposals/`, `docs/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`).
 
 If any are found:
 
