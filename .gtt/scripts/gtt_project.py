@@ -8,6 +8,8 @@ actual project (never from an agent's recollection, never authority):
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
+  interaction                what the selected plan does without asking and what it asks for (derived from its policy)
+  next-id                    the next free id of a kind (adr|epic|story); deterministic, never reuses a retired id
   profile get|set            Method Plan (light|medium|hard|team) and language; meaning lives in .gtt/contract/profiles.json
   source select|list         initial sources: a SELECTED source is never a governed authority
   export-policy              clean-export policy resolved against this project (ADE overlays from the ownership ledger)
@@ -117,6 +119,38 @@ def current_profile():
             "selected": bool(profile), "language": state.get("language"), "state": state}
 
 
+ASKS = ("confirm", "propose_confirm", "team_policy", "required")
+
+
+def interaction(profile_id, spec=None):
+    """What the selected plan makes GTT do without asking and what it asks for - derived from the plan's own
+    policy, never a second definition. This is how the developer-experience rule differs from plan to plan."""
+    spec = spec or profiles()
+    policy = spec["profiles"][profile_id]["plan"]["policy"]
+    values = dict(policy["automation"], relevant_change=policy["human"]["confirmation"]["relevant_change"],
+                  governed_decision=policy["human"]["confirmation"]["governed_decision"],
+                  destructive=policy["human"]["confirmation"]["destructive"])
+    values.pop("level", None)
+    return {"plan": profile_id, "automation_level": policy["automation"]["level"],
+            "without_asking": sorted(k for k, v in values.items() if v not in ASKS),
+            "asks_for": {k: v for k, v in sorted(values.items()) if v in ASKS},
+            "maintain_reconciles_moves": policy["automation"]["reference_updates"] in ("automatic", "automatic_safe"),
+            "id_resolution": {"automatic": "use", "automatic_safe": "use"}.get(policy["automation"]["identity_resolution"], "propose")}
+
+
+def cmd_interaction(args):
+    cur = current_profile()
+    out = dict(interaction(cur["profile"]), schema=1, selected=cur["selected"])
+    if args.key:
+        if args.key not in out:
+            die(f"unknown key `{args.key}`")
+        value = out[args.key]
+        print(str(value).lower() if isinstance(value, bool) else value)
+    else:
+        emit(out)
+    return 0
+
+
 def cmd_profile(args):
     spec = profiles()
     order = spec["strictness_order"]
@@ -126,6 +160,7 @@ def cmd_profile(args):
         out = {"schema": 1, "contract_version": spec["contract_version"], "profile": cur["profile"], "source": cur["source"],
                "language": cur["language"], "supported": [p["id"] for p in spec["supported"]], "default": spec["default"],
                "selected": cur["selected"], "selection": spec["selection"], "plan": prof["plan"],
+               "developer_experience": spec["developer_experience"], "interaction": interaction(cur["profile"], spec),
                "gates": prof["gates"], "relaxes": prof["relaxes"], "semantics": prof["semantics"],
                "invariants": [i["id"] for i in spec["invariants"]], "frozen": os.path.isfile(FROZEN)}
         if args.json:
@@ -160,6 +195,64 @@ def cmd_profile(args):
         return 0
     write_json(METHOD, new)
     print(f"gtt-project: written {METHOD}")
+    return 0
+
+
+# -------------------------------------------------------------------- next id
+
+ID_KINDS = {"adr": "ADR", "epic": "EPIC", "story": "STORY"}
+
+
+def occupied_ids(prefix):
+    """Every number already taken for `prefix`: ids in the identity manifest (active AND retired - a retired id is
+    never reused), file names under gtt-domain/, and ids written in gtt-domain/backlog.md. Template placeholder
+    lines do not count. Deterministic: the same repository always gives the same answer."""
+    token = re.compile(rf"(?<![A-Za-z0-9]){prefix}-(\d+)(?![0-9])")
+    taken = {}
+
+    def note(text, where):
+        for match in token.finditer(text):
+            taken.setdefault(int(match.group(1)), where)
+
+    manifest = read_json(".gtt/index/artifacts.json") or {}
+    for entry in manifest.get("artifacts", []):
+        note(str(entry.get("id", "")), f"identity ({entry.get('status', 'active')})")
+    for root, _dirs, files in os.walk("gtt-domain"):
+        for name in files:
+            note(name, os.path.join(root, name).replace(os.sep, "/"))
+    try:
+        with open("gtt-domain/backlog.md", encoding="utf-8") as handle:
+            for line in handle:
+                if not re.search(r"<[A-Za-z][^>]*>", line):      # a template example is not a real Epic/Story
+                    note(line, "gtt-domain/backlog.md")
+    except OSError:
+        pass
+    return taken
+
+
+def cmd_next_id(args):
+    prefix = ID_KINDS[args.kind]
+    taken = occupied_ids(prefix)
+    number = max(taken, default=0) + 1
+    cur = current_profile()
+    out = {"schema": 1, "kind": args.kind, "id": f"{prefix}-{number:03d}",
+           "plan": cur["profile"], "plan_selected": cur["selected"],
+           "resolution": interaction(cur["profile"])["id_resolution"],
+           "occupied": [f"{prefix}-{n:03d}" for n in sorted(taken)],
+           "rule": "highest occupied number + 1; retired ids are never reused"}
+    if args.requested:
+        match = re.fullmatch(rf"{prefix}-(\d+)", args.requested)
+        if not match:
+            die(f"`{args.requested}` is not a {prefix} id ({prefix}-NNN)")
+        free = int(match.group(1)) not in taken
+        out["requested"] = {"id": args.requested, "free": free,
+                            "occupied_by": None if free else taken[int(match.group(1))]}
+        if free:
+            out["id"] = f"{prefix}-{int(match.group(1)):03d}"
+    if args.json:
+        emit(out)
+    else:
+        print(out["id"])
     return 0
 
 
@@ -554,6 +647,9 @@ def build_parser():
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.add_argument("--with-validation", action="store_true"); p.set_defaults(func=cmd_status)
     p = sub.add_parser("session"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_session)
     p = sub.add_parser("validation"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_validation)
+    p = sub.add_parser("interaction"); p.add_argument("--key"); p.set_defaults(func=cmd_interaction)
+    p = sub.add_parser("next-id"); p.add_argument("--kind", required=True, choices=sorted(ID_KINDS)); p.add_argument("--requested")
+    p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_next_id)
     p = sub.add_parser("profile"); p.add_argument("action", choices=["get", "set"]); p.add_argument("--json", action="store_true")
     p.add_argument("--profile"); p.add_argument("--language"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_profile)
     p = sub.add_parser("source"); p.add_argument("action", choices=["select", "list"]); p.add_argument("--json", action="store_true")

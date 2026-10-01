@@ -37,9 +37,9 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.1.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.2.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
-| 4 Capability registry | 14 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
+| 4 Capability registry | 15 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |
 | 5–7 Method Plans (profiles) | Light / Medium / Hard / Team, selected by the human and never inferred (unselected: Medium gates as a fallback, reported as not selected); operating policy, semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
 | 8, 9, 10 ADE registry, participation, Primary | `id, name, detect, install, validate, owned_paths, handoff, invoke, version`; detected / participating / primary / excluded; set, validate, change Primary preserving secondaries | manifest `overlays:` + `.gtt/ade.json` | `show ade-registry`, `ade.*` |
@@ -90,6 +90,31 @@ operations keep; they are the same thing. The plain-words rendering is [method-p
   traceability, second-person review — which are semantics and operating policy, not gates. It is marked
   `maturity: baseline`: dedicated team plans are planned and will refine it.
 
+## Developer experience — minimum friction, full governance
+
+`profiles.json` → `developer_experience` declares the rule a CLI and an agent follow around operations. The rule is one;
+its effect differs by plan, and that difference is never a second definition: `methodology.profile.get` returns
+`interaction` (`without_asking`, `asks_for`, `id_resolution`, `maintain_reconciles_moves`), derived from the selected
+plan's `plan.policy`. The rule:
+resolve from governed context, plan, policies, project state and deterministic rules before asking (`decision_rule`);
+what is done without a question (`automatic_operations`, each naming a declared operation without human authority);
+that a protected operation is delivered as one executable script the human runs (`protected_operations`,
+`agent_executes: false`); the closed list of reasons to stop (`stop_conditions`); continuity; and brief reports with
+detail on demand (`report`). `methodology.profile.get` returns it with the plan. The contract check fails if a flag is
+off, if an automatic operation is undeclared or needs human authority, or if `agent_executes` is not `false`.
+
+Two operations realise it (capability `developer-experience`):
+
+- `artifact.next-id kind=adr|epic|story [requested=ID]` — the next free id, from the identity manifest (active and
+  retired: a retired id is never reused), file names under `gtt-domain/` and `gtt-domain/backlog.md`. Read-only: it
+  reserves nothing. Its `resolution` is `use` under Light and Medium and `propose` under Hard and Team (the plan's
+  `identity_resolution`).
+- `maintain [verbose=true]` — GTTGuard registry sync, index rebuild and `gtt-validate.sh` in one run, a few lines by
+  default, the full output with `verbose`. Plan-dependent step: under Light (`reference_updates: automatic`) it also
+  reconciles unambiguous moves and reports them; under Medium, Hard, Team or no selection it stops with the exact
+  command. An ambiguous move or a missing artifact is a decision in every plan. It never touches governed context and
+  never freezes; when a human action is pending it exits 1.
+
 ## What a snapshot preserves — and what it does not
 
 `recovery.snapshot` preserves GTT **configuration** (Bootstrap identity, ADE state, profile, language, selected sources,
@@ -111,6 +136,8 @@ version) and the CLI refuses before touching the project.
 - The contracts are data and deterministic scripts; whether a CLI (or an ADE) behaves accordingly is theirs to prove.
   The acceptance tests exercise the Bootstrap side only, on Windows/Git Bash with Python 3.13.
 - Profile `semantics` and the elicitation directives are instructions to agents; nothing verifies an ADE follows them.
+- `developer_experience` is declared policy plus two deterministic services; that an agent or a CLI asks less, stops
+  only for the listed reasons and reports briefly is theirs to honour, not something the Bootstrap verifies.
 - A plan's operating policy (`plan.policy`) is data for the CLI; the Bootstrap's own scripts do not change behaviour
   with it. Team's CI and actor-traceability requirements are therefore not machine-enforced by the Bootstrap.
 - `contract.negotiate.v1` and `operation.execute.v1` are the CLI capability ids this Bootstrap requires; they name the

@@ -51,7 +51,7 @@ engine:
   - { path: .gtt/contract/release.json, kind: file, required: true, role: Bootstrap release identity (version, schema, channel), CLI compatibility and the version of every contract - distinct from scaffold.version }
   - { path: .gtt/contract/capabilities.json, kind: file, required: true, role: capability registry - what the Bootstrap offers, negotiable by a CLI }
   - { path: .gtt/contract/operations.json, kind: file, required: true, role: operation registry - logical operation to trusted implementation, typed arguments, no arbitrary shell }
-  - { path: .gtt/contract/profiles.json, kind: file, required: true, role: Method Plans Light, Medium, Hard, Team - operating policy, semantics, gates and the non-relaxable invariants; the single definition of what a plan means }
+  - { path: .gtt/contract/profiles.json, kind: file, required: true, role: Method Plans Light, Medium, Hard, Team - developer-experience policy (minimum friction), operating policy, semantics, gates and the non-relaxable invariants; the single definition of what a plan means }
   - { path: .gtt/contract/export-policy.json, kind: file, required: true, role: clean-export and clean ownership policy }
   - { path: .gtt/contract/recovery.json, kind: file, required: true, role: recovery snapshot schema and restore rules }
   - { path: .gtt/contract/elicitation.json, kind: file, required: true, role: guided ADE elicitation contract for the Initial Design Questionnaire }

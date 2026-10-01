@@ -202,6 +202,64 @@ Un plan es honesto sobre dónde se hace cumplir cada una de sus reglas:
 El Bootstrap y el CLI no implementan dos veces la misma regla: el Bootstrap define
 qué significa un plan; el CLI lee esa definición y actúa en consecuencia.
 
+## Cómo evita GTT interrumpirte
+
+> El desarrollador decide lo que solo el desarrollador puede decidir. GTT hace todo lo demás.
+
+La regla es una sola; **su efecto depende de tu plan**. El plan fija *qué* operaciones
+hace GTT sin preguntar; la regla fija *cómo* se comporta GTT alrededor de ellas. Menos fricción nunca
+significa menos gobierno: ninguna confirmación, compuerta o invariante anterior se
+debilita por ello.
+
+**Antes de preguntarte algo**, GTT comprueba si la respuesta ya se desprende del
+contexto gobernado, de tu plan, de las políticas del proyecto, del estado real del
+proyecto o de una regla determinista. Si es así, GTT actúa, valida el resultado y
+continúa. Si no, nombra la decisión, la explica brevemente y pregunta una sola vez.
+
+**En ningún plan se te pregunta** si reconstruir el índice, validar o continuar con el
+siguiente paso planificado. Lo demás depende del plan:
+
+| | Light | Medium | Hard | Team |
+|---|---|---|---|---|
+| Un id está ocupado | el siguiente libre, usado | el siguiente libre, usado | el siguiente libre, **propuesto** | el siguiente libre, **propuesto** salvo que la política del equipo diga otra cosa |
+| Se movió un artefacto | referencias reescritas, reportado | **se detiene**, da el comando | **se detiene**, da el comando | **se detiene**, da el comando salvo que la política del equipo diga otra cosa |
+| Hay que sincronizar el contexto ADE | se hace cuando es seguro | **confirmado** | **confirmado** | política del equipo |
+| Se te pregunta por | decisiones gobernadas, operaciones destructivas | + cambios relevantes | + ids, cambios relevantes | + lo que la política del equipo reserve |
+
+`bash .gtt/scripts/gtt-project.sh interaction` muestra esto para el plan seleccionado,
+derivado de su política — los mismos datos que recibe el CLI.
+
+| Situación | Qué hace GTT |
+|---|---|
+| El id que pediste está ocupado | Busca el siguiente libre (`gtt-project.sh next-id --kind adr`); un id retirado nunca se reutiliza. Light y Medium lo usan; en Hard y Team se propone y lo confirmas al revisar el paquete — no en una pregunta aparte. |
+| Terminó cualquier operación | Ejecuta `gtt-maintain.sh`: registro de protección, índice y validación en una sola pasada, reportados en pocas líneas. |
+| Un artefacto movido o renombrado | Reescribir referencias es un cambio relevante. En Light `gtt-maintain.sh` reconcilia los movimientos inequívocos y los reporta; en Medium, Hard y Team — o sin plan seleccionado — se detiene y da el comando exacto de `gtt-reconcile.sh`. Un movimiento ambiguo o un artefacto faltante es una decisión en todos los planes. |
+| Un cambio gobernado o protegido | Te entrega **un único script ejecutable** con la operación completa, sus comprobaciones previas y un fallo explícito cuando el estado no es el esperado. Lo ejecutas tú; GTT nunca. Después GTT valida y continúa. |
+
+**GTT solo se detiene por** un conflicto arquitectónico o semántico real; una decisión
+que solo tú puedes tomar; una autorización que exige una operación protegida o
+gobernada; una condición de seguridad o integridad que impide continuar; o evidencia
+faltante que necesita para continuar correctamente. Llegar a un paso mecánico
+intermedio no es motivo para detenerse.
+
+**Los reportes son breves por defecto** — qué se hizo, el resultado, si debes actuar y
+el siguiente paso:
+
+```text
+✓ Protection registry in sync.
+✓ Index rebuilt (51 artifact(s), 513 section(s)).
+✓ Validation: 11 passed, 1 skipped.
+```
+
+El detalle nunca se oculta, solo no se ofrece de entrada: `gtt-maintain.sh --verbose`,
+`gtt-status.sh`, `gtt-query.sh` o la salida completa de cualquier verificación.
+
+Dónde se hace cumplir: los dos servicios anteriores son scripts deterministas. El
+comportamiento alrededor de ellos — no preguntar, detenerse solo por los motivos
+listados, reportar con brevedad — es una instrucción a los agentes y una política que
+ejecuta el CLI; el Bootstrap la declara (`profiles.json` → `developer_experience`) y
+no puede verificar que un ADE la siga.
+
 ## Seleccionar y cambiar de plan
 
 Un plan puede seleccionarse o cambiarse en cualquier momento sin recrear el proyecto.

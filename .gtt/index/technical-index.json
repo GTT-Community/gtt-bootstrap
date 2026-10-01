@@ -73,10 +73,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "adr/ADR-001-context-governance.md",
-          "gtt/adr/ADR-001-context-governance.md"
-        ],
+        "history": [],
         "adr": {
           "status": "Accepted",
           "date": "2026-01-01",
@@ -157,10 +154,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "adr/ADR-TEMPLATE.md",
-          "gtt/adr/ADR-TEMPLATE.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -171,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "5b0adfd7e946d4058a0a6614505a5fe0be9275a54e5de28b4c5067c1452332a9",
+      "sha256": "b1fb4c7c3d40286db9355a5cd2e2b8219808daef63f00ef1cdecc54d1de29abb",
       "aliases": [],
       "sections": [
         {
@@ -180,7 +174,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 784
+          "line_end": 839
         },
         {
           "heading": "Mission",
@@ -287,116 +281,124 @@
           "line_end": 370
         },
         {
+          "heading": "Working without unnecessary interruption",
+          "level": 2,
+          "anchor": "working-without-unnecessary-interruption",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Working without unnecessary interruption",
+          "line_start": 371,
+          "line_end": 424
+        },
+        {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 371,
-          "line_end": 397
+          "line_start": 425,
+          "line_end": 451
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
-          "line_start": 398,
-          "line_end": 429
+          "line_start": 452,
+          "line_end": 483
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 430,
-          "line_end": 443
+          "line_start": 484,
+          "line_end": 497
         },
         {
           "heading": "Confirmation A — source/design",
           "level": 3,
           "anchor": "confirmation-a--sourcedesign",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation A — source/design",
-          "line_start": 434,
-          "line_end": 437
+          "line_start": 488,
+          "line_end": 491
         },
         {
           "heading": "Confirmation B — governed context",
           "level": 3,
           "anchor": "confirmation-b--governed-context",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations > Confirmation B — governed context",
-          "line_start": 438,
-          "line_end": 443
+          "line_start": 492,
+          "line_end": 497
         },
         {
           "heading": "Conflict policy",
           "level": 2,
           "anchor": "conflict-policy",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Conflict policy",
-          "line_start": 444,
-          "line_end": 471
+          "line_start": 498,
+          "line_end": 525
         },
         {
           "heading": "Governed regime",
           "level": 2,
           "anchor": "governed-regime",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Governed regime",
-          "line_start": 472,
-          "line_end": 503
+          "line_start": 526,
+          "line_end": 557
         },
         {
           "heading": "Change requests",
           "level": 2,
           "anchor": "change-requests",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Change requests",
-          "line_start": 504,
-          "line_end": 521
+          "line_start": 558,
+          "line_end": 575
         },
         {
           "heading": "Human Promotion Boundary",
           "level": 2,
           "anchor": "human-promotion-boundary",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Human Promotion Boundary",
-          "line_start": 522,
-          "line_end": 574
+          "line_start": 576,
+          "line_end": 628
         },
         {
           "heading": "Protected context",
           "level": 2,
           "anchor": "protected-context",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected context",
-          "line_start": 575,
-          "line_end": 586
+          "line_start": 629,
+          "line_end": 640
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 587,
-          "line_end": 594
+          "line_start": 641,
+          "line_end": 648
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 595,
-          "line_end": 653
+          "line_start": 649,
+          "line_end": 707
         },
         {
           "heading": "Non-negotiable rules",
           "level": 2,
           "anchor": "non-negotiable-rules",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules",
-          "line_start": 654,
-          "line_end": 784
+          "line_start": 708,
+          "line_end": 839
         },
         {
           "heading": "Bootstrap documentation vs. installed project layout",
           "level": 3,
           "anchor": "bootstrap-documentation-vs-installed-project-layout",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Non-negotiable rules > Bootstrap documentation vs. installed project layout",
-          "line_start": 684,
-          "line_end": 784
+          "line_start": 739,
+          "line_end": 839
         }
       ],
       "references": [],
@@ -732,10 +734,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "backlog.md",
-          "gtt/backlog.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -796,10 +795,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "change-request.md",
-          "gtt/CHANGE-REQUEST.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -952,10 +948,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/architecture.md",
-          "gtt/context/architecture.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1014,10 +1007,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/constraints.md",
-          "gtt/context/constraints.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1044,10 +1034,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/glossary.md",
-          "gtt/context/glossary.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1098,10 +1085,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/principles.md",
-          "gtt/context/principles.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1160,10 +1144,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/solution-vision.md",
-          "gtt/context/solution-vision.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1254,10 +1235,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "context/stack.md",
-          "gtt/context/stack.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1268,7 +1246,7 @@
       "title": "GTT Bootstrap 1.0 — the contract for the CLI",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "0f5a58edce2ed2dcd968e49047030988ea2f5fc9c3bc4dd9821aa6a81f9a1ee9",
+      "sha256": "c5eeac460cc3f84001b5b810d7b5840866a92eb1ead49520a1b187db9ec7779c",
       "aliases": [],
       "sections": [
         {
@@ -1277,7 +1255,7 @@
           "anchor": "gtt-bootstrap-10--the-contract-for-the-cli",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI",
           "line_start": 1,
-          "line_end": 118
+          "line_end": 145
         },
         {
           "heading": "How a CLI uses it",
@@ -1304,28 +1282,36 @@
           "line_end": 92
         },
         {
+          "heading": "Developer experience — minimum friction, full governance",
+          "level": 2,
+          "anchor": "developer-experience--minimum-friction-full-governance",
+          "path": "GTT Bootstrap 1.0 — the contract for the CLI > Developer experience — minimum friction, full governance",
+          "line_start": 93,
+          "line_end": 117
+        },
+        {
           "heading": "What a snapshot preserves — and what it does not",
           "level": 2,
           "anchor": "what-a-snapshot-preserves--and-what-it-does-not",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > What a snapshot preserves — and what it does not",
-          "line_start": 93,
-          "line_end": 100
+          "line_start": 118,
+          "line_end": 125
         },
         {
           "heading": "Evolution without CLI changes",
           "level": 2,
           "anchor": "evolution-without-cli-changes",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Evolution without CLI changes",
-          "line_start": 101,
-          "line_end": 108
+          "line_start": 126,
+          "line_end": 133
         },
         {
           "heading": "Honest limits",
           "level": 2,
           "anchor": "honest-limits",
           "path": "GTT Bootstrap 1.0 — the contract for the CLI > Honest limits",
-          "line_start": 109,
-          "line_end": 118
+          "line_start": 134,
+          "line_end": 145
         }
       ],
       "references": [
@@ -1345,7 +1331,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "da17b78d7e51c3807ef6e3519649ea43f6d06f7f9ee0ea90c10d64101759ac29",
+      "sha256": "e2c2ef458c1fadc4e91f237f6c82a8a97b62b6707fb5ac45d7c11112d413fda7",
       "aliases": [],
       "sections": [
         {
@@ -1621,10 +1607,10 @@
           "line_end": 865
         },
         {
-          "heading": "Layout migration to         and               (ADR-004)",
+          "heading": "Layout migration to         and",
           "level": 3,
-          "anchor": "layout-migration-to---------and---------------adr-004",
-          "path": "GTT — Reference Docs > Migrating from GTT v1 > Layout migration to         and               (ADR-004)",
+          "anchor": "layout-migration-to---------and",
+          "path": "GTT — Reference Docs > Migrating from GTT v1 > Layout migration to         and",
           "line_start": 866,
           "line_end": 878
         },
@@ -1660,10 +1646,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/docs.md",
-          "gtt/docs/DOCS.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -1674,7 +1657,7 @@
       "title": "GTT Bootstrap — Method Plans",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "e022a1eac7b28bec8f6e6fac5f3adc4befb4d511e2ffacd6a3adda3c2b10a383",
+      "sha256": "5aa65701ba2ab24b912d2f465de6477d7f4941115bb5b8219d16c42199166b4e",
       "aliases": [],
       "sections": [
         {
@@ -1683,7 +1666,7 @@
           "anchor": "gtt-bootstrap--method-plans",
           "path": "GTT Bootstrap — Method Plans",
           "line_start": 1,
-          "line_end": 225
+          "line_end": 281
         },
         {
           "heading": "What a plan is, and what it is not",
@@ -1774,20 +1757,28 @@
           "line_end": 197
         },
         {
+          "heading": "How GTT avoids interrupting you",
+          "level": 2,
+          "anchor": "how-gtt-avoids-interrupting-you",
+          "path": "GTT Bootstrap — Method Plans > How GTT avoids interrupting you",
+          "line_start": 198,
+          "line_end": 253
+        },
+        {
           "heading": "Selecting and changing a plan",
           "level": 2,
           "anchor": "selecting-and-changing-a-plan",
           "path": "GTT Bootstrap — Method Plans > Selecting and changing a plan",
-          "line_start": 198,
-          "line_end": 217
+          "line_start": 254,
+          "line_end": 273
         },
         {
           "heading": "What the Bootstrap deliberately does not add",
           "level": 2,
           "anchor": "what-the-bootstrap-deliberately-does-not-add",
           "path": "GTT Bootstrap — Method Plans > What the Bootstrap deliberately does not add",
-          "line_start": 218,
-          "line_end": 225
+          "line_start": 274,
+          "line_end": 281
         }
       ],
       "references": [],
@@ -1809,7 +1800,7 @@
       "title": "GTT Bootstrap — Planes de Método",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "deeba48633328d1f85adf200c340095a66153eb7963512eb5d67711dbdd4629e",
+      "sha256": "9aff4f4a16ad98fb372601952bf1bb858ce55f4531f1b7da21994a04faa9818a",
       "aliases": [],
       "sections": [
         {
@@ -1818,7 +1809,7 @@
           "anchor": "gtt-bootstrap--planes-de-método",
           "path": "GTT Bootstrap — Planes de Método",
           "line_start": 1,
-          "line_end": 234
+          "line_end": 292
         },
         {
           "heading": "Qué es un plan y qué no es",
@@ -1909,20 +1900,28 @@
           "line_end": 204
         },
         {
+          "heading": "Cómo evita GTT interrumpirte",
+          "level": 2,
+          "anchor": "cómo-evita-gtt-interrumpirte",
+          "path": "GTT Bootstrap — Planes de Método > Cómo evita GTT interrumpirte",
+          "line_start": 205,
+          "line_end": 262
+        },
+        {
           "heading": "Seleccionar y cambiar de plan",
           "level": 2,
           "anchor": "seleccionar-y-cambiar-de-plan",
           "path": "GTT Bootstrap — Planes de Método > Seleccionar y cambiar de plan",
-          "line_start": 205,
-          "line_end": 225
+          "line_start": 263,
+          "line_end": 283
         },
         {
           "heading": "Lo que el Bootstrap deliberadamente no añade",
           "level": 2,
           "anchor": "lo-que-el-bootstrap-deliberadamente-no-añade",
           "path": "GTT Bootstrap — Planes de Método > Lo que el Bootstrap deliberadamente no añade",
-          "line_start": 226,
-          "line_end": 234
+          "line_start": 284,
+          "line_end": 292
         }
       ],
       "references": [],
@@ -1998,10 +1997,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/session-adapter-contract.md",
-          "gtt/docs/SESSION-ADAPTER-CONTRACT.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -2028,10 +2024,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/evidence.md",
-          "gtt/EVIDENCE.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -2060,10 +2053,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/gtt-completion.md",
-          "gtt/GTT-COMPLETION.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -2923,7 +2913,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "b5650026730ba8d4d3f4a7353c85cbbd376c88f9b692779e01270b6b4546bf8f",
+      "sha256": "747f06a30554acb748ad93885aad7627eb26fc319bb8872c6fdff7f3d4f04093",
       "aliases": [],
       "sections": [
         {
@@ -2932,7 +2922,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 239
+          "line_end": 240
         },
         {
           "heading": "Quick links",
@@ -3028,31 +3018,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 158,
-          "line_end": 198
+          "line_end": 199
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 199,
-          "line_end": 213
+          "line_start": 200,
+          "line_end": 214
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 214,
-          "line_end": 228
+          "line_start": 215,
+          "line_end": 229
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 229,
-          "line_end": 239
+          "line_start": 230,
+          "line_end": 240
         }
       ],
       "references": [
@@ -3071,10 +3061,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/index.md",
-          "gtt/INDEX.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -3266,10 +3253,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/installation.md",
-          "gtt/INSTALLATION.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -3444,10 +3428,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/installation.es.md",
-          "gtt/INSTALLATION.es.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -3678,10 +3659,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/usage.md",
-          "gtt/USAGE.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -3911,10 +3889,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "docs/usage.es.md",
-          "gtt/USAGE.es.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -4046,10 +4021,7 @@
       "referenced_by": [],
       "relationships": [],
       "provenance": {
-        "history": [
-          "gtt/proposals/README.md",
-          "proposals/README.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -4327,9 +4299,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "README-GTT.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -4606,9 +4576,7 @@
       ],
       "relationships": [],
       "provenance": {
-        "history": [
-          "README-GTT.es.md"
-        ],
+        "history": [],
         "referenced_by_proposals": []
       }
     },
@@ -4673,7 +4641,7 @@
       "title": "Draft an ADR and its promotion package",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "4b4b5a2d3cdf63359ecefbfcb6158a3d3711e984f830e3bb055d8f237cb0e79e",
+      "sha256": "1ffcbc21700006f8b4893af99172205c0dd4d591d9ae820a7c2cc7752f4eada6",
       "aliases": [],
       "sections": [
         {
@@ -4682,7 +4650,7 @@
           "anchor": "draft-an-adr-and-its-promotion-package",
           "path": "Draft an ADR and its promotion package",
           "line_start": 8,
-          "line_end": 219
+          "line_end": 207
         },
         {
           "heading": "Numbering",
@@ -4690,47 +4658,47 @@
           "anchor": "numbering",
           "path": "Draft an ADR and its promotion package > Numbering",
           "line_start": 25,
-          "line_end": 30
+          "line_end": 31
         },
         {
           "heading": "Template",
           "level": 2,
           "anchor": "template",
           "path": "Draft an ADR and its promotion package > Template",
-          "line_start": 31,
-          "line_end": 82
+          "line_start": 32,
+          "line_end": 83
         },
         {
           "heading": "After drafting",
           "level": 2,
           "anchor": "after-drafting",
           "path": "Draft an ADR and its promotion package > After drafting",
-          "line_start": 83,
-          "line_end": 88
+          "line_start": 84,
+          "line_end": 89
         },
         {
           "heading": "Stage the affected context files",
           "level": 2,
           "anchor": "stage-the-affected-context-files",
           "path": "Draft an ADR and its promotion package > Stage the affected context files",
-          "line_start": 89,
-          "line_end": 97
+          "line_start": 90,
+          "line_end": 98
         },
         {
           "heading": "Generate the promotion script",
           "level": 2,
           "anchor": "generate-the-promotion-script",
           "path": "Draft an ADR and its promotion package > Generate the promotion script",
-          "line_start": 98,
-          "line_end": 181
+          "line_start": 99,
+          "line_end": 182
         },
         {
           "heading": "Tell the user",
           "level": 2,
           "anchor": "tell-the-user",
           "path": "Draft an ADR and its promotion package > Tell the user",
-          "line_start": 182,
-          "line_end": 219
+          "line_start": 183,
+          "line_end": 207
         }
       ],
       "references": [],
@@ -4930,7 +4898,7 @@
       "title": "GTT drift response",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "24bbcbb00d349151dedb087766a431f557aaf424303702c08b34ee12e74ea868",
+      "sha256": "44350316e1e196f1ba76c217469273e5edb61f940b18d528588f63a2fa47c1c4",
       "aliases": [],
       "sections": [
         {
@@ -5850,6 +5818,9 @@
     "current focus": [
       "BACKLOG#current-focus"
     ],
+    "cómo evita gtt interrumpirte": [
+      "DOC-METHOD-PLANS-ES#cómo-evita-gtt-interrumpirte"
+    ],
     "data model ownership": [
       "CTX-ARCHITECTURE#data-model-ownership"
     ],
@@ -5872,6 +5843,9 @@
     ],
     "design principle": [
       "README-GTT#design-principle"
+    ],
+    "developer experience — minimum friction, full governance": [
+      "DOC-BOOTSTRAP-CONTRACT#developer-experience--minimum-friction-full-governance"
     ],
     "development line": [
       "BACKLOG#development-line"
@@ -6072,6 +6046,9 @@
     "how a cli uses it": [
       "DOC-BOOTSTRAP-CONTRACT#how-a-cli-uses-it"
     ],
+    "how gtt avoids interrupting you": [
+      "DOC-METHOD-PLANS#how-gtt-avoids-interrupting-you"
+    ],
     "how to use this": [
       "CHANGE-REQUEST#how-to-use-this"
     ],
@@ -6170,8 +6147,8 @@
     "layers": [
       "DOC-SESSION-ADAPTER-CONTRACT#layers"
     ],
-    "layout migration to         and               (adr-004)": [
-      "DOC-DOCS#layout-migration-to---------and---------------adr-004"
+    "layout migration to         and": [
+      "DOC-DOCS#layout-migration-to---------and"
     ],
     "licencia": [
       "README-GTT-ES#licencia"
@@ -6653,6 +6630,9 @@
     ],
     "working agreements": [
       "GTT-GTT-WORKING-AGREEMENTS#working-agreements"
+    ],
+    "working without unnecessary interruption": [
+      "AGENTS#working-without-unnecessary-interruption"
     ],
     "workspace hygiene": [
       "README-GTT#workspace-hygiene"

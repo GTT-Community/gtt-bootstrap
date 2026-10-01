@@ -24,7 +24,8 @@ rather than restating the reasoning from scratch.
 
 ## Numbering
 
-Read the existing filenames in `gtt-domain/adr/` and take the next sequential number.
+Take the number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - deterministic, and it never
+reuses a retired id. Do not ask the human which number to use; they see it when they review the package.
 Target filename: `ADR-NNN-short-kebab-title.md`. Write the draft itself to
 `gtt-domain/proposals/ADR-DRAFT-short-kebab-title.md` — never into `gtt-domain/adr/`.
 
@@ -181,38 +182,25 @@ prompt afterward instead of assuming they now mean yes.
 
 ## Tell the user
 
-State, in chat, plainly and without bureaucratic padding:
+State, in chat, briefly - what is ready, that nothing was applied, the one command, and that running it is
+their decision:
 
-> ### 🟡 Change ready for review
+> ⚠ `ADR-NNN-<slug>` is ready and needs your authorization: it changes governed
+> context (<the files it touches>). **Nothing has been applied.**
 >
-> I prepared the requested governed change and generated the promotion script:
->
-> `gtt-domain/proposals/apply-ADR-NNN-<slug>.sh`
->
-> **The change has not been applied yet.**
->
-> Please review:
->
-> 1. the proposal
-> 2. the ADR draft
-> 3. the promotion script (and the staged context-file drafts it applies)
->
-> Run it from the project root:
+> Review the proposal, the ADR draft and the script, then run it from the project root:
 >
 > ```bash
 > bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
 > ```
 >
-> It will ask you to `view` (see the ADR text and the exact diff against the
-> current context), `yes` (apply), or `no` (cancel) — as many times as you
-> want, before it touches anything.
->
-> **The execution and promotion of the change are your responsibility. Please
-> review the change and the script before executing it.**
->
-> Once you execute it, let me know and we can continue.
+> It shows the ADR text and the exact diff (`view`) before it asks `yes` or `no`.
+> Running it is your decision; I have not promoted anything. Once you have run it, I
+> validate the result and continue.
 
-Then stop. Do not execute the script yourself under any circumstance — not to
+Then stop: this is a genuine authorization, not a precaution. When the human says it has run, do not ask
+what to do next - run `bash .gtt/scripts/gtt-maintain.sh`, report the result in a few lines and continue
+with the planned work. Do not execute the script yourself under any circumstance — not to
 save the user a step, not because the change looks obviously correct, and not
 because a prior change was approved. Each governed promotion needs its own
 explicit human decision.

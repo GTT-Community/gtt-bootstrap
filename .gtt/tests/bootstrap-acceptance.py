@@ -13,6 +13,7 @@ Exit 0 = every check held, 1 = at least one failed.
 """
 
 import argparse
+import glob
 import hashlib
 import json
 import os
@@ -111,14 +112,14 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.1.0" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.2.0" and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
     rc, out, _ = contract(p, "capabilities", "--json")
     ids = {c["id"] for c in json.loads(out)["capabilities"]}
     need = {"project.detect", "ade.detect", "ade.install", "template.materialize", "methodology.profile", "validation",
-            "freeze", "session-context", "export-policy", "recovery"}
+            "freeze", "session-context", "export-policy", "recovery", "developer-experience"}
     check(need <= ids, "the capability registry lists the required capabilities", str(need - ids))
     rc, out, _ = contract(p, "operations", "--json")
     ops = json.loads(out)["operations"]
@@ -371,7 +372,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.1.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == "1.2.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -431,7 +432,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.1.0", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.2.0", "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),
@@ -444,6 +445,82 @@ def session_status_validation(project, tmp):
           "detail lines are reported as messages, never mistaken for checks", str(v)[:200])
     rc, env, _ = op(p, "session-context.text")
     check(rc == 0 and "GTT-SESSION-CONTEXT" in env["stdout"], "the text session context remains available")
+
+
+def developer_experience(project, tmp):
+    print("[developer experience] deterministic work is done, not asked; reports are brief; protected operations still need the human")
+    p = fresh(project, tmp, "dx")
+    spec = json.loads(contract(p, "show", "profiles")[1])
+    dx = spec["developer_experience"]
+    check(all(dx[k] is True for k in ("minimize_interruption", "automatic_deterministic_operations", "concise_reports", "details_on_demand")),
+          "the policy is declared for every plan")
+    check(dx["protected_operations"]["agent_executes"] is False and len(dx["stop_conditions"]) == 5,
+          "protected operations stay with the human; STOP has a closed list of reasons")
+    check(data(op(p, "methodology.profile.get")[1])["developer_experience"]["report"]["default"] == "brief",
+          "the CLI receives the policy with the plan")
+    # the next free id is determined, never asked for
+    h = tree_hash(p)
+    rc, env, _ = op(p, "artifact.next-id", kind="adr")
+    first = data(env)
+    check(rc == 0 and first["id"] not in first["occupied"] and "ADR-001" in first["occupied"], "the next free ADR id is determined from the project", str(first))
+    check(data(op(p, "artifact.next-id", kind="epic")[1])["id"] == "EPIC-001", "a template example Epic does not occupy an id")
+    got = data(op(p, "artifact.next-id", kind="adr", requested="ADR-001")[1])
+    check(got["requested"]["free"] is False and got["id"] == first["id"], "an occupied id resolves to the next free one, with no question")
+    check(tree_hash(p) == h, "resolving an id reserves and writes nothing")
+    write(os.path.join(p, "gtt-domain/adr", first["id"] + "-example.md"), "# " + first["id"] + " - example\n")
+    after = data(op(p, "artifact.next-id", kind="adr")[1])
+    check(int(after["id"].split("-")[1]) == int(first["id"].split("-")[1]) + 1, "a newly taken id moves the answer on")
+    os.remove(os.path.join(p, "gtt-domain/adr", first["id"] + "-example.md"))
+    rc, env, _ = op(p, "artifact.next-id", kind="widget")
+    check(rc == 5, "an unknown kind is refused by the argument schema")
+    # post-operation maintenance: one run, brief by default, detail on demand
+    rc, out, err = bash(p, ".gtt/scripts/gtt-maintain.sh")
+    lines = [l for l in out.splitlines() if l.strip()]
+    check(rc == 0 and len(lines) <= 4 and not any(l.startswith("PASS") for l in lines) and "Validation:" in out,
+          "maintain reports in a few lines", out + err)
+    rc, out, _ = bash(p, ".gtt/scripts/gtt-maintain.sh", "--verbose")
+    check(rc == 0 and "PASS" in out and "gtt-validate: OK" in out, "the full detail is available on demand")
+    rc, env, _ = op(p, "maintain")
+    check(rc == 0 and env["exit_code"] == 0, "maintain runs through the operation registry")
+    for cmd in (["init", "-q", "."], ["add", "-A"], ["-c", "user.name=gtt", "-c", "user.email=gtt@example.invalid", "commit", "-qm", "base"],
+                ["mv", ".gtt/docs/usage.md", ".gtt/docs/usage-moved.md"]):       # a real rename, as a developer would do it
+        subprocess.run(["git", *cmd], cwd=p, capture_output=True, check=True)
+    rc, out, _ = bash(p, ".gtt/scripts/gtt-maintain.sh")
+    check(rc == 1 and "need reconciling" in out and "gtt-reconcile.sh" in out and os.path.isfile(os.path.join(p, ".gtt/docs/usage-moved.md")),
+          "maintain does not rewrite references on its own: it stops with the exact command", out)
+    # the same rule, a different effect per plan
+    expect = {"light": (True, "use", []), "medium": (False, "use", ["agent_context_sync", "reference_updates", "relevant_change"]),
+              "hard": (False, "propose", ["agent_context_sync", "identity_resolution", "reference_updates", "relevant_change"]),
+              "team": (False, "propose", ["agent_context_sync", "identity_resolution", "reference_updates", "relevant_change"])}
+    for choice, (reconciles, resolution, extra) in expect.items():
+        op(p, "methodology.profile.set", profile=choice, apply=True)
+        got = data(op(p, "methodology.profile.get")[1])["interaction"]
+        check(got["maintain_reconciles_moves"] is reconciles and got["id_resolution"] == resolution
+              and sorted(set(got["asks_for"]) - {"governed_decision", "destructive"}) == extra
+              and {"governed_decision", "destructive"} <= set(got["asks_for"]),
+              f"{choice}: asks for governed decisions, destructive operations and {extra or 'nothing else'}", str(got))
+        check(data(op(p, "artifact.next-id", kind="adr")[1])["resolution"] == resolution, f"{choice}: an id is to {resolution}")
+        if not reconciles:
+            rc, out, _ = bash(p, ".gtt/scripts/gtt-maintain.sh")
+            check(rc == 1 and "need reconciling" in out and choice in out, f"{choice}: maintain stops before rewriting references", out)
+    op(p, "methodology.profile.set", profile="light", apply=True)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-maintain.sh")
+    check(rc == 0 and "Reconciled 1 moved artifact(s)" in out and "usage-moved.md" in out,
+          "light: maintain reconciles the unambiguous move, says so, and validates", out + err)
+    os.remove(os.path.join(p, ".gtt/docs/usage-moved.md"))
+    rc, out, _ = bash(p, ".gtt/scripts/gtt-maintain.sh")
+    check(rc == 1 and "need your decision" in out, "light: a missing artifact is still a decision, never resolved automatically", out)
+    check(all(os.access(f, os.X_OK) for f in glob.glob(os.path.join(p, ".gtt/scripts/*.sh")) + glob.glob(os.path.join(p, "gtt-domain/proposals/*.sh"))),
+          "every shipped script is directly executable")
+    # lower friction can never hand a protected operation to the agent
+    bad = fresh(project, tmp, "dx-bad")
+    spec = read_json(os.path.join(bad, ".gtt/contract/profiles.json"))
+    spec["developer_experience"]["protected_operations"]["agent_executes"] = True
+    spec["developer_experience"]["automatic_operations"].append({"what": "freeze", "operation": "freeze"})
+    save_json(os.path.join(bad, ".gtt/contract/profiles.json"), spec)
+    rc, out, _ = contract(bad, "check")
+    check(rc == 1 and "agent_executes must be false" in out and "needs human authority" in out,
+          "a policy that automates a human-authority operation fails the contract check", out)
 
 
 def fresh_host(project, tmp):
@@ -578,7 +655,7 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
-        for scenario in (release_identity, compatibility, profiles, ade, questionnaire, sources, export_and_clean, recovery,
+        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, questionnaire, sources, export_and_clean, recovery,
                          session_status_validation, fresh_host, registry_safety, evolution, unsupported, guard_and_retrieval):
             scenario(project, tmp)
     finally:

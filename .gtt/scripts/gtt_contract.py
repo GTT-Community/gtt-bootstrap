@@ -378,7 +378,7 @@ def check_contracts():
                 add(f"operation `{op_id}`: enum argument `{spec.get('name')}` needs values")
             if not spec.get("positional") and not spec.get("flag"):
                 add(f"operation `{op_id}`: argument `{spec.get('name')}` needs a flag or must be positional")
-        if op.get("mutates") and op_id not in ("freeze", "guard.sync", "index") \
+        if op.get("mutates") and op_id not in ("freeze", "guard.sync", "index", "maintain") \
                 and not any(s.get("name") == "apply" for s in op.get("args", [])) and op_id != "ade.remove":
             add(f"operation `{op_id}`: a mutating operation must offer `apply` (dry run by default)")
     if not operations.get("freeze", {}).get("human_authority"):
@@ -393,7 +393,7 @@ def check_contracts():
             if op_id not in operations:
                 add(f"capability `{cap['id']}` names an undeclared operation `{op_id}`")
     for required in ("project.detect", "ade.detect", "ade.install", "template.materialize", "methodology.profile",
-                     "validation", "freeze", "session-context", "export-policy", "recovery"):
+                     "validation", "freeze", "session-context", "export-policy", "recovery", "developer-experience"):
         if required not in seen:
             add(f"required capability `{required}` is not registered")
     # profiles
@@ -447,6 +447,21 @@ def check_contracts():
         for relax in p.get("relaxes", []):
             if relax["control"] in invariant_ids:
                 add(f"profile `{pid}` relaxes the invariant `{relax['control']}`")
+    dx = prof.get("developer_experience", {})
+    for flag in ("minimize_interruption", "automatic_deterministic_operations", "concise_reports", "details_on_demand"):
+        if dx.get(flag) is not True:
+            add(f"profiles.developer_experience.{flag} must be true")
+    if len(dx.get("stop_conditions", [])) < 1 or not dx.get("decision_rule", {}).get("resolve_from"):
+        add("profiles.developer_experience needs its decision rule and its stop conditions")
+    if dx.get("protected_operations", {}).get("agent_executes") is not False:
+        add("profiles.developer_experience.protected_operations.agent_executes must be false (lower friction never lets "
+            "an agent run a protected operation)")
+    for auto in dx.get("automatic_operations", []):
+        target = operations.get(auto.get("operation"))
+        if target is None:
+            add(f"developer_experience names an undeclared operation `{auto.get('operation')}`")
+        elif target.get("human_authority"):
+            add(f"developer_experience makes `{auto['operation']}` automatic, but it needs human authority")
     for inv in prof["invariants"]:
         if inv.get("relaxable"):
             add(f"invariant `{inv['id']}` must not be relaxable")

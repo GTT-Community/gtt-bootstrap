@@ -16,6 +16,7 @@
     { "id": "export-policy", "version": 1, "operations": ["export-policy", "clean.plan"], "summary": "Clean-export policy and the ownership set that `clean` would remove." },
     { "id": "recovery", "version": 1, "operations": ["recovery.snapshot", "recovery.restore"], "summary": "What must be preserved to recover GTT configuration." },
     { "id": "guard", "version": 1, "operations": ["guard.validate", "guard.sync"], "summary": "GTTGuard protection validation and registry sync." },
-    { "id": "retrieval", "version": 1, "operations": ["index", "reconcile", "query"], "summary": "Artifact index, reconciliation and query (not a second retrieval implementation)." }
+    { "id": "retrieval", "version": 1, "operations": ["index", "reconcile", "query"], "summary": "Artifact index, reconciliation and query (not a second retrieval implementation)." },
+    { "id": "developer-experience", "version": 1, "operations": ["artifact.next-id", "maintain"], "summary": "Minimum developer friction: the next free id without a question, and the deterministic post-operation work (registry, index, validation) in one run with a brief report. The policy itself is profiles.json -> developer_experience." }
   ]
 }

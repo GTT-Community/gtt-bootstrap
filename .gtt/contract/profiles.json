@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "contract_version": 2,
+  "contract_version": 3,
   "notice": "GTT Method Plans (methodology profiles). The human SELECTS a plan; the CLI records it (gtt-project.sh profile set); what Light, Medium, Hard and Team MEAN is defined here, by the Bootstrap, and nowhere else. A plan is an operating and collaboration profile - how much deterministic work the human delegates to GTT - never a quality level. Each rule says where it is enforced: `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane); `plan.policy` is declared here and executed by the CLI (the Bootstrap does not re-implement it). No plan weakens an invariant. Human-readable rendering: .gtt/docs/method-plans.md.",
   "supported": [
     { "id": "light", "label": "Light Method" },
@@ -42,6 +42,45 @@
     "central": "The plan is designed around it.",
     "standard": "Every governed change is traceable through its proposal, ADR and promotion script.",
     "reinforced": "Standard traceability plus the acting person recorded for each governed change and its review."
+  },
+  "developer_experience": {
+    "principle": "The developer decides what only the developer can decide. GTT does everything else. Lower friction never means less governance: nothing here weakens an invariant, a gate or a human confirmation the selected plan requires.",
+    "applies_to": "The rule is one; its effect differs by plan. What GTT does without asking and what it asks for is derived from the selected plan's `plan.policy` and returned as `interaction` by methodology.profile.get: Light asks only for governed decisions and destructive operations; Medium also confirms relevant changes; Hard also proposes ids for confirmation; Team follows the team's declared policy. Nothing is asked twice and nothing a plan requires is skipped.",
+    "enforcement": "instruction+cli",
+    "minimize_interruption": true,
+    "automatic_deterministic_operations": true,
+    "concise_reports": true,
+    "details_on_demand": true,
+    "decision_rule": {
+      "statement": "Before asking the human anything, determine whether the answer already follows objectively from the sources below. If it does, act, validate the result and continue. If it does not, name the decision, explain it briefly and ask once.",
+      "resolve_from": ["governed context", "the selected Method Plan", "project policies and working agreements", "the actual state of the project", "deterministic validation rules"],
+      "never_ask": ["whether to find another id when one is occupied", "whether to update references the plan makes automatic", "whether to rebuild the index", "whether to validate", "whether to continue to the next planned task after a successful step", "for a policy the plan or a working agreement already defines"]
+    },
+    "automatic_operations": [
+      { "what": "the next free id when the requested one is occupied", "operation": "artifact.next-id", "note": "returns the id with `resolution`: `use` under a plan whose identity_resolution is automatic (Light, Medium), `propose` otherwise (Hard, Team) - the human then confirms it when reviewing the package" },
+      { "what": "GTTGuard registry sync, index rebuild and validation after any operation", "operation": "maintain", "note": "under a plan whose reference_updates is automatic (Light) it also reconciles unambiguous moves; under the others it stops with the exact command" },
+      { "what": "the index alone", "operation": "index" },
+      { "what": "validation alone", "operation": "validation.run" }
+    ],
+    "protected_operations": {
+      "statement": "An operation on a governed or protected artifact that needs human authorization (approve, promote, advance a governed stage, copy, move, delete, overwrite, modify) is never reconstructed by hand: GTT provides one directly executable script that contains the complete operation, checks its preconditions, fails explicitly when the expected state is absent, and is safe to run from the project root. The agent prepares it and gives the one-line command; the human runs it; GTT then validates the result and continues.",
+      "agent_executes": false
+    },
+    "stop_conditions": [
+      "a genuine architectural or semantic conflict",
+      "a decision only the developer can make",
+      "explicit authorization required for a protected or governed operation",
+      "a safety or integrity condition that prevents continuing safely",
+      "unresolved evidence that is required to continue correctly"
+    ],
+    "stop_rule": "STOP is not a general precaution. Reaching an intermediate mechanical step is never a reason to stop.",
+    "continuity": "After a successful automatic operation, continue the planned workflow and say so in one line; do not ask whether to continue.",
+    "report": {
+      "default": "brief",
+      "contains": ["what was done", "the result", "whether the developer must act, with the exact command", "the next step, when relevant"],
+      "omits_unless_asked": ["long explanations", "internal reasoning", "operational history"],
+      "detail_on_demand": "Detail is always available and never withheld: the `--verbose` form of an operation, `status`, `query`, and the full output of any check."
+    }
   },
   "invariants": [
     { "id": "human-decision-authority", "statement": "Agents prepare; only a human decides, ratifies and freezes. No profile, ADE or Primary ADE changes that.", "enforcement": "hook+script+instruction", "relaxable": false },

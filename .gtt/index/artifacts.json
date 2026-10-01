@@ -6,51 +6,6 @@
       "type": "architecture-decision",
       "path": "gtt-domain/adr/ADR-001-context-governance.md",
       "status": "active",
-      "history": [
-        "adr/ADR-001-context-governance.md",
-        "gtt/adr/ADR-001-context-governance.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "ADR-002",
-      "type": "architecture-decision",
-      "path": "gtt/adr/ADR-002-artifact-identity-index-session-memory.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "ADR-003",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-003-scaffold-restructure.md",
-      "status": "retired",
-      "history": [
-        "adr/ADR-003-scaffold-restructure.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "ADR-004",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-004-gtt-domain-and-dot-gtt-engine.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "ADR-005",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-005-bootstrap-integration-contracts.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "ADR-006",
-      "type": "architecture-decision",
-      "path": "gtt-domain/adr/ADR-006-provenance-gaps-sources-agreements.md",
-      "status": "retired",
       "history": [],
       "aliases": []
     },
@@ -59,10 +14,7 @@
       "type": "template",
       "path": "gtt-domain/adr/ADR-TEMPLATE.md",
       "status": "active",
-      "history": [
-        "adr/ADR-TEMPLATE.md",
-        "gtt/adr/ADR-TEMPLATE.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -142,10 +94,7 @@
       "type": "backlog",
       "path": "gtt-domain/backlog.md",
       "status": "active",
-      "history": [
-        "backlog.md",
-        "gtt/backlog.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -153,10 +102,7 @@
       "type": "change-request",
       "path": "gtt-domain/change-request.md",
       "status": "active",
-      "history": [
-        "change-request.md",
-        "gtt/CHANGE-REQUEST.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -180,10 +126,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/architecture.md",
       "status": "active",
-      "history": [
-        "context/architecture.md",
-        "gtt/context/architecture.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -191,10 +134,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/constraints.md",
       "status": "active",
-      "history": [
-        "context/constraints.md",
-        "gtt/context/constraints.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -202,10 +142,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/glossary.md",
       "status": "active",
-      "history": [
-        "context/glossary.md",
-        "gtt/context/glossary.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -213,10 +150,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/principles.md",
       "status": "active",
-      "history": [
-        "context/principles.md",
-        "gtt/context/principles.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -224,10 +158,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/solution-vision.md",
       "status": "active",
-      "history": [
-        "context/solution-vision.md",
-        "gtt/context/solution-vision.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -235,10 +166,7 @@
       "type": "governed-context",
       "path": "gtt-domain/context/stack.md",
       "status": "active",
-      "history": [
-        "context/stack.md",
-        "gtt/context/stack.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -254,10 +182,7 @@
       "type": "documentation",
       "path": ".gtt/docs/docs.md",
       "status": "active",
-      "history": [
-        "docs/docs.md",
-        "gtt/docs/DOCS.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -281,10 +206,7 @@
       "type": "documentation",
       "path": ".gtt/docs/session-adapter-contract.md",
       "status": "active",
-      "history": [
-        "docs/session-adapter-contract.md",
-        "gtt/docs/SESSION-ADAPTER-CONTRACT.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -292,10 +214,7 @@
       "type": "documentation",
       "path": ".gtt/docs/evidence.md",
       "status": "active",
-      "history": [
-        "docs/evidence.md",
-        "gtt/EVIDENCE.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -303,10 +222,7 @@
       "type": "documentation",
       "path": ".gtt/docs/gtt-completion.md",
       "status": "active",
-      "history": [
-        "docs/gtt-completion.md",
-        "gtt/GTT-COMPLETION.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -338,10 +254,7 @@
       "type": "documentation",
       "path": ".gtt/docs/index.md",
       "status": "active",
-      "history": [
-        "docs/index.md",
-        "gtt/INDEX.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -349,10 +262,7 @@
       "type": "documentation",
       "path": ".gtt/docs/installation.md",
       "status": "active",
-      "history": [
-        "docs/installation.md",
-        "gtt/INSTALLATION.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -360,10 +270,7 @@
       "type": "documentation",
       "path": ".gtt/docs/installation.es.md",
       "status": "active",
-      "history": [
-        "docs/installation.es.md",
-        "gtt/INSTALLATION.es.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -371,10 +278,7 @@
       "type": "documentation",
       "path": ".gtt/docs/usage.md",
       "status": "active",
-      "history": [
-        "docs/usage.md",
-        "gtt/USAGE.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -382,10 +286,7 @@
       "type": "documentation",
       "path": ".gtt/docs/usage.es.md",
       "status": "active",
-      "history": [
-        "docs/usage.es.md",
-        "gtt/USAGE.es.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -413,369 +314,11 @@
       "aliases": []
     },
     {
-      "id": "PROP-ADR-DRAFT-BOOTSTRAP-INTEGRATION-CONTRACTS",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-bootstrap-integration-contracts.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-ADR-DRAFT-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-gtt-domain-and-dot-gtt-engine.md",
-      "status": "retired",
-      "history": [
-        "proposals/ADR-DRAFT-gtt-domain-and-dot-gtt-engine.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-ADR-DRAFT-GTT-V2-1-IDENTITY-INDEX-SESSION-MEMORY",
-      "type": "proposal",
-      "path": "gtt/proposals/ADR-DRAFT-gtt-v2-1-identity-index-session-memory.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-ADR-DRAFT-PROVENANCE-GAPS-SOURCES-AGREEMENTS",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/ADR-DRAFT-provenance-gaps-sources-agreements.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-ADR-DRAFT-SCAFFOLD-RESTRUCTURE",
-      "type": "proposal",
-      "path": "proposals/ADR-DRAFT-scaffold-restructure.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/ADR-DRAFT-scaffold-restructure.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CLEANUP-GTT-DOMAIN-MIGRATION",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md",
-      "status": "retired",
-      "history": [
-        "proposals/gtt-domain-migration/CLEANUP-gtt-domain-migration.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-003",
-      "type": "proposal",
-      "path": "proposals/context-architecture-adr-003.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/context-architecture-adr-003.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-architecture-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-architecture-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-architecture-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-ARCHITECTURE-ADR-006",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-architecture-adr-006.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-constraints-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-constraints-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-constraints-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-CONSTRAINTS-ADR-006",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-constraints-adr-006.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY",
-      "type": "proposal",
-      "path": "gtt/proposals/context-glossary.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY-ADR-003",
-      "type": "proposal",
-      "path": "proposals/context-glossary-adr-003.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/context-glossary-adr-003.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-glossary-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-glossary-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-glossary-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-GLOSSARY-ADR-006",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-glossary-adr-006.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-PRINCIPLES-ADR-003",
-      "type": "proposal",
-      "path": "proposals/context-principles-adr-003.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/context-principles-adr-003.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-PRINCIPLES-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-principles-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-principles-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-PRINCIPLES-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-principles-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-PRINCIPLES-ADR-006",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-principles-adr-006.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-SOLUTION-VISION",
-      "type": "proposal",
-      "path": "gtt/proposals/context-solution-vision.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-SOLUTION-VISION-ADR-003",
-      "type": "proposal",
-      "path": "proposals/context-solution-vision-adr-003.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/context-solution-vision-adr-003.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-SOLUTION-VISION-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-solution-vision-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-solution-vision-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-STACK",
-      "type": "proposal",
-      "path": "gtt/proposals/context-stack.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-STACK-ADR-003",
-      "type": "proposal",
-      "path": "proposals/context-stack-adr-003.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/context-stack-adr-003.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-STACK-ADR-004",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-stack-adr-004.md",
-      "status": "retired",
-      "history": [
-        "proposals/context-stack-adr-004.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-STACK-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-stack-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-CONTEXT-STACK-ADR-006",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/context-stack-adr-006.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-GOVERNANCE-PACKAGE-GTT-V2-1",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md",
-        "proposals/GOVERNANCE-PACKAGE-gtt-v2-1.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PACKAGE-GTT-DOMAIN-MIGRATION",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md",
-      "status": "retired",
-      "history": [
-        "proposals/gtt-domain-migration/PACKAGE-gtt-domain-migration.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-ARTIFACT-IDENTITY-FOLLOWUPS",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-artifact-identity-followups.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/PROPOSAL-artifact-identity-followups.md",
-        "proposals/PROPOSAL-artifact-identity-followups.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-BACKLOG-EPIC-MULTI-ADE-QUESTIONNAIRE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-backlog-epic-multi-ade-questionnaire.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-EVIDENCE-ENTRY-ADR-005",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-evidence-entry-adr-005.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-GTT-DOMAIN-AND-DOT-GTT-ENGINE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md",
-      "status": "retired",
-      "history": [
-        "proposals/PROPOSAL-gtt-domain-and-dot-gtt-engine.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-GTT-V2-1-BACKLOG-EPIC-STORIES",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md",
-        "proposals/PROPOSAL-gtt-v2-1-backlog-epic-stories.md"
-      ],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-MULTI-ADE-OVERLAYS-PRIMARY-ADE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-multi-ade-overlays-primary-ade.md",
-      "status": "retired",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-SCAFFOLD-RESTRUCTURE",
-      "type": "proposal",
-      "path": "proposals/PROPOSAL-scaffold-restructure.md",
-      "status": "retired",
-      "history": [
-        "gtt/proposals/PROPOSAL-scaffold-restructure.md"
-      ],
-      "aliases": []
-    },
-    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",
       "status": "active",
-      "history": [
-        "gtt/proposals/README.md",
-        "proposals/README.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -783,9 +326,7 @@
       "type": "documentation",
       "path": "readme-gtt.md",
       "status": "active",
-      "history": [
-        "README-GTT.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {
@@ -793,9 +334,7 @@
       "type": "documentation",
       "path": "readme-gtt.es.md",
       "status": "active",
-      "history": [
-        "README-GTT.es.md"
-      ],
+      "history": [],
       "aliases": []
     },
     {

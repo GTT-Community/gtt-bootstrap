@@ -64,8 +64,8 @@ using the same shape it defines:
   with the required header, the `view`/`yes`/`no` review loop, one `mv`/`cp`
   per staged file, and a final `bash .gtt/scripts/gtt-check-stack.sh`
 
-State the ADR number as a suggestion — the next free one — and say it is the
-human's to confirm. Then deliver the same "🟡 Change ready for review" message
+Take the ADR number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - do not ask for it; the
+human sees it when reviewing the package. Then deliver the same brief hand-off message
 `gtt-adr` uses: where the script is, what it will change, that review comes
 first, the exact command to run it, and that you have not promoted anything.
 

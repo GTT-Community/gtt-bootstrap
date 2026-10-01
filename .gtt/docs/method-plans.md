@@ -195,6 +195,62 @@ A plan is honest about where each of its rules is enforced:
 The Bootstrap and the CLI do not implement the same rule twice: the Bootstrap
 defines what a plan means, the CLI reads that definition and acts on it.
 
+## How GTT avoids interrupting you
+
+> The developer decides what only the developer can decide. GTT does everything else.
+
+The rule is one; **its effect depends on your plan**. The plan sets *which* operations
+GTT does without asking; the rule sets *how* GTT behaves around them. Lower friction never means less
+governance: no confirmation, gate or invariant above is weakened by it.
+
+**Before asking you anything**, GTT checks whether the answer already follows from
+the governed context, your plan, the project's policies, the actual state of the
+project, or a deterministic rule. If it does, GTT acts, validates the result and
+continues. If it does not, it names the decision, explains it briefly and asks once.
+
+**In no plan are you asked** whether to rebuild the index, validate, or continue to
+the next planned step. The rest depends on the plan:
+
+| | Light | Medium | Hard | Team |
+|---|---|---|---|---|
+| An id is taken | next free one, used | next free one, used | next free one, **proposed** | next free one, **proposed** unless team policy says otherwise |
+| An artifact was moved | references rewritten, reported | **stops**, gives the command | **stops**, gives the command | **stops**, gives the command unless team policy says otherwise |
+| ADE context needs syncing | done when safe | **confirmed** | **confirmed** | team policy |
+| You are asked for | governed decisions, destructive operations | + relevant changes | + ids, relevant changes | + what the team policy reserves |
+
+`bash .gtt/scripts/gtt-project.sh interaction` prints this for the selected plan, derived
+from its policy — the same data the CLI receives.
+
+| Situation | What GTT does |
+|---|---|
+| The id you asked for is taken | Finds the next free one (`gtt-project.sh next-id --kind adr`); a retired id is never reused. Light and Medium use it; in Hard and Team it is proposed, and you confirm it when you review the package — not in a separate question. |
+| Any operation finished | Runs `gtt-maintain.sh`: protection registry, index and validation in one run, reported in a few lines. |
+| A moved or renamed artifact | Rewriting references is a relevant change. In Light `gtt-maintain.sh` reconciles the unambiguous moves and reports them; in Medium, Hard and Team — or with no plan selected — it stops and gives the exact `gtt-reconcile.sh` command. An ambiguous move or a missing artifact is a decision in every plan. |
+| A governed or protected change | Hands you **one executable script** with the whole operation, its precondition checks and an explicit failure when the state is not the expected one. You run it; GTT never does. Then GTT validates and continues. |
+
+**GTT stops only for** a genuine architectural or semantic conflict; a decision only
+you can make; an authorization a protected or governed operation requires; a safety
+or integrity condition that prevents continuing; or missing evidence it needs to
+continue correctly. Reaching an intermediate mechanical step is not a reason to stop.
+
+**Reports are brief by default** — what was done, the result, whether you must act,
+and the next step:
+
+```text
+✓ Protection registry in sync.
+✓ Index rebuilt (51 artifact(s), 513 section(s)).
+✓ Validation: 11 passed, 1 skipped.
+```
+
+Detail is never withheld, only not volunteered: `gtt-maintain.sh --verbose`,
+`gtt-status.sh`, `gtt-query.sh`, or the full output of any check.
+
+Where this is enforced: the two services above are deterministic scripts. The
+behaviour around them — not asking, stopping only for the reasons listed, reporting
+briefly — is an instruction to agents and a policy the CLI executes; the Bootstrap
+declares it (`profiles.json` → `developer_experience`) and cannot verify that an ADE
+follows it.
+
 ## Selecting and changing a plan
 
 A plan can be selected or changed at any time without recreating the project. Only

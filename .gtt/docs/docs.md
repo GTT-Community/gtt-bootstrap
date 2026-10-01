@@ -91,8 +91,8 @@ governed territory, since L3 stays free by design.
 
 ### The governed domain (`gtt-domain`)
 
-> **Status — applied.** ADR-004 moved the Engine to `.gtt/` (with GTT's own documentation in
-> `.gtt/docs/`) and gathered everything the method governs under `gtt-domain/`. Before it (ADR-003),
+> **Status — applied.** A layout change within v2.1 moved the Engine to `.gtt/` (with GTT's own documentation in
+> `.gtt/docs/`) and gathered everything the method governs under `gtt-domain/`. Before it,
 > the Engine was formerly `gtt/`, and the governed state and the documentation sat at the project root.
 
 
@@ -832,11 +832,11 @@ Always-loaded context drops from roughly 826 lines to roughly 80.
 | `gtt/governance.md` | Methodology section above |
 | `gtt/guardrails.md` | `.claude/settings.json` + `.claude/rules/` |
 | `gtt/project-context.md` | Methodology section above |
-| `gtt/context/*` | `gtt-domain/context/*` — unchanged in purpose; trimmed and marked read-only (in `gtt-domain/` since ADR-004) |
+| `gtt/context/*` | `gtt-domain/context/*` — unchanged in purpose; trimmed and marked read-only (in `gtt-domain/` in the current layout) |
 | *(new)* | `gtt-domain/context/stack.md` — the visual stack and architecture map |
-| *(new)* | `gtt-domain/change-request.md` — the single entry point for changes (root in v2, under `gtt/` in v2.1, project root after the scaffold restructure, `gtt-domain/` since ADR-004) |
+| *(new)* | `gtt-domain/change-request.md` — the single entry point for changes (root in v2, under `gtt/` in v2.1, project root after the scaffold restructure, `gtt-domain/` in the current layout) |
 | *(new)* | `gtt-domain/proposals/` — agent-writable staging area |
-| *(new)* | `.gtt/docs/index.md` — map of every file (root in v2, under `gtt/` in v2.1, `docs/index.md` after the scaffold restructure, `.gtt/docs/index.md` since ADR-004) |
+| *(new)* | `.gtt/docs/index.md` — map of every file (root in v2, under `gtt/` in v2.1, `docs/index.md` after the scaffold restructure, `.gtt/docs/index.md` in the current layout) |
 | *(new)* | `SOURCE-BRIEF.*` (project root) — the original design document, preserved by `gtt-bootstrap` |
 | *(new, v2.1)* | `gtt-domain/backlog.md` — the development line: Epics, Stories, current focus |
 | *(new, v2.1)* | `.gtt/docs/gtt-completion.md` — durable bootstrap completion record |
@@ -844,7 +844,7 @@ Always-loaded context drops from roughly 826 lines to roughly 80.
 
 ### Scaffold restructure (layout change within v2.1)
 
-The v2.1 scaffold was reorganised (ADR-003) so that its layers are separate, and then (ADR-004, below)
+The v2.1 scaffold was reorganised so that its layers are separate, and then (below)
 gathered into two homes: the Engine in `.gtt/` and the governed domain in `gtt-domain/`. Nothing about
 governance semantics changed in either step; only locations (and lowercase names) did. The table lists where
 each artifact lives now and where it lived in the v2.1 layout.
@@ -861,14 +861,14 @@ each artifact lives now and where it lived in the v2.1 layout.
 | `.gtt/scaffold/manifest.yaml` | *(new)* the declarative scaffold definition |
 
 `.gtt/scripts/`, `.gtt/index/`, `.gtt/protection/`, and `.gtt/session-adapters/` moved to `.gtt/`
-in ADR-004 (formerly `gtt/`). Artifact ids are unchanged — identity follows the artifact, not the path.
+in the layout migration below (formerly `gtt/`). Artifact ids are unchanged — identity follows the artifact, not the path.
 
-### Layout migration to `.gtt/` and `gtt-domain/` (ADR-004)
+### Layout migration to `.gtt/` and `gtt-domain/`
 
-ADR-004 renamed the Engine directory, moved GTT's documentation into it, and gathered the governed
+This migration renamed the Engine directory, moved GTT's documentation into it, and gathered the governed
 state under one directory. Only locations changed; the freeze marker moved byte for byte.
 
-| Now | Before ADR-004 (the ADR-003 layout) |
+| Now | Before this migration (the scaffold-restructure layout) |
 |---|---|
 | `.gtt/index/`, `.gtt/protection/`, `.gtt/scaffold/`, `.gtt/scripts/`, `.gtt/session-adapters/`, `.gtt/README.md` | `gtt/index/`, `gtt/protection/`, `gtt/scaffold/`, `gtt/scripts/`, `gtt/session-adapters/`, `gtt/README.md` | <!-- legacy-layout -->
 | `.gtt/docs/` | `docs/` | <!-- legacy-layout -->

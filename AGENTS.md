@@ -368,6 +368,60 @@ collaboration profile, never a quality level, and no plan turns governance off.
   recreates nothing. In a frozen project a *less* strict plan is refused: it is a
   governed change. The order is light < medium < hard < team.
 
+## Working without unnecessary interruption
+
+> The developer decides what only the developer can decide. GTT does everything else.
+
+Lower friction never means less governance. The policy is data -
+`.gtt/contract/profiles.json` -> `developer_experience` - and applies in every
+Method Plan; what is automatic, confirmed or proposed for each kind of operation is
+the selected plan's own `plan.policy`.
+
+**Before asking the human anything**, check whether the answer already follows from
+governed context, the selected plan, project policies and working agreements, the
+actual state of the project, or a deterministic rule. If it does: act, validate the
+result, continue. If it does not: name the decision, explain it briefly, ask once.
+
+**Do, do not ask.** Never turn these into a question:
+
+- an occupied id - take the next free one: `bash .gtt/scripts/gtt-project.sh next-id --kind adr|epic|story`
+  (it never reuses a retired id; under a plan whose id resolution is `propose_confirm`
+  or `team_policy` the human confirms the number when reviewing the package, not in a
+  separate question);
+- rebuilding the index, syncing the GTTGuard registry, validating - after any
+  operation run `bash .gtt/scripts/gtt-maintain.sh`, which does all three and reports
+  in a few lines;
+- continuing to the next planned task after a step succeeded;
+- a policy the plan or a working agreement already defines.
+
+**Protected and governed operations use a script, never a recipe.** When an operation
+needs human authorization (approve, promote, advance a governed stage, copy, move,
+delete, overwrite, modify a governed or protected artifact), provide one directly
+executable script that contains the whole operation, checks its preconditions, fails
+explicitly when the expected state is absent and runs from the project root - and give
+the one-line command. Never ask the human to reconstruct a command by hand. You still
+never run it: see *Human Promotion Boundary*. Once the human has run it, validate the
+result (`gtt-maintain.sh`) and continue.
+
+**STOP is not a general precaution.** Stop only for: a genuine architectural or
+semantic conflict; a decision only the developer can make; explicit authorization
+required for a protected or governed operation; a safety or integrity condition that
+prevents continuing safely; unresolved evidence required to continue correctly.
+Reaching an intermediate mechanical step is never a reason to stop.
+
+**Report briefly by default**: what was done, the result, whether the developer must
+act (with the exact command), and the next step when relevant. No long explanation,
+internal reasoning or operational history unless asked. Detail is never withheld: give
+it when asked, or point to it (`gtt-maintain.sh --verbose`, `gtt-status.sh`,
+`gtt-query.sh`, the full output of a check).
+
+```text
+✓ ADR draft and promotion package staged.
+✓ Validation: 11 passed, 1 skipped.
+⚠ ADR-009 needs your authorization: it changes governed context.
+→ bash gtt-domain/proposals/apply-ADR-009-base-evolution-alignment.sh
+```
+
 ## Initial Design Questionnaire
 
 When a project has no sufficient design source document, the Bootstrap offers its
@@ -674,6 +728,7 @@ Human action required:
 - Never hand-edit `.gtt/ade.json`; write it only through `.gtt/scripts/gtt-ade.sh`. Never remove an ADE path GTT did not install.
 - Never copy the Initial Design Questionnaire, or its methodology, out of the Bootstrap, and never write a `[PROPUESTA]` or an ADE inference as a confirmed decision.
 - Never select, default, infer or change the Method Plan on the human's behalf; never present a plan as a quality level; never report the unselected fallback as a choice; and never treat any plan as weakening an invariant or as permission to skip a human confirmation.
+- Never turn deterministic work into a question, never stop at an intermediate mechanical step, and never use lower friction as a reason to skip a human confirmation, a gate or the Human Promotion Boundary.
 - Never invent Epics or Stories and present them as user-defined requirements.
 - Never let a Story in `gtt-domain/backlog.md` silently override governed context or an accepted ADR.
 - Never add or remove an Epic/Story, or materially change one, outside the `gtt-domain/change-request.md` flow.
