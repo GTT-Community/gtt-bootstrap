@@ -328,6 +328,86 @@ def design_candidates():
     return out
 
 
+THINK_LEVELS = ("QUICK", "STANDARD", "DEEP")
+THINK_FALLBACK = "STANDARD"
+
+
+def think_state(path):
+    """The THINK Depth recorded in a Design Assessment working copy, and what the copy may not say whatever the
+    depth: a verdict above POOR with a floor line not met or not assessed, or a depth nobody decided.
+    Deterministic; it judges no rating."""
+    out = {"levels": list(THINK_LEVELS), "selected": None, "applies": THINK_FALLBACK, "state": "not selected",
+           "escalations": [], "verdict": None, "floor": {"met": 0, "not_met": 0, "unassessed": 0}, "findings": []}
+    if not path or not os.path.isfile(path):
+        return out
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read().replace("\r\n", "\n")
+    value = re.search(r"^THINK Depth:[ \t]*(\S*)", text, re.M)
+    depth = value.group(1) if value else ""
+    if depth in THINK_LEVELS:
+        out.update(selected=depth, applies=depth, state="selected")
+    elif depth:
+        out["findings"].append(f"THINK Depth `{depth}` is not one of {', '.join(THINK_LEVELS)}")
+    verdict = re.search(r"^Verdict:[ \t]*(\S*)", text, re.M)
+    out["verdict"] = verdict.group(1) if verdict and verdict.group(1) else None
+    if out["verdict"] and out["verdict"] not in ("STRONG", "ADEQUATE", "POOR"):
+        out["findings"].append(f"verdict `{out['verdict']}` is not one of STRONG, ADEQUATE, POOR")
+
+    def rows(heading):
+        section = re.search(r"^#+ " + re.escape(heading) + r"[^\n]*\n(.*?)(?=^#+ |\Z)", text, re.M | re.S)
+        cells = [[c.strip() for c in line.strip().strip("|").split("|")] for line in (section.group(1) if section else "").split("\n")
+                 if line.startswith("|")]
+        return [r for r in cells[2:] if any(r)]                # header and separator out
+
+    for row in rows("4. Minimum floor"):
+        state = row[-1].upper()
+        key = "met" if state == "MET" else "not_met" if state == "NOT MET" else "unassessed"
+        out["floor"][key] += 1
+    if out["verdict"] in ("STRONG", "ADEQUATE"):
+        if out["floor"]["not_met"]:
+            out["findings"].append(f"verdict {out['verdict']} with {out['floor']['not_met']} floor line(s) NOT MET: below the floor "
+                                   f"the verdict is POOR at every THINK Depth")
+        if out["floor"]["unassessed"]:
+            out["findings"].append(f"verdict {out['verdict']} with {out['floor']['unassessed']} floor line(s) not assessed: the floor "
+                                   f"is assessed line by line at every THINK Depth")
+    for row in rows("Escalation log"):
+        if len(row) < 4 or not (row[0] or row[1]):
+            continue
+        decision = row[-1]
+        accepted = bool(re.match(r"(?i)accept", decision))
+        out["escalations"].append({"from": row[0], "to": row[1], "decision": decision or "pending", "accepted": accepted})
+        if row[1] not in THINK_LEVELS or row[0] not in THINK_LEVELS:
+            out["findings"].append(f"escalation `{row[0]}` -> `{row[1]}` names a depth that does not exist")
+        elif row[1] == out["selected"] and not accepted:
+            out["findings"].append(f"THINK Depth is {row[1]} through an escalation the human has not accepted: the ADE proposes, "
+                                   f"the human decides")
+    return out
+
+
+def think_copy():
+    """Where the THINK Depth of this project is recorded: the Design Assessment working copy when there is a
+    design document, otherwise the questionnaire working copy. None while neither exists."""
+    templates = gm.templates(gm.load())
+    for tid in ("design-assessment", "initial-design-questionnaire"):
+        path = (templates.get(tid) or {}).get("materialize_to")
+        if path and os.path.isfile(path):
+            return path
+    return None
+
+
+def cmd_think(args):
+    state = think_state(think_copy())
+    if args.json:
+        emit(state)
+    else:
+        print(f"THINK Depth: {state['selected'] or 'not selected (' + state['applies'] + ' applies)'}; verdict: {state['verdict'] or 'none'}; "
+              f"floor: {state['floor']['met']} met, {state['floor']['not_met']} not met, {state['floor']['unassessed']} not assessed; "
+              f"escalations: {len(state['escalations'])}")
+        for finding in state["findings"]:
+            print(f"FAIL  design assessment: {finding}", file=sys.stderr)
+    return 1 if state["findings"] else 0
+
+
 def cmd_detect(args):
     engine, domain = os.path.isdir(".gtt"), os.path.isdir("gtt-domain")
     layout = None
@@ -349,23 +429,36 @@ def cmd_detect(args):
     has_brief = bool(glob.glob("SOURCE-BRIEF.*"))
     tpl = gm.templates(gm.load()).get("initial-design-questionnaire") if engine and layout else None
     offer = bool(tpl) and state == "virgin" and not candidates and not has_brief
+    review = gm.templates(gm.load()).get("design-assessment") if engine and layout else None
+    assess = bool(review) and state == "virgin" and bool(candidates) and not has_brief
     out = {"schema": 1, "kind": "gtt-project-detection", "state": state,
            "gtt": {"engine": engine, "domain": domain, "scaffold_layout": layout,
                    "bootstrap": release()["bootstrap"] if engine else None},
            "catalog": bool(overlays) and all(os.path.exists(o["path"]) for o in overlays.values()) and not os.path.isfile(".gtt/ade.json"),
            "frozen": frozen_since(), "context": ctx,
            "design_sources": {"candidates_at_root": candidates, "source_brief": has_brief,
+                              "multiple": len(candidates) > 1,
+                              "resolution": {"required": len(candidates) > 1, "options": ["CONSOLIDATE", "KEEP_AS_SOURCES"],
+                                             "decided_by": "the human; never inferred from file order, name or size"},
                               "note": "candidates only; which one is authoritative is a human decision (Confirmation A)"},
+           "assessment": {"offer": assess, "operation": "template.materialize", "template": "design-assessment",
+                          "working_copy": review["materialize_to"] if review else None,
+                          "working_copy_exists": bool(review) and os.path.isfile(review["materialize_to"]),
+                          "verdicts": ["STRONG", "ADEQUATE", "POOR"],
+                          "think_depth": think_state(think_copy() if engine and layout else None),
+                          "note": "the Primary ADE writes it; a POOR design is strengthened before it is used as a source"},
            "questionnaire": {"offer": offer, "operation": "template.materialize", "template": "initial-design-questionnaire",
                              "working_copy": tpl["materialize_to"] if tpl else None,
-                             "working_copy_exists": bool(tpl) and os.path.isfile(tpl["materialize_to"])},
+                             "working_copy_exists": bool(tpl) and os.path.isfile(tpl["materialize_to"]),
+                             "think_depth": "recorded in the questionnaire working copy when there is no Design Assessment"},
            "ade_configured": os.path.isfile(".gtt/ade.json"),
            "methodology": {k: current_profile()[k] for k in ("profile", "source", "language")}}
     if args.json:
         emit(out)
     else:
         print(f"state: {state}; frozen: {out['frozen'] or 'no'}; design candidates: {', '.join(candidates) or 'none'}; "
-              f"questionnaire offered: {offer}")
+              f"questionnaire offered: {offer}; design assessment offered: {assess}"
+              + ("; several documents: the human chooses CONSOLIDATE or KEEP_AS_SOURCES" if len(candidates) > 1 else ""))
     return 0
 
 
@@ -499,6 +592,7 @@ def cmd_session(args):
                    "recent_commits": recent.splitlines() if recent else []},
            "operational": {"ade": ade_json("state"), "methodology": {"profile": cur["profile"], "language": cur["language"]},
                            "stories_in_progress": stories("In Progress"), "stories_blocked": stories("Blocked"),
+                           "stories_undesigned": stories("Undesigned"),
                            "governance": governance()},
            "artifacts": {"governed_context": ctx_files,
                          "adrs": sorted(glob.glob("gtt-domain/adr/ADR-[0-9]*.md")),
@@ -644,6 +738,7 @@ def build_parser():
     parser = argparse.ArgumentParser(prog="gtt-project.sh", description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("detect"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_detect)
+    p = sub.add_parser("think"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_think)
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.add_argument("--with-validation", action="store_true"); p.set_defaults(func=cmd_status)
     p = sub.add_parser("session"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_session)
     p = sub.add_parser("validation"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_validation)

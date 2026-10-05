@@ -17,6 +17,16 @@ Before changing module boundaries, public interfaces, or the shape of a layer,
 read `gtt-domain/context/stack.md` — sections 2 and 5 define the component map and the
 dependency rules. If the change does not fit, stop and write a proposal.
 
+Implement only against the written Story in `gtt-domain/backlog.md`: it must
+be `Ready` or `In Progress` (designed and approved). An `Undesigned` Story is
+not implementable. If something not written in the Story is needed, stop and
+update the Story first through a proposal, then continue.
+
+Read what the Story's `Governed by` points to before writing code. When its
+tests pass and its acceptance criteria hold, close it in the backlog:
+`Status: Done` and `Closed: <date> — <commit or PR> — <tests passed>`, from
+what actually happened.
+
 Stay inside the existing folder structure and paradigm. Do not add abstraction
 layers or patterns that are not already present.
 

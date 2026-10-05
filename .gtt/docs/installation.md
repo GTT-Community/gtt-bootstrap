@@ -23,7 +23,7 @@ In both modes, the final objective is the same: establish the GTT workspace cont
 - Git.
 - Bash for the CI gate and shell scripts.
 - Python 3 for the protection hook.
-- Claude Code, Kiro, Codex, GitHub Copilot, or another ADE capable of following the GTT bootstrap procedure.
+- Claude Code, Kiro, Codex, GitHub Copilot, Cursor, OpenHands, or another ADE capable of following the GTT bootstrap procedure.
 - A completed design/source document is recommended but not mandatory.
 
 The design document may be Markdown, text, Word, PDF, or another common format.
@@ -221,12 +221,13 @@ An agent should treat this repository as an executable documentation contract, n
 4. Inspect the host project.
 5. Identify the host project's design/source document.
 6. If there is no document, offer the Initial Design Questionnaire (`gtt-template.sh materialize initial-design-questionnaire`) and proceed through the ADE-guided conversation it structures; never improvise a second questionnaire.
-7. If there are multiple candidates, ask the user.
+7. If there are multiple candidates, ask the user; when several are design sources, the user chooses `CONSOLIDATE` (one drafted document, every statement with its `[FUENTE]`, conflicts left visible) or `KEEP_AS_SOURCES` (all declared in the source manifest).
+   If a document exists, write the Design Assessment (`gtt-template.sh materialize design-assessment`): area ratings, the minimum floor (stack and datastore decided), the verdict, and the strengthening plan with stack options as `[PROPUESTA]`. A `POOR` design is strengthened before it is used.
 8. Never guess which source document is authoritative.
 9. Never overwrite an existing same-name file silently.
 10. Create the GTT workspace contract: the portable core plus only the overlays of the participating ADEs, explicitly excluding the others.
 11. Map the confirmed source into the governed context.
-12. Check for defined Epics/Stories (a requirements doc, issue tracker, or prior conversation). If found, reconcile them into `gtt-domain/backlog.md`; if none exist, say so explicitly rather than inventing them.
+12. Check for defined Epics/Stories (a requirements doc, issue tracker, or prior conversation). If found, reconcile them into `gtt-domain/backlog.md`; if none exist, say so explicitly rather than inventing them. A Story for which the source gives only a title is recorded as `Undesigned` and reported as such — never filled in to look complete.
 13. Ask the user to confirm the generated context.
 14. Preserve the source as `SOURCE-BRIEF.*`.
 15. Freeze only after explicit human confirmation.

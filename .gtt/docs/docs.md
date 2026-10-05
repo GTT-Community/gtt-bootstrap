@@ -11,7 +11,7 @@ None of it loads automatically in any tool, so merging costs nothing and saves
 a file.
 
 - [Methodology](#methodology) — the model itself: layers, enforcement planes, the change flow
-- [Portability: Claude Code, Kiro, Codex, Copilot](#portability-claude-code-kiro-codex-copilot) — what each tool enforces and how to adapt
+- [Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands](#portability-claude-code-kiro-codex-copilot-cursor-openhands) — what each tool enforces and how to adapt
 - [Migrating from GTT v1](#migrating-from-gtt-v1) — file mapping and upgrade steps
 
 ---
@@ -326,8 +326,10 @@ and `gtt-domain/adr/` — `gtt-domain/backlog.md` is **not** in `permissions.den
 blocked by `protect-l0.py`. Its protection is instruction-plane (`AGENTS.md`,
 the `gtt-propose-change` and `gtt-audit` skills) plus one deterministic
 backstop: `.gtt/scripts/gtt-check-backlog.sh` fails the build on duplicate
-Epic/Story IDs or a status value outside the agreed vocabulary, and warns on
-an Epic with no Stories yet. What it cannot check — whether an Epic/Story is
+Epic/Story IDs or a status value outside the agreed vocabulary, fails when a
+`Ready`, `In Progress` or `Done` Story is not a complete Story Ready
+definition (below), warns on an Epic with no Stories yet and reports the
+Stories still `Undesigned`. What it cannot check — whether an Epic/Story is
 real, current, and actually reflects the work being done, or whether a
 structural change actually went through `gtt-domain/change-request.md` — is the
 `gtt-audit` *Backlog reconciliation* pass's job, not the script's.
@@ -340,6 +342,32 @@ the backlog to match. When none are defined at all, say so explicitly and
 ask whether the development line should be defined — never invent business
 Epics/Stories and present them as user-defined requirements; a proposed one
 stays labeled `Status: Proposed` until accepted.
+
+**Story Ready: the design of a Story is governed too.** GTT governs
+architecture with rigor (context, ADR, freeze); a backlog of titles leaves
+the design of each Story ungoverned, so the agent completes it from its own
+reading of the sources and the result exists only in the conversation. The
+next session, or the next person, has nowhere to get it from. The rule that
+closes this:
+
+| Element | Rule |
+|---|---|
+| Definition | A Story Ready carries Description, Scope, Out of Scope, Acceptance Criteria, Tests, Sources, `Governed by` and `Design Approved` (who, `YYYY-MM-DD`) — written in `gtt-domain/backlog.md` |
+| Origin | Every statement in the first four is `[FUENTE: ref]`, `[HUMANO]` or `[PROPUESTA]`, so what the sources say and what the agent proposed stay distinguishable after approval. A `[VACÍO]` or `[CONFLICTO]` means the Story is not designed yet |
+| Status | `Undesigned` = in the line, title only, not implementable. `Ready` = designed and approved, and nothing else. `Proposed` keeps its meaning: not yet accepted into the line |
+| Gate | `gtt-check-backlog.sh` fails a `Ready`, `In Progress` or `Done` Story with an empty field, a missing origin or no approval. It checks that the definition is written, not that it is good or that a source says what the tag claims — that is `gtt-audit` |
+| Bootstrap | A source that brings only titles produces `Undesigned` Stories, and the bootstrap reports how many; it never fills them in to look complete |
+| Design stage | Before an Epic is implemented: analyse it against the sources, propose the complete Stories, mark gaps, obtain approval Story by Story (`gtt-propose-change`, form 6). One Story's approval never carries over to the next |
+| Implementation | Only against the written Story. Something unwritten turns out to be needed → stop, update the Story, continue once approved |
+| Governed by | Each Story names the governed decisions that apply (ADR ids, context sections) or `None`. A reference, never a copy: copying context into Stories would create a second source of truth that goes stale when an ADR changes. The gate fails a cited ADR that does not exist |
+| Closure | A `Done` Story carries `Closed` (date, commit or PR, tests passed); an Epic is `Completed` only when all its Stories are `Done` or `Cancelled`. Writing `Closed` is a routine status update, recorded from what actually happened |
+
+Writing a Story's design is a material change to its scope and acceptance
+criteria, so it already belonged to the governed half of the table above;
+this rule only makes that explicit and checkable. `[PROPUESTA]` is legitimate
+here and nowhere in governed context: the backlog is not L0, and an approved
+Story is the place where an agent's proposal, accepted by a human, is
+recorded as exactly that.
 
 **Why not just another ADR-governed file?** An ADR records a decision that,
 once made, rarely changes shape again. A Story is expected to move through
@@ -612,7 +640,7 @@ broadly — narrow them rather than working around them.
 
 ---
 
-## Portability: Claude Code, Kiro, Codex, Copilot
+## Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands
 
 GTT v2 separates **content** from **mechanism**. The governed context
 (`gtt-domain/context/`, `gtt-domain/adr/`) is plain markdown and is fully portable. What differs per tool is how
@@ -642,6 +670,20 @@ ADE's memory) are integration surfaces, never governance.
 | Governed context in `gtt-domain/context/` and `gtt-domain/adr/` | works | works | works | works |
 | CI gate (`.gtt/scripts/`) | works | works | works | works |
 | GTTGuard real-time block | yes — `protect-guard.py` | no — CI gate only | no — CI gate only | no — CI gate only |
+
+Cursor and OpenHands, added after the four above, have their own rows:
+
+| Capability | Cursor | OpenHands |
+|---|---|---|
+| Always-loaded instructions | `AGENTS.md` + `.cursor/rules/gtt.mdc` (`alwaysApply`) | `AGENTS.md` |
+| Reads `AGENTS.md` natively | yes | yes |
+| Path-scoped rules | `.cursor/rules/*.mdc` + `globs` | none — a skill's `triggers` / `paths` |
+| On-demand procedures | rules selected by `description` | repository skills in `.agents/skills/` |
+| Programmatic pre-tool block | `preToolUse` in `.cursor/hooks.json` — shipped, **unverified in the ADE** | `pre_tool_use` in `.openhands/hooks.json` — shipped, **unverified in the ADE** |
+| Session context at session start | `sessionStart` hook — shipped, unverified | `session_start` hook — shipped, unverified |
+| Governed context and CI gate | works | works |
+| GTTGuard real-time block | through the same hook — unverified | through the same hook — unverified |
+| Verified at runtime in the ADE | no | no |
 
 \* GTT's Copilot adapter file actually lives at `.copilot/copilot-instructions.md`
 (naming consistency with `.claude/`/`.kiro/`), so Copilot does not load it
@@ -742,6 +784,66 @@ quickly.
 GTTGuard has no real-time block on Codex either, for the same reason: its
 registry is dynamic content a static filesystem glob cannot evaluate.
 `gtt-check-protection.sh` in CI is the enforcement, backed by `AGENTS.md`.
+
+### Cursor
+
+Cursor reads `AGENTS.md` from the project root natively, so the portable core
+loads with no adapter at all. The overlay adds two project rules — Cursor only
+loads rules with the `.mdc` extension and a frontmatter:
+
+| File | Frontmatter | Loaded |
+|---|---|---|
+| `.cursor/rules/gtt.mdc` | `alwaysApply: true` | every conversation — the governed paths, the marker, where the procedures are |
+| `.cursor/rules/gtt-implementation.mdc` | `globs: src/**/*,lib/**/*,tests/**/*` | when a matching file is in play — the mirror of `.claude/rules/implementation.md` |
+
+GTT owns exactly those two files (`owned:` in the registry), never `.cursor/`:
+a host project's own rules, `hooks.json` and settings there are untouched by
+`install`, `clean` and `export --clean`.
+
+The overlay also ships `.cursor/hooks.json`. Cursor documents `preToolUse` as
+able to deny a tool call (`"permission": "deny"` or exit code 2) and
+`sessionStart` as able to inject `additional_context`; GTT registers both, each
+running `.gtt/scripts/gtt_protect.py hook --format cursor`. That engine is
+ADE-neutral: it applies the same rules as Claude Code's `protect-l0.py` and
+`protect-guard.py` — governed paths, the freeze regime, promotion scripts, the
+hook configuration itself, GTTGuard with live span resolution — and only the
+input and output shapes are Cursor's. It fails open: an event it does not
+understand never blocks a session.
+
+It is built from Cursor's documented contract and tested against those
+payloads (`protection_hooks` in the acceptance suite), **not verified inside
+Cursor**. The names of the fields a `Write` tool call carries are not
+documented, so the engine looks for the usual ones (`file_path`, `path`) and
+lets through what it cannot read. The registry states `enforcement:
+realtime-hook-unverified`; the CI gate remains the guaranteed layer. A host
+project that already has a `.cursor/hooks.json` is a conflict `gtt-ade.sh
+install` reports rather than merges.
+
+### OpenHands
+
+OpenHands includes the repository's root `AGENTS.md` in the initial system
+prompt of every conversation, so the portable core is its always-on entry
+point — that is what the registry records as `entry`. The overlay adds one
+repository skill, `.agents/skills/gtt/SKILL.md` (frontmatter `name`,
+`description`, `triggers`), which carries the OpenHands-specific notes: which
+section of `AGENTS.md` governs which situation, and that a governed decision
+is never taken in an unattended run. `.agents/skills/` is the current location;
+OpenHands still reads the legacy `.openhands/skills/` and
+`.openhands/microagents/`, which GTT does not use.
+
+GTT owns exactly that one file, never `.agents/` or `.openhands/`. Detection
+uses `.openhands/` only: `.agents/` is shared with other tools and would make
+OpenHands a false candidate.
+
+The overlay also ships `.openhands/hooks.json`: `pre_tool_use` (matcher `*`)
+and `session_start`, both running `.gtt/scripts/gtt_protect.py hook --format
+openhands` — the same engine as Cursor's, answering `{"decision": "deny"}` and
+exit code 2, or `additionalContext` on session start. Same status: built from
+the documented contract, tested against it, **not verified inside OpenHands**
+(`enforcement: realtime-hook-unverified`). This matters more here than
+elsewhere, because OpenHands is often run unattended — the CI gate and a
+branch rule on `gtt-domain/context/**` and `gtt-domain/adr/**` are the real
+backstop until the hook is proven.
 
 ### GitHub Copilot
 

@@ -14,7 +14,7 @@
     "dynamic": [
       { "source": "ade.owned", "operation": "ade.owned", "reason": "GTT-installed ADE overlay files recorded in the ledger (.gtt/ade.json). Directories that merely resemble an ADE's are never matched by name." }
     ],
-    "never_by_name": [".claude/", ".kiro/", ".copilot/", ".codex/", ".github/"]
+    "never_by_name": [".claude/", ".kiro/", ".copilot/", ".codex/", ".github/", ".cursor/", ".openhands/", ".agents/"]
   },
   "export": {
     "clean": {

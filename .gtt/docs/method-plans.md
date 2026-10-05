@@ -19,6 +19,11 @@ the disagreement is a defect to report.
   they fit different situations.
 - A plan **never turns governance off**. The rules in the next section hold in all
   four.
+- A plan is **not the THINK Depth**. The Design Assessment has its own levels —
+  `QUICK`, `STANDARD` and `DEEP` — for how deep the design is assessed and explored
+  during bootstrap. The depth is chosen separately, is never derived from the plan,
+  and changes no gate. See *Assessing and strengthening an existing design* in
+  `readme-gtt.md`.
 
 ## What no plan changes
 
@@ -233,10 +238,19 @@ you can make; an authorization a protected or governed operation requires; a saf
 or integrity condition that prevents continuing; or missing evidence it needs to
 continue correctly. Reaching an intermediate mechanical step is not a reason to stop.
 
+**GTT says when it is GTT speaking.** Every message the method raises in your ADE — a
+question, a confirmation or choice, the Initial Design Questionnaire, a proposal, a
+finding, a request for authorization, a report — opens with `@gtt · <what it is>`:
+`@gtt · Method Plan`, `@gtt · Initial Design Questionnaire`, `@gtt · Authorization
+required`. The assistant's ordinary conversation carries no marker, so you can always
+tell the method from the assistant. The marker says who is speaking; it is never a
+decision or an approval.
+
 **Reports are brief by default** — what was done, the result, whether you must act,
 and the next step:
 
 ```text
+@gtt · Report
 ✓ Protection registry in sync.
 ✓ Index rebuilt (51 artifact(s), 513 section(s)).
 ✓ Validation: 11 passed, 1 skipped.

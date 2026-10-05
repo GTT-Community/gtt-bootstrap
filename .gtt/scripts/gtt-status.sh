@@ -29,7 +29,11 @@ fi
 
 IN_PROGRESS=""
 BLOCKED=""
+UNDESIGNED="not available (.gtt/scripts/gtt_backlog.py not found)"
 if [ -f "gtt-domain/backlog.md" ]; then
+  if [ -f ".gtt/scripts/gtt_backlog.py" ] && [ -f ".gtt/scripts/gtt-run-python.sh" ]; then
+    UNDESIGNED="$(bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_backlog.py summary 2>&1 || true)"
+  fi
   IN_PROGRESS="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*In Progress\s*$' gtt-domain/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
   BLOCKED="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*Blocked\s*$' gtt-domain/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
 fi
@@ -119,6 +123,9 @@ GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
   echo
   echo "## Blocked (Stories Blocked)"
   if [ -n "$BLOCKED" ]; then echo "$BLOCKED"; else echo "none"; fi
+  echo
+  echo "## Story design (Undesigned = title only; not implementable until designed and approved)"
+  echo "${UNDESIGNED}"
   echo
   echo "## Pending proposals (gtt-domain/proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi

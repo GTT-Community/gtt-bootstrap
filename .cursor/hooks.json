@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format cursor",
+        "matcher": "Shell|Write|Delete",
+        "timeout": 20
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format cursor",
+        "timeout": 30
+      }
+    ]
+  }
+}

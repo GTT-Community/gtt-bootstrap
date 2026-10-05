@@ -37,7 +37,7 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.2.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.3.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
 | 4 Capability registry | 15 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |
@@ -92,7 +92,9 @@ operations keep; they are the same thing. The plain-words rendering is [method-p
 
 ## Developer experience — minimum friction, full governance
 
-`profiles.json` → `developer_experience` declares the rule a CLI and an agent follow around operations. The rule is one;
+`profiles.json` → `developer_experience` declares the rule a CLI and an agent follow around operations.
+Its `dialogue` entry declares the marker (`@gtt`) that opens every message raised on behalf of GTT — a
+CLI that prompts or reports for the Bootstrap reads the marker from there and never hard-codes it. The rule is one;
 its effect differs by plan, and that difference is never a second definition: `methodology.profile.get` returns
 `interaction` (`without_asking`, `asks_for`, `id_resolution`, `maintain_reconciles_moves`), derived from the selected
 plan's `plan.policy`. The rule:

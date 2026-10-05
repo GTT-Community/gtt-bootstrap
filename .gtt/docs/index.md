@@ -46,7 +46,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 | See what this system is, in one screen | `gtt-domain/context/stack.md` |
 | Understand why GTT works this way | `.gtt/docs/docs.md` (Methodology) |
 | Set this up in my project | `readme-gtt.md` |
-| Run it on Kiro, Codex, or Copilot | `.gtt/docs/docs.md` (Portability) |
+| Run it on Kiro, Codex, Copilot, Cursor, or OpenHands | `.gtt/docs/docs.md` (Portability) |
 | See which adapter I get for my ADE | `.claude/skills/gtt-bootstrap/SKILL.md` (step 0) or `readme-gtt.md` → *ADE adapters* |
 | Resume work / see current state, regardless of which ADE picks it up | `.gtt/scripts/gtt-status.sh` (regenerates `gtt-domain/session.md`) |
 | Run every deterministic check before a release | `.gtt/scripts/gtt-validate.sh` |
@@ -80,7 +80,9 @@ exception: `gtt-bootstrap` writes them directly. See `gtt-domain/.frozen` under
 changes (new/removed Epic or Story, material scope or acceptance-criteria
 change) go through `gtt-domain/change-request.md` like an architectural decision. Story
 status and focus updates during already-approved implementation are direct
-edits — see *Backlog governance* in `AGENTS.md`. Precedence: L0 → ADR →
+edits — see *Backlog governance* in `AGENTS.md`. A Story is implementable
+only when `Ready` — its design written and approved; a title-only Story is
+`Undesigned` (see *Story Ready* in the backlog itself). Precedence: L0 → ADR →
 `gtt-domain/backlog.md` → implementation; a Story never overrides governed context.
 
 ## Staging — agents write here
@@ -141,6 +143,10 @@ source repository is the catalog, not an installed project.
 | `.claude/rules/infrastructure.md` *(Claude Code adapter)* | Rules for `infra/`, `deploy/`, CI | on matching files |
 | `.kiro/steering/gtt-implementation.md` *(Kiro adapter)* | Kiro mirror of the above | on matching files |
 | `.kiro/steering/gtt-infrastructure.md` *(Kiro adapter)* | Kiro mirror of the above | on matching files |
+| `.gtt/scripts/gtt_protect.py` | ADE-neutral write protection and session context for hook-capable ADEs: one decision engine (governed paths, freeze regime, promotion scripts, GTTGuard), each ADE's payload in and its deny shape out (`hook --format cursor|openhands`). Fails open; unverified inside those ADEs | Cursor and OpenHands hooks |
+| `.cursor/hooks.json`, `.openhands/hooks.json` | The hook registrations that point Cursor's `preToolUse`/`sessionStart` and OpenHands' `pre_tool_use`/`session_start` at `gtt_protect.py` | Cursor / OpenHands |
+| `.cursor/rules/gtt.mdc`, `.cursor/rules/gtt-implementation.mdc` *(Cursor adapter)* | Cursor project rules: the first always applied (governed paths, the `@gtt` marker, where the procedures are), the second attached to implementation files. GTT owns only these two files, never the host's `.cursor/` | Cursor |
+| `.agents/skills/gtt/SKILL.md` *(OpenHands adapter)* | OpenHands repository skill: which section of `AGENTS.md` governs which situation, and the rule that a governed decision is never taken in an unattended run. `AGENTS.md` itself is OpenHands' always-on entry point | OpenHands |
 | `.copilot/copilot-instructions.md` *(Copilot adapter)* | Points Copilot at `AGENTS.md` and the governed directories (`gtt-domain/context/`, `gtt-domain/adr/`) as the canonical source; no duplicated methodology. Not auto-loaded by Copilot at this path — see the note in `readme-gtt.md` → *ADE adapters* | never (manual reference only, unless also mirrored to `.github/copilot-instructions.md`) |
 
 ## Procedures — load only when invoked
@@ -173,8 +179,9 @@ source repository is the catalog, not an installed project.
 | `.gtt/scripts/gtt-ade.sh` / `.gtt/scripts/gtt_ade.py` / `.gtt/scripts/gtt_manifest.py` | The ADE integration service (Multi-ADE): registry (`list`), candidates (`detect`), `state`, `validate`, GTT-installed surfaces (`owned`), and the mutating `install` / `adopt` / `set-primary` / `record` / `remove` / `update` (dry run until `--apply`). ADE-independent; the Primary ADE holds no authority |
 | `.gtt/scripts/gtt-template.sh` / `.gtt/scripts/gtt_template.py` | The Bootstrap's template service: `list`, `show`, `materialize` (dry run until `--apply`, never overwrites) — how a CLI requests the Initial Design Questionnaire instead of carrying a copy |
 | `.gtt/ade.json` | Per-project ADE state: participating, primary and excluded ADEs and the ledger (path → sha256) of files GTT installed for them. Written only by `gtt-ade.sh`; not governed context, not authority. Absent in the catalog |
+| `.gtt/scaffold/templates/gtt-design-assessment.md` | The Design Assessment: what the Primary ADE writes when a design document exists — area ratings, the minimum floor (stack and datastore decided), the verdict (`STRONG`/`ADEQUATE`/`POOR`), how several documents are resolved, and the strengthening plan with stack options. Owned by the Bootstrap; source material, never a decision | the Bootstrap |
 | `.gtt/scaffold/templates/gtt-initial-design-questionnaire.md` | The Initial Design Questionnaire: the ADE-guided elicitation instrument for a project without a sufficient design document. Owned by the Bootstrap; a filled copy is source material, never governed architecture |
-| `.gtt/scripts/gtt-check-backlog.sh` | CI gate: fails on duplicate Epic/Story IDs or a status value outside the agreed vocabulary in `gtt-domain/backlog.md`; warns on an Epic with no Stories yet |
+| `.gtt/scripts/gtt-check-backlog.sh` | CI gate: fails on duplicate Epic/Story IDs or a status value outside the agreed vocabulary in `gtt-domain/backlog.md`, and on a `Ready`/`In Progress`/`Done` Story that is not a complete Story Ready definition (`.gtt/scripts/gtt_backlog.py`); reports `Undesigned` Stories; warns on an Epic with no Stories yet |
 | `.gtt/scripts/gtt-check-protection.sh` | CI gate: fails if `.gtt/protection/registry.yaml` drifts from a fresh regeneration, if an artifact/symbol/source fails to resolve, or if a protected artifact changed with no accompanying `gtt-domain/proposals/`/`gtt-domain/adr/` change (the one real-time backstop on Kiro, Codex, and Copilot) |
 | `.gtt/scripts/gtt-guard-sync.sh` / `.gtt/scripts/gtt_guard.py` | Regenerates `.gtt/protection/registry.yaml` from `@GTTGuard` markers in source; the shared, deterministic engine both this script and `protect-guard.py` import |
 | `.gtt/scripts/gtt-index.sh` / `.gtt/scripts/gtt-reconcile.sh` / `.gtt/scripts/gtt-query.sh` / `.gtt/scripts/gtt_artifacts.py` | Register artifacts and rebuild the derived index / reconcile moves and rewrite links / section-level retrieval; the shared deterministic engine behind all three and the check below |
@@ -188,7 +195,7 @@ source repository is the catalog, not an installed project.
 | `gtt-domain/working-agreements.md` *(optional)* / `.gtt/local/preferences.md` *(optional, local)* | Team working agreements / a person's own preferences: below governed context, never authority, never session memory |
 | `.gtt/scaffold/templates/gtt-sources-manifest.md`, `gtt-working-agreements.md` | Bootstrap-owned templates for the two files above, requested through `gtt-template.sh` |
 | `.gtt/scripts/gtt-contract.sh` / `.gtt/scripts/gtt_contract.py` | The CLI-facing Bootstrap 1.0 contract entry point: `release`, `negotiate` (COMPATIBLE or REFUSE, never modifies), `capabilities`, `operations`, `show`, `run <operation>` (declared operations only, typed arguments, no shell), `check`. See `.gtt/docs/bootstrap-contract.md` |
-| `.gtt/scripts/gtt-project.sh` / `.gtt/scripts/gtt_project.py` | Structured project contracts: `detect`, `status`, `session`, `validation`, `next-id` (next free ADR/Epic/Story id, never reusing a retired one), `interaction` (what the selected plan does without asking and what it asks for), `profile get/set`, `source select/list`, `export-policy`, `clean-plan`, `recovery snapshot/restore` (dry run until `--apply`; derived from the project, never authority) |
+| `.gtt/scripts/gtt-project.sh` / `.gtt/scripts/gtt_project.py` | Structured project contracts: `detect`, `think` (the THINK Depth recorded in the Design Assessment working copy; fails on a depth nobody decided or a verdict above `POOR` with the floor unmet — run by `gtt-validate.sh` while the copy exists), `status`, `session`, `validation`, `next-id` (next free ADR/Epic/Story id, never reusing a retired one), `interaction` (what the selected plan does without asking and what it asks for), `profile get/set`, `source select/list`, `export-policy`, `clean-plan`, `recovery snapshot/restore` (dry run until `--apply`; derived from the project, never authority) |
 | `.gtt/scripts/gtt-maintain.sh` | The deterministic work after any operation in one run: GTTGuard registry sync, index rebuild, `gtt-validate.sh`. Brief report by default, `--verbose` for the full output. Under Light it also reconciles unambiguous moves; under the other plans it stops with the command. Never touches governed context |
 | `.gtt/scripts/gtt-check-contract.sh` | Gate: the contracts are consistent, versioned and fail closed (no unfreeze operation, no shell in argv, implementations confined to `.gtt/scripts/`, invariants not relaxable) |
 | `.gtt/contract/*.json` | The Bootstrap 1.0 contracts as data: `release`, `capabilities`, `operations`, `profiles`, `export-policy`, `recovery`, `elicitation` |

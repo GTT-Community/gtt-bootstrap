@@ -26,6 +26,14 @@
       "aliases": []
     },
     {
+      "id": "ART-KIRO-STEERING-GTT-DIALOGUE",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-dialogue.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-KIRO-STEERING-GTT-IMPLEMENTATION-LIB",
       "type": "instruction",
       "path": ".kiro/steering/gtt-implementation-lib.md",
@@ -221,6 +229,14 @@
       "id": "GTT-GTT-COMPLETION",
       "type": "documentation",
       "path": ".gtt/docs/gtt-completion.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-GTT-DESIGN-ASSESSMENT",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-design-assessment.md",
       "status": "active",
       "history": [],
       "aliases": []

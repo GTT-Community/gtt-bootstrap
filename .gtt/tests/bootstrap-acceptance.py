@@ -112,7 +112,7 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.2.0" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.3.0" and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
@@ -243,7 +243,7 @@ def ade(project, tmp):
     reg = json.loads(out)
     row = {a["id"]: a for a in reg["ades"]}
     need = {"id", "name", "detect", "install", "validate", "owned_paths", "handoff", "invoke", "version"}
-    check(sorted(row) == ["claude", "codex", "copilot", "kiro"] and all(need <= set(a) for a in reg["ades"]),
+    check(sorted(row) == ["claude", "codex", "copilot", "cursor", "kiro", "openhands"] and all(need <= set(a) for a in reg["ades"]),
           "the ADE registry is machine-readable with the required fields")
     check(reg["participation_states"] == ["detected", "participating", "primary", "excluded"], "participation states are defined")
     rc, env, _ = op(host, "ade.detect")
@@ -255,7 +255,7 @@ def ade(project, tmp):
     check(rc == 0 and os.path.isfile(os.path.join(host, ".claude/CLAUDE.md")), "participating ADEs are installed", env["stderr"])
     rc, env, _ = op(host, "ade.state")
     st = data(env)
-    check(st["primary"] == "claude" and st["participating"] == ["claude", "codex"] and st["excluded"] == ["copilot", "kiro"], "primary + secondary + excluded recorded")
+    check(st["primary"] == "claude" and st["participating"] == ["claude", "codex"] and st["excluded"] == ["copilot", "cursor", "kiro", "openhands"], "primary + secondary + excluded recorded")
     rc, env, _ = op(host, "ade.validate")
     check(rc == 0, "the resulting state validates")
     before_claude = tree_hash(os.path.join(host, ".claude"))
@@ -273,6 +273,43 @@ def ade(project, tmp):
     save_json(os.path.join(host, ".gtt/ade.json"), state)
     rc, env, _ = op(host, "ade.validate")
     check(rc == 1, "exactly one Primary, and it participates: a violating state fails validation")
+
+
+def cursor_and_openhands(project, tmp):
+    print("[ADE] Cursor and OpenHands: registry-driven overlays, only GTT's own files owned")
+    reg = {a["id"]: a for a in json.loads(contract(project, "show", "ade-registry")[1])["ades"]}
+    check(reg["cursor"]["owned_paths"] == [".cursor/rules/gtt.mdc", ".cursor/rules/gtt-implementation.mdc", ".cursor/hooks.json"]
+          and reg["cursor"]["handoff"]["instruction_entry"] == ".cursor/rules/gtt.mdc",
+          "Cursor integrates through two project rules and a hooks file, and GTT owns exactly those")
+    check(reg["openhands"]["owned_paths"] == [".agents/skills/gtt/SKILL.md", ".openhands/hooks.json"] and reg["openhands"]["handoff"]["instruction_entry"].endswith("GENTS.md"),
+          "OpenHands reads the portable contract as its entry point, plus one repository skill and a hooks file")
+    with open(os.path.join(project, ".cursor/rules/gtt.mdc"), encoding="utf-8") as handle:
+        rule = handle.read()
+    check(rule.startswith("---\n") and "alwaysApply: true" in rule.split("---")[1] and "@gtt" in rule,
+          "the Cursor rule is always applied and tells Cursor how to speak for GTT")
+    with open(os.path.join(project, ".agents/skills/gtt/SKILL.md"), encoding="utf-8") as handle:
+        front = handle.read().split("---")[1]
+    check("name: gtt\n" in front and "description:" in front, "the OpenHands skill carries the name and description its loader requires")
+    host = make_host(project, tmp, "co-host")
+    write(os.path.join(host, ".cursor", "rules", "team.mdc"), "---\nalwaysApply: true\n---\nthe host's own\n")
+    write(os.path.join(host, ".openhands", "setup.sh"), "echo the host's own\n")
+    cand = {c["id"]: c for c in data(op(host, "ade.detect")[1])["candidates"]}
+    check(cand["cursor"]["status"] == "candidate" and cand["openhands"]["status"] == "candidate", "both are detected as candidates, never as participating")
+    rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "cursor,openhands", "primary": "cursor", "apply": True})
+    st = data(op(host, "ade.state")[1])
+    check(rc == 0 and st["primary"] == "cursor" and st["participating"] == ["cursor", "openhands"] and st["excluded"] == ["claude", "codex", "copilot", "kiro"],
+          "a project may run on Cursor and OpenHands alone", env["stderr"][-300:])
+    check(all(os.path.isfile(os.path.join(host, f)) for f in (".cursor/rules/gtt.mdc", ".cursor/rules/gtt-implementation.mdc", ".agents/skills/gtt/SKILL.md"))
+          and not os.path.exists(os.path.join(host, ".claude")) and not os.path.exists(os.path.join(host, ".kiro")),
+          "only the chosen overlays are installed")
+    check(os.path.isfile(os.path.join(host, ".cursor/rules/team.mdc")) and os.path.isfile(os.path.join(host, ".openhands/setup.sh")),
+          "the host's own Cursor rule and OpenHands setup are untouched")
+    rc, env, _ = op(host, "ade.validate")
+    check(rc == 0, "the Cursor + OpenHands state validates", env["stderr"][-300:])
+    pol = data(op(host, "export-policy")[1])["clean_export"]
+    check(".cursor/rules/gtt.mdc" in pol["exclude"] and ".cursor/rules/team.mdc" not in pol["exclude"]
+          and ".cursor/" not in pol["exclude"] and ".agents/" not in pol["exclude"],
+          "export excludes GTT's own rule files, never the host's or the ADE directories by name", str(pol["exclude"])[-300:])
 
 
 def questionnaire(project, tmp):
@@ -296,6 +333,22 @@ def questionnaire(project, tmp):
     det = data(op(host, "project.detect")[1])
     check(not det["questionnaire"]["offer"] and det["design_sources"]["candidates_at_root"] == ["design-notes.md"],
           "a candidate document is reported, not assumed, and the questionnaire is not offered")
+    check(det["assessment"]["offer"] and det["assessment"]["template"] == "design-assessment" and det["assessment"]["verdicts"] == ["STRONG", "ADEQUATE", "POOR"]
+          and not det["design_sources"]["multiple"] and not det["design_sources"]["resolution"]["required"],
+          "a design document -> its assessment is offered")
+    write(os.path.join(host, "requirements.md"), "# reqs\n")
+    det = data(op(host, "project.detect")[1])
+    check(det["design_sources"]["multiple"] and det["design_sources"]["resolution"]["required"]
+          and det["design_sources"]["resolution"]["options"] == ["CONSOLIDATE", "KEEP_AS_SOURCES"] and "never inferred" in det["design_sources"]["resolution"]["decided_by"],
+          "several documents -> consolidate or keep as sources, decided by the human")
+    rc, env, _ = op(host, "template.materialize", id="design-assessment", apply=True)
+    with open(os.path.join(host, "gtt-domain/proposals/bootstrap/design-assessment.md"), encoding="utf-8") as handle:
+        text = handle.read()
+    check(rc == 0 and all(x in text for x in ("## 4. Minimum floor", "The technology stack is decided", "`POOR`", "CONSOLIDATE", "KEEP_AS_SOURCES", "[PROPUESTA]")),
+          "the assessment carries the floor (stack decided), the verdict and the stack options", env["stderr"])
+    check(data(op(host, "project.detect")[1])["assessment"]["working_copy_exists"], "the assessment working copy is detected")
+    os.remove(os.path.join(host, "gtt-domain/proposals/bootstrap/design-assessment.md"))
+    os.remove(os.path.join(host, "requirements.md"))
     os.remove(os.path.join(host, "design-notes.md"))
     rc, env, _ = op(host, "template.materialize", id="initial-design-questionnaire", apply=True)
     target = os.path.join(host, q["output"])
@@ -372,7 +425,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.2.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == "1.3.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -432,7 +485,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.2.0", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.3.0", "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),
@@ -458,6 +511,17 @@ def developer_experience(project, tmp):
           "protected operations stay with the human; STOP has a closed list of reasons")
     check(data(op(p, "methodology.profile.get")[1])["developer_experience"]["report"]["default"] == "brief",
           "the CLI receives the policy with the plan")
+    talk = data(op(p, "methodology.profile.get")[1])["developer_experience"]["dialogue"]
+    check(talk["marker"] == "@gtt" and all(e.startswith("@gtt") for e in talk["examples"]) and talk["authority"].startswith("none"),
+          "GTT's dialogue is identified by its marker, which carries no authority")
+    with open(os.path.join(p, ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md"), encoding="utf-8") as handle:
+        check("`@gtt · Initial Design Questionnaire`" in handle.read(), "the questionnaire tells the ADE to open every turn with the marker")
+    q = fresh(project, tmp, "dx-marker")
+    broken = read_json(os.path.join(q, ".gtt/contract/profiles.json"))
+    broken["developer_experience"]["dialogue"]["authority"] = "the marker approves"
+    save_json(os.path.join(q, ".gtt/contract/profiles.json"), broken)
+    rc, out, err = bash(q, ".gtt/scripts/gtt-check-contract.sh")
+    check(rc == 1 and "dialogue.authority must be none" in out + err, "a marker that claims authority fails the contract check", (out + err)[-200:])
     # the next free id is determined, never asked for
     h = tree_hash(p)
     rc, env, _ = op(p, "artifact.next-id", kind="adr")
@@ -540,6 +604,117 @@ def fresh_host(project, tmp):
     rc, env, _ = op(host, "index")
     rc, env, _ = op(host, "validation.run")
     check(env["exit_code"] == 0 and data(env)["result"] == "pass", "after reconcile and index the fresh host validates", str(data(env))[:200])
+
+
+def any_ade_alone(project, tmp):
+    print("[ADE matrix] every ADE works alone: install -> reconcile -> index -> validation.run")
+    for ade in ("claude", "codex", "copilot", "cursor", "kiro", "openhands"):
+        host = make_host(project, tmp, f"alone-{ade}")
+        for kit in ("readme-gtt.md", "readme-gtt.es.md"):
+            shutil.copy2(os.path.join(project, kit), host)
+        rc, env, _ = op(host, "ade.install", **{"from": project, "participating": ade, "primary": ade, "apply": True})
+        op(host, "reconcile", retire_missing=True, apply=True)
+        op(host, "index")
+        rc, env, _ = op(host, "validation.run")
+        v = data(env)
+        check(env["exit_code"] == 0 and v["result"] == "pass", f"a project whose only ADE is {ade} validates", str(v.get("failing"))[:200] + str(v.get("messages"))[:200])
+        if ade != "claude":
+            check(any(c["result"] == "skipped" and c["check"].startswith("gtt-check-session-adapter.sh claude") for c in v["checks"]),
+                  f"{ade}: the session adapter of an ADE that does not participate is skipped, never failed")
+    host = make_host(project, tmp, "alone-claude-broken")
+    for kit in ("readme-gtt.md", "readme-gtt.es.md"):
+        shutil.copy2(os.path.join(project, kit), host)
+    op(host, "ade.install", **{"from": project, "participating": "claude", "primary": "claude", "apply": True})
+    op(host, "reconcile", retire_missing=True, apply=True)
+    op(host, "index")
+    os.remove(os.path.join(host, ".claude/hooks/session-start.py"))
+    rc, env, _ = op(host, "validation.run")
+    check(env["exit_code"] == 1 and any(f.startswith("gtt-check-session-adapter.sh claude") for f in data(env)["failing"]),
+          "a participating ADE's session adapter is still checked against its native paths", str(data(env)["failing"])[:200])
+
+
+def protection_hooks(project, tmp):
+    print("[protection hooks] Cursor and OpenHands: one engine, each ADE's documented payload in, its deny shape out")
+    p = fresh(project, tmp, "hooks")
+    root = p.replace("\\", "/")
+    engine = os.path.join(".gtt", "scripts", "gtt_protect.py")
+    governed_file = "AGENTS" + ".md"
+    script = "gtt-domain/proposals/apply-ADR-009-x.sh"
+
+    def hook(fmt, event):
+        proc = subprocess.run([sys.executable, engine, "hook", "--format", fmt], cwd=p, input=json.dumps(event) if isinstance(event, dict) else event,
+                              capture_output=True, text=True, encoding="utf-8", errors="replace")
+        try:
+            return proc.returncode, json.loads(proc.stdout)
+        except ValueError:
+            return proc.returncode, None
+
+    def cursor(tool, **tool_input):
+        return hook("cursor", {"hook_event_name": "preToolUse", "tool_name": tool, "tool_input": tool_input, "workspace_roots": [root]})
+
+    def openhands(tool, **tool_input):
+        return hook("openhands", {"event_type": "PreToolUse", "tool_name": tool, "tool_input": tool_input, "working_dir": root})
+
+    for name, cfg in ((".cursor/hooks.json", lambda d: d["hooks"]["preToolUse"][0]["command"]),
+                      (".openhands/hooks.json", lambda d: d["pre_tool_use"][0]["hooks"][0]["command"])):
+        check("gtt_protect.py hook --format" in cfg(read_json(os.path.join(p, name))), f"{name} points its pre-tool hook at the shared engine")
+
+    rc, out = cursor("Write", file_path=f"{root}/{governed_file}")
+    check(rc == 2 and out["permission"] == "deny" and out["agent_message"], "Cursor: a write to the agent contract is denied, in Cursor's shape")
+    rc, out = cursor("Write", file_path=f"{root}/src/app.py")
+    check(rc == 0 and out is None, "Cursor: ordinary implementation code is not touched")
+    rc, out = cursor("Shell", command=f"bash {script}")
+    check(rc == 2 and "run by the human" in out["agent_message"], "Cursor: an agent never executes a promotion script")
+    rc, out = cursor("Shell", command=f"cat {governed_file}")
+    check(rc == 0, "Cursor: reading a governed file stays allowed")
+    rc, out = cursor("Shell", command="rm .cursor/hooks.json")
+    check(rc == 2, "Cursor: the agent cannot disarm its own protection through the shell")
+    rc, out = cursor("Write", file_path="gtt-domain/proposals/PROPOSAL-x.md")
+    check(rc == 0, "Cursor: the proposals directory is always writable")
+    rc, out = hook("cursor", {"hook_event_name": "beforeShellExecution", "command": f"sed -i s/a/b/ {governed_file}", "workspace_roots": [root]})
+    check(rc == 2 and out["permission"] == "deny", "Cursor: beforeShellExecution is decided by the same rules")
+
+    rc, out = openhands("terminal", command="rm .openhands/hooks.json")
+    check(rc == 2 and out["decision"] == "deny" and out["reason"], "OpenHands: a denial uses OpenHands' shape")
+    rc, out = openhands("file_editor", command="view", path=f"{root}/{governed_file}")
+    check(rc == 0, "OpenHands: viewing a governed file stays allowed")
+    rc, out = openhands("file_editor", command="str_replace", path=f"{root}/{governed_file}", old_str="x")
+    check(rc == 2, "OpenHands: editing the agent contract is denied")
+    rc, out = openhands("terminal", command=f"bash {script}")
+    check(rc == 2, "OpenHands: an unattended run never executes a promotion script")
+    rc, out = openhands("file_editor", command="create", path=f"{root}/src/app.py")
+    check(rc == 0, "OpenHands: ordinary implementation code is not touched")
+
+    context = "gtt-domain/context/stack.md"
+    check(cursor("Write", file_path=context)[0] == 0 and openhands("file_editor", command="create", path=f"{root}/{context}")[0] == 0,
+          "before freeze the governed context is writable (bootstrap populates it)")
+    write(os.path.join(p, "gtt-domain/.frozen"), "2026-01-01T00:00:00Z\n")
+    check(cursor("Write", file_path=context)[0] == 2 and openhands("file_editor", command="create", path=f"{root}/{context}")[0] == 2
+          and cursor("Shell", command=f"rm {context}")[0] == 2,
+          "after freeze it is denied on both ADEs: the two-regime condition a static config cannot express")
+
+    write(os.path.join(p, "src/billing.py"), "# @GTTGuard reason=audited\ndef charge():\n    return 1\n\n\ndef helper():\n    return 2\n")
+    bash(p, ".gtt/scripts/gtt-guard-sync.sh")
+    rc, out = cursor("Write", file_path=f"{root}/src/billing.py")
+    check(rc == 2 and "GTTGuard" in out["agent_message"], "a GTTGuard-protected artifact is denied when the extent of the write is unknown (fail safe)", str(out)[:200])
+    rc, out = openhands("file_editor", command="str_replace", path=f"{root}/src/billing.py", old_str="def helper():\n    return 2")
+    check(rc == 0, "an edit to an unprotected symbol next to a protected one stays allowed", str(out)[:200])
+    rc, out = openhands("file_editor", command="str_replace", path=f"{root}/src/billing.py", old_str="def charge():\n    return 1")
+    check(rc == 2, "an edit to the protected symbol itself is denied", str(out)[:200])
+    check(openhands("terminal", command="rm src/billing.py")[0] == 2, "a mutating shell command on a protected artifact is denied")
+
+    check(hook("cursor", "not json") == (0, None) and hook("openhands", {"event_type": "SomethingNew"}) == (0, None),
+          "an unreadable or unknown event never blocks a session")
+    rc, out = hook("cursor", {"hook_event_name": "sessionStart", "workspace_roots": [root]})
+    check(rc == 0 and "GTT-SESSION-CONTEXT" in out["additional_context"] and "NOT authority" in out["additional_context"],
+          "Cursor: session start injects the session context, marked as non-authoritative")
+    rc, out = hook("openhands", {"event_type": "SessionStart", "working_dir": root})
+    check(rc == 0 and "GTT-SESSION-CONTEXT" in out["additionalContext"], "OpenHands: session start injects the same context in its own field")
+    reg = {a["id"]: a for a in json.loads(contract(project, "show", "ade-registry")[1])["ades"]}
+    listing = bash(project, ".gtt/scripts/gtt-ade.sh", "list")[1]
+    check(".cursor/hooks.json" in reg["cursor"]["owned_paths"] and ".openhands/hooks.json" in reg["openhands"]["owned_paths"]
+          and listing.count("realtime-hook-unverified") == 2,
+          "the registry states both hooks as shipped but unverified - no ADE is credited with a guarantee it has not proven")
 
 
 def registry_safety(project, tmp):
@@ -647,6 +822,170 @@ def guard_and_retrieval(project, tmp):
     check(rc == 5, "an enum outside its values is refused")
 
 
+def story_readiness(project, tmp):
+    print("[backlog] Story Ready: a title is not a design")
+    p = fresh(project, tmp, "sr")
+    path = os.path.join(p, "gtt-domain", "backlog.md")
+    with open(path, encoding="utf-8") as handle:
+        base = handle.read()
+    check(bash(p, ".gtt/scripts/gtt-check-backlog.sh")[0] == 0, "the shipped template passes (its example Story is not a real Story)")
+
+    def run(stories):
+        epic = "\n### EPIC-900 - Billing\n\n**Status:** Planned\n**Goal:** g\n\n#### Stories\n\n"
+        write(path, base.replace("## General Development Work", epic + stories + "\n---\n\n## General Development Work", 1))
+        rc, out, err = bash(p, ".gtt/scripts/gtt-check-backlog.sh")
+        return rc, out + err
+
+    title = "##### STORY-901 - Issue invoices\n\n- **Status:** {}\n"
+    rc, out = run(title.format("Undesigned"))
+    check(rc == 0 and "STORY-901" in out and "not designed" in out, "a title-only Story is Undesigned: reported, never a failure", out[-300:])
+    for status in ("Ready", "In Progress", "Done"):
+        rc, out = run(title.format(status))
+        check(rc == 1 and "STORY-901" in out and "`Acceptance Criteria` is missing or empty" in out, f"a title-only Story cannot be {status}", out[-300:])
+    full = ("##### STORY-901 - Issue invoices\n\n- **Status:** Ready\n- **Description:**\n  - One invoice per order [FUENTE: docs/spec.md:12]\n"
+            "- **Scope:**\n  - PDF output [HUMANO]\n- **Out of Scope:**\n  - None [HUMANO]\n- **Acceptance Criteria:**\n  - Totals match [PROPUESTA]\n"
+            "- **Tests:**\n  - test_totals\n- **Sources:** docs/spec.md\n- **Governed by:** ADR-001, stack section 2\n- **Design Approved:** MG - 2026-01-15\n")
+    rc, out = run(full)
+    check(rc == 0, "a complete, approved definition is Ready", out[-300:])
+    rc, out = run(full.replace("- **Governed by:** ADR-001, stack section 2\n", ""))
+    check(rc == 1 and "`Governed by` is missing or empty" in out, "a Story states the governed decisions that apply (or None)", out[-300:])
+    rc, out = run(full.replace("ADR-001", "ADR-777"))
+    check(rc == 1 and "ADR-777, which does not exist" in out, "an ADR a Story cites must exist", out[-300:])
+    done = full.replace("- **Status:** Ready", "- **Status:** Done")
+    rc, out = run(done)
+    check(rc == 1 and "`Closed` is missing or empty" in out, "a Done Story records its closure", out[-300:])
+    rc, out = run(done + "- **Closed:** 2026-02-01\n")
+    check(rc == 1 and "the evidence" in out, "a closure is a date and its evidence, not a date alone", out[-300:])
+    closed = done + "- **Closed:** 2026-02-01 - a1b2c3d - 14 tests passed\n"
+    rc, out = run(closed)
+    check(rc == 0 and "mark it Completed" in out, "a closed Story passes; an Epic whose Stories are all closed is pointed out", out[-300:])
+    rc, out = run(closed.replace("##### STORY-901", "##### STORY-902 - Refunds\n\n- **Status:** Undesigned\n\n##### STORY-901"))
+    check(rc == 0, "(sanity) an Epic in progress may hold open Stories", out[-300:])
+    write(path, open(path, encoding="utf-8").read().replace("**Status:** Planned\n**Goal:** g", "**Status:** Completed\n**Goal:** g"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-check-backlog.sh")
+    check(rc == 1 and "EPIC-900 is `Completed`" in err and "STORY-902" in err, "an Epic is not Completed while one of its Stories is open", (out + err)[-300:])
+    rc, out = run(full.replace("Totals match [PROPUESTA]", "Totals match"))
+    check(rc == 1 and "without an origin" in out, "a statement without its origin fails", out[-300:])
+    rc, out = run(full.replace("PDF output [HUMANO]", "PDF output [VACÍO: GAP-9]"))
+    check(rc == 1 and "undecided point" in out, "an undecided point ([VACIO]/[CONFLICTO]) is not a design", out[-300:])
+    rc, out = run(full.replace("MG - 2026-01-15", "<who> - <YYYY-MM-DD>"))
+    check(rc == 1 and "`Design Approved` is missing or empty" in out, "a design nobody approved is not Ready", out[-300:])
+    rc, out = run(full.replace("- **Status:** Ready", "- **Status:** Designed"))
+    check(rc == 1 and "status outside" in out, "the status vocabulary is closed", out[-300:])
+    run(title.format("Undesigned"))
+    rc, env, _ = op(p, "session-context")
+    check(rc == 0 and any("STORY-901" in x for x in data(env)["operational"]["stories_undesigned"]), "the session contract lists the Undesigned Stories")
+    bash(p, ".gtt/scripts/gtt-status.sh")
+    with open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8") as handle:
+        check("1 of 1 Story(ies) not designed: STORY-901" in handle.read(), "status reports the Stories not designed")
+
+
+def think_depth(project, tmp):
+    print("[THINK Depth] QUICK / STANDARD / DEEP: how deep THINK goes, never which rules it may skip")
+    spec = json.loads(contract(project, "show", "elicitation")[1])["think_depth"]
+    check(spec["levels"] == ["QUICK", "STANDARD", "DEEP"] and sorted(spec["depths"]) == ["DEEP", "QUICK", "STANDARD"]
+          and all(spec["depths"][x][k] for x in spec["levels"] for k in ("for", "assessment", "focus", "stack", "questionnaire")),
+          "the three depths are declared, each with its assessment, focus, stack and questionnaire behaviour")
+    check(spec["floor_varies_with_depth"] is False and any("minimum floor" in x for x in spec["invariant_at_every_depth"])
+          and any("human decision" in x for x in spec["invariant_at_every_depth"]),
+          "the floor and human authority are invariant at every depth")
+    check(spec["selection"]["decided_by"] == "the human" and spec["selection"]["unselected"] == {**spec["selection"]["unselected"], "applies": "STANDARD", "state": "not selected"},
+          "the human selects the depth; unselected is a state and STANDARD (the previous behaviour) applies")
+    check(spec["escalation"]["automatic"] is False and spec["escalation"]["decided_by"] == "the human" and spec["escalation"]["signals"],
+          "escalation is proposed with evidence and decided by the human, never automatic")
+    check("Method Plan" in spec["not_a_method_plan"], "THINK Depth is declared independent of the Method Plan")
+
+    host = make_host(project, tmp, "think-host")
+    write(os.path.join(host, "design.md"), "# design\n")
+    op(host, "template.materialize", id="design-assessment", apply=True)
+    path = os.path.join(host, "gtt-domain/proposals/bootstrap/design-assessment.md")
+    with open(path, encoding="utf-8") as handle:
+        blank = handle.read()
+    check(all(x in blank for x in ("## THINK Depth", "`QUICK`", "`STANDARD`", "`DEEP`", "not assessed (QUICK)", "### Escalation log", "### 6.3 Architecture alternatives")),
+          "the assessment working copy carries the depth, what each level does, and the escalation log")
+
+    def state(depth="", verdict="", floor="MET", unmet=0, unassessed=0, escalation=None):
+        text = blank.replace("THINK Depth:\n", f"THINK Depth: {depth}\n", 1).replace("Verdict:\n", f"Verdict: {verdict}\n", 1)
+        head, rest = text.split("## 4. Minimum floor", 1)
+        body, tail = rest.split("## 5. Verdict", 1)
+        lines, seen = [], 0
+        for line in body.split("\n"):
+            if line.startswith("| ") and line.endswith("|  |"):
+                seen += 1
+                value = "NOT MET" if seen <= unmet else "" if seen <= unmet + unassessed else floor
+                line = line[:-4] + f"| {value} |"
+            lines.append(line)
+        text = head + "## 4. Minimum floor" + "\n".join(lines) + "## 5. Verdict" + tail
+        if escalation:
+            before, after = text.split("### Escalation log", 1)
+            text = before + "### Escalation log" + after.replace("|---|---|---|---|\n", "|---|---|---|---|\n| " + " | ".join(escalation) + " |\n", 1)
+        write(path, text)
+        rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "think", "--json")
+        return rc, json.loads(out)
+
+    rc, s = state()
+    check(rc == 0 and s["selected"] is None and s["applies"] == "STANDARD" and s["state"] == "not selected",
+          "no depth selected: STANDARD applies as a fallback and is reported as not selected")
+    for depth in ("QUICK", "STANDARD", "DEEP"):
+        rc, s = state(depth, "ADEQUATE")
+        check(rc == 0 and s["selected"] == depth and s["applies"] == depth and s["floor"] == {"met": 5, "not_met": 0, "unassessed": 0},
+              f"{depth}: a selected depth is recorded; a design that meets the floor may be ADEQUATE", str(s)[:200])
+        rc, s = state(depth, "ADEQUATE", unmet=1)
+        check(rc == 1 and any("below the floor" in f for f in s["findings"]), f"{depth}: below the floor the verdict is POOR - the depth never lifts it", str(s)[:300])
+        rc, s = state(depth, "STRONG", unassessed=1)
+        check(rc == 1 and any("line by line" in f for f in s["findings"]), f"{depth}: the floor is assessed line by line, never skipped", str(s)[:300])
+        rc, s = state(depth, "POOR", unmet=1)
+        check(rc == 0, f"{depth}: a design below the floor is reported as POOR", str(s)[:200])
+    rc, s = state("EXTREME")
+    check(rc == 1 and any("not one of" in f for f in s["findings"]), "a depth outside QUICK / STANDARD / DEEP is refused")
+    rc, s = state("QUICK", escalation=["QUICK", "STANDARD", "regulated data [FUENTE: design.md:1]", ""])
+    check(rc == 0 and s["selected"] == "QUICK" and s["escalations"] == [{"from": "QUICK", "to": "STANDARD", "decision": "pending", "accepted": False}],
+          "an escalation is a proposal: it is recorded as pending and the depth stays where the human put it", str(s)[:300])
+    rc, s = state("STANDARD", escalation=["QUICK", "STANDARD", "regulated data [FUENTE: design.md:1]", ""])
+    check(rc == 1 and any("has not accepted" in f for f in s["findings"]), "a depth raised without the human's decision fails", str(s)[:300])
+    rc, s = state("STANDARD", escalation=["QUICK", "STANDARD", "regulated data [FUENTE: design.md:1]", "declined - MG - 2026-03-01"])
+    check(rc == 1, "a declined escalation does not raise the depth either", str(s)[:300])
+    rc, s = state("STANDARD", escalation=["QUICK", "STANDARD", "regulated data [FUENTE: design.md:1]", "accepted - MG - 2026-03-01"])
+    check(rc == 0 and s["escalations"][0]["accepted"], "an escalation the human accepted is traceable: from, to, evidence, who and when", str(s)[:300])
+    det = data(op(host, "project.detect")[1])["assessment"]["think_depth"]
+    check(det["selected"] == "STANDARD" and det["levels"] == ["QUICK", "STANDARD", "DEEP"], "project detection reports the recorded depth")
+    state("QUICK", "STRONG", unmet=1)
+    rc, out, err = bash(host, ".gtt/scripts/gtt-validate.sh")
+    check(rc == 1 and "FAIL               gtt-project.sh think (THINK Depth)" in out, "validation fails while the working copy claims more than the floor allows", out[-400:])
+    state("QUICK", "POOR", unmet=1)
+    rc, out, err = bash(host, ".gtt/scripts/gtt-validate.sh")
+    check("PASS               gtt-project.sh think (THINK Depth)" in out, "and passes once the verdict says what the floor says", out[-400:])
+
+    solo = make_host(project, tmp, "think-solo")
+    op(solo, "template.materialize", id="initial-design-questionnaire", apply=True)
+    qpath = os.path.join(solo, "gtt-domain/proposals/bootstrap/initial-design-questionnaire.md")
+    with open(qpath, encoding="utf-8") as handle:
+        qtext = handle.read()
+    check("## THINK Depth" in qtext and "### Escalation log" in qtext, "the questionnaire carries the depth for a project with no design document")
+    rc, out, _ = bash(solo, ".gtt/scripts/gtt-project.sh", "think", "--json")
+    check(rc == 0 and json.loads(out)["state"] == "not selected" and json.loads(out)["applies"] == "STANDARD", "with no document and no choice, STANDARD applies as not selected")
+    for depth in ("QUICK", "STANDARD", "DEEP"):
+        write(qpath, qtext.replace("THINK Depth:\n", f"THINK Depth: {depth}\n", 1))
+        rc, out, _ = bash(solo, ".gtt/scripts/gtt-project.sh", "think", "--json")
+        check(rc == 0 and json.loads(out)["selected"] == depth, f"{depth}: selectable with no design document, recorded in the questionnaire")
+    before, after = qtext.replace("THINK Depth:\n", "THINK Depth: DEEP\n", 1).split("### Escalation log", 1)
+    write(qpath, before + "### Escalation log" + after.replace("|---|---|---|---|\n", "|---|---|---|---|\n| STANDARD | DEEP | several integrations |  |\n", 1))
+    rc, out, _ = bash(solo, ".gtt/scripts/gtt-project.sh", "think", "--json")
+    check(rc == 1, "in the questionnaire too, a depth raised without the human's decision fails")
+
+    for number, (label, mutate, needle) in enumerate((
+            ("a contract in which depth lowers the floor", lambda d: d.update(floor_varies_with_depth=True), "floor must not vary with depth"),
+            ("a contract with automatic escalation", lambda d: d["escalation"].update(automatic=True), "must not be automatic"),
+            ("a contract missing a depth", lambda d: d["depths"].pop("DEEP"), "exactly QUICK, STANDARD and DEEP"),
+            ("a contract in which the ADE selects the depth", lambda d: d["selection"].update(decided_by="the ADE"), "the human selects the depth"))):
+        q = fresh(project, tmp, f"think-{number}")
+        broken = read_json(os.path.join(q, ".gtt/contract/elicitation.json"))
+        mutate(broken["think_depth"])
+        save_json(os.path.join(q, ".gtt/contract/elicitation.json"), broken)
+        rc, out, err = bash(q, ".gtt/scripts/gtt-check-contract.sh")
+        check(rc == 1 and needle in out + err, f"{label} fails the contract check", (out + err)[-200:])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=".")
@@ -655,8 +994,8 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
-        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, questionnaire, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, registry_safety, evolution, unsupported, guard_and_retrieval):
+        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, questionnaire, sources, export_and_clean, recovery,
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, story_readiness, think_depth):
             scenario(project, tmp)
     finally:
         if args.keep:

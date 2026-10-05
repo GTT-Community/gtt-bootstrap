@@ -7,6 +7,11 @@ description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a di
 
 # GTT drift response
 
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · Drift`). The marker says who is speaking; it is never a decision.
+
 Something outside the governed paths may have made the ratified context stale.
 Determine whether it did, and if so, prepare the ratification.
 

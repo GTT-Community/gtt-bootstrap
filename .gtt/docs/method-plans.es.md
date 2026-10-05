@@ -19,6 +19,11 @@ un defecto que hay que reportar.
   encajan en situaciones distintas.
 - Un plan **nunca apaga el gobierno**. Las reglas de la sección siguiente valen en
   los cuatro.
+- Un plan **no es la profundidad de THINK** (THINK Depth). La Evaluación del Diseño
+  tiene sus propios niveles — `QUICK`, `STANDARD` y `DEEP` — para cuánto se evalúa y
+  explora el diseño durante el bootstrap. La profundidad se elige por separado, nunca
+  se deriva del plan y no cambia ninguna compuerta. Ver *Evaluar y potenciar un diseño
+  existente* en `readme-gtt.es.md`.
 
 ## Lo que ningún plan cambia
 
@@ -242,10 +247,19 @@ gobernada; una condición de seguridad o integridad que impide continuar; o evid
 faltante que necesita para continuar correctamente. Llegar a un paso mecánico
 intermedio no es motivo para detenerse.
 
+**GTT avisa cuándo es GTT quien habla.** Todo mensaje que el método levanta en tu ADE
+— una pregunta, una confirmación o elección, el Cuestionario Inicial de Diseño, una
+propuesta, un hallazgo, un pedido de autorización, un reporte — abre con
+`@gtt · <qué es>`: `@gtt · Method Plan`, `@gtt · Initial Design Questionnaire`,
+`@gtt · Authorization required`. La conversación ordinaria del asistente no lleva
+marca, así siempre puedes distinguir el método del asistente. La marca dice quién
+habla; nunca es una decisión ni una aprobación.
+
 **Los reportes son breves por defecto** — qué se hizo, el resultado, si debes actuar y
 el siguiente paso:
 
 ```text
+@gtt · Report
 ✓ Protection registry in sync.
 ✓ Index rebuilt (51 artifact(s), 513 section(s)).
 ✓ Validation: 11 passed, 1 skipped.

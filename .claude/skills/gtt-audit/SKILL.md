@@ -7,6 +7,11 @@ description: Audit whether the governed context under gtt-domain/context/ still 
 
 # Audit context freshness
 
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · Audit report`). The marker says who is speaking; it is never a decision.
+
 Stale context is worse than no context: it makes every agent in the project
 confidently wrong. This audit compares what the governed context claims against
 what the repository actually does.
@@ -62,7 +67,10 @@ twice and the two definitions ageing apart.
 
 `gtt-domain/backlog.md` is not architecture, but it is still expected to stay honest.
 Run `.gtt/scripts/gtt-check-backlog.sh` first for the deterministic part
-(duplicate Epic/Story IDs, invalid status values) — do not re-derive that by
+(duplicate Epic/Story IDs, invalid status values, and Story Ready: a
+`Ready`, `In Progress` or `Done` Story missing a field, an origin tag or its
+approval; a `Done` Story without `Closed`; a `Completed` Epic with open
+Stories) — do not re-derive that by
 hand. Then check what only judgment can catch:
 
 | Check | How |
@@ -72,6 +80,11 @@ hand. Then check what only judgment can catch:
 | Epic with no Stories | `gtt-check-backlog.sh` already warns; confirm whether that is temporary (freshly proposed) or stale |
 | Completed work not reflected in backlog | Compare recent commits/PRs against Story status; a merged feature with no `Done` Story is a finding |
 | Backlog references to obsolete artifacts | A Story naming a file, module, or decision that no longer exists |
+| Story `Undesigned` while work on it has started | Commits or code for a Story whose status is `Undesigned` — implementation ran ahead of the written design |
+| Story design that the sources do not support | Open each `[FUENTE: ref]` of a `Ready`/`In Progress` Story and confirm the source says it; a statement tagged as source that is really the agent's reading is a finding |
+| Closure that the repository does not support | Open each `Done` Story's `Closed`: the commit or PR exists and the tests it names pass; a closure nobody can trace is a finding |
+| Story whose `Governed by` is stale or incomplete | A decision it cites was superseded, or an ADR that clearly constrains the Story is not cited |
+| Implementation beyond the written Story | Behaviour in the code that no Scope item or Acceptance Criterion of its Story covers |
 | Story contradicting governed context or an ADR | Same severity as architectural drift — see *Precedence* in `AGENTS.md` |
 
 Report findings; do not silently add, remove, or "fix" Epics/Stories
@@ -117,6 +130,8 @@ Confirmed
 
 Backlog
   gtt-check-backlog.sh: <OK / FAILED, summary>
+  Stories not designed (Undesigned): <count, list>
+  Story design not supported by its sources: <list>
   Defined but missing from backlog: <list>
   In backlog but no defined requirement: <list>
   Stale / contradicts governed context: <list, with evidence>

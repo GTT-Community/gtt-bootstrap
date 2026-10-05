@@ -136,8 +136,26 @@ estado de una Story o las listas de Current Focus / Next Work / Blocked
 durante trabajo ya aprobado es una edición directa, no una solicitud de
 cambio.
 
+Un título no es un diseño. Una Story es implementable solo cuando está
+`Ready`: descripción, alcance, fuera de alcance, criterios de aceptación,
+tests, fuentes y el origen de cada afirmación (`[FUENTE: ref]`, `[HUMANO]`,
+`[PROPUESTA]`) están escritos en el backlog y vos los aprobaste. Una Story
+que solo tiene título está `Undesigned` (sin diseñar). Para pasar de una a
+otra, pedile al agente que diseñe la Epic (`gtt-propose-change`, formulario
+6): propone las Stories completas contra las fuentes, marca lo que las
+fuentes no determinan, y vos aprobás Story por Story. Después el agente
+implementa solo contra lo escrito.
+
+Cada Story nombra en `Governed by` los ADR y las secciones de contexto que
+le aplican — una referencia, no una copia; la arquitectura se escribe en un
+solo lugar. Cuando una Story se termina se marca `Done` con `Closed` (fecha,
+commit o PR, tests que pasaron), y una Epic está `Completed` solo cuando
+todas sus Stories están `Done` o `Cancelled`.
+
 Corré `.gtt/scripts/gtt-check-backlog.sh` para la integridad estructural
-(IDs únicos, valores de estado válidos); corré `gtt-audit` para reconciliar
+(IDs únicos, valores de estado válidos) y la regla de Story lista (falla una
+Story en `Ready`, `In Progress` o `Done` con un campo vacío, sin origen o sin
+aprobación); corré `gtt-audit` para reconciliar
 el backlog contra lo que realmente está definido y realmente se hizo.
 
 ---
@@ -325,6 +343,7 @@ Antes de implementar:
 
 - [ ] Leer el contexto gobernado aplicable.
 - [ ] Establecer la Epic/Story aplicable desde `gtt-domain/backlog.md`, si existe una.
+- [ ] Confirmar que la Story está `Ready` (diseñada y aprobada). Si está `Undesigned`, diseñar primero la Epic.
 - [ ] Determinar si la tarea es rutinaria o arquitectónica.
 - [ ] Si es arquitectónica, o una Epic/Story nueva/modificada, crear/procesar una solicitud de cambio.
 
@@ -333,7 +352,9 @@ Durante la implementación:
 - [ ] Mantener la implementación alineada con el contexto.
 - [ ] No modificar silenciosamente decisiones gobernadas.
 - [ ] Si un archivo/clase/método tiene un marcador `@GTTGuard`, usar `gtt-propose-change` (formulario 5) en lugar de editarlo directamente.
+- [ ] Implementar solo contra la Story escrita; si aparece algo no escrito, detenerse y actualizar la Story primero.
 - [ ] Actualizar el estado de la Story y el Current Focus a medida que avanza el trabajo real.
+- [ ] Al terminar, marcar la Story `Done` con `Closed` (fecha, commit o PR, tests que pasaron); marcar la Epic `Completed` cuando todas sus Stories lo estén.
 - [ ] Preservar la estructura del proyecto anfitrión.
 
 Antes del merge:

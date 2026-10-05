@@ -1,11 +1,16 @@
 ---
 name: gtt-bootstrap
-description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
+description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), assesses an existing design in writing and strengthens it when it is poor - a decided technology stack is the minimum - resolves several design documents into one or keeps them as declared sources, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
 
 # Bootstrap the governed context
+
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · Method Plan`). The marker says who is speaking; it is never a decision.
 
 `gtt-domain/context/` ships as a template — angle-bracket placeholders and empty
 table rows, not real answers. This skill turns those placeholders into the
@@ -188,10 +193,23 @@ agent it exists — a `.md`, `.txt`, Word, or PDF file sitting there is enough.
 - **No candidate at the root:** ask directly whether a document exists
   elsewhere — another path, an external doc, or paste it into chat. If there is
   none at all, offer the Initial Design Questionnaire (below).
-- **More than one candidate:** ask which one. Do not guess between them. If several sources are
-  legitimate, declare them in `gtt-domain/context/sources.md` (template: `gtt-template.sh materialize
-  source-manifest`) with an authority and an unambiguous precedence — never by reading order — and
-  cite them with `[FUENTE: id]`.
+- **More than one candidate:** never guess between them, and never pick one by name, order or
+  size. First ask whether all of them are design sources or only some. If only one is, use it.
+  If several are, they must be resolved before design continues, and the Solution Designer
+  chooses how — show both options and ask once:
+  - **`CONSOLIDATE`** — you draft one design document from all of them at
+    `gtt-domain/proposals/bootstrap/design-consolidated.md`: every statement carries the
+    `[FUENTE: file:line]` it came from, and every disagreement stays visible as
+    `[CONFLICTO: a vs b]` for the Solution Designer to resolve — you never pick a winner. Once
+    reviewed, that document is the single source document. The originals are not modified.
+  - **`KEEP_AS_SOURCES`** — each document stays as it is and is declared in
+    `gtt-domain/context/sources.md` (template: `gtt-template.sh materialize source-manifest`)
+    with an authority and an unambiguous precedence — never by reading order — and cited with
+    `[FUENTE: id]`. All of them are context throughout the design work; precedence orders the
+    reading and never erases a `[CONFLICTO]`.
+
+  Either way, read all of them before the assessment below, and record the choice in its
+  section 2.
 - **A `SOURCE-BRIEF.*` already at the root:** this project was already
   bootstrapped. Stop and offer the `gtt-audit` skill instead (same as step 1).
 
@@ -206,10 +224,75 @@ so the reasoning behind the context stays visible and traceable right at the
 project root, the one GTT artifact a human should never have to go looking
 for under `.gtt/`.
 
+### Assess the design (a design document exists)
+
+A document existing is not the same as a design being good enough to govern. Before
+asking whether it is finished, read it — all of them, when there are several — and write
+down how good it is. This is the first act of the Think stage, and it produces a document,
+not a conversation.
+
+1. Materialize the working copy: `bash .gtt/scripts/gtt-template.sh materialize design-assessment`
+   (dry run), then `--apply`. It creates `gtt-domain/proposals/bootstrap/design-assessment.md`.
+   Read its *Operating contract* and follow it.
+   **Establish the THINK Depth before rating anything.** Ask once, showing the three levels
+   as the template describes them — `QUICK` (simple or small designs: floor areas and
+   critical gaps, a reduced questionnaire), `STANDARD` (ordinary projects: the complete
+   assessment, stack alternatives with trade-offs, an adaptive questionnaire), `DEEP`
+   (complex, critical or uncertain systems: exhaustive assessment, architectural as well as
+   stack alternatives, dependencies and risks, a deep iterative questionnaire). Record the
+   answer in the *THINK Depth* block with who and when. Never infer it — not from the
+   project's size, not from the Method Plan (a different thing; the two are independent),
+   not from a previous project. If the human does not choose, leave it empty: `STANDARD`
+   applies as a fallback and you report it as *not selected*, never as a choice.
+
+   The depth changes how far you dig, never which rule you may skip. At `QUICK` the floor
+   is still assessed line by line, a design below it is still `POOR`, and an area you did
+   not assess is written `not assessed (QUICK)`, never `SOLID`.
+
+   **Escalation is a proposal.** If what you find justifies a deeper level — regulated
+   data, requirements that constrain the architecture, several integrations, documents
+   that disagree on a structural point, a floor line with no obvious way to meet it — add
+   a row to the *Escalation log* with the evidence, tell the human in one line, and keep
+   working at the current depth until they decide. Only an accepted row changes the depth.
+   `bash .gtt/scripts/gtt-project.sh think` reports the recorded depth and fails on a depth
+   nobody decided or a verdict above `POOR` with the floor unmet.
+2. Fill sections 1–5: the documents assessed; how several documents are resolved (the
+   Solution Designer's choice above); each area rated `SOLID`, `THIN` or `MISSING` with the
+   `[FUENTE: file:line]` that supports the rating; the minimum floor; the verdict. Rate what
+   the documents say, never what you assume the author meant.
+3. The floor is not negotiable: the problem and scope are stated, the architectural style is
+   stated, **the technology stack is decided** (language and runtime, framework, compute
+   model) and **the datastore is decided** or explicitly not needed. A design below the
+   floor is `POOR`, whatever else it gets right.
+4. Fill section 6, the strengthening plan. For every stack layer that is undecided, or
+   decided without a reason, give the options that fit **this** project — its requirements,
+   constraints, team and scale as the documents state them — with the trade-offs of each
+   and a recommendation that says what it optimises for and what it gives up. Each option
+   and each recommendation is a `[PROPUESTA]`. When the documents do not say enough to
+   recommend, say so and ask; never recommend a generic favourite, and never write a stack
+   choice as decided because you recommended it.
+5. Report the verdict in a few lines — verdict, what is thin or missing, what you recommend —
+   and ask the Solution Designer how to proceed:
+   - **`STRONG`** — offer strengthening; they may skip it.
+   - **`ADEQUATE`** — offer strengthening and recommend it for the areas listed.
+   - **`POOR`** — the design must be strengthened before it is used. Do not map it into the
+     six files as it is; say plainly that the floor is not met and which line fails.
+6. **Strengthening** is written, not talked about, and it reuses the one instrument the
+   Bootstrap has for this: materialize the Initial Design Questionnaire (below), carry into it
+   what the documents already establish — each statement with its `[FUENTE: file:line]` — and
+   conduct the interview only for the areas rated `THIN` or `MISSING`. The decisions the
+   Solution Designer takes on section 6 are recorded there as human decisions; an option
+   nobody decided stays a `[PROPUESTA]` and maps to nothing. The original documents are never
+   rewritten. The completed questionnaire is then the source document, exactly as when there
+   was no document at all.
+
+The assessment decides nothing and governs nothing. It is removed by `gtt-freeze.sh` with
+the other bootstrap drafts.
+
 ### The Initial Design Questionnaire (no sufficient design document)
 
-If the human has no design document, or only one too thin to be a source, do not
-improvise an interview: offer the Bootstrap's Initial Design Questionnaire. It is owned
+If the human has no design document, or the assessment above found it `POOR`, or they chose
+to strengthen it, do not improvise an interview: offer the Bootstrap's Initial Design Questionnaire. It is owned
 by the Bootstrap (`.gtt/scaffold/templates/gtt-initial-design-questionnaire.md`, declared
 under `templates:` in the manifest); there is exactly one, and you never copy or
 paraphrase it anywhere else.
@@ -220,7 +303,10 @@ paraphrase it anywhere else.
    session, open the existing copy instead.
 2. Read the questionnaire's *Operating Contract* (section 1) and follow it: inspect the
    project before asking, ask progressively — never the whole form at once — and populate
-   the document as the conversation goes.
+   the document as the conversation goes. When there is no Design Assessment, establish the
+   THINK Depth here before the first question — ask once, record it in the questionnaire's
+   *THINK Depth* block, never infer it; with an assessment, the depth recorded there applies
+   and this block stays empty. Escalation is proposed in the questionnaire's own log.
 3. Keep provenance honest: `[FUENTE: archivo:línea]` for what the project shows, `[VACÍO]`
    for what is not established, `[CONFLICTO]` when sources or answers disagree,
    `[PROPUESTA]` for an option you suggest. A proposal is never a decision, an ADE
@@ -239,17 +325,23 @@ The questionnaire never becomes governed architecture by being filled in.
 
 ## 3. Confirm the document is finished — or stop
 
-If a document exists, do not start mapping it yet. Ask the Solution Designer
-directly: is this finished — the real decisions, not a draft you're still
-thinking through?
+If a document exists, do not start mapping it yet. With the assessment written
+(step 2), ask the Solution Designer directly: is this finished — the real
+decisions, not a draft you're still thinking through?
 
-- **Confirmed finished:** move to step 4.
-- **Still a draft, unsure, or "sort of":** stop here. Say plainly that
-  `gtt-bootstrap` needs a finished document to work from, and that patching a
-  draft with interview questions is not the same thing as the Solution
-  Designer actually deciding it. Suggest reviewing it with an LLM for
-  inconsistencies first if they haven't already. Do not proceed to step 4.
-  They come back and run this skill again once it's ready.
+- **Confirmed finished, and the assessment is `STRONG` or `ADEQUATE`:** move to
+  step 4. What the assessment found `THIN` or `MISSING` and they chose not to
+  strengthen becomes a question in step 4 or a gap — never a guess.
+- **Confirmed finished, but the assessment is `POOR`:** the confirmation does
+  not lift the floor. Say which line is not met and strengthen the design
+  (step 2); a design with no decided stack cannot be governed, however final
+  its author considers it.
+- **Still a draft, unsure, or "sort of":** do not map it. Offer to strengthen
+  it (step 2) — that is the governed way to finish a draft: the open points
+  become questions and proposals the Solution Designer decides, in writing.
+  If they prefer to finish it on their own, stop; they run this skill again
+  once it is ready. Patching a draft with ad-hoc interview questions is not
+  the same as the Solution Designer deciding it.
 - **No document exists at all:** run the Initial Design Questionnaire (above);
   its review, with Readiness `READY` or `READY_WITH_OPEN_ITEMS`, is this step's
   confirmation, so continue to step 4 once that holds. The interview itself is how
@@ -336,6 +428,18 @@ there now (via `gtt-propose-change`, form 4, same as any other backlog
 change) — do not silently leave them out, and do not invent ones that
 weren't actually stated. If nothing like that came up, say so plainly and
 move on; an empty backlog is a valid state, not a gap to fill by guessing.
+
+Record each Story with exactly what the source gives. When the source
+brings only titles — the usual case — the Story is `Undesigned`: title and
+status, nothing else. Do not complete Description, Scope or Acceptance
+Criteria from your own reading of the source to make the backlog look
+finished, and never record such a Story as `Ready`. Then say it plainly in
+the report: how many Stories were recorded, how many are `Undesigned`, and
+that none of those is implementable until its Epic goes through the design
+stage (`gtt-propose-change`, form 6) and the Solution Designer approves each
+Story. A source that does carry a full definition for a Story is mapped
+field by field with `[FUENTE: ref]` on every statement; it still becomes
+`Ready` only after the Solution Designer approves it.
 
 If the host project already contains source files with `@GTTGuard` markers
 (a prior partial setup, or code copied in before GTT was bootstrapped), run

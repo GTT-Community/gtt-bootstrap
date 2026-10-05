@@ -70,7 +70,7 @@ For example:
 
 > `clone GTT Bootstrap and bootstrap the project`
 
-The agent may be Claude Code, Kiro, Codex, Cursor, or another ADE capable of following the GTT bootstrap procedure.
+The agent may be Claude Code, Kiro, Codex, GitHub Copilot, Cursor, OpenHands, or another ADE capable of following the GTT bootstrap procedure.
 
 The bootstrap process:
 
@@ -79,9 +79,9 @@ The bootstrap process:
 3. Installs the portable GTT core plus only the overlays of the participating ADEs, explicitly excluding the others.
 4. Checks whether `gtt-domain/context/` still contains template placeholders.
 5. Checks the project root for the design/source document.
-6. If there is more than one candidate, asks instead of guessing. If you have no design document at all, it offers the Initial Design Questionnaire — see [Starting without a design document](#starting-without-a-design-document).
-7. If a document exists, asks you to confirm that it is complete and not a draft before using it.
-8. If you say it is not complete, stops and waits for you to finish it.
+6. If there is more than one candidate, asks instead of guessing — and when several really are design sources, asks you whether to consolidate them into one document or keep them all as declared sources. If you have no design document at all, it offers the Initial Design Questionnaire — see [Starting without a design document](#starting-without-a-design-document).
+7. If a document exists, reads it and writes a **Design Assessment**: how good it is, area by area, whether it meets the minimum floor (stack and datastore decided), and what would strengthen it — see [Assessing and strengthening an existing design](#assessing-and-strengthening-an-existing-design).
+8. Asks you to confirm that the design is complete and not a draft. If it is a draft, or the assessment found it poor, it offers to strengthen it with you instead of mapping it as it is.
 9. Reads the confirmed source and maps it into the six governed context files.
 10. Asks directly for information that the source does not answer.
 11. Summarizes the resulting context and asks for a separate explicit confirmation that the six files accurately represent the design.
@@ -176,8 +176,30 @@ What each ADE's adapter contains — a project with several participating ADEs h
 | Kiro | Kiro | NO | YES | YES | NO |
 | Codex | Portable/AGENTS | NO | NO | YES | NO |
 | GitHub Copilot | Copilot | NO | NO | YES | YES |
+| Cursor | Cursor | NO | NO | YES | NO |
+| OpenHands | OpenHands | NO | NO | YES | NO |
 | Other supported ADE | Explicit adapter only | only if mapped | only if mapped | per support | per support |
 | Unknown ADE | Portable/unknown | NO | NO | do not guess | NO |
+
+Cursor and OpenHands integrate through files of their own, outside the four
+columns above, and GTT owns only those files — never the host's `.cursor/`,
+`.agents/` or `.openhands/`:
+
+| ADE | What GTT installs | How the ADE loads it |
+| --- | --- | --- |
+| Cursor | `.cursor/rules/gtt.mdc` (always applied), `.cursor/rules/gtt-implementation.mdc` (attached to `src/`, `lib/`, `tests/`) and `.cursor/hooks.json` | Cursor reads project rules from `.cursor/rules/*.mdc`, `AGENTS.md` natively, and project hooks from `.cursor/hooks.json` |
+| OpenHands | `.agents/skills/gtt/SKILL.md` and `.openhands/hooks.json` | OpenHands includes `AGENTS.md` in every conversation, loads repository skills from `.agents/skills/`, and hooks from `.openhands/hooks.json` |
+
+Both hook files point at one shared engine, `.gtt/scripts/gtt_protect.py`,
+which applies the same rules as Claude Code's own hooks — governed paths, the
+freeze regime, promotion scripts, GTTGuard — and answers in each ADE's own
+shape; on session start it injects the session context. The engine is tested
+against the payloads each ADE documents, but **it has not been verified inside
+Cursor or OpenHands**. The registry says so (`enforcement:
+realtime-hook-unverified`), and until someone proves it in the ADE the CI gate
+is the only guaranteed layer there. If a host project already has its own
+`hooks.json`, `gtt-ade.sh install` reports the conflict and writes nothing —
+merge the GTT entries by hand.
 
 > **Known limitation:** GitHub Copilot's actual discovery path for
 > repository-wide custom instructions is `.github/copilot-instructions.md`,
@@ -203,7 +225,8 @@ its files exist — it shows the candidates and asks:
 > Which of them should participate in this project (GTT installs and governs each
 > one's integration), and which one is the Primary ADE?
 
-Only Claude Code has a real-time write block; every other participating ADE is
+Only Claude Code has a **verified** real-time write block. Cursor and OpenHands ship
+one that is tested but unverified in the ADE; every other participating ADE is
 governed by its instructions plus the CI gate (`gtt-check-protection.sh`) — governed
 is not the same as hard-blocked, and no ADE is credited with a guarantee it does not
 have (`enforcement:` in the registry states it per ADE).
@@ -223,6 +246,71 @@ installed project with `.gtt/scripts/gtt-check-adapter.sh` (every participating 
 against `.gtt/ade.json`; a missing or inconsistent integration FAILS, a detected ADE
 that does not participate is a WARN). The single-ADE matrix above remains available
 as `.gtt/scripts/gtt-check-adapter.sh <claude|kiro|codex|copilot|unknown>`.
+
+---
+
+## Assessing and strengthening an existing design
+
+Having a design document is not the same as having a design good enough to
+govern. When one exists, the Think stage begins with a **Design Assessment**
+(`.gtt/scaffold/templates/gtt-design-assessment.md`, materialized to
+`gtt-domain/proposals/bootstrap/design-assessment.md`) that the Primary ADE
+writes and you read:
+
+| Part | What it says |
+|---|---|
+| By area | Vision, scope, users, capabilities, non-functional requirements, architecture, technology stack, data, security, integrations, deployment, development architecture, observability, constraints — each `SOLID`, `THIN` or `MISSING`, with the place in the document that supports the rating |
+| Minimum floor | The problem and scope are stated, the architectural style is stated, **the technology stack is decided** (language and runtime, framework, compute model) and **the datastore is decided** or explicitly not needed |
+| Verdict | `STRONG`, `ADEQUATE` or `POOR`. Below the floor the design is `POOR`, whatever else it gets right |
+| Strengthening plan | What would make it better. For every stack layer that is undecided or decided without a reason: the options that fit *this* project, the trade-offs of each, and a recommendation that says what it optimises for and what it gives up |
+
+**Strengthening is offered when the design is `STRONG` or `ADEQUATE`, and
+required when it is `POOR`** — a design with no decided stack is not mapped
+into governed context as it is. Strengthening is written, not talked about:
+the ADE carries what your documents already establish into the Initial Design
+Questionnaire, each statement with the `[FUENTE]` it came from, and interviews
+you only about what was thin or missing. Your documents are never rewritten.
+
+**THINK Depth — how deep the assessment goes.** You choose it when the
+assessment starts; the ADE asks once and never infers it:
+
+| | `QUICK` | `STANDARD` | `DEEP` |
+|---|---|---|---|
+| For | simple or small designs | ordinary projects | complex, critical or highly uncertain systems |
+| Assessment | the floor areas and the areas your documents make relevant; critical gaps | every area, with its evidence | exhaustive; architecture, non-functional requirements, security, data, integrations, deployment, observability, development architecture and constraints in depth |
+| Stack | options only for an undecided floor layer | reasonable alternatives, trade-offs, a recommendation | stack **and** architectural alternatives, dependencies and risks explicit |
+| Questionnaire | reduced: only what the floor or a critical gap needs | adaptive: what was thin or missing | deep and iterative |
+
+The depth decides how far THINK digs, never which rules it may skip. At every
+depth the floor is assessed line by line and a design below it is `POOR`,
+options are `[PROPUESTA]`, unknowns stay `[VACÍO]`, disagreements stay
+`[CONFLICTO]`, you decide, and freeze works the same. It is **not** the Method
+Plan: the two are independent and chosen separately. If you
+choose none, `STANDARD` applies as a fallback and is reported as *not selected*.
+
+The ADE never changes the depth. When what it finds justifies a deeper level
+— regulated data, requirements that constrain the architecture, documents
+that disagree on something structural — it **proposes** an escalation, one
+level at a time and with the evidence, in the assessment's escalation log, and
+keeps working at the current depth until you accept or decline.
+`gtt-project.sh think` reports the recorded depth, and validation fails on a
+depth nobody decided or on a verdict above `POOR` with the floor unmet.
+
+GTT helps you reach the best stack; it does not choose it. Every option and
+every recommendation is a `[PROPUESTA]`, and only the ones you decide become
+part of the design.
+
+**More than one design document.** They are resolved before design continues,
+and you choose how:
+
+| Option | What happens |
+|---|---|
+| `CONSOLIDATE` | The ADE drafts one design document from all of them — every statement with its `[FUENTE]`, every disagreement left visible as a `[CONFLICTO]` for you to resolve. After your review it is the single source document |
+| `KEEP_AS_SOURCES` | Each document stays as it is, declared in the source manifest with an authority and an unambiguous precedence. All of them are context throughout the design work; precedence orders the reading and never erases a conflict |
+
+The assessment is an instruction to the ADE and a document for you: it decides
+nothing and governs nothing, and the rating itself is the ADE's judgment —
+nothing deterministic verifies it.
 
 ---
 
@@ -482,8 +570,44 @@ agent does not silently ignore them, and does not silently rewrite the
 backlog to match either. If none are defined at all, the agent says so
 explicitly rather than inventing business requirements.
 
+**Story Ready — a title is not a design.** A Story may be `Ready`,
+`In Progress` or `Done` only when its design is written in the backlog and
+approved by the Solution Designer: description, scope, out of scope,
+acceptance criteria, the tests that close it, its sources, and the origin of
+every statement — `[FUENTE: ref]` (a source says it), `[HUMANO]` (the human
+decided it) or `[PROPUESTA]` (the agent proposed it and the approval accepted
+it). A Story that has only a title is `Undesigned`: it is in the line, it is
+reported, and it is not implementable. Bootstrap records title-only Stories
+as `Undesigned` and says so, instead of leaving them looking like a finished
+backlog.
+
+Before an Epic is implemented it goes through a **design stage**
+(`gtt-propose-change`, form 6): the agent analyses the Epic against the
+sources, proposes the complete Stories, marks gaps and conflicts instead of
+guessing, and the Solution Designer approves **Story by Story**. From then
+on the agent implements only against what is written; if something unwritten
+turns out to be needed, it stops and updates the Story first. The design
+stage produces a verifiable document, not a conversation.
+
+**The backlog references the architecture; it never copies it.** Each Story
+names in `Governed by` the governed decisions that apply to it — ADR ids,
+sections of `gtt-domain/context/` — so whoever picks it up knows what to read.
+The text of those decisions stays in the governed context, the single place
+where architecture is written: the backlog is the truth of *what* is built
+and how it is verified, the context the truth of *how* it may be built.
+
+**Closure is evidence.** A `Done` Story records `Closed`: the date and what
+closed it — commit or PR, tests passed. An Epic is `Completed` only when
+every one of its Stories is `Done` or `Cancelled`. Each Story therefore
+carries its whole cycle in the backlog: who approved the design and when,
+and with what it was closed and when.
+
 `.gtt/scripts/gtt-check-backlog.sh` deterministically checks structural
-integrity — unique Epic/Story IDs, valid status values. Whether an
+integrity — unique Epic/Story IDs, valid status values — and Story Ready: it
+fails when a `Ready`, `In Progress` or `Done` Story is missing a field, an
+origin or its approval, when `Governed by` cites an ADR that does not exist,
+when a `Done` Story has no `Closed`, and when a `Completed` Epic still has
+open Stories; it reports the Stories still `Undesigned`. Whether an
 Epic/Story is real, current, and actually reflects the work being done is a
 judgment call the `gtt-audit` skill makes, not something a script can
 verify.
@@ -705,7 +829,7 @@ Full file map: [`.gtt/docs/index.md`](.gtt/docs/index.md) · Migration guidance:
 
 Claude Code supports the complete adapter set. Kiro's `permissions.yaml` covers unconditional machinery paths declaratively; regime-conditional paths rely on the shared hook plus CI gate where needed. Codex keeps the write protection model but has fewer fine-grained conditional-loading controls. GitHub Copilot reads repository-wide instructions from `.github/copilot-instructions.md` and agent instructions from `AGENTS.md`, per current GitHub documentation — note that GTT's adapter file lives at `.copilot/copilot-instructions.md` instead, so it is not picked up automatically at Copilot's real path; see the note above. It gets no path-scoped loading and no deterministic write block beyond the CI gate — the Copilot adapter is intentionally thin and does not claim capabilities GTT has not actually implemented for it.
 
-Details and portability notes: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#portability-claude-code-kiro-codex-copilot)
+Details and portability notes: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#portability-claude-code-kiro-codex-copilot-cursor-openhands)
 
 ### Switching ADE later
 

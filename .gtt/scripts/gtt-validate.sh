@@ -106,6 +106,18 @@ if [ -f .gtt/scripts/gtt-check-contract.sh ]; then
   rm -f /tmp/gtt-validate-contract.$$
 fi
 
+# Design Assessment or questionnaire working copy (present only during bootstrap THINK): whatever
+# the THINK Depth, the floor is assessed and a design below it is POOR, and the
+# depth is the human's choice. Nothing to check once the copy is gone.
+if { [ -f gtt-domain/proposals/bootstrap/design-assessment.md ] || [ -f gtt-domain/proposals/bootstrap/initial-design-questionnaire.md ]; } \
+   && [ -f .gtt/scripts/gtt-project.sh ]; then
+  bash .gtt/scripts/gtt-project.sh think >/tmp/gtt-validate-think.$$ 2>&1
+  THINK_RC=$?
+  report "gtt-project.sh think (THINK Depth)" "$THINK_RC"
+  [ "$THINK_RC" -ne 0 ] && cat /tmp/gtt-validate-think.$$
+  rm -f /tmp/gtt-validate-think.$$
+fi
+
 bash .gtt/scripts/gtt-check-integrity.sh >/tmp/gtt-validate-integrity.$$ 2>&1
 INTEGRITY_RC=$?
 report "gtt-check-integrity.sh" "$INTEGRITY_RC"
@@ -116,9 +128,26 @@ rm -f /tmp/gtt-validate-integrity.$$
 # check is static and needs no ADE; runtime verification by the real ADE is
 # never run here, so each line carries the DECLARED runtime status instead of
 # implying it was proven. A staged (not yet promoted) adapter is labelled so.
+#
+# adapter_status describes the Bootstrap catalog, not this project: an adapter
+# declared "installed" is checked against its native paths, which exist only
+# where that ADE participates. With .gtt/ade.json, an ADE the human did not
+# choose is therefore skipped, never failed. Without it (the catalog, or a
+# project that predates multi-ADE) every declaration is checked, as before.
+PARTICIPATING=""
+if [ -f .gtt/ade.json ]; then
+  PARTICIPATING="$(bash .gtt/scripts/gtt-ade.sh state --json 2>/dev/null \
+    | bash .gtt/scripts/gtt-run-python.sh -c 'import json,sys; print(" ".join(json.load(sys.stdin).get("participating") or []))' 2>/dev/null || true)"
+fi
 for manifest in .gtt/session-adapters/*.json; do
   [ -f "$manifest" ] || continue
   ade="$(basename "$manifest" .json)"
+  if [ -n "$PARTICIPATING" ]; then
+    case " $PARTICIPATING " in
+      *" $ade "*) ;;
+      *) echo "SKIPPED            gtt-check-session-adapter.sh $ade (ADE not participating)"; continue ;;
+    esac
+  fi
   out="$(bash .gtt/scripts/gtt-check-session-adapter.sh "$ade" 2>&1)"
   rc=$?
   summary="$(printf '%s

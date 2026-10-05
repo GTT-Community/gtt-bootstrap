@@ -42,6 +42,29 @@ marker (listed in `.gtt/protection/registry.yaml`) — see `AGENTS.md` →
 either; `.gtt/scripts/gtt-check-protection.sh` in CI is the actual
 enforcement, so treat the instruction as binding regardless.
 
+## Implement against the written Story
+
+Before writing code, establish the Story in `gtt-domain/backlog.md`. It must
+be `Ready` or `In Progress` — designed and approved, with every field of the
+*Story Ready* definition written. An `Undesigned` Story is not implementable:
+its Epic goes through the design stage first (`AGENTS.md` → *Backlog
+governance*). Implement only what is written; if something not written is
+needed, stop and update the Story first.
+
+Read what the Story's `Governed by` points to before writing code. When its
+tests pass and its acceptance criteria hold, close it in the backlog:
+`Status: Done` and `Closed: <date> — <commit or PR> — <tests passed>`, from
+what actually happened. An Epic is `Completed` only when every one of its
+Stories is `Done` or `Cancelled`.
+
+## Speaking for GTT
+
+When a message is GTT's — a question the method needs answered, a
+confirmation or choice, the Initial Design Questionnaire, a proposal, a
+finding, a request for authorization, a report — open it with
+`@gtt · <what this is>` (`@gtt · Method Plan`, `@gtt · Report`). Ordinary
+work carries no marker, and the marker is never a decision or an approval.
+
 ## Procedures
 
 GTT's step-by-step procedures (bootstrap, propose a change, record an ADR,

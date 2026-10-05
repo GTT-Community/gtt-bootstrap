@@ -134,8 +134,24 @@ backlog. Adding, removing, or materially changing one goes through
 status or the Current Focus / Next Work / Blocked lists during
 already-approved work is a direct edit, not a change request.
 
+A title is not a design. A Story is implementable only when it is `Ready`:
+description, scope, out of scope, acceptance criteria, tests, sources and the
+origin of every statement (`[FUENTE: ref]`, `[HUMANO]`, `[PROPUESTA]`) are
+written in the backlog and you approved them. A Story with only a title is
+`Undesigned`. To get from one to the other, ask the agent to design the Epic
+(`gtt-propose-change`, form 6): it proposes the complete Stories against the
+sources, marks what the sources do not determine, and you approve Story by
+Story. The agent then implements only against what is written.
+
+Each Story names in `Governed by` the ADRs and context sections that apply
+to it — a reference, not a copy; the architecture stays written in one
+place. When a Story is finished it is marked `Done` with `Closed` (date,
+commit or PR, tests passed), and an Epic is `Completed` only when all its
+Stories are `Done` or `Cancelled`.
+
 Run `.gtt/scripts/gtt-check-backlog.sh` for structural integrity (unique
-IDs, valid status values); run `gtt-audit` to reconcile the backlog against
+IDs, valid status values) and Story Ready (a `Ready`, `In Progress` or `Done`
+Story with an empty field, a missing origin or no approval fails); run `gtt-audit` to reconcile the backlog against
 what is actually defined and actually done.
 
 ---
@@ -321,6 +337,7 @@ Before implementation:
 
 - [ ] Read applicable governed context.
 - [ ] Establish the applicable Epic/Story from `gtt-domain/backlog.md`, if one exists.
+- [ ] Confirm the Story is `Ready` (designed and approved). If it is `Undesigned`, design the Epic first.
 - [ ] Determine whether the task is routine or architectural.
 - [ ] If architectural, or a new/changed Epic/Story, create/process a change request.
 
@@ -329,7 +346,9 @@ During implementation:
 - [ ] Keep implementation aligned with governed context.
 - [ ] Do not silently modify governed decisions.
 - [ ] If a file/class/method carries a `@GTTGuard` marker, use `gtt-propose-change` (form 5) instead of editing it directly.
+- [ ] Implement only against the written Story; if something unwritten is needed, stop and update the Story first.
 - [ ] Update the Story's status and Current Focus as work actually progresses.
+- [ ] On finishing, mark the Story `Done` with `Closed` (date, commit or PR, tests passed); mark the Epic `Completed` when all its Stories are.
 - [ ] Preserve host-project structure.
 
 Before merge:

@@ -75,6 +75,15 @@
     ],
     "stop_rule": "STOP is not a general precaution. Reaching an intermediate mechanical step is never a reason to stop.",
     "continuity": "After a successful automatic operation, continue the planned workflow and say so in one line; do not ask whether to continue.",
+    "dialogue": {
+      "marker": "@gtt",
+      "statement": "Every message in which an agent or a CLI speaks on behalf of GTT opens with the marker, followed by what the message is, so the human always knows that it is the method speaking and not the assistant's ordinary conversation.",
+      "format": "@gtt · <what this is>",
+      "applies_to": ["a question the method needs answered", "a confirmation or a choice (ADE participation, Method Plan, Confirmation A, Confirmation B, a Story's design approval)", "the Initial Design Questionnaire, in every turn of the interview", "a proposal, a finding, a conflict or a STOP", "a request for authorization, with its command", "a report"],
+      "examples": ["@gtt · Initial Design Questionnaire", "@gtt · Method Plan", "@gtt · Confirmation B", "@gtt · Story design approval", "@gtt · Authorization required", "@gtt · Report"],
+      "not_for": "Ordinary work that GTT did not raise: explaining code, answering a question, implementing a Story.",
+      "authority": "none. The marker identifies who is speaking; it never makes a message a decision, an approval or evidence."
+    },
     "report": {
       "default": "brief",
       "contains": ["what was done", "the result", "whether the developer must act, with the exact command", "the next step, when relevant"],

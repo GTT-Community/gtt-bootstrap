@@ -456,6 +456,14 @@ def check_contracts():
     if dx.get("protected_operations", {}).get("agent_executes") is not False:
         add("profiles.developer_experience.protected_operations.agent_executes must be false (lower friction never lets "
             "an agent run a protected operation)")
+    dialogue = dx.get("dialogue", {})
+    marker = dialogue.get("marker", "")
+    if not re.fullmatch(r"@[a-z][a-z0-9-]*", marker) or not dialogue.get("applies_to"):
+        add("profiles.developer_experience.dialogue needs a marker (`@name`) and what it applies to")
+    elif not all(str(e).startswith(marker) for e in dialogue.get("examples", [])) or not str(dialogue.get("format", "")).startswith(marker):
+        add(f"profiles.developer_experience.dialogue: the format and every example must open with the marker `{marker}`")
+    if not str(dialogue.get("authority", "")).startswith("none"):
+        add("profiles.developer_experience.dialogue.authority must be none (the marker identifies the speaker, never a decision)")
     for auto in dx.get("automatic_operations", []):
         target = operations.get(auto.get("operation"))
         if target is None:
@@ -502,6 +510,20 @@ def check_contracts():
                     f"{directive['questionnaire']}")
         if headings and eli["minimum_viable_design"]["section"] not in headings:
             add("elicitation.minimum_viable_design.section does not exist in the questionnaire")
+    # THINK Depth: how deep THINK goes, never which rules it may skip
+    depth = eli.get("think_depth", {})
+    levels = depth.get("levels", [])
+    if levels != ["QUICK", "STANDARD", "DEEP"] or depth.get("order") != levels or sorted(depth.get("depths", {})) != sorted(levels):
+        add("elicitation.think_depth must define exactly QUICK, STANDARD and DEEP, in that order, each with its behaviour")
+    if depth.get("floor_varies_with_depth") is not False or not depth.get("invariant_at_every_depth"):
+        add("elicitation.think_depth: the floor must not vary with depth (floor_varies_with_depth must be false, with the "
+            "invariants listed) - depth is never a level of governance")
+    selection = depth.get("selection", {})
+    if selection.get("decided_by") != "the human" or selection.get("unselected", {}).get("applies") not in levels:
+        add("elicitation.think_depth.selection: the human selects the depth, and the unselected fallback must be one of the levels")
+    escalation = depth.get("escalation", {})
+    if escalation.get("automatic") is not False or escalation.get("decided_by") != "the human":
+        add("elicitation.think_depth.escalation must not be automatic: the ADE proposes, the human decides")
     # ade registry
     try:
         for ade in gm.overlays(gm.load()).values():

@@ -7,6 +7,11 @@ description: Draft an Architecture Decision Record — and its promotion package
 
 # Draft an ADR and its promotion package
 
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · Authorization required`). The marker says who is speaking; it is never a decision.
+
 Only draft an ADR for a decision a human has explicitly approved. If approval is
 unclear, ask. An ADR records a decision that was made — it is not a place to
 argue for one.

@@ -7,6 +7,11 @@ description: Mark a file, class, or method as protected with a @GTTGuard marker,
 
 # Mark or unmark a GTTGuard-protected artifact
 
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · GTTGuard`). The marker says who is speaking; it is never a decision.
+
 GTTGuard is a sibling mechanism to L0/L1 governance, not a copy of it. It
 protects arbitrary L3 code the developer opts into — placing the marker
 *is* the Solution Designer's proposal ("User proposes → GTT implements →

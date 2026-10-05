@@ -83,10 +83,49 @@ When this questionnaire is used, the Primary ADE MUST:
     sufficient evidence.
 15. Stop when a sufficient Minimum Viable Governed Design has been
     established or when the human explicitly decides to continue later.
+16. Open every message of the interview with
+    `@gtt · Initial Design Questionnaire`, so the human always knows the
+    question comes from GTT and not from the ADE's ordinary conversation.
+    The marker identifies who is speaking; it never makes an answer a
+    decision.
 
 The ADE is an **elicitation and documentation assistant**.
 
 The human remains the decision authority.
+
+## THINK Depth
+
+How deep this interview goes. The human selects it — ask once, before the
+first question, showing the three levels; never infer it from the project, the
+Method Plan or the ADE. When a Design Assessment exists the depth is recorded
+there and this block stays empty. Left empty everywhere, it is **not
+selected** and `STANDARD` applies as a fallback.
+
+``` text
+THINK Depth:
+Selected by:
+Date:
+```
+
+| Level | The interview |
+|---|---|
+| `QUICK` | Reduced: only what the Minimum Viable Governed Design (section 23) needs and a critical gap requires. No exploration beyond it. |
+| `STANDARD` | Adaptive: every section the project makes relevant, alternatives and trade-offs where a choice is open. |
+| `DEEP` | Deep and iterative: architecture, non-functional requirements, security, data, integrations, deployment, observability and constraints in depth; architectural as well as technology alternatives; dependencies and risks explicit; earlier answers revisited when a later round changes them. |
+
+The depth changes how far the interview digs, never a rule: section 23 is the
+same at every level, every option is a `[PROPUESTA]`, unknowns stay `[VACÍO]`,
+conflicts stay `[CONFLICTO]`, and the human decides. The single definition is
+`.gtt/contract/elicitation.json` → `think_depth`.
+
+### Escalation log
+
+When what you find justifies a deeper level, propose it here — one level at a
+time, with the evidence — and continue at the current depth until the human
+decides. Only an accepted row changes the `THINK Depth` above.
+
+| From | To | Evidence `[FUENTE]` | Human decision (accepted / declined — who — date) |
+|---|---|---|---|
 
 ------------------------------------------------------------------------
 

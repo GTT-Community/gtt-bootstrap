@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-01T18:55:41Z
+# Generated: 2026-10-05T19:39:23Z
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
@@ -17,6 +17,9 @@ none
 
 ## Blocked (Stories Blocked)
 none
+
+## Story design (Undesigned = title only; not implementable until designed and approved)
+0 of 0 Story(ies) not designed
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
@@ -43,19 +46,19 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.2.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
+gtt-bootstrap 1.3.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
-identity: 51 active artifact(s), 44 retired
+identity: 53 active artifact(s), 0 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 41
+branch: main; uncommitted paths: 51
 recent commits:
+0d187b4 chore: virgin product - drop citations of ADRs that are not shipped
+af1dc3f feat: developer friction minimization, plan-aware automation - Bootstrap 1.2.0
 de1d40e feat: Method Plans (Light / Medium / Hard / Team)
 113df25 update
 eb23b92 chore: untrack bytecode accidentally re-added
-68208a7 chore: virgin product - drop citations of ADRs that are not shipped
-bd8a47a fix: Bootstrap 1.0 closure - fresh-host reconcile, structured validation, acceptance

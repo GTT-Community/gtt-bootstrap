@@ -14,6 +14,7 @@ Use these skills instead of improvising the format:
 | A change was approved and needs recording | `gtt-adr` |
 | Verify the governed context still matches the code | `gtt-audit` |
 | `gtt-domain/backlog.md` needs an Epic/Story added, removed, or materially changed | `gtt-propose-change` (form 4) |
+| An Epic's Stories are `Undesigned` and it is about to be implemented, or a Story's design must be written or changed | `gtt-propose-change` (form 6) |
 | Reconcile `gtt-domain/backlog.md` against defined Epics/Stories | `gtt-audit` |
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
 | A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
@@ -34,6 +35,15 @@ for another way in. `.claude/hooks/` and `.claude/settings.json` are
 themselves machinery and permission-denied like any other governance file;
 if a change needs to land there, stage it under `gtt-domain/proposals/` and tell
 the Solution Designer to move it into place.
+
+When you speak on behalf of GTT — a question the method needs answered, a
+confirmation or choice, the Initial Design Questionnaire, a proposal, a
+finding, a request for authorization, a report — open the message with
+`@gtt · <what this is>` (for example `@gtt · Method Plan`,
+`@gtt · Initial Design Questionnaire`, `@gtt · Report`). Ordinary work GTT
+did not raise carries no marker. The marker says who is speaking; it is
+never a decision, an approval or evidence. See `AGENTS.md` → *Working
+without unnecessary interruption*.
 
 Hard constraints, always in context:
 

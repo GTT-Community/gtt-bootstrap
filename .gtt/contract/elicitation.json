@@ -18,8 +18,62 @@
     { "id": "mark-proposals", "text": "Mark every option you suggest as [PROPUESTA]; a proposal is never a decision.", "questionnaire": "21. Proposals" },
     { "id": "preserve-provenance", "text": "Attribute what the project shows with [FUENTE: file:line]; preserve the human's wording for requirements.", "questionnaire": "3. Evidence and Attribution" },
     { "id": "ask-human-for-decisions", "text": "Ask for explicit human confirmation whenever an architectural decision is required; never fill 'Human decision' for the human.", "questionnaire": "22. Decisions Requiring Human Confirmation" },
-    { "id": "do-not-invent-architecture", "text": "Never invent an architectural decision to complete a section.", "questionnaire": "28. Anti-Patterns" }
+    { "id": "do-not-invent-architecture", "text": "Never invent an architectural decision to complete a section.", "questionnaire": "28. Anti-Patterns" },
+    { "id": "identify-gtt-dialogue", "text": "Open every message of the interview with `@gtt · Initial Design Questionnaire`; the marker identifies the speaker and is never a decision.", "questionnaire": "1. Operating Contract for the ADE" }
   ],
+  "think_depth": {
+    "statement": "THINK Depth is how deep the Think stage goes: how much the ADE assesses, explores and asks. It is never a level of governance. It changes how far THINK digs, never which rules THINK may skip.",
+    "not_a_method_plan": "THINK Depth is independent of the Method Plan and shares no name with it. It is never derived from the plan, and it never changes a plan's gates.",
+    "levels": ["QUICK", "STANDARD", "DEEP"],
+    "order": ["QUICK", "STANDARD", "DEEP"],
+    "selection": {
+      "decided_by": "the human",
+      "policy": "ask once when the assessment starts, showing the three levels; never inferred from the project, the Method Plan, the ADE or a previous project",
+      "unselected": { "applies": "STANDARD", "state": "not selected", "note": "STANDARD is the behaviour that existed before depths; it applies as a fallback and is never reported as a choice" },
+      "recorded_in": ["the Design Assessment working copy (THINK Depth section) when a design document exists", "the questionnaire working copy (THINK Depth section) when there is none", "the completion report (.gtt/docs/gtt-completion.md)"]
+    },
+    "invariant_at_every_depth": [
+      "the minimum floor of the Design Assessment, assessed line by line",
+      "the Minimum Viable Governed Design of the questionnaire",
+      "the evidence boundary and the provenance tags: [FUENTE], [VACIO], [CONFLICTO], [PROPUESTA]",
+      "human decision authority: the ADE takes part in THINK and decides nothing",
+      "freeze semantics and the pre-freeze / post-freeze regimes",
+      "the original documents are never modified",
+      "the assessment is a working artifact, never governed context"
+    ],
+    "floor_varies_with_depth": false,
+    "depths": {
+      "QUICK": {
+        "for": "simple or small designs",
+        "assessment": "Rate the floor areas always, and the other areas the documents make relevant; an area left out is written as `not assessed (QUICK)`, never as SOLID.",
+        "focus": "critical gaps: whatever keeps the floor from being met or would make the design unbuildable",
+        "stack": "Options only for a floor layer that is undecided: one recommendation with its main trade-off, as [PROPUESTA].",
+        "questionnaire": "Reduced: only the areas rated THIN or MISSING that the floor or a critical gap needs. No exploration beyond them.",
+        "avoids": "unnecessary exploration"
+      },
+      "STANDARD": {
+        "for": "ordinary projects",
+        "assessment": "The complete assessment: every area rated with its evidence.",
+        "focus": "every area rated THIN or MISSING",
+        "stack": "Reasonable alternatives for each undecided or unjustified layer, the trade-offs of each, and a recommendation, as [PROPUESTA].",
+        "questionnaire": "Adaptive: asked for what the assessment found THIN or MISSING."
+      },
+      "DEEP": {
+        "for": "complex, critical or highly uncertain systems",
+        "assessment": "Exhaustive: every area rated with its evidence, and architecture, non-functional requirements, security, data, integrations, deployment, observability, development architecture and constraints examined in depth.",
+        "focus": "alternatives, dependencies, risks, conflicts and gaps, each made explicit",
+        "stack": "Architectural alternatives as well as stack alternatives, the trade-offs of each explicit, every proposal traceable as [PROPUESTA].",
+        "questionnaire": "Deep and iterative: earlier answers are revisited when a later round changes them."
+      }
+    },
+    "escalation": {
+      "automatic": false,
+      "statement": "When what the ADE finds justifies a deeper level, it proposes the escalation - one level at a time, with the evidence - and continues at the current level until the human decides. The ADE never raises or lowers the depth itself.",
+      "decided_by": "the human",
+      "signals": ["regulated or sensitive data", "availability, scale or performance requirements that constrain the architecture", "several integrations or external systems", "documents that disagree on a structural point", "a floor line not met with no obvious way to meet it", "an architectural decision with high cost of reversal"],
+      "recorded_as": "a row of the escalation log in the assessment: from, to, evidence, and the human's decision (accepted or declined, who, date)"
+    }
+  },
   "minimum_viable_design": {
     "section": "23. Minimum Viable Governed Design",
     "readiness_values": ["READY", "READY_WITH_OPEN_ITEMS", "NOT_READY"],

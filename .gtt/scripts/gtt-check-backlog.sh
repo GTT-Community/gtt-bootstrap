@@ -7,10 +7,19 @@
 # both agents and humans can rely on them. This makes that check
 # deterministic instead of a visual scan.
 #
+# It also enforces the "Story Ready" rule: a Story that is Ready, In Progress
+# or Done must carry its written, human-approved design (description, scope,
+# out of scope, acceptance criteria, tests, sources, the governed decisions
+# that apply, the origin of every statement), a Done Story records how it was
+# closed, and an Epic is Completed only when all its Stories are. A title is not a design; a Story that has only a title is
+# `Undesigned` and is reported, never passed off as a complete backlog. The
+# rule itself lives in gtt_backlog.py.
+#
 # What this does NOT enforce: whether an Epic/Story addition or removal went
 # through gtt-domain/change-request.md. That distinction (structural change vs.
 # routine status update) requires judgment this script cannot make - it
 # stays an instruction-plane rule in AGENTS.md, not a control-plane one here.
+# Nor does it judge whether a criterion is good or an approval really happened.
 #
 # Usage:
 #   .gtt/scripts/gtt-check-backlog.sh [path-to-backlog.md]
@@ -27,8 +36,9 @@ if [ ! -f "$BACKLOG" ]; then
 fi
 
 EPIC_STATUSES="Proposed|Planned|In Progress|Completed|Cancelled"
-STORY_STATUSES="Proposed|Ready|In Progress|Blocked|Done|Cancelled"
+STORY_STATUSES="Proposed|Undesigned|Ready|In Progress|Blocked|Done|Cancelled"
 FAIL=0
+CANNOT=0
 
 # --- duplicate Epic IDs ---
 DUP_EPICS="$(grep -oE '^### EPIC-[0-9]+' "$BACKLOG" | sed 's/^### //' | sort | uniq -d || true)"
@@ -74,6 +84,16 @@ if [ -n "$EMPTY_EPICS" ]; then
   echo "$EMPTY_EPICS" | sed 's/^/  /'
 fi
 
+# --- Story Ready: a Ready / In Progress / Done Story is a complete, approved definition ---
+HERE="$(cd "$(dirname "$0")" && pwd)"
+READY_RC=0
+bash "$HERE/gtt-run-python.sh" "$HERE/gtt_backlog.py" check "$BACKLOG" || READY_RC=$?
+case "$READY_RC" in
+  0) ;;
+  1) FAIL=1 ;;
+  *) echo "gtt-check-backlog: Story readiness could not be determined (gtt_backlog.py did not run)." >&2; CANNOT=1 ;;
+esac
+
 if [ "$FAIL" -ne 0 ]; then
   cat >&2 <<MSG
 
@@ -82,9 +102,15 @@ gtt-check-backlog: FAILED
 Structural integrity violations found above. An Epic ID must be unique, a
 Story ID must be unique project-wide, and status values must stay inside
 the agreed vocabulary so tooling and agents can rely on them without
-re-parsing free text.
+re-parsing free text. A Story that is Ready, In Progress or Done must carry
+its written, human-approved design: set it back to Undesigned, or complete
+it through the Epic design stage (AGENTS.md -> Backlog governance). A Done
+Story records its closure, and an Epic is Completed only when every one of
+its Stories is Done or Cancelled.
 MSG
   exit 1
 fi
+
+[ "$CANNOT" -ne 0 ] && exit 2
 
 echo "gtt-check-backlog: OK"

@@ -7,6 +7,11 @@ description: Locate a concept, section, or artifact in the GTT/project Markdown 
 
 # Retrieve by identity, reconcile moves
 
+> **Speaking for GTT.** Every message this skill raises to the human — a
+> question, a confirmation, a proposal, a finding, a request for
+> authorization, a report — opens with `@gtt · <what this is>`
+> (e.g. `@gtt · Retrieval`). The marker says who is speaking; it is never a decision.
+
 The technical index (`.gtt/index/technical-index.json`) is a **derived
 locator**, never authority. It tells you *where* to read; the Markdown it
 points at is the evidence. Never quote the index as if it were the decision.
