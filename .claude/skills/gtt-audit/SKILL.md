@@ -1,6 +1,6 @@
 ---
 name: gtt-audit
-description: Audit whether the governed context under gtt-domain/context/ still matches the actual codebase, and whether gtt-domain/backlog.md is reconciled with defined Epics/Stories. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The scheduled counterpart to the PostToolUse drift detector: same signals, same response path, full sweep instead of one file.
+description: Audit whether the governed context under gtt-domain/context/ still matches the actual codebase, and whether gtt-domain/backlog.md is reconciled with defined Epics. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The judgment counterpart of observation: the engine (gtt-observe.sh) computes what crossed a declared boundary; this audit judges what it means and what no boundary covers.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -41,21 +41,27 @@ what the repository actually does.
 Every row in "Stack at a glance" with no ADR in its "Locked by" column is a
 finding: a decision that entered the system without passing through governance.
 
-## The drift-signals sweep
+## The boundaries sweep
 
-This is not a second, independent drift mechanism — it is the full-sweep
-trigger of the same loop `detect-drift.py` runs reactively at write-time. One
-signals block, one response skill, two triggers.
+This is not a second, independent drift mechanism - it is the full sweep of
+the same observation loop that runs after a write. One boundaries block, one
+engine, one response skill.
 
-Read the `gtt-drift-signals` block from `gtt-domain/context/stack.md` (its
-"Drift signals" view). Instead of checking a single freshly-written file the
-way the hook does, sweep every file in the repository that matches any of its
-globs, not only files touched in this session. For each match, assess whether
-it contradicts `gtt-domain/context/` or an accepted ADR the same way
-`gtt-drift-response` would.
+Run `bash .gtt/scripts/gtt-observe.sh observe --verbose`, then
+`bash .gtt/scripts/gtt-observe.sh backlog`. The engine computes, against the
+freeze baseline, every file that crossed a declared boundary, every dependency
+added since the freeze, every forbidden pattern, a moved governed state and a
+changed `@GTTGuard` artifact. Do not re-derive any of that by reading diffs:
+facts a script can compute are the script's.
 
-If `stack.md` has no `gtt-drift-signals` block, say so as a finding — the
-detector is blind without it — and skip the sweep.
+What is left for this audit is judgment the engine cannot make: for each open
+observation, whether it contradicts `gtt-domain/context/` or an accepted ADR;
+and what the declared boundaries do **not** cover - code that carries
+architectural weight but that no rule watches is an *Orphaned* finding, and so
+is an empty `gtt-boundaries` block in a project with real architecture.
+
+If `stack.md` declares no boundaries, say so as a finding - observation then
+only knows the built-in ones - and continue with the rest of the audit.
 
 On finding a divergence, do not draft the proposal yourself. Invoke the
 `gtt-drift-response` skill to assess and draft it. One skill writes proposals
@@ -67,32 +73,34 @@ twice and the two definitions ageing apart.
 
 `gtt-domain/backlog.md` is not architecture, but it is still expected to stay honest.
 Run `.gtt/scripts/gtt-check-backlog.sh` first for the deterministic part
-(duplicate Epic/Story IDs, invalid status values, and Story Ready: a
-`Ready`, `In Progress` or `Done` Story missing a field, an origin tag or its
-approval; a `Done` Story without `Closed`; a `Completed` Epic with open
-Stories) — do not re-derive that by
-hand. Then check what only judgment can catch:
+(duplicate Epic/Story IDs, invalid status values, an Epic that is `Planned`,
+`In Progress` or `Completed` without its `Goal` or its `Approved`, a
+`Completed` Epic with open Stories; and, reported without failing, a `Done`
+Story without `Closed` and work under an Epic still `Proposed`) — do not
+re-derive that by hand. Stories are the working plan: do not audit how they
+are written. Then check what only judgment can catch:
 
 | Check | How |
 |---|---|
-| Defined Story absent from backlog | Compare against requirements docs, issue trackers, or prior conversation the Solution Designer points you at |
-| Backlog Story with no corresponding defined requirement | Ask whether it is real or should be removed — do not delete it yourself |
+| Defined Epic absent from backlog | Compare against requirements docs, issue trackers, or prior conversation the Solution Designer points you at |
+| Backlog Epic with no corresponding defined requirement | Ask whether it is real or should be removed — do not delete it yourself |
 | Epic with no Stories | `gtt-check-backlog.sh` already warns; confirm whether that is temporary (freshly proposed) or stale |
 | Completed work not reflected in backlog | Compare recent commits/PRs against Story status; a merged feature with no `Done` Story is a finding |
 | Backlog references to obsolete artifacts | A Story naming a file, module, or decision that no longer exists |
-| Story `Undesigned` while work on it has started | Commits or code for a Story whose status is `Undesigned` — implementation ran ahead of the written design |
-| Story design that the sources do not support | Open each `[FUENTE: ref]` of a `Ready`/`In Progress` Story and confirm the source says it; a statement tagged as source that is really the agent's reading is a finding |
+| Work under an Epic that is still `Proposed` | `gtt-check-backlog.sh` reports it: the scope being built was never approved - a finding for the Solution Designer, not a reason to stop the work |
+| An Epic whose goal or scope no longer matches what is being built | Compare the Epic's `Goal` / `Scope` with the Stories closed under it and with the code; scope that grew without a decision is a finding |
 | Closure that the repository does not support | Open each `Done` Story's `Closed`: the commit or PR exists and the tests it names pass; a closure nobody can trace is a finding |
-| Story whose `Governed by` is stale or incomplete | A decision it cites was superseded, or an ADR that clearly constrains the Story is not cited |
-| Implementation beyond the written Story | Behaviour in the code that no Scope item or Acceptance Criterion of its Story covers |
 | Story contradicting governed context or an ADR | Same severity as architectural drift — see *Precedence* in `AGENTS.md` |
 
-Report findings; do not silently add, remove, or "fix" Epics/Stories
-yourself — a structural correction goes through `gtt-propose-change` (form
-4) like any other backlog change. Only routine status corrections you can
-justify from the evidence above (e.g. a Story is provably `Done`) may be
-applied directly, the same way any other routine implementation work would
-update gtt-domain/backlog.md.
+Report findings. An Epic is governed: do not add, remove or "fix" one
+yourself — a correction to an Epic's goal, scope or approval goes through
+`gtt-propose-change` (form 4). Stories are not audited as authority: they are
+the working plan of whoever does the work, so code that goes beyond what a
+Story says is not a finding, and neither is a Story nobody "defined". What
+this audit does report about Stories are facts - a `Done` Story whose `Closed`
+nobody can trace, a reference to an artifact that no longer exists - and
+whoever does the work corrects them directly in `gtt-domain/backlog.md`; no
+proposal and no approval are involved.
 
 ## Classification
 
@@ -125,13 +133,17 @@ Orphaned
 Unverifiable
   <file> — claim is not concrete enough to check
 
+Observation
+  gtt-observe.sh: <open observations by level; BLOCKING and rejected ones listed>
+  Boundaries declared: <count> - not covered by any boundary: <list>
+
 Confirmed
   <count> claims verified
 
 Backlog
   gtt-check-backlog.sh: <OK / FAILED, summary>
-  Stories not designed (Undesigned): <count, list>
-  Story design not supported by its sources: <list>
+  Epics awaiting approval: <list>
+  Epics whose scope no longer matches the work: <list>
   Defined but missing from backlog: <list>
   In backlog but no defined requirement: <list>
   Stale / contradicts governed context: <list, with evidence>
@@ -144,6 +156,6 @@ Recommended action
 Report only. Do not edit `gtt-domain/context/`, do not fix the drift in code, and do
 not soften a finding because the code looks reasonable. The Solution Designer
 decides whether the context or the implementation is the thing that is wrong.
-Divergences found by the drift-signals sweep are handed to `gtt-drift-response`
+Divergences found by the boundaries sweep are handed to `gtt-drift-response`
 to draft, not drafted here. Structural backlog findings are handed to
 `gtt-propose-change` (form 4), not resolved here either.

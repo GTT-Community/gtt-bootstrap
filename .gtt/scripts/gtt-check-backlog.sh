@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
 # GTT - backlog structural integrity gate.
 #
-# gtt-domain/backlog.md is not architecture (see AGENTS.md "Backlog governance") but it
-# is still a governed artifact: Epic/Story identifiers must stay unique and
-# traceable, and status values must stay inside the agreed vocabulary so
-# both agents and humans can rely on them. This makes that check
-# deterministic instead of a visual scan.
+# gtt-domain/backlog.md is not architecture (see AGENTS.md "Backlog"). It holds
+# two kinds of entry, governed differently:
 #
-# It also enforces the "Story Ready" rule: a Story that is Ready, In Progress
-# or Done must carry its written, human-approved design (description, scope,
-# out of scope, acceptance criteria, tests, sources, the governed decisions
-# that apply, the origin of every statement), a Done Story records how it was
-# closed, and an Epic is Completed only when all its Stories are. A title is not a design; a Story that has only a title is
-# `Undesigned` and is reported, never passed off as a complete backlog. The
-# rule itself lives in gtt_backlog.py.
+#   Epic   intent and scope - the human approves it;
+#   Story  the operating plan of whoever does the work - the ADE creates,
+#          splits, rewrites, implements and closes Stories with no approval.
 #
-# What this does NOT enforce: whether an Epic/Story addition or removal went
-# through gtt-domain/change-request.md. That distinction (structural change vs.
-# routine status update) requires judgment this script cannot make - it
-# stays an instruction-plane rule in AGENTS.md, not a control-plane one here.
-# Nor does it judge whether a criterion is good or an approval really happened.
+# This gate keeps the structure tooling and people rely on: Epic and Story
+# identifiers stay unique, status values stay inside the agreed vocabulary,
+# an Epic that is Planned / In Progress / Completed carries its Goal and its
+# `Approved`, and an Epic is Completed only when all its Stories are. The Epic
+# rules live in gtt_backlog.py.
+#
+# It approves nothing and judges nothing: whether a Story is well written is
+# not its business, and what the work does to the governed design is watched
+# by observation (gtt-observe.sh), not by gating Stories in advance.
 #
 # Usage:
 #   .gtt/scripts/gtt-check-backlog.sh [path-to-backlog.md]
@@ -36,7 +33,8 @@ if [ ! -f "$BACKLOG" ]; then
 fi
 
 EPIC_STATUSES="Proposed|Planned|In Progress|Completed|Cancelled"
-STORY_STATUSES="Proposed|Undesigned|Ready|In Progress|Blocked|Done|Cancelled"
+# Planned is the vocabulary; Proposed / Undesigned / Ready are read as Planned (earlier versions).
+STORY_STATUSES="Planned|In Progress|Blocked|Done|Cancelled|Proposed|Undesigned|Ready"
 FAIL=0
 CANNOT=0
 
@@ -84,14 +82,14 @@ if [ -n "$EMPTY_EPICS" ]; then
   echo "$EMPTY_EPICS" | sed 's/^/  /'
 fi
 
-# --- Story Ready: a Ready / In Progress / Done Story is a complete, approved definition ---
+# --- Epics are approved intent; an Epic is Completed only when its Stories are ---
 HERE="$(cd "$(dirname "$0")" && pwd)"
 READY_RC=0
 bash "$HERE/gtt-run-python.sh" "$HERE/gtt_backlog.py" check "$BACKLOG" || READY_RC=$?
 case "$READY_RC" in
   0) ;;
   1) FAIL=1 ;;
-  *) echo "gtt-check-backlog: Story readiness could not be determined (gtt_backlog.py did not run)." >&2; CANNOT=1 ;;
+  *) echo "gtt-check-backlog: the Epic rules could not be determined (gtt_backlog.py did not run)." >&2; CANNOT=1 ;;
 esac
 
 if [ "$FAIL" -ne 0 ]; then
@@ -102,11 +100,10 @@ gtt-check-backlog: FAILED
 Structural integrity violations found above. An Epic ID must be unique, a
 Story ID must be unique project-wide, and status values must stay inside
 the agreed vocabulary so tooling and agents can rely on them without
-re-parsing free text. A Story that is Ready, In Progress or Done must carry
-its written, human-approved design: set it back to Undesigned, or complete
-it through the Epic design stage (AGENTS.md -> Backlog governance). A Done
-Story records its closure, and an Epic is Completed only when every one of
-its Stories is Done or Cancelled.
+re-parsing free text. An Epic is intent: once it is Planned, In Progress or
+Completed it carries its Goal and who approved it and when - leave it
+Proposed until the human has. An Epic is Completed only when every one of
+its Stories is Done or Cancelled. Stories themselves need no approval.
 MSG
   exit 1
 fi

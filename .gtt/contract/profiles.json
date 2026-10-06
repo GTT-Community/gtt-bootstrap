@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "contract_version": 3,
+  "contract_version": 4,
   "notice": "GTT Method Plans (methodology profiles). The human SELECTS a plan; the CLI records it (gtt-project.sh profile set); what Light, Medium, Hard and Team MEAN is defined here, by the Bootstrap, and nowhere else. A plan is an operating and collaboration profile - how much deterministic work the human delegates to GTT - never a quality level. Each rule says where it is enforced: `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane); `plan.policy` is declared here and executed by the CLI (the Bootstrap does not re-implement it). No plan weakens an invariant. Human-readable rendering: .gtt/docs/method-plans.md.",
   "supported": [
     { "id": "light", "label": "Light Method" },
@@ -26,7 +26,8 @@
     "deterministic_operation": "An operation whose result follows entirely from repository state and declared policy, with no judgment: allocating the next free id, rebuilding the index, regenerating the GTTGuard registry, running validation.",
     "relevant_change": "An automated operation that rewrites human-authored or ADE-facing files rather than derived ones: updating references across documents after a move, synchronising ADE context files.",
     "destructive_operation": "An operation that removes or overwrites something that cannot be regenerated: clean, removing an ADE, overwriting a file.",
-    "governed_decision": "Anything that changes L0/L1 (gtt-domain/context/, gtt-domain/adr/), the structure of the backlog, a GTTGuard-protected artifact, or the freeze. Always a human decision, in every plan."
+    "governed_decision": "Anything that changes L0/L1 (gtt-domain/context/, gtt-domain/adr/), an Epic's goal or scope, a GTTGuard-protected artifact, or the freeze. Always a human decision, in every plan. A Story is not one: Stories are the working plan and are never approved.",
+    "ordinary_work": "Everything else: writing, changing, refactoring, testing and committing implementation, and creating, splitting, rewriting and closing Stories. It needs no approval, in any plan."
   },
   "policy_values": {
     "automatic": "GTT does it without asking and reports what it did.",
@@ -69,18 +70,19 @@
     "stop_conditions": [
       "a genuine architectural or semantic conflict",
       "a decision only the developer can make",
+      "a boundary the governed state declares BLOCKING, or an observation the developer rejected",
       "explicit authorization required for a protected or governed operation",
       "a safety or integrity condition that prevents continuing safely",
       "unresolved evidence that is required to continue correctly"
     ],
-    "stop_rule": "STOP is not a general precaution. Reaching an intermediate mechanical step is never a reason to stop.",
+    "stop_rule": "STOP is not a general precaution. Reaching an intermediate mechanical step is never a reason to stop, and neither is an observation that is not BLOCKING: record it and continue.",
     "continuity": "After a successful automatic operation, continue the planned workflow and say so in one line; do not ask whether to continue.",
     "dialogue": {
       "marker": "@gtt",
       "statement": "Every message in which an agent or a CLI speaks on behalf of GTT opens with the marker, followed by what the message is, so the human always knows that it is the method speaking and not the assistant's ordinary conversation.",
       "format": "@gtt · <what this is>",
-      "applies_to": ["a question the method needs answered", "a confirmation or a choice (ADE participation, Method Plan, Confirmation A, Confirmation B, a Story's design approval)", "the Initial Design Questionnaire, in every turn of the interview", "a proposal, a finding, a conflict or a STOP", "a request for authorization, with its command", "a report"],
-      "examples": ["@gtt · Initial Design Questionnaire", "@gtt · Method Plan", "@gtt · Confirmation B", "@gtt · Story design approval", "@gtt · Authorization required", "@gtt · Report"],
+      "applies_to": ["a question the method needs answered", "a confirmation or a choice (ADE participation, Method Plan, Confirmation A, Confirmation B, an Epic's approval)", "an observation (a signal GTT derived from the project; work continues unless it says STOP)", "the Initial Design Questionnaire, in every turn of the interview", "a proposal, a finding, a conflict or a STOP", "a request for authorization, with its command", "a report"],
+      "examples": ["@gtt · Initial Design Questionnaire", "@gtt · Method Plan", "@gtt · Confirmation B", "@gtt · Observation", "@gtt · Authorization required", "@gtt · Report"],
       "not_for": "Ordinary work that GTT did not raise: explaining code, answering a question, implementing a Story.",
       "authority": "none. The marker identifies who is speaking; it never makes a message a decision, an approval or evidence."
     },
@@ -91,14 +93,53 @@
       "detail_on_demand": "Detail is always available and never withheld: the `--verbose` form of an operation, `status`, `query`, and the full output of any check."
     }
   },
+  "two_planes": {
+    "principle": "Governance before and above autonomous work; observation during work. GTT governs the boundaries; the ADE performs the work.",
+    "governance": {
+      "answers": "What the system is supposed to be.",
+      "holds": ["intent", "architecture", "constraints", "decisions and ADRs", "Epics (goal and scope)", "protected artifacts", "the boundaries observation watches", "the freeze"],
+      "authority": "the human: nothing here changes without an explicit human decision, in every plan",
+      "path": "change request -> THINK -> proposal -> human decision -> promotion -> new freeze"
+    },
+    "work": {
+      "answers": "What is actually happening.",
+      "holds": ["implementation", "tests", "refactors", "commits", "Stories and the working plan"],
+      "authority": "the ADE: autonomous by default; no approval is asked for ordinary work",
+      "watched_by": "observation (operation `observe`): computed facts against the frozen governed state"
+    },
+    "freeze": "Freeze does not mean the code cannot change. It means the design the human approved is the authority. Intent and boundaries are frozen; the implementation is expected to evolve. There is no unfreeze: a governed change is completed by a new freeze.",
+    "levels": [
+      { "id": "NOTICE", "meaning": "an informational deviation", "behavior": "recorded in the governance backlog; never announced", "work": "continues" },
+      { "id": "WARNING", "meaning": "meaningful drift that blocks nothing", "behavior": "announced once and recorded", "work": "continues" },
+      { "id": "GOVERNANCE", "meaning": "a boundary of the design was crossed", "behavior": "announced once and recorded; a human decision is needed before the next freeze, and before promotion where the plan's gate says so", "work": "continues" },
+      { "id": "BLOCKING", "meaning": "a state the governed design explicitly prohibits", "behavior": "the affected operation stops and `observe.check` fails until it is fixed", "work": "the affected operation stops; everything else continues" }
+    ],
+    "level_naming": "The levels are named, never numbered: L0 and L1 already mean the governed context and the ADRs.",
+    "blocking_basis": ["a boundary rule declared BLOCKING in the frozen governed state (the `gtt-boundaries` block)", "an observation the human explicitly rejected", "the governed paths, the freeze and GTTGuard-protected artifacts, which only a human changes"],
+    "blocking_rule": "A block always has an explicit governance basis and names it. A detector that merely finds something unusual never blocks.",
+    "observation": {
+      "deterministic": "Facts are computed from Git, the filesystem, dependency manifests, the GTTGuard registry and the freeze baseline. No model takes part in establishing a fact; a model may help interpret one or draft a proposal.",
+      "idempotent": "The same state observed again reports nothing and writes nothing; an observation is correlated by rule and artifact.",
+      "backlog": "gtt-domain/governance-backlog.json: detected -> open -> accepted | rejected | deferred -> resolved. Written only by the observation engine; the decisions on it are the human's.",
+      "silent_by_default": "Compliant work produces no output. Only what is new, at WARNING or above, is announced - once."
+    },
+    "proposal": "A proposal is not a command and not an approval request for ordinary work: it means GTT, or an agent, found something that may need a governance decision. It becomes authoritative only through the Governance plane.",
+    "design_rule": ["Is this Governance?", "Is this Observation?", "Is this normal Work?", "Does it change authoritative state?", "Does it merely observe state?", "Can it be deterministic?", "Does it require human authority?", "Does it need to block?", "Can it remain ADE-agnostic?", "Does it create another source of truth?"],
+    "design_rule_verdict": "A feature that puts the human back into ordinary work without need is rejected or redesigned."
+  },
   "invariants": [
+    { "id": "autonomous-work", "statement": "Ordinary work proceeds without human approval: implementation, tests, refactors, commits and Stories are never gated on a confirmation.", "enforcement": "instruction+gate:gtt-check-backlog.sh", "relaxable": false },
+    { "id": "non-blocking-continuity", "statement": "An observation that is not BLOCKING never stops the work: it is recorded, announced once when meaningful, and the work continues.", "enforcement": "script:gtt-observe.sh", "relaxable": false },
+    { "id": "explicit-blocking", "statement": "Only a condition the governed state explicitly declares blocking stops the affected operation, and the block names its basis.", "enforcement": "script:gtt-observe.sh+hook", "relaxable": false },
+    { "id": "deterministic-first", "statement": "A fact that can be computed is never established by an agent's judgment alone; no agent supervises another agent as governance.", "enforcement": "script:gtt-observe.sh", "relaxable": false },
+    { "id": "session-state-is-derived", "statement": "Session continuity is derived from the project's actual state; it is never authority, evidence or a decision.", "enforcement": "script:gtt-status.sh", "relaxable": false },
     { "id": "human-decision-authority", "statement": "Agents prepare; only a human decides, ratifies and freezes. No profile, ADE or Primary ADE changes that.", "enforcement": "hook+script+instruction", "relaxable": false },
     { "id": "provenance-tags", "statement": "[PROPUESTA] never appears inside governed context; [FUENTE], [VACIO] and [CONFLICTO] must be well formed wherever they are used.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
     { "id": "evidence-boundary", "statement": "Sources -> grounding -> evidence dossier -> reasoning -> proposal -> human decision. Reasoning does not receive raw sources in a way that bypasses grounding.", "enforcement": "instruction", "relaxable": false },
     { "id": "proposal-distinction", "statement": "A proposal is never a decision and is never written as one.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
     { "id": "conflict-visibility", "statement": "A conflict between sources is exposed, never silently resolved; an unresolved [CONFLICTO] refuses freeze.", "enforcement": "gate:gtt-check-provenance.sh#tags", "relaxable": false },
     { "id": "open-is-not-authorization", "statement": "An OPEN gap is scoped, visible and authorises nothing; a BLOCKING gap refuses freeze.", "enforcement": "gate:gtt-check-provenance.sh#gaps", "relaxable": false },
-    { "id": "freeze-semantics", "statement": "Freeze is a human ratification; there is no unfreeze shortcut. A frozen L0/L1 is changed only through the governed path.", "enforcement": "script:gtt-freeze.sh+hook", "relaxable": false },
+    { "id": "freeze-semantics", "statement": "Freeze is a human ratification; there is no unfreeze shortcut. A frozen L0/L1 is changed only through the governed path.", "enforcement": "script:gtt-freeze.sh+hook+gate:gtt-check-stack.sh", "relaxable": false },
     { "id": "protected-artifacts", "statement": "GTTGuard-protected artifacts and the frozen governed context are never modified autonomously.", "enforcement": "hook+gate:gtt-check-protection.sh", "relaxable": false },
     { "id": "selected-is-not-authority", "statement": "A selected source is not a governed authority; authority and precedence are declared, never inferred.", "enforcement": "gate:gtt-check-provenance.sh#sources", "relaxable": false }
   ],
@@ -134,7 +175,7 @@
         { "control": "confirmation-batching", "how": "Confirmation A and B may be asked in one exchange; each still needs its own explicit human answer." },
         { "control": "audit-cadence", "how": "gtt-audit is not scheduled." }
       ],
-      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
+      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false, "governance_observation_fails_check": false }
     },
     "medium": {
       "plan": {
@@ -162,7 +203,7 @@
         "evidence_requirements": "Verification claims are classified (STATIC / RUNTIME VERIFIED, DOCUMENTED ONLY, NO EVIDENCE) when recorded."
       },
       "relaxes": [],
-      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false }
+      "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false, "governance_observation_fails_check": false }
     },
     "hard": {
       "plan": {
@@ -190,7 +231,7 @@
         "evidence_requirements": "Every verification claim recorded with command, result and evidence type; NO EVIDENCE stated for what was not run."
       },
       "relaxes": [],
-      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true }
+      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true, "governance_observation_fails_check": true }
     },
     "team": {
       "plan": {
@@ -220,7 +261,7 @@
         "evidence_requirements": "Every verification claim recorded with command, result, evidence type and who ran it; NO EVIDENCE stated for what was not run."
       },
       "relaxes": [],
-      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true }
+      "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true, "governance_observation_fails_check": true }
     }
   }
 }

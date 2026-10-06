@@ -1,6 +1,6 @@
 ---
 name: gtt-drift-response
-description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Produces a proposal under gtt-domain/proposals/ plus a promotion script the human runs to ratify it.
+description: Use when observation reports drift (an `@gtt · Observation` at WARNING or above, a GOVERNANCE or BLOCKING item in the governance backlog), when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Decides whether the governed design itself must change and, only then, produces a proposal under gtt-domain/proposals/ plus a promotion script the human runs. Never a reason to stop work that is not BLOCKING.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -12,11 +12,20 @@ description: Use when a GTT DRIFT SIGNAL is emitted, when gtt-audit reports a di
 > authorization, a report — opens with `@gtt · <what this is>`
 > (e.g. `@gtt · Drift`). The marker says who is speaking; it is never a decision.
 
-Something outside the governed paths may have made the ratified context stale.
-Determine whether it did, and if so, prepare the ratification.
+Observation (`.gtt/scripts/gtt-observe.sh`) found that the work crossed a
+boundary of the frozen design. The fact is already established - a script
+computed it. What is left is the part a script cannot do: whether it means the
+governed design must change, and if so, preparing that decision for the human.
 
 This skill is the single response path for drift, whichever way it was found:
-the PostToolUse detector, a `gtt-audit` sweep, or a direct question.
+observation after a write, at session start or in validation, a `gtt-audit`
+sweep, or a direct question.
+
+**The work continues.** Unless the observation says STOP, do not pause the task
+to run this skill and do not wait for an answer: tell the human in one line,
+keep working, and respond to the observation when the task allows. Read the
+item first - `bash .gtt/scripts/gtt-observe.sh show OBS-NNNN` - for the rule it
+crossed and what that rule guards.
 
 ## Step 1 — Assess
 
@@ -26,9 +35,14 @@ Read the changed file and compare it against `gtt-domain/context/stack.md`,
 
 Three outcomes:
 
-- **No contradiction.** Say so in one line and stop. Do not write a proposal.
-  A proposal for a non-issue is noise that trains the reader to ignore the next
-  one.
+- **No contradiction.** Say so in one line and write no proposal: a proposal
+  for a non-issue is noise that trains the reader to ignore the next one. The
+  observation stays in the governance backlog; tell the human they can clear it
+  with `bash .gtt/scripts/gtt-observe.sh accept OBS-NNNN --by <name> --apply` -
+  their decision, never run by you.
+- **The code is what is wrong.** The boundary stands and the change should not
+  have crossed it. Fix the code; the observation resolves itself the next time
+  the engine runs. This is ordinary work: no proposal, no approval.
 - **Fast track.** The decision is ratified in principle; only a detail moved —
   a version bump, an added service that fits an existing dependency rule.
 - **Full track.** A ratified decision is being replaced. Alternatives and
@@ -75,6 +89,10 @@ human sees it when reviewing the package. Then deliver the same brief hand-off m
 first, the exact command to run it, and that you have not promoted anything.
 
 ## Hard rule
+
+An observation is a signal, never a decision: you never accept, reject or
+defer one, and you never treat one that is not BLOCKING as a reason to stop.
+
 
 You draft and stage. The human promotes by running the script themselves.
 Running the promotion yourself — or applying its changes by any other means —

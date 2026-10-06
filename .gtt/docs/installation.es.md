@@ -23,7 +23,7 @@ En ambos casos, el objetivo final es el mismo: establecer el contrato del worksp
 - Git.
 - Bash para el CI gate y los scripts.
 - Python 3 para el hook de protección.
-- Claude Code, Kiro, Codex, GitHub Copilot, Cursor, OpenHands u otro ADE capaz de seguir el procedimiento de bootstrap.
+- Claude Code, Kiro, Codex, GitHub Copilot, Cursor, OpenHands, Google Antigravity u otro ADE capaz de seguir el procedimiento de bootstrap.
 - Se recomienda un documento de diseño/origen terminado, aunque no es obligatorio.
 
 El documento de diseño puede estar en Markdown, texto, Word, PDF u otro formato habitual.
@@ -221,7 +221,7 @@ El agente debe tratar este repositorio como un contrato documental ejecutable, n
 9. Nunca sobrescribir silenciosamente un archivo existente con el mismo nombre.
 10. Crear el contrato de workspace GTT: el núcleo portable más únicamente los overlays de los ADE participantes, excluyendo explícitamente los demás.
 11. Mapear la fuente confirmada al contexto gobernado.
-12. Buscar Epics/Stories definidas (documento de requisitos, issue tracker, o conversación previa). Si existen, reconciliarlas en `gtt-domain/backlog.md`; si no existe ninguna, decirlo explícitamente en vez de inventarlas. Una Story de la que la fuente trae solo el título se registra como `Undesigned` (sin diseñar) y se informa así — nunca se completa para que parezca terminada.
+12. Buscar Epics definidas (documento de requisitos, issue tracker, o conversación previa). Si existen, reconciliarlas en `gtt-domain/backlog.md`; si no existe ninguna, decirlo explícitamente en vez de inventarlas. Una Epic que la persona no aprobó se registra como `Proposed`; las Stories son el plan de trabajo y no necesitan aprobación. Verificar que el bloque `gtt-boundaries` de `gtt-domain/context/stack.md` declare lo que la observación debe vigilar.
 13. Solicitar confirmación del contexto generado.
 14. Preservar la fuente como `SOURCE-BRIEF.*`.
 15. Ejecutar freeze solo después de confirmación humana explícita.

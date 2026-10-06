@@ -118,6 +118,19 @@ if { [ -f gtt-domain/proposals/bootstrap/design-assessment.md ] || [ -f gtt-doma
   rm -f /tmp/gtt-validate-think.$$
 fi
 
+# Observation: the work against the frozen governed state. This fails only on what
+# the governed state itself says must stop - a boundary ratified as BLOCKING, an
+# observation the human rejected - and, under a Method Plan that says so, on a
+# GOVERNANCE observation nobody has decided. Everything else is recorded, not failed.
+# Read-only here (--dry-run): validating never rewrites the governance backlog.
+if [ -f .gtt/scripts/gtt-observe.sh ]; then
+  bash .gtt/scripts/gtt-observe.sh check --dry-run >/tmp/gtt-validate-observe.$$ 2>&1
+  OBSERVE_RC=$?
+  report "gtt-observe.sh check" "$OBSERVE_RC"
+  [ "$OBSERVE_RC" -ne 0 ] && cat /tmp/gtt-validate-observe.$$
+  rm -f /tmp/gtt-validate-observe.$$
+fi
+
 bash .gtt/scripts/gtt-check-integrity.sh >/tmp/gtt-validate-integrity.$$ 2>&1
 INTEGRITY_RC=$?
 report "gtt-check-integrity.sh" "$INTEGRITY_RC"

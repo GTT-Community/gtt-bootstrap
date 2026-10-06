@@ -17,6 +17,7 @@ import glob
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -112,7 +113,7 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.3.0" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.3.1" and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
@@ -243,7 +244,7 @@ def ade(project, tmp):
     reg = json.loads(out)
     row = {a["id"]: a for a in reg["ades"]}
     need = {"id", "name", "detect", "install", "validate", "owned_paths", "handoff", "invoke", "version"}
-    check(sorted(row) == ["claude", "codex", "copilot", "cursor", "kiro", "openhands"] and all(need <= set(a) for a in reg["ades"]),
+    check(sorted(row) == ["antigravity", "claude", "codex", "copilot", "cursor", "kiro", "openhands"] and all(need <= set(a) for a in reg["ades"]),
           "the ADE registry is machine-readable with the required fields")
     check(reg["participation_states"] == ["detected", "participating", "primary", "excluded"], "participation states are defined")
     rc, env, _ = op(host, "ade.detect")
@@ -255,7 +256,7 @@ def ade(project, tmp):
     check(rc == 0 and os.path.isfile(os.path.join(host, ".claude/CLAUDE.md")), "participating ADEs are installed", env["stderr"])
     rc, env, _ = op(host, "ade.state")
     st = data(env)
-    check(st["primary"] == "claude" and st["participating"] == ["claude", "codex"] and st["excluded"] == ["copilot", "cursor", "kiro", "openhands"], "primary + secondary + excluded recorded")
+    check(st["primary"] == "claude" and st["participating"] == ["claude", "codex"] and st["excluded"] == ["antigravity", "copilot", "cursor", "kiro", "openhands"], "primary + secondary + excluded recorded")
     rc, env, _ = op(host, "ade.validate")
     check(rc == 0, "the resulting state validates")
     before_claude = tree_hash(os.path.join(host, ".claude"))
@@ -297,7 +298,7 @@ def cursor_and_openhands(project, tmp):
     check(cand["cursor"]["status"] == "candidate" and cand["openhands"]["status"] == "candidate", "both are detected as candidates, never as participating")
     rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "cursor,openhands", "primary": "cursor", "apply": True})
     st = data(op(host, "ade.state")[1])
-    check(rc == 0 and st["primary"] == "cursor" and st["participating"] == ["cursor", "openhands"] and st["excluded"] == ["claude", "codex", "copilot", "kiro"],
+    check(rc == 0 and st["primary"] == "cursor" and st["participating"] == ["cursor", "openhands"] and st["excluded"] == ["antigravity", "claude", "codex", "copilot", "kiro"],
           "a project may run on Cursor and OpenHands alone", env["stderr"][-300:])
     check(all(os.path.isfile(os.path.join(host, f)) for f in (".cursor/rules/gtt.mdc", ".cursor/rules/gtt-implementation.mdc", ".agents/skills/gtt/SKILL.md"))
           and not os.path.exists(os.path.join(host, ".claude")) and not os.path.exists(os.path.join(host, ".kiro")),
@@ -310,6 +311,72 @@ def cursor_and_openhands(project, tmp):
     check(".cursor/rules/gtt.mdc" in pol["exclude"] and ".cursor/rules/team.mdc" not in pol["exclude"]
           and ".cursor/" not in pol["exclude"] and ".agents/" not in pol["exclude"],
           "export excludes GTT's own rule files, never the host's or the ADE directories by name", str(pol["exclude"])[-300:])
+
+
+def antigravity(project, tmp):
+    print("[ADE] Antigravity: its own id, three owned files inside a shared .agents/, never a merge")
+    owned = [".agents/rules/gtt.md", ".agents/rules/gtt-implementation.md", ".agents/hooks.json"]
+    reg = {a["id"]: a for a in json.loads(contract(project, "show", "ade-registry")[1])["ades"]}
+    check(reg["antigravity"]["owned_paths"] == owned and reg["antigravity"]["handoff"]["instruction_entry"].endswith("GENTS.md")
+          and reg["antigravity"]["enforcement"] == "realtime-hook-unverified",
+          "Antigravity is an ADE of its own: the portable contract as entry point, two rules and a hooks file, hook unverified")
+    with open(os.path.join(project, ".agents/rules/gtt.md"), encoding="utf-8") as handle:
+        rule = handle.read()
+    check(rule.startswith("---\n") and "trigger: always_on" in rule.split("---")[1] and "@gtt" in rule and "gtt-session-context.sh" in rule,
+          "the Antigravity rule is always on, says how to speak for GTT and tells the agent to run the session service")
+    check(len(rule) < 12000 and "## Non-negotiable rules" not in rule and "## Human Promotion Boundary" not in rule,
+          "the rule is short and refers to the agent contract instead of copying it")
+    hooks = read_json(os.path.join(project, ".agents/hooks.json"))
+    entry = hooks["gtt-protect"]["PreToolUse"][0]
+    check("gtt_protect.py hook --format antigravity" in entry["hooks"][0]["command"]
+          and set(entry["matcher"].split("|")) == {"run_command", "write_to_file", "replace_file_content", "multi_replace_file_content"},
+          ".agents/hooks.json points Antigravity's pre-tool hook at the shared engine, for its shell and write tools")
+
+    host = make_host(project, tmp, "ag-host")
+    write(os.path.join(host, ".agents", "skills", "other", "SKILL.md"), "---\nname: other\ndescription: the host's own\n---\n")
+    cand = {c["id"]: c for c in data(op(host, "ade.detect")[1])["candidates"]}
+    check(not cand["antigravity"]["signals"], "a shared .agents/skills/ does not make Antigravity a candidate")
+    write(os.path.join(host, ".agents", "rules", "team.md"), "---\ntrigger: always_on\n---\nthe host's own\n")
+    cand = {c["id"]: c for c in data(op(host, "ade.detect")[1])["candidates"]}
+    check(cand["antigravity"]["status"] == "candidate" and cand["antigravity"]["signals"], "its own rules directory makes it a candidate, never a participant")
+    rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "antigravty", "primary": "antigravty", "apply": True})
+    check(rc != 0 and not os.path.exists(os.path.join(host, ".gtt/ade.json")), "an unknown ADE id is refused and nothing is written")
+    rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "antigravity", "primary": "antigravity"})
+    check(rc == 0 and not os.path.exists(os.path.join(host, ".gtt/ade.json")) and not os.path.exists(os.path.join(host, ".agents/hooks.json")),
+          "install is a dry run by default")
+    rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "antigravity,openhands", "primary": "antigravity", "apply": True})
+    st = data(op(host, "ade.state")[1])
+    check(rc == 0 and st["primary"] == "antigravity" and st["participating"] == ["antigravity", "openhands"],
+          "Antigravity can be the Primary ADE, and shares .agents/ with OpenHands without a conflict", env["stderr"][-300:])
+    check(all(os.path.isfile(os.path.join(host, f)) for f in owned + [".agents/skills/gtt/SKILL.md"]) and not os.path.exists(os.path.join(host, ".claude")),
+          "exactly the chosen overlays are installed")
+    rc, env, _ = op(host, "ade.validate")
+    check(rc == 0, "the Antigravity + OpenHands state validates", env["stderr"][-300:])
+    pol = data(op(host, "export-policy")[1])["clean_export"]
+    check(all(f in pol["exclude"] for f in owned) and ".agents/rules/team.md" not in pol["exclude"] and ".agents/" not in pol["exclude"],
+          "export excludes GTT's three files, never the host's rule or .agents/ by name", str(pol["exclude"])[-300:])
+    rc, env, _ = op(host, "ade.remove", ades="openhands", apply=True)
+    check(rc == 0 and not os.path.exists(os.path.join(host, ".agents/skills/gtt/SKILL.md")) and all(os.path.isfile(os.path.join(host, f)) for f in owned),
+          "removing OpenHands leaves Antigravity's files in the shared directory", env["stderr"][-300:])
+    check(os.path.isfile(os.path.join(host, ".agents/rules/team.md")) and os.path.isfile(os.path.join(host, ".agents/skills/other/SKILL.md")),
+          "the host's own files under .agents/ are untouched by install and remove")
+
+    for name, own in (("ag-hooks", ".agents/hooks.json"), ("ag-rule", ".agents/rules/gtt.md")):
+        host = make_host(project, tmp, name)
+        write(os.path.join(host, own), "the host's own\n")
+        rc, env, _ = op(host, "ade.install", **{"from": project, "participating": "antigravity", "primary": "antigravity", "apply": True})
+        with open(os.path.join(host, own), encoding="utf-8") as handle:
+            kept = handle.read() == "the host's own\n"
+        written = [f for f in owned if f != own and os.path.exists(os.path.join(host, f))]
+        check(rc != 0 and kept and not written and not os.path.exists(os.path.join(host, ".gtt/ade.json")),
+              f"a host that already has {own} is a reported conflict: nothing written, nothing merged", env["stderr"][-200:])
+
+    host = make_host(project, tmp, "ag-alone")
+    op(host, "ade.install", **{"from": project, "participating": "openhands", "primary": "openhands", "apply": True})
+    cand = {c["id"]: c for c in data(op(host, "ade.detect")[1])["candidates"]}
+    rc, env, _ = op(host, "ade.validate")
+    check(cand["antigravity"]["status"] == "excluded" and not cand["antigravity"]["signals"] and "antigravity" not in env["stdout"],
+          "a project that runs OpenHands alone shows no trace of Antigravity")
 
 
 def questionnaire(project, tmp):
@@ -425,7 +492,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.3.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == "1.3.1" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -485,7 +552,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.3.0", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.3.1", "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),
@@ -507,8 +574,19 @@ def developer_experience(project, tmp):
     dx = spec["developer_experience"]
     check(all(dx[k] is True for k in ("minimize_interruption", "automatic_deterministic_operations", "concise_reports", "details_on_demand")),
           "the policy is declared for every plan")
-    check(dx["protected_operations"]["agent_executes"] is False and len(dx["stop_conditions"]) == 5,
+    check(dx["protected_operations"]["agent_executes"] is False and len(dx["stop_conditions"]) == 6,
           "protected operations stay with the human; STOP has a closed list of reasons")
+    planes = spec["two_planes"]
+    check([level["id"] for level in planes["levels"]] == ["NOTICE", "WARNING", "GOVERNANCE", "BLOCKING"]
+          and [level["work"] for level in planes["levels"]][:3] == ["continues"] * 3,
+          "the two planes are data: four named levels, and work continues at every one but BLOCKING")
+    check("Stories and the working plan" in planes["work"]["holds"] and "Epics (goal and scope)" in planes["governance"]["holds"]
+          and "no approval" in planes["work"]["authority"],
+          "Epics belong to Governance; Stories and the implementation belong to Work, which asks for no approval")
+    ids = {inv["id"] for inv in spec["invariants"]}
+    check({"autonomous-work", "non-blocking-continuity", "explicit-blocking", "deterministic-first", "session-state-is-derived"} <= ids
+          and not any(inv["relaxable"] for inv in spec["invariants"]),
+          "autonomous work, non-blocking continuity and explicit blocking are invariants no plan relaxes")
     check(data(op(p, "methodology.profile.get")[1])["developer_experience"]["report"]["default"] == "brief",
           "the CLI receives the policy with the plan")
     talk = data(op(p, "methodology.profile.get")[1])["developer_experience"]["dialogue"]
@@ -608,7 +686,7 @@ def fresh_host(project, tmp):
 
 def any_ade_alone(project, tmp):
     print("[ADE matrix] every ADE works alone: install -> reconcile -> index -> validation.run")
-    for ade in ("claude", "codex", "copilot", "cursor", "kiro", "openhands"):
+    for ade in ("antigravity", "claude", "codex", "copilot", "cursor", "kiro", "openhands"):
         host = make_host(project, tmp, f"alone-{ade}")
         for kit in ("readme-gtt.md", "readme-gtt.es.md"):
             shutil.copy2(os.path.join(project, kit), host)
@@ -655,6 +733,25 @@ def protection_hooks(project, tmp):
     def openhands(tool, **tool_input):
         return hook("openhands", {"event_type": "PreToolUse", "tool_name": tool, "tool_input": tool_input, "working_dir": root})
 
+    def ag(tool, **args):
+        return hook("antigravity", {"toolCall": {"name": tool, "args": args}, "stepIdx": 1, "workspacePaths": [root]})
+
+    rc, out = ag("write_to_file", TargetFile=f"{root}/{governed_file}", CodeContent="x")
+    check(rc == 2 and out["decision"] == "deny" and out["reason"], "Antigravity: a write to the agent contract is denied, in Antigravity's shape")
+    check(ag("write_to_file", TargetFile=f"{root}/src/app.py")[0] == 0 and ag("write_to_file", TargetFile=f"{root}/gtt-domain/proposals/PROPOSAL-x.md")[0] == 0,
+          "Antigravity: implementation code and the proposals directory stay writable")
+    rc, out = ag("run_command", CommandLine=f"bash {script}", Cwd=root)
+    check(rc == 2 and "run by the human" in out["reason"], "Antigravity: an agent never executes a promotion script")
+    check(ag("run_command", CommandLine=f"cat {governed_file}")[0] == 0 and ag("run_command", CommandLine=f"sed -i s/a/b/ {governed_file}")[0] == 2,
+          "Antigravity: reading a governed file stays allowed, mutating it through the shell is denied")
+    check(ag("run_command", CommandLine="rm .agents/hooks.json")[0] == 2 and ag("write_to_file", TargetFile=f"{root}/.agents/hooks.json")[0] == 2,
+          "Antigravity: the agent cannot disarm its own protection")
+    check(ag("read_file", TargetFile=f"{root}/{governed_file}") == (0, None) and hook("antigravity", {"invocationNum": 1, "workspacePaths": [root]}) == (0, None),
+          "Antigravity: an unknown tool and an event that is not a tool call pass untouched")
+    check(hook("antigravity", "not json") == (0, None) and hook("antigravity", {"toolCall": {"name": "write_to_file"}}) == (0, None)
+          and hook("antigravity", {"toolCall": "x"}) == (0, None),
+          "Antigravity: a malformed event never blocks a session")
+
     for name, cfg in ((".cursor/hooks.json", lambda d: d["hooks"]["preToolUse"][0]["command"]),
                       (".openhands/hooks.json", lambda d: d["pre_tool_use"][0]["hooks"][0]["command"])):
         check("gtt_protect.py hook --format" in cfg(read_json(os.path.join(p, name))), f"{name} points its pre-tool hook at the shared engine")
@@ -688,10 +785,13 @@ def protection_hooks(project, tmp):
     context = "gtt-domain/context/stack.md"
     check(cursor("Write", file_path=context)[0] == 0 and openhands("file_editor", command="create", path=f"{root}/{context}")[0] == 0,
           "before freeze the governed context is writable (bootstrap populates it)")
+    check(ag("write_to_file", TargetFile=f"{root}/{context}")[0] == 0, "Antigravity: before freeze the governed context is writable")
     write(os.path.join(p, "gtt-domain/.frozen"), "2026-01-01T00:00:00Z\n")
     check(cursor("Write", file_path=context)[0] == 2 and openhands("file_editor", command="create", path=f"{root}/{context}")[0] == 2
           and cursor("Shell", command=f"rm {context}")[0] == 2,
           "after freeze it is denied on both ADEs: the two-regime condition a static config cannot express")
+    check(ag("write_to_file", TargetFile=f"{root}/{context}")[0] == 2 and ag("run_command", CommandLine=f"rm {context}")[0] == 2,
+          "Antigravity: after freeze it is denied, by file tool and by shell")
 
     write(os.path.join(p, "src/billing.py"), "# @GTTGuard reason=audited\ndef charge():\n    return 1\n\n\ndef helper():\n    return 2\n")
     bash(p, ".gtt/scripts/gtt-guard-sync.sh")
@@ -702,6 +802,16 @@ def protection_hooks(project, tmp):
     rc, out = openhands("file_editor", command="str_replace", path=f"{root}/src/billing.py", old_str="def charge():\n    return 1")
     check(rc == 2, "an edit to the protected symbol itself is denied", str(out)[:200])
     check(openhands("terminal", command="rm src/billing.py")[0] == 2, "a mutating shell command on a protected artifact is denied")
+    guarded, free = "def charge():\n    return 1", "def helper():\n    return 2"
+    check(ag("replace_file_content", TargetFile=f"{root}/src/billing.py", TargetContent=guarded)[0] == 2
+          and ag("replace_file_content", TargetFile=f"{root}/src/billing.py", TargetContent=free)[0] == 0,
+          "Antigravity: an edit inside the protected symbol is denied, one next to it is allowed")
+    check(ag("multi_replace_file_content", TargetFile=f"{root}/src/billing.py", ReplacementChunks=[{"TargetContent": free}, {"TargetContent": guarded}])[0] == 2
+          and ag("multi_replace_file_content", TargetFile=f"{root}/src/billing.py", ReplacementChunks=[{"TargetContent": free}])[0] == 0,
+          "Antigravity: a multi-chunk edit is denied when any chunk reaches the protected symbol")
+    check(ag("multi_replace_file_content", TargetFile=f"{root}/src/billing.py", ReplacementChunks="unexpected")[0] == 2
+          and ag("write_to_file", TargetFile=f"{root}/src/billing.py")[0] == 2,
+          "Antigravity: an edit of unknown extent on a file with a protected symbol fails safe")
 
     check(hook("cursor", "not json") == (0, None) and hook("openhands", {"event_type": "SomethingNew"}) == (0, None),
           "an unreadable or unknown event never blocks a session")
@@ -713,8 +823,8 @@ def protection_hooks(project, tmp):
     reg = {a["id"]: a for a in json.loads(contract(project, "show", "ade-registry")[1])["ades"]}
     listing = bash(project, ".gtt/scripts/gtt-ade.sh", "list")[1]
     check(".cursor/hooks.json" in reg["cursor"]["owned_paths"] and ".openhands/hooks.json" in reg["openhands"]["owned_paths"]
-          and listing.count("realtime-hook-unverified") == 2,
-          "the registry states both hooks as shipped but unverified - no ADE is credited with a guarantee it has not proven")
+          and ".agents/hooks.json" in reg["antigravity"]["owned_paths"] and listing.count("realtime-hook-unverified") == 3,
+          "the registry states every such hook as shipped but unverified - no ADE is credited with a guarantee it has not proven")
 
 
 def registry_safety(project, tmp):
@@ -822,62 +932,428 @@ def guard_and_retrieval(project, tmp):
     check(rc == 5, "an enum outside its values is refused")
 
 
-def story_readiness(project, tmp):
-    print("[backlog] Story Ready: a title is not a design")
-    p = fresh(project, tmp, "sr")
+def backlog_model(project, tmp):
+    print("[backlog] Epics are approved intent; Stories are the ADE's working plan and need no approval")
+    p = fresh(project, tmp, "bl")
     path = os.path.join(p, "gtt-domain", "backlog.md")
     with open(path, encoding="utf-8") as handle:
         base = handle.read()
-    check(bash(p, ".gtt/scripts/gtt-check-backlog.sh")[0] == 0, "the shipped template passes (its example Story is not a real Story)")
+    check(bash(p, ".gtt/scripts/gtt-check-backlog.sh")[0] == 0, "the shipped template passes (its examples are not real entries)")
 
-    def run(stories):
-        epic = "\n### EPIC-900 - Billing\n\n**Status:** Planned\n**Goal:** g\n\n#### Stories\n\n"
-        write(path, base.replace("## General Development Work", epic + stories + "\n---\n\n## General Development Work", 1))
+    def run(stories, epic="**Status:** Planned\n**Goal:** invoices go out\n**Approved:** MG - 2026-01-15\n"):
+        block = "\n### EPIC-900 - Billing\n\n" + epic + "\n#### Stories\n\n" + stories + "\n---\n\n## General Development Work"
+        write(path, base.replace("## General Development Work", block, 1))
         rc, out, err = bash(p, ".gtt/scripts/gtt-check-backlog.sh")
         return rc, out + err
 
     title = "##### STORY-901 - Issue invoices\n\n- **Status:** {}\n"
-    rc, out = run(title.format("Undesigned"))
-    check(rc == 0 and "STORY-901" in out and "not designed" in out, "a title-only Story is Undesigned: reported, never a failure", out[-300:])
-    for status in ("Ready", "In Progress", "Done"):
+    for status in ("Planned", "In Progress", "Blocked", "Cancelled"):
         rc, out = run(title.format(status))
-        check(rc == 1 and "STORY-901" in out and "`Acceptance Criteria` is missing or empty" in out, f"a title-only Story cannot be {status}", out[-300:])
-    full = ("##### STORY-901 - Issue invoices\n\n- **Status:** Ready\n- **Description:**\n  - One invoice per order [FUENTE: docs/spec.md:12]\n"
-            "- **Scope:**\n  - PDF output [HUMANO]\n- **Out of Scope:**\n  - None [HUMANO]\n- **Acceptance Criteria:**\n  - Totals match [PROPUESTA]\n"
-            "- **Tests:**\n  - test_totals\n- **Sources:** docs/spec.md\n- **Governed by:** ADR-001, stack section 2\n- **Design Approved:** MG - 2026-01-15\n")
-    rc, out = run(full)
-    check(rc == 0, "a complete, approved definition is Ready", out[-300:])
-    rc, out = run(full.replace("- **Governed by:** ADR-001, stack section 2\n", ""))
-    check(rc == 1 and "`Governed by` is missing or empty" in out, "a Story states the governed decisions that apply (or None)", out[-300:])
-    rc, out = run(full.replace("ADR-001", "ADR-777"))
-    check(rc == 1 and "ADR-777, which does not exist" in out, "an ADR a Story cites must exist", out[-300:])
-    done = full.replace("- **Status:** Ready", "- **Status:** Done")
-    rc, out = run(done)
-    check(rc == 1 and "`Closed` is missing or empty" in out, "a Done Story records its closure", out[-300:])
-    rc, out = run(done + "- **Closed:** 2026-02-01\n")
-    check(rc == 1 and "the evidence" in out, "a closure is a date and its evidence, not a date alone", out[-300:])
-    closed = done + "- **Closed:** 2026-02-01 - a1b2c3d - 14 tests passed\n"
-    rc, out = run(closed)
-    check(rc == 0 and "mark it Completed" in out, "a closed Story passes; an Epic whose Stories are all closed is pointed out", out[-300:])
-    rc, out = run(closed.replace("##### STORY-901", "##### STORY-902 - Refunds\n\n- **Status:** Undesigned\n\n##### STORY-901"))
-    check(rc == 0, "(sanity) an Epic in progress may hold open Stories", out[-300:])
-    write(path, open(path, encoding="utf-8").read().replace("**Status:** Planned\n**Goal:** g", "**Status:** Completed\n**Goal:** g"))
-    rc, out, err = bash(p, ".gtt/scripts/gtt-check-backlog.sh")
-    check(rc == 1 and "EPIC-900 is `Completed`" in err and "STORY-902" in err, "an Epic is not Completed while one of its Stories is open", (out + err)[-300:])
-    rc, out = run(full.replace("Totals match [PROPUESTA]", "Totals match"))
-    check(rc == 1 and "without an origin" in out, "a statement without its origin fails", out[-300:])
-    rc, out = run(full.replace("PDF output [HUMANO]", "PDF output [VACÍO: GAP-9]"))
-    check(rc == 1 and "undecided point" in out, "an undecided point ([VACIO]/[CONFLICTO]) is not a design", out[-300:])
-    rc, out = run(full.replace("MG - 2026-01-15", "<who> - <YYYY-MM-DD>"))
-    check(rc == 1 and "`Design Approved` is missing or empty" in out, "a design nobody approved is not Ready", out[-300:])
-    rc, out = run(full.replace("- **Status:** Ready", "- **Status:** Designed"))
+        check(rc == 0, f"a Story the ADE wrote on its own may be {status}: nobody approves a Story", out[-300:])
+    rc, out = run(title.format("Done"))
+    check(rc == 0 and "STORY-901 is `Done` without `Closed`" in out, "a Done Story without its closure is reported, never a failure", out[-300:])
+    rc, out = run(title.format("Done") + "- **Closed:** 2026-02-01 - a1b2c3d - 14 tests passed\n")
+    check(rc == 0 and "without `Closed`" not in out and "mark it Completed" in out, "a closed Story is clean; an Epic whose Stories are all closed is pointed out", out[-300:])
+    for legacy in ("Undesigned", "Ready", "Proposed"):
+        check(run(title.format(legacy))[0] == 0, f"a backlog written before this model still reads: `{legacy}` is a planned Story")
+    rc, out = run(title.format("Designed"))
     check(rc == 1 and "status outside" in out, "the status vocabulary is closed", out[-300:])
-    run(title.format("Undesigned"))
+
+    rc, out = run(title.format("Planned"), epic="**Status:** Proposed\n**Goal:** <goal>\n")
+    check(rc == 0, "a Proposed Epic needs no approval yet", out[-300:])
+    rc, out = run(title.format("In Progress"), epic="**Status:** Proposed\n**Goal:** g\n")
+    check(rc == 0 and "still `Proposed`" in out and "STORY-901" in out, "work under an Epic nobody approved is reported, never stopped", out[-300:])
+    for status in ("Planned", "In Progress", "Completed"):
+        rc, out = run(title.format("Cancelled"), epic=f"**Status:** {status}\n**Goal:** g\n")
+        check(rc == 1 and "EPIC-900" in out and "`Approved`" in out, f"an Epic is intent: it cannot be {status} without the human's approval", out[-300:])
+    rc, out = run(title.format("Planned"), epic="**Status:** Planned\n**Goal:** g\n**Approved:** <who> - <YYYY-MM-DD>\n")
+    check(rc == 1 and "`Approved`" in out, "a placeholder is not an approval", out[-300:])
+    rc, out = run(title.format("Planned"), epic="**Status:** Planned\n**Goal:** <goal>\n**Approved:** MG - 2026-01-15\n")
+    check(rc == 1 and "`Goal`" in out, "an approved Epic states its goal", out[-300:])
+    rc, out = run(title.format("In Progress"), epic="**Status:** Completed\n**Goal:** g\n**Approved:** MG - 2026-01-15\n")
+    check(rc == 1 and "EPIC-900 is `Completed`" in out and "STORY-901" in out, "an Epic is not Completed while one of its Stories is open", out[-300:])
+
+    run(title.format("Planned"))
     rc, env, _ = op(p, "session-context")
-    check(rc == 0 and any("STORY-901" in x for x in data(env)["operational"]["stories_undesigned"]), "the session contract lists the Undesigned Stories")
+    check(rc == 0 and any("STORY-901" in x for x in data(env)["operational"]["stories_planned"]), "the session contract lists the planned Stories")
     bash(p, ".gtt/scripts/gtt-status.sh")
     with open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8") as handle:
-        check("1 of 1 Story(ies) not designed: STORY-901" in handle.read(), "status reports the Stories not designed")
+        check("1 Story(ies): 1 Planned; 1 Epic(s)" in handle.read(), "status reports the working plan as it stands")
+
+
+def frozen_project(project, tmp, name, boundaries="", before_freeze=None):
+    """A disposable project with a real governed context, a Git history and a first freeze."""
+    p = fresh(project, tmp, name)
+    for doc in ("stack", "architecture", "solution-vision", "principles", "constraints", "glossary"):
+        write(os.path.join(p, "gtt-domain", "context", doc + ".md"), f"# {doc}\n\n" + "".join(f"decided {i}\n" for i in range(8)))
+    with open(os.path.join(p, "gtt-domain", "context", "stack.md"), "a", encoding="utf-8") as handle:
+        handle.write("\n```gtt-boundaries\n" + boundaries + "```\n")
+    write(os.path.join(p, "package.json"), json.dumps({"dependencies": {"express": "1"}}))
+    write(os.path.join(p, "src", "domain", "order.py"), "def total():\n    return 1\n")
+    if before_freeze:
+        before_freeze(p)
+    git(p, "init", "-q")
+    git(p, "config", "user.email", "t@example.org")
+    git(p, "config", "user.name", "t")
+    commit(p, "base")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    commit(p, "freeze")
+    return p, rc, out + err
+
+
+def git(cwd, *args):
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+
+
+def commit(cwd, message):
+    git(cwd, "add", "-A")
+    git(cwd, "commit", "-qm", message)
+
+
+RULES = ("B-001 | path | infra/** | WARNING | Deployment topology\n"
+         "B-002 | path | **/openapi.yaml | GOVERNANCE | Public API contract\n"
+         "B-003 | dependency | package.json | WARNING | Stack at a glance\n"
+         "B-004 | forbid | src/domain/** :: import .*infrastructure | BLOCKING | Dependency rules\n"
+         "B-005 | path | secrets/** | BLOCKING | Security boundary\n")
+
+
+def observation(project, tmp):
+    print("[observation] the ADE works on its own; GTT observes against the freeze; only BLOCKING stops anything")
+    ledger = "gtt-domain/governance-backlog.json"
+
+    def obs(p, *args):
+        rc, out, err = bash(p, ".gtt/scripts/gtt-observe.sh", *args)
+        return rc, out + err
+
+    rc, out = obs(fresh(project, tmp, "ob-pre"), "observe")
+    check(rc == 0 and out.strip() == "", "before the first freeze nothing is ratified, so nothing is observed")
+
+    p, rc, out = frozen_project(project, tmp, "ob", RULES)
+    with open(os.path.join(p, "gtt-domain/.frozen"), encoding="utf-8") as handle:
+        marker = handle.read()
+    check(rc == 0 and "Baseline commit: " in marker and "Governed digest: " in marker and "implementation stays free" in out,
+          "freeze records a governance baseline - commit and digest of the governed state - and leaves the code free", out[-300:])
+    rc, out = obs(p, "observe")
+    check(rc == 0 and out.strip() == "" and not os.path.exists(os.path.join(p, ledger)), "compliant work is silent and leaves no trace")
+
+    write(os.path.join(p, "src", "domain", "order.py"), "def total():\n    return 2\n\n\ndef tax():\n    return 3\n")
+    write(os.path.join(p, "tests", "test_order.py"), "def test_total():\n    assert True\n")
+    rc, out = obs(p, "observe")
+    check(rc == 0 and out.strip() == "", "ordinary implementation - a refactor, new tests - raises nothing and asks nothing")
+
+    write(os.path.join(p, "infra", "main.tf"), "resource {}\n")
+    write(os.path.join(p, "api", "openapi.yaml"), "openapi: 3\n")
+    write(os.path.join(p, "package.json"), json.dumps({"dependencies": {"express": "1", "kafkajs": "2"}}))
+    rc, out = obs(p, "observe")
+    check(rc == 0 and out.startswith("@gtt · Observation") and all(x in out for x in ("B-001", "B-002", "B-003", "kafkajs")) and "work continues" in out,
+          "drift becomes a signal that names the boundary it crossed - and the work continues", out[-400:])
+    check("STOP" not in out, "a non-blocking observation never becomes a stop")
+    items = {i["rule"]: i for i in read_json(os.path.join(p, ledger))["items"]}
+    check(items["B-003"]["artifact"] == "package.json#kafkajs" and items["B-002"]["level"] == "GOVERNANCE" and all(i["status"] == "open" for i in items.values()),
+          "every observation enters the governance backlog with its rule, artifact and level")
+    before = open(os.path.join(p, ledger), "rb").read()
+    rc, out = obs(p, "observe")
+    check(rc == 0 and out.strip() == "" and open(os.path.join(p, ledger), "rb").read() == before,
+          "observation is idempotent: the same state observed again reports nothing and writes nothing")
+    rc, env, _ = op(p, "observe")
+    check(rc == 0 and data(env)["result"] == "pass" and len(data(env)["items"]) == 3 and data(env)["new"] == [], "the same is a declared operation a CLI can run")
+    rc, env, _ = op(p, "validation.run")
+    check(any(c["check"] == "gtt-observe.sh check" and c["result"] == "pass" for c in data(env)["checks"]),
+          "validation does not fail on drift that is not blocking", str(data(env).get("failing"))[:200])
+
+    check(obs(p, "check")[0] == 0 and obs(p, "check", "--strict")[0] == 1,
+          "an undecided GOVERNANCE observation fails a check only where that is asked for")
+    h, rc, out = frozen_project(project, tmp, "ob-hard", RULES)
+    write(os.path.join(h, "api", "openapi.yaml"), "openapi: 3\n")
+    check(obs(h, "check")[0] == 0, "(sanity) the same observation passes the check under the default gates")
+    op(h, "methodology.profile.set", profile="hard", apply=True)
+    rc, out = obs(h, "check")
+    check(rc == 1 and "OBS-0001" in out, "under a plan that says so, an undecided GOVERNANCE observation fails the check", out[-300:])
+    rc, out = obs(p, "defer", "OBS-0002", "--by", "MG")
+    check(rc == 0 and "dry run" in out and obs(p, "check", "--strict")[0] == 1, "a decision on an observation is a dry run by default")
+    obs(p, "defer", "OBS-0002", "--by", "MG", "--apply")
+    check(obs(p, "check", "--strict")[0] == 0, "once the human has deferred it, it no longer fails anything")
+    obs(p, "accept", "OBS-0003", "--by", "MG", "--note", "event bus approved in principle", "--apply")
+    rc, out = obs(p, "reject", "OBS-0001", "--by", "MG", "--apply")
+    rc, out = obs(p, "observe")
+    check(rc == 1 and "OBS-0001" in out and "rejected by MG and still present" in out and "OBS-0003" not in out,
+          "what the human rejected stops the check until it is gone; what the human accepted is not raised again", out[-300:])
+    shutil.rmtree(os.path.join(p, "infra"))
+    rc, out = obs(p, "observe")
+    done = {i["id"]: i for i in read_json(os.path.join(p, ledger))["items"]}
+    check(rc == 0 and done["OBS-0001"]["status"] == "resolved" and done["OBS-0003"]["status"] == "accepted",
+          "an observation that is no longer true resolves itself", out[-300:])
+
+    write(os.path.join(p, "src", "domain", "order.py"), "from app import infrastructure\n")
+    rc, out = obs(p, "observe")
+    check(rc == 1 and "B-004" in out and "BLOCKING" in out and "declared BLOCKING in the governed state" in out and "Dependency rules" in out,
+          "a boundary ratified as BLOCKING stops, and says which rule and what it guards", out[-300:])
+    rc, env, _ = op(p, "validation.run")
+    check(env["exit_code"] == 1 and any(f.startswith("gtt-observe.sh check") for f in data(env)["failing"]), "validation fails on a BLOCKING observation")
+    write(os.path.join(p, "src", "domain", "order.py"), "def total():\n    return 2\n")
+    check(obs(p, "observe")[0] == 0, "fixing it is all it takes: there is nothing to approve")
+
+    engine = os.path.join(".gtt", "scripts", "gtt_protect.py")
+
+    def decide(*args):
+        proc = subprocess.run([sys.executable, engine, "decide", *args], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        return proc.returncode, proc.stdout
+    rc, out = decide("--file", "secrets/prod.env")
+    check(rc == 2 and "B-005" in out and "Security boundary" in out, "a hook-capable ADE is denied a write under a BLOCKING path boundary, with the rule named", out[:200])
+    check(decide("--file", "infra/new.tf")[0] == 0 and decide("--file", "src/domain/order.py")[0] == 0,
+          "a write under any other boundary is never blocked: it is observed afterwards")
+    check(decide("--shell", "bash .gtt/scripts/gtt-observe.sh accept OBS-0002 --by me --apply")[0] == 2
+          and decide("--shell", "bash .gtt/scripts/gtt-freeze.sh")[0] == 2 and decide("--shell", "bash .gtt/scripts/gtt-observe.sh observe")[0] == 0,
+          "an agent observes freely but never decides an observation and never freezes")
+    rc, env, _ = op(p, "governance.accept", id="OBS-0002", by="MG", apply=True)
+    check(rc == 4, "deciding an observation needs a human decision from the CLI too")
+
+    with open(os.path.join(p, "gtt-domain", "context", "architecture.md"), "a", encoding="utf-8") as handle:
+        handle.write("the event bus is now part of the design\n")
+    rc, out = obs(p, "observe")
+    check(rc == 0 and "GTT-GOVERNED" in out and "new freeze" in out, "a change to the governed state itself is seen and calls for a new freeze, not an unfreeze", out[-300:])
+    write(os.path.join(p, "api", "v2", "openapi.yaml"), "openapi: 3\n")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "undecided observations" in err, "a new baseline is not drawn over a governance observation nobody decided", (out + err)[-300:])
+    obs(p, "observe")
+    pending = [i["id"] for i in read_json(os.path.join(p, ledger))["items"] if i["status"] == "open" and i["rule"] == "B-002"]
+    for ident in pending:
+        obs(p, "accept", ident, "--by", "MG", "--apply")
+    commit(p, "work")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    with open(os.path.join(p, "gtt-domain/.frozen"), encoding="utf-8") as handle:
+        again = handle.read()
+    check(rc == 0 and "new governance baseline" in out and "# earlier freezes" in again and marker.splitlines()[0] in again and again.splitlines()[0] != "",
+          "a promoted change is completed by a new freeze, and the earlier one is kept as history", (out + err)[-300:])
+    commit(p, "refreeze")
+    rc, out = obs(p, "observe")
+    still = [i for i in read_json(os.path.join(p, ledger))["items"] if i["status"] in ("open", "deferred", "rejected")]
+    check(rc == 0 and not still, "from the new baseline the backlog starts clean: what was decided is behind it")
+    check(bash(p, ".gtt/scripts/gtt-freeze.sh")[0] == 2, "freezing an unchanged governed state does nothing")
+    bash(p, ".gtt/scripts/gtt-status.sh")
+    with open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8") as handle:
+        text = handle.read()
+    check("## Observation" in text and "baseline commit:" in text and "open: BLOCKING 0" in text, "the session state carries what was observed, derived from the project")
+    rc, env, _ = op(p, "session-context")
+    check(rc == 0 and data(env)["operational"]["observation"]["authority"] == "none", "and the session contract carries it as a signal with no authority")
+
+    def guarded(q):
+        write(os.path.join(q, "src", "billing.py"), "# @GTTGuard reason=audited\ndef charge():\n    return 1\n\n\ndef helper():\n    return 2\n")
+        bash(q, ".gtt/scripts/gtt-guard-sync.sh")
+    q, rc, out = frozen_project(project, tmp, "ob-guard", "", guarded)
+    write(os.path.join(q, "src", "billing.py"), "# @GTTGuard reason=audited\ndef charge():\n    return 1\n\n\ndef helper():\n    return 99\n")
+    check(obs(q, "observe") == (0, ""), "an edit next to a protected symbol is ordinary work")
+    write(os.path.join(q, "src", "billing.py"), "# @GTTGuard reason=audited\ndef charge():\n    return 100\n\n\ndef helper():\n    return 99\n")
+    rc, out = obs(q, "observe")
+    check(rc == 0 and "GTT-PROTECTED" in out and "billing.py" in out, "a change to the protected symbol itself is observed, whoever made it", out[-300:])
+
+    q, rc, out = frozen_project(project, tmp, "ob-bad", "B-001 | teleport | x | WARNING | nothing\n")
+    check(rc == 1 and "gtt-boundaries" in out, "a malformed boundary is refused at freeze: what is ratified must be readable", out[-300:])
+    q, rc, out = frozen_project(project, tmp, "ob-legacy")
+    with open(os.path.join(q, "gtt-domain", "context", "stack.md"), "a", encoding="utf-8") as handle:
+        handle.write("\n```gtt-drift-signals\ninfra/** -> Deployment topology\n```\n")
+    rc, env, _ = op(q, "governance.boundaries")
+    check(rc == 0 and [(r["kind"], r["level"], r["match"]) for r in data(env)["rules"]] == [("path", "WARNING", "infra/**")],
+          "an earlier `gtt-drift-signals` block still works, read as path boundaries at WARNING")
+
+
+def claude_hook_under_test(project):
+    """The Claude Code hook the suite exercises: the installed one, or - to prove a staged hook before
+    the human installs it - the file named by GTT_TEST_CLAUDE_HOOK."""
+    return os.path.abspath(os.environ.get("GTT_TEST_CLAUDE_HOOK") or os.path.join(project, ".claude", "hooks", "protect-l0.py"))
+
+
+def place_claude_hook(project, copy):
+    """The harness puts the hook under test at its native path inside the disposable copy."""
+    shutil.copy2(claude_hook_under_test(project), os.path.join(copy, ".claude", "hooks", "protect-l0.py"))
+
+
+def claude_decides(copy, kind, target):
+    """(denied, text, warning) from Claude Code's own PreToolUse hooks for one call, fed the payload
+    Claude Code sends on stdin: protect-l0.py, then protect-guard.py - a call runs only if both allow it."""
+    tool_input = {"file_path": target} if kind == "file" else {"command": target}
+    payload = json.dumps({"tool_name": "Write" if kind == "file" else "Bash", "tool_input": tool_input})
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=copy)
+    warning = ""
+    for hook in ("protect-l0.py", "protect-guard.py"):
+        proc = subprocess.run([sys.executable, os.path.join(copy, ".claude", "hooks", hook)], cwd=copy, env=env, input=payload,
+                              capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if proc.returncode == 2:
+            return True, proc.stdout, ""
+        if hook == "protect-l0.py" and "systemMessage" in proc.stdout:
+            warning = proc.stdout
+    return False, "", warning
+
+
+def portable_decides(copy, kind, target):
+    """(denied, text, warning) from the engine Cursor, OpenHands and Antigravity share."""
+    proc = subprocess.run([sys.executable, os.path.join(".gtt", "scripts", "gtt_protect.py"), "decide", "--file" if kind == "file" else "--shell", target],
+                          cwd=copy, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return proc.returncode == 2, proc.stdout, proc.stderr
+
+
+APPLY = "gtt-domain/proposals/apply-ADR-900-x.sh"
+STAGED_PATCH = "gtt-domain/proposals/x.patch"
+CONTRACT = "AGENTS" + ".md"
+# (fix or rule, regime, kind, target, decision, what a denial must name)
+ENFORCEMENT_CASES = [
+    ("work", "pre", "file", "src/app.py", "allow", None),
+    ("work", "pre", "file", "gtt-domain/proposals/PROPOSAL-x.md", "allow", None),
+    ("work", "pre", "file", "gtt-domain/context/stack.md", "allow", None),
+    ("work", "pre", "shell", f"cat {CONTRACT}", "allow", None),
+    ("work", "pre", "shell", "bash .gtt/scripts/gtt-observe.sh observe", "allow", None),
+    ("work", "pre", "shell", f"cat {APPLY}", "allow", None),
+    ("work", "pre", "shell", f"git apply --check {STAGED_PATCH}", "allow", None),
+    ("work", "pre", "shell", f"git apply --stat {STAGED_PATCH}", "allow", None),
+    ("work", "pre", "shell", "bash .gtt/scripts/gtt-git-hook.sh status", "allow", None),
+    ("work", "pre", "shell", "bash .gtt/scripts/gtt-git-hook.sh install", "allow", None),
+    ("F5", "pre", "shell", "git commit --no-verify -m x", "allow", None),
+    ("F7", "pre", "shell", f"grep -n Story {CONTRACT} > /tmp/gtt-out.txt", "allow", None),
+    ("F7", "pre", "shell", f"cat >> .gtt/docs/evidence.md <<'EOF'\nloads {CONTRACT} in full\nEOF", "allow", None),
+    ("governed", "pre", "file", CONTRACT, "deny", "governed paths"),
+    ("governed", "pre", "shell", f"sed -i s/a/b/ ./{CONTRACT}", "deny", "governed paths"),
+    ("governed", "pre", "shell", f"echo x > {CONTRACT}", "deny", "governed paths"),
+    ("governed", "pre", "shell", "rm .claude/hooks/protect-l0.py", "deny", "governed paths"),
+    ("F7", "pre", "shell", "rm .gtt/scripts/gtt_protect.py", "deny", "governed paths"),
+    ("F1", "pre", "file", "gtt-domain/.frozen", "deny", "freeze-semantics"),
+    ("F1", "pre", "shell", "echo 2026-01-01 > gtt-domain/.frozen", "deny", "freeze-semantics"),
+    ("F1", "pre", "shell", "cp /tmp/marker gtt-domain/.frozen", "deny", "freeze-semantics"),
+    ("F2", "pre", "file", "gtt-domain/governance-backlog.json", "deny", "human-decision-authority"),
+    ("F2", "pre", "shell", "echo {} > gtt-domain/governance-backlog.json", "deny", "human-decision-authority"),
+    ("F2", "pre", "shell", "sed -i s/open/accepted/ gtt-domain/governance-backlog.json", "deny", "human-decision-authority"),
+    ("F3", "pre", "shell", f"bash {APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"./{APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"sh {APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"source {APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f". {APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"env bash -x {APPLY}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"cat {APPLY} | bash", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f'bash -c "bash {APPLY}"', "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", "{root}/" + APPLY, "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"git apply {STAGED_PATCH}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"patch -p1 < {STAGED_PATCH}", "deny", "Human Promotion Boundary"),
+    ("F3", "pre", "shell", f"cp gtt-domain/proposals/contract.md {CONTRACT}", "deny", "governed paths"),
+    ("human act", "pre", "shell", "bash .gtt/scripts/gtt-freeze.sh", "deny", "human-decision-authority"),
+    ("human act", "pre", "shell", "bash .gtt/scripts/gtt-observe.sh accept OBS-0001 --by me --apply", "deny", "human-decision-authority"),
+    ("F5", "pre", "shell", "bash .gtt/scripts/gtt-git-hook.sh install --apply", "deny", "human-decision-authority"),
+    ("F5", "pre", "shell", "bash .gtt/scripts/gtt-git-hook.sh remove --apply", "deny", "human-decision-authority"),
+    ("work", "frozen", "file", "src/domain/order.py", "allow", None),
+    ("work", "frozen", "file", "infra/main.tf", "allow", None),
+    ("work", "frozen", "shell", "bash .gtt/scripts/gtt-observe.sh check", "allow", None),
+    ("work", "frozen", "shell", "cat gtt-domain/context/stack.md", "allow", None),
+    ("governed", "frozen", "file", "gtt-domain/context/stack.md", "deny", "governed paths"),
+    ("boundary", "frozen", "file", "secrets/prod.env", "deny", "B-005"),
+    ("F1", "frozen", "shell", "rm gtt-domain/.frozen", "deny", "freeze-semantics"),
+    ("F1", "frozen", "shell", "git rm -q gtt-domain/.frozen", "deny", "freeze-semantics"),
+    ("F1", "frozen", "shell", "mv gtt-domain/.frozen /tmp/x", "deny", "freeze-semantics"),
+    ("F1", "frozen", "shell", "rm -rf gtt-domain", "deny", "freeze-semantics"),
+    ("F3", "frozen", "shell", "mv gtt-domain/proposals/context-stack.md gtt-domain/context/stack.md", "deny", "governed paths"),
+    ("F5", "hooked", "shell", "git commit --no-verify -m x", "deny", "explicit-blocking"),
+    ("F5", "hooked", "shell", "git commit -n -m x", "deny", "explicit-blocking"),
+    ("F5", "hooked", "shell", "git -c core.hooksPath=/dev/null commit -m x", "deny", "explicit-blocking"),
+    ("F5", "hooked", "shell", "git config core.hooksPath /tmp/hooks", "deny", "explicit-blocking"),
+    ("F5", "hooked", "shell", "rm .git/hooks/pre-commit", "deny", "explicit-blocking"),
+    ("F5", "hooked", "shell", 'git commit -m "fix -n handling"', "allow", None),
+    ("F5", "hooked", "shell", "git commit -uno -m x", "allow", None),
+    ("F5", "hooked", "shell", "git config --get core.hooksPath", "allow", None),
+]
+
+
+def enforcement(project, tmp):
+    print("[enforcement] one decision core, two engines: Claude Code's hook and the portable engine decide alike")
+    hook = claude_hook_under_test(project)
+    print(f"  (Claude hook under test: {os.path.relpath(hook, project)})")
+    mark = re.compile(r"# >>> gtt-decision-core >>>.*?# <<< gtt-decision-core <<<", re.DOTALL)
+    with open(hook, encoding="utf-8") as handle:
+        in_hook = mark.search(handle.read())
+    with open(os.path.join(project, ".gtt", "scripts", "gtt_protect.py"), encoding="utf-8") as handle:
+        in_engine = mark.search(handle.read())
+    check(bool(in_hook and in_engine) and in_hook.group(0) == in_engine.group(0),
+          "F7: the decision core is byte-identical in the Claude hook and in the portable engine")
+
+    pre = fresh(project, tmp, "enf-pre")
+    frozen, rc, out = frozen_project(project, tmp, "enf-frozen", RULES)
+    hooked, rc, out = frozen_project(project, tmp, "enf-hooked", RULES)
+    rc, out, err = bash(hooked, ".gtt/scripts/gtt-git-hook.sh", "install", "--apply")
+    check(rc == 0 and "installed" in out, "(setup) the Git hook installs in a disposable frozen copy", out + err)
+    copies = {"pre": pre, "frozen": frozen, "hooked": hooked}
+    for copy in copies.values():
+        place_claude_hook(project, copy)
+    for fix, regime, kind, target, expect, names in ENFORCEMENT_CASES:
+        copy = copies[regime]
+        target = target.replace("{root}", copy.replace("\\", "/"))
+        c_denied, c_text, _ = claude_decides(copy, kind, target)
+        p_denied, p_text, _ = portable_decides(copy, kind, target)
+        ok = c_denied == p_denied == (expect == "deny") and (not names or (names in c_text and names in p_text))
+        shown = target if len(target) < 70 else target[:67] + "..."
+        check(ok, f"{fix}: {regime:6} {kind:5} {expect:5} {shown!r}" + (f" - names `{names}`" if names else ""),
+              f"claude={'deny' if c_denied else 'allow'} portable={'deny' if p_denied else 'allow'} {c_text[:120]!r}")
+
+    broken, rc, out = frozen_project(project, tmp, "enf-broken", RULES)
+    place_claude_hook(project, broken)
+    write(os.path.join(broken, ".gtt", "scripts", "gtt_observe.py"), "this is not python (\n")
+    c_denied, _, c_warn = claude_decides(broken, "file", "secrets/prod.env")
+    p_denied, _, p_warn = portable_decides(broken, "file", "secrets/prod.env")
+    check(not c_denied and not p_denied, "F6: a broken observation engine never blocks a session")
+    check("explicit-blocking" in c_warn and "BLOCKING" in c_warn and "explicit-blocking" in p_warn and "NOT checked" in p_warn,
+          "F6: but BLOCKING is not switched off in silence - both engines say the write was not checked", (c_warn + p_warn)[:200])
+    c_denied, _, c_warn = claude_decides(broken, "file", "gtt-domain/context/stack.md")
+    check(c_denied, "F6: and what does not depend on that engine is still denied")
+    quiet, rc, out = frozen_project(project, tmp, "enf-quiet", "B-001 | path | infra/** | WARNING | Deployment topology\n")
+    place_claude_hook(project, quiet)
+    write(os.path.join(quiet, ".gtt", "scripts", "gtt_observe.py"), "this is not python (\n")
+    check(claude_decides(quiet, "file", "infra/main.tf") == (False, "", "") and portable_decides(quiet, "file", "infra/main.tf")[2] == "",
+          "F6: with no BLOCKING boundary declared there is nothing to warn about")
+
+    print("[enforcement] CI sees a removed or rewritten freeze marker (F4)")
+    q, rc, out = frozen_project(project, tmp, "enf-ci", RULES)
+    git(q, "branch", "base")
+    marker = os.path.join(q, "gtt-domain", ".frozen")
+    with open(marker, encoding="utf-8") as handle:
+        original = handle.read()
+    rc, out, err = bash(q, ".gtt/scripts/gtt-check-stack.sh", "base")
+    check(rc == 0, "F4: an untouched freeze passes the stack gate", (out + err)[-200:])
+    os.remove(marker)
+    rc, out, err = bash(q, ".gtt/scripts/gtt-check-stack.sh", "base")
+    check(rc == 1 and "freeze marker removed" in err and "there is no unfreeze" in err,
+          "F4: a tree whose base was frozen and whose marker is gone fails - it is not `not frozen yet`", (out + err)[-200:])
+    write(marker, "2031-01-01T00:00:00Z\nFrozen by: someone\nBaseline commit: none\nGoverned digest: 0000\n")
+    rc, out, err = bash(q, ".gtt/scripts/gtt-check-stack.sh", "base")
+    check(rc == 1 and "freeze history rewritten" in err, "F4: a marker that drops the baseline the base recorded fails", (out + err)[-200:])
+    write(marker, original)
+    with open(os.path.join(q, "gtt-domain", "context", "architecture.md"), "a", encoding="utf-8") as handle:
+        handle.write("a promoted decision\n")
+    commit(q, "promoted")
+    rc, out, err = bash(q, ".gtt/scripts/gtt-freeze.sh")
+    commit(q, "new freeze")
+    rc2, out2, err2 = bash(q, ".gtt/scripts/gtt-check-stack.sh", "base")
+    check(rc == 0 and rc2 == 0, "F4: a new freeze, which keeps the earlier baseline as history, passes", (out + err + out2 + err2)[-300:])
+    spec = json.loads(contract(project, "show", "profiles")[1])
+    freeze_inv = next(inv for inv in spec["invariants"] if inv["id"] == "freeze-semantics")
+    check("gate:gtt-check-stack.sh" in freeze_inv["enforcement"], "the contract declares the gate this suite just demonstrated for freeze-semantics")
+
+    print("[enforcement] the Git pre-commit hook, for real, in a disposable frozen copy")
+    g = hooked
+    write(os.path.join(g, "infra", "main.tf"), "resource {}\n")
+    git(g, "add", "-A")
+    proc = git(g, "commit", "-m", "non-blocking drift")
+    check(proc.returncode == 0 and "non-blocking drift" in git(g, "log", "-1", "--format=%s").stdout,
+          "a change that crosses a non-blocking boundary is committed: the hook is not an approval step", (proc.stdout + proc.stderr)[-300:])
+    head = git(g, "rev-parse", "HEAD").stdout
+    write(os.path.join(g, "src", "domain", "order.py"), "from app import infrastructure\n")
+    git(g, "add", "-A")
+    proc = git(g, "commit", "-m", "blocking")
+    check(proc.returncode != 0 and "B-004" in proc.stdout + proc.stderr and git(g, "rev-parse", "HEAD").stdout == head,
+          "a BLOCKING boundary stops the commit and names its rule", (proc.stdout + proc.stderr)[-300:])
+    write(os.path.join(g, "src", "domain", "order.py"), "def total():\n    return 3\n")
+    git(g, "add", "-A")
+    proc = git(g, "commit", "-m", "fixed")
+    check(proc.returncode == 0, "fixing it is all it takes for the commit to go through", (proc.stdout + proc.stderr)[-300:])
+    os.rename(os.path.join(g, ".gtt", "scripts", "gtt-observe.sh"), os.path.join(g, ".gtt", "scripts", "gtt-observe.sh.off"))
+    write(os.path.join(g, "notes.txt"), "x\n")
+    git(g, "add", "-A")
+    proc = git(g, "commit", "-m", "unchecked")
+    check(proc.returncode == 0 and "NOT checked" in proc.stderr, "F5: with the engine missing the hook still lets the commit through - and says it was not checked", (proc.stdout + proc.stderr)[-300:])
 
 
 def think_depth(project, tmp):
@@ -994,8 +1470,8 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
-        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, questionnaire, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, story_readiness, think_depth):
+        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, sources, export_and_clean, recovery,
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, think_depth):
             scenario(project, tmp)
     finally:
         if args.keep:

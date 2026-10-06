@@ -36,6 +36,8 @@ The same applies to any file, class or method carrying a `@GTTGuard` marker
 artifacts (GTTGuard)*. `.gtt/scripts/gtt-check-protection.sh` in CI is the
 actual enforcement.
 
+Never freeze (`gtt-freeze.sh`) and never accept, reject or defer an observation
+(`gtt-observe.sh accept | reject | defer`): those are the human's decisions.
 Never run a promotion script (`gtt-domain/proposals/apply-*.sh`). Prepare it;
 the human runs it.
 

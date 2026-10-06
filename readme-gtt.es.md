@@ -30,6 +30,7 @@ Compatible con Claude Code, Kiro, Codex y GitHub Copilot · CC BY 4.0
 - [Cambiar algo](#cambiar-algo)
 - [Límite Humano de Promoción](#límite-humano-de-promoción)
 - [Backlog](#backlog)
+- [Gobierno y observación: los dos planos](#gobierno-y-observación-los-dos-planos)
 - [Artefactos protegidos (GTTGuard)](#artefactos-protegidos-gttguard)
 - [Mantener el mapa honesto](#mantener-el-mapa-honesto)
 - [Principio de diseño](#principio-de-diseño)
@@ -72,7 +73,7 @@ Por ejemplo:
 
 > `clone GTT Bootstrap and bootstrap the project`
 
-El agente puede ser Claude Code, Kiro, Codex, Cursor, Copilot u otro ADE capaz de seguir el procedimiento de bootstrap de GTT.
+El agente puede ser Claude Code, Kiro, Codex, Cursor, Copilot, OpenHands, Google Antigravity u otro ADE capaz de seguir el procedimiento de bootstrap de GTT.
 
 El proceso:
 
@@ -182,28 +183,44 @@ Qué contiene el adaptador de cada ADE — un proyecto con varios ADE participan
 | GitHub Copilot | Copilot | NO | NO | SÍ | SÍ |
 | Cursor | Cursor | NO | NO | SÍ | NO |
 | OpenHands | OpenHands | NO | NO | SÍ | NO |
+| Google Antigravity | Antigravity | NO | NO | SÍ | NO |
 | Otro ADE soportado | Solo el adaptador explícito | solo si está mapeado | solo si está mapeado | según soporte | según soporte |
 | ADE desconocido | Portable/desconocido | NO | NO | no adivinar | NO |
 
-Cursor y OpenHands se integran mediante archivos propios, fuera de las cuatro
-columnas de arriba, y GTT es dueño solo de esos archivos — nunca del
-`.cursor/`, `.agents/` o `.openhands/` del proyecto:
+Cursor, OpenHands y Antigravity se integran mediante archivos propios, fuera de
+las cuatro columnas de arriba, y GTT es dueño solo de esos archivos — nunca del
+`.cursor/`, `.agents/` o `.openhands/` del proyecto. `.agents/` es compartido:
+lo leen OpenHands y Antigravity, y pueden usarlo las herramientas del propio
+proyecto:
 
 | ADE | Qué instala GTT | Cómo lo carga el ADE |
 | --- | --- | --- |
 | Cursor | `.cursor/rules/gtt.mdc` (siempre aplicada), `.cursor/rules/gtt-implementation.mdc` (adjunta a `src/`, `lib/`, `tests/`) y `.cursor/hooks.json` | Cursor lee las reglas de proyecto en `.cursor/rules/*.mdc`, `AGENTS.md` de forma nativa, y los hooks de proyecto en `.cursor/hooks.json` |
 | OpenHands | `.agents/skills/gtt/SKILL.md` y `.openhands/hooks.json` | OpenHands incluye `AGENTS.md` en cada conversación, carga los skills del repositorio desde `.agents/skills/`, y los hooks desde `.openhands/hooks.json` |
+| Google Antigravity | `.agents/rules/gtt.md` (siempre activa), `.agents/rules/gtt-implementation.md` (adjunta a `src/`, `lib/`, `tests/`) y `.agents/hooks.json` | Antigravity lee `AGENTS.md`, las reglas de workspace en `.agents/rules/*.md`, y los hooks desde `.agents/hooks.json` |
 
-Los dos archivos de hooks apuntan a un único motor compartido,
+Los tres archivos de hooks apuntan a un único motor compartido,
 `.gtt/scripts/gtt_protect.py`, que aplica las mismas reglas que los hooks de
 Claude Code — rutas gobernadas, régimen de freeze, scripts de promoción,
 GTTGuard — y responde en el formato de cada ADE; al iniciar sesión inyecta el
-contexto de sesión. El motor está probado contra los mensajes que cada ADE
-documenta, pero **no fue verificado dentro de Cursor ni de OpenHands**. El
-registro lo dice (`enforcement: realtime-hook-unverified`), y hasta que alguien
-lo compruebe en el ADE la compuerta de CI es la única capa garantizada ahí. Si
-el proyecto ya tiene su propio `hooks.json`, `gtt-ade.sh install` informa el
-conflicto y no escribe nada — hay que combinar las entradas de GTT a mano.
+contexto de sesión donde el ADE tiene ese evento. El motor está probado contra
+los mensajes que cada ADE documenta, pero **no fue verificado dentro de Cursor,
+de OpenHands ni de Antigravity**. El registro lo dice (`enforcement:
+realtime-hook-unverified`), y hasta que alguien lo compruebe en el ADE la
+compuerta de CI es la única capa garantizada ahí. Si el proyecto ya tiene su
+propio `hooks.json`, `gtt-ade.sh install` informa el conflicto y no escribe
+nada — hay que combinar las entradas de GTT a mano.
+
+Qué significa "soportado" para Antigravity: GTT instala, registra, valida y
+mantiene la integración. No significa que Antigravity garantice el bloqueo en
+tiempo real.
+
+| Antigravity | Estado |
+| --- | --- |
+| Registro, detección, instalar / actualizar / quitar, participante, Primario, el contrato mediante `AGENTS.md` más la regla, validación, compuerta de CI | soportado |
+| Contexto de sesión y procedimientos de GTT | parcial — Antigravity no tiene evento de inicio de sesión, así que la regla le indica al agente ejecutar `gtt-session-context.sh`; ambos dependen de que el modelo siga la instrucción |
+| El bloqueo en tiempo real en su CLI, su IDE y su app de escritorio; si `AGENTS.md` se carga entero (es más grande que el límite por archivo que Antigravity documenta para las reglas); qué hace Antigravity con el código de salida del hook | **sin verificar** |
+| Contexto inyectado al iniciar sesión, fusión con un `.agents/hooks.json` existente, skills nativas de Antigravity | no soportado |
 
 > **Limitación conocida:** la ruta real que GitHub Copilot lee para
 > instrucciones personalizadas a nivel de repositorio es
@@ -211,8 +228,8 @@ conflicto y no escribe nada — hay que combinar las entradas de GTT a mano.
 > GitHub. GTT mantiene el archivo deliberadamente en
 > `.copilot/copilot-instructions.md`, por consistencia de nombres con
 > `.claude/` y `.kiro/` — lo que significa que Copilot no lo carga
-> automáticamente en esa ruta. Duplicalo en `.github/copilot-instructions.md`
-> también si necesitás que Copilot lo cargue por sí solo.
+> automáticamente en esa ruta. Duplícalo en `.github/copilot-instructions.md`
+> también si necesitas que Copilot lo cargue por sí solo.
 
 La detección se basa en el entorno realmente presente, nunca en el modelo
 subyacente. Un modelo Claude no es Claude Code; un modelo GPT no es Codex; la API
@@ -479,7 +496,7 @@ Proporciona siete vistas:
 | 4 | Observabilidad | Si falla a las 3 a. m., ¿dónde miro? |
 | 5 | Reglas de dependencias | ¿Qué módulo puede llamar a cuál? |
 | 6 | Historial de cambios del mapa | Una fila por cada ADR aceptado |
-| 7 | Señales de drift | ¿Qué rutas fuera de los directorios propios de GTT cargan peso arquitectónico, y qué protegen? |
+| 7 | Límites | ¿Dónde un cambio en el código significa que el diseño pudo haber cambiado, y qué tan serio es? La observación los vigila |
 
 El mapa usa Markdown más Mermaid, por lo que se renderiza en GitHub y en los IDE. No hay una imagen que regenerar ni una herramienta de diagramación que mantener. Además, se puede revisar como código: un pull request muestra exactamente qué cambió en la arquitectura.
 
@@ -516,7 +533,7 @@ Tú apruebas la propuesta. El agente entonces prepara un **paquete de promoción
 bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
 ```
 
-Revisa la propuesta, el ADR y el script, y ejecuta tú mismo ese único comando desde la raíz del proyecto. El script te deja `view` (ver) el texto del ADR y el diff exacto contra el contexto actual, y solo aplica todos los archivos afectados juntos cuando respondés `yes`; nunca lo ejecuta el agente — ver [Límite Humano de Promoción](#límite-humano-de-promoción).
+Revisa la propuesta, el ADR y el script, y ejecuta tú mismo ese único comando desde la raíz del proyecto. El script te deja `view` (ver) el texto del ADR y el diff exacto contra el contexto actual, y solo aplica todos los archivos afectados juntos cuando respondes `yes`; nunca lo ejecuta el agente — ver [Límite Humano de Promoción](#límite-humano-de-promoción).
 
 **`gtt-domain/proposals/` es el único directorio gobernado donde el agente puede escribir como parte del flujo de cambios gobernados.**
 
@@ -566,63 +583,104 @@ Una Story que contradice el contexto gobernado o un ADR aceptado es un
 hallazgo, no una resolución — nunca sobrescribe silenciosamente la
 arquitectura.
 
-**Gobernado igual que todo lo demás, con una excepción rutinaria:**
+**Dos clases de entrada, gobernadas de forma distinta:**
 
-| Cambio | Vía |
+| Entrada | Qué es | Quién decide |
+| --- | --- | --- |
+| **Epic** | Intención y alcance: su objetivo, qué incluye, dónde termina | La persona la aprueba (`**Approved:** quién — AAAA-MM-DD`). Agregar, eliminar o cambiar materialmente una es decisión humana |
+| **Story** | El plan de trabajo dentro de una Epic aprobada | El ADE. Crea, divide, reescribe, implementa y cierra Stories por su cuenta — nadie aprueba una Story |
+
+**Una Story no es una compuerta.** Una versión anterior exigía diseñar y
+aprobar cada Story antes de implementarla. Eso metía a la persona dentro del
+ciclo del trabajo ordinario. Una Story es un plan de cómo llegar, no una
+decisión sobre qué es el sistema: lo que protege el diseño no es una firma en
+una Story sino la **observación** (sección siguiente). Si el trabajo detrás de
+una Story introduce una tecnología troncal nueva o cambia un contrato, GTT lo
+informa, diga lo que diga la Story.
+
+El trabajo que la persona pide directamente no necesita una Epic primero. Si
+hay Epics definidas en otro lado que faltan en el backlog, el agente informa
+la brecha — no las ignora y no inventa requisitos de negocio.
+
+**El cierre es evidencia.** Una Story en `Done` registra `Closed`: la fecha y
+con qué se cerró — commit o PR, tests que pasaron. Una Epic está `Completed`
+solo cuando todas sus Stories están `Done` o `Cancelled`.
+
+`.gtt/scripts/gtt-check-backlog.sh` verifica la estructura de forma
+determinista — IDs únicos de Epic/Story, valores de estado válidos, una Epic
+en `Planned`, `In Progress` o `Completed` lleva su `Goal` y su `Approved`, una
+Epic `Completed` no tiene Stories abiertas. Informa, sin fallar, una Story en
+`Done` sin `Closed` y Stories en curso bajo una Epic todavía `Proposed`. No
+aprueba nada. Si una Epic es real, vigente y refleja el trabajo en curso es un
+juicio que hace la skill `gtt-audit`.
+
+## Gobierno y observación: los dos planos
+
+> **GTT gobierna los límites. El ADE hace el trabajo.**
+
+GTT no existe para aprobar cambios ordinarios de código. Existe para proteger
+el diseño, la intención, la arquitectura y las restricciones de la persona
+mientras el ADE trabaja por su cuenta dentro de ellos.
+
+| | Gobierno | Trabajo |
+| --- | --- | --- |
+| Responde | Qué debe ser el sistema | Qué está pasando realmente |
+| Contiene | intención, arquitectura, restricciones, ADRs, Epics, los límites, el freeze | implementación, tests, refactors, commits, Stories |
+| Quién decide | la persona — siempre | el ADE — sin aprobación para el trabajo ordinario |
+| Lo que hace GTT | propuestas, paquetes de promoción, freeze | observación |
+
+**El freeze no congela el código.** Hace que el diseño que aprobaste sea la
+autoridad y registra una línea base (cuándo, quién, commit, digest del estado
+gobernado). El código sigue cambiando. No existe el unfreeze: después de
+promover un cambio gobernado, ejecutar `gtt-freeze.sh` otra vez registra una
+línea base nueva y conserva la anterior como historial.
+
+**Durante el trabajo GTT observa; no aprueba.**
+`.gtt/scripts/gtt-observe.sh` compara el proyecto con el estado gobernado
+congelado — Git, el sistema de archivos, los manifiestos de dependencias, el
+registro de GTTGuard: hechos calculados, nunca la opinión de un modelo — e
+informa solo lo que importa:
+
+| Nivel | Qué pasa |
 | --- | --- |
-| Epic o Story nueva/eliminada, o cambio material de alcance/criterios de aceptación | `gtt-domain/change-request.md` → `gtt-domain/proposals/` → decisión del Solution Designer |
-| Actualización de estado de Story, *Current Focus*, *Next Work*, *Blocked* durante trabajo ya aprobado | Edición directa — implementación rutinaria, no una decisión gobernada |
+| `NOTICE` | se registra; nunca se anuncia |
+| `WARNING` | se anuncia una vez y se registra; el trabajo continúa |
+| `GOVERNANCE` | se anuncia una vez y se registra; el trabajo continúa; decides antes del próximo freeze |
+| `BLOCKING` | la operación afectada se detiene, y la validación falla, hasta que se corrija |
 
-Antes de trabajar en desarrollo, el agente establece la Epic/Story
-aplicable desde `gtt-domain/backlog.md`. Si hay Epics/Stories definidas en otro lugar
-pero ausentes del backlog, esa brecha se reconcilia mediante el proceso de
-cambio normal — el agente no las ignora silenciosamente, ni reescribe el
-backlog para que coincida sin más. Si no hay ninguna definida, el agente lo
-dice explícitamente en vez de inventar requisitos de negocio.
+Solo `BLOCKING` interrumpe el trabajo, y algo es `BLOCKING` únicamente porque
+el estado gobernado lo dice — una regla que ratificaste en el bloque
+`gtt-boundaries` de `gtt-domain/context/stack.md`, o una observación que
+rechazaste. Un detector que solo encuentra algo inusual nunca bloquea.
 
-**Story lista (Story Ready) — un título no es un diseño.** Una Story solo
-puede estar en `Ready`, `In Progress` o `Done` cuando su diseño está escrito
-en el backlog y aprobado por el Solution Designer: descripción, alcance,
-fuera de alcance, criterios de aceptación, los tests que la cierran, sus
-fuentes, y el origen de cada afirmación — `[FUENTE: ref]` (lo dice una
-fuente), `[HUMANO]` (lo decidió el humano) o `[PROPUESTA]` (lo propuso el
-agente y la aprobación lo aceptó). Una Story que solo tiene título está
-`Undesigned` (sin diseñar): está en la línea, se informa, y no es
-implementable. El bootstrap registra las Stories que vienen solo con título
-como `Undesigned` y lo avisa, en vez de dejarlas con apariencia de backlog
-completo.
+```text
+@gtt · Observation
+⚠ OBS-0003 WARNING    B-003  package.json#kafkajs
+    new dependency `kafkajs`
+    guards: Stack at a glance (section 1)
+    work continues
+```
 
-Antes de implementar una Epic, esta pasa por una **etapa de diseño**
-(`gtt-propose-change`, formulario 6): el agente analiza la Epic contra las
-fuentes, propone las Stories completas, marca vacíos y conflictos en vez de
-adivinar, y el Solution Designer aprueba **Story por Story**. A partir de
-ahí el agente implementa solo contra lo escrito; si aparece algo no escrito,
-se detiene y actualiza la Story primero. La etapa de diseño produce un
-documento verificable, no una conversación.
+Las observaciones quedan en el backlog de gobierno
+(`gtt-domain/governance-backlog.json`), así que nada se pierde y nada se
+informa dos veces. Decides sobre ellas cuando quieras:
 
-**El backlog referencia la arquitectura; nunca la copia.** Cada Story nombra
-en `Governed by` las decisiones gobernadas que le aplican — ids de ADR,
-secciones de `gtt-domain/context/` — para que quien la tome sepa qué leer. El
-texto de esas decisiones se queda en el contexto gobernado, el único lugar
-donde se escribe la arquitectura: el backlog es la verdad de *qué* se
-construye y cómo se verifica, el contexto la verdad de *cómo* se puede
-construir.
+```bash
+bash .gtt/scripts/gtt-observe.sh backlog
+bash .gtt/scripts/gtt-observe.sh accept OBS-0003 --by <tú> --apply   # queda así
+bash .gtt/scripts/gtt-observe.sh reject OBS-0003 --by <tú> --apply   # la validación falla hasta que desaparezca
+bash .gtt/scripts/gtt-observe.sh defer  OBS-0003 --by <tú> --apply   # más adelante
+```
 
-**El cierre es evidencia.** Una Story en `Done` registra `Closed`: la fecha
-y con qué se cerró — commit o PR, tests que pasaron. Una Epic está
-`Completed` solo cuando todas sus Stories están `Done` o `Cancelled`. Así
-cada Story lleva su ciclo completo en el backlog: quién aprobó el diseño y
-cuándo, y con qué se cerró y cuándo.
+La observación corre en cada inicio de sesión (a través de `gtt-status.sh`),
+después de una escritura en los ADEs que tienen hook posterior, y en la
+validación y el CI. El primer control que comparten todos los ADEs es el hook
+de pre-commit de Git — tu decisión, un comando:
+`bash .gtt/scripts/gtt-git-hook.sh install --apply`. Se puede saltar con
+`git commit --no-verify`: la capa garantizada es el CI (`gtt-validate.sh` y
+`gtt-check-stack.sh` sobre el pull request).
 
-`.gtt/scripts/gtt-check-backlog.sh` verifica determinísticamente la
-integridad estructural — IDs únicos de Epic/Story, valores de estado
-válidos — y la regla de Story lista: falla cuando una Story en `Ready`,
-`In Progress` o `Done` no tiene un campo, un origen o su aprobación, cuando
-`Governed by` cita un ADR que no existe, cuando una Story en `Done` no tiene
-`Closed`, y cuando una Epic `Completed` todavía tiene Stories abiertas;
-informa las Stories que siguen `Undesigned`. Si una Epic/Story es real, vigente y realmente refleja el trabajo
-en curso es un juicio que hace la skill `gtt-audit`, no algo que un script
-pueda verificar.
+Descripción completa: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#the-two-planes-governance-and-observation).
 
 ---
 
@@ -631,7 +689,7 @@ pueda verificar.
 `gtt-domain/backlog.md` gobierna *qué* se construye. GTTGuard gobierna *qué
 partes del código ya existente un agente nunca puede tocar por su cuenta*
 — un archivo, una clase o un método. Es un mecanismo hermano de L0/L1, no
-una copia: protege código L3 que vos decidís proteger, y su modelo de
+una copia: protege código L3 que tú decides proteger, y su modelo de
 promoción es deliberadamente más liviano que el Límite Humano de Promoción
 de arriba.
 
@@ -659,7 +717,7 @@ archivo permanece libremente editable — solo se bloquea el tramo resuelto
 del símbolo marcado, y el hook falla de forma segura bloqueando el archivo
 completo si esa resolución alguna vez es ambigua. Solicitar un cambio a un
 artefacto protegido pasa por `gtt-propose-change` (formulario 5): una vez
-que lo aprobás **en la conversación**, el agente lo implementa directamente
+que lo apruebas **en la conversación**, el agente lo implementa directamente
 y vuelve a sincronizar el registro — sin ADR, sin script, a propósito.
 
 El bloqueo en tiempo real existe hoy en Claude Code. Kiro, Codex y GitHub
@@ -807,7 +865,7 @@ El dominio gobernado está en `gtt-domain/`, aparte del Motor, porque es el esta
 
 1. Copia el núcleo portable — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (el Motor, incluyendo `.gtt/scripts/`, `.gtt/docs/` y `.gtt/scaffold/manifest.yaml`) y el esqueleto del dominio gobernado (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`) — en la raíz del proyecto, más únicamente el adaptador correspondiente a tu ADE: `.claude/` (incluyendo `.claude/CLAUDE.md`) para Claude Code, `.kiro/` para Kiro, `.copilot/copilot-instructions.md` para GitHub Copilot, o nada adicional para Codex. Ver [Adaptadores de ADE](#adaptadores-de-ade); no copies los demás adaptadores "por las dudas".
 2. Combina el `.gitignore` de GTT con el existente; no sobrescribas el archivo del proyecto.
-3. Ejecuta la skill `gtt-bootstrap` (por ejemplo, “bootstrap GTT” o “set up GTT”) en lugar de completar `gtt-domain/context/` manualmente — realiza el paso 1 anterior por vos, de forma determinista.
+3. Ejecuta la skill `gtt-bootstrap` (por ejemplo, “bootstrap GTT” o “set up GTT”) en lugar de completar `gtt-domain/context/` manualmente — realiza el paso 1 anterior por ti, de forma determinista.
 4. Si prefieres crear el contexto manualmente, comienza con `gtt-domain/context/stack.md`. Deja una celda vacía en vez de adivinar; un dato desconocido explícito es mejor que una decisión inventada.
 5. Ajusta los globs `paths:` de `.claude/rules/` al layout del proyecto anfitrión (solo Claude Code).
 6. Conecta `.gtt/scripts/gtt-check-stack.sh`, `.gtt/scripts/gtt-check-backlog.sh` y `.gtt/scripts/gtt-check-protection.sh` al CI contra la rama por defecto.
@@ -843,7 +901,7 @@ Mapa completo de archivos: [`.gtt/docs/index.md`](.gtt/docs/index.md) · Migraci
 
 Claude Code soporta el conjunto completo de adaptadores. `permissions.yaml` de Kiro cubre declarativamente las rutas de infraestructura incondicionales; las rutas dependientes del régimen utilizan el hook compartido y el CI gate cuando corresponde. Codex mantiene el modelo de protección de escritura, pero dispone de menos controles de carga condicional. GitHub Copilot lee instrucciones a nivel de repositorio desde `.github/copilot-instructions.md` e instrucciones de agente desde `AGENTS.md`, según la documentación actual de GitHub — el archivo adaptador de GTT vive en `.copilot/copilot-instructions.md` en cambio, así que no se carga automáticamente en la ruta real de Copilot; ver la nota arriba. No tiene carga condicional por rutas ni bloqueo determinista de escritura más allá del CI gate — el adaptador de Copilot es deliberadamente delgado y no reclama capacidades que GTT no haya implementado realmente para él.
 
-Detalles y notas de portabilidad: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#portability-claude-code-kiro-codex-copilot-cursor-openhands)
+Detalles y notas de portabilidad: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#portability-claude-code-kiro-codex-copilot-cursor-openhands-antigravity)
 
 ### Cambiar de ADE más adelante
 

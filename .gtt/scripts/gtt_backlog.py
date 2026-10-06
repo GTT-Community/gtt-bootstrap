@@ -1,60 +1,51 @@
 #!/usr/bin/env python3
-"""GTT - Story readiness engine for gtt-domain/backlog.md.
+"""GTT - backlog engine for gtt-domain/backlog.md.
 
-The deterministic half of the "Story Ready" rule (AGENTS.md -> Backlog governance): a Story may be
-Ready, In Progress or Done only if its design is WRITTEN in the backlog and approved by a human, so
-that the next session - or the next person - implements against the document and never against a
-conversation.
+The backlog has two kinds of entry and they are not governed alike (AGENTS.md -> Backlog):
 
-  check   [backlog.md]   fail when a Ready / In Progress / Done Story is not a complete definition
-  summary [backlog.md]   one line: how many Stories are Undesigned, and which
+  Epic    intent and scope. Governed: the human approves it. An Epic that is Planned, In Progress or
+          Completed carries its Goal and `Approved` (who, YYYY-MM-DD); until then it stays Proposed.
+  Story   the operating plan of whoever does the work. NOT governed: the ADE creates, splits,
+          rewrites, implements and closes Stories on its own, with no approval.
 
-A Story Ready definition is:
+  check   [backlog.md]   the structural rules below
+  summary [backlog.md]   one line: Stories by status, and the Epics still waiting for approval
+  json    [backlog.md]   the same, structured
 
-  Description, Scope, Out of Scope, Acceptance Criteria
-                     non-empty, and EVERY item carries its origin:
-                       [FUENTE: ref]   the statement comes from a source (id[:loc] or a path[:line])
-                       [HUMANO]        the human decided it (optionally [HUMANO: who, date])
-                       [PROPUESTA]     the agent proposed it; the Story's approval is what accepts it
-  Tests              non-empty: the tests that close the Story
-  Sources            non-empty: the sources the design was derived from, or `None`
-  Governed by        the governed decisions that apply (ADR ids, context sections), or `None`;
-                     a reference, never a copy - an ADR it cites must exist
-  Design Approved    who approved the written design and when (a YYYY-MM-DD date)
+What fails (structure that tooling and people rely on, never a judgment):
 
-and it carries no [VACIO] or [CONFLICTO]: a Story with an undecided point is not designed yet.
+  * an Epic that is Planned, In Progress or Completed without its Goal or its `Approved`
+  * an Epic marked Completed while one of its Stories is neither Done nor Cancelled
 
-Closure is evidence too. A Done Story carries `Closed`: the date (YYYY-MM-DD) and what closed it
-(commit or PR, tests passed). An Epic is Completed only when every one of its Stories is Done or
-Cancelled.
+What is only reported, and never stops anything:
 
-This makes no judgment about whether a criterion is good, a source says what the tag claims, or the
-approval really happened - those stay with the human and with the gtt-audit skill.
+  * a Done Story without `Closed` (the date and what closed it: commit or PR, tests passed)
+  * Stories being worked under an Epic that is still Proposed
+  * an Epic whose Stories are all closed but is not marked Completed
+
+Whether a Story is well written, or whether an approval really happened, is not checked here.
+What the work actually does to the governed design is watched by observation
+(.gtt/scripts/gtt-observe.sh), not by approving Stories in advance.
 
 Exit 0 = ok (warnings allowed), 1 = violation, 2 = cannot determine.
 """
 
-import glob
-import os
+import json
 import re
 import sys
 
 DEFAULT = "gtt-domain/backlog.md"
-GATED = ("Ready", "In Progress", "Done")
-TRACED = ("Description", "Scope", "Out of Scope", "Acceptance Criteria")
-REQUIRED = TRACED + ("Tests", "Sources", "Governed by", "Design Approved")
+APPROVED_STATES = ("Planned", "In Progress", "Completed")
+ACTIVE = ("In Progress", "Done")
+LEGACY = {"Proposed": "Planned", "Undesigned": "Planned", "Ready": "Planned"}   # earlier vocabulary, still read
 
 EPIC = re.compile(r"^### (EPIC-\d+)\b(.*)$")
-EPIC_STATUS = re.compile(r"^\*\*Status:\*\*\s*(.*?)\s*$")
+EPIC_FIELD = re.compile(r"^\*\*([^*:]+):\*\*\s*(.*?)\s*$")
 STORY = re.compile(r"^##### (STORY-\d+)\b(.*)$")
 FIELD = re.compile(r"^- \*\*([^*:]+):\*\*\s*(.*)$")
-ITEM = re.compile(r"^\s+[-*] (.*)$")
 PLACEHOLDER = re.compile(r"<[^<>]*>")
-ORIGIN = re.compile(r"\[FUENTE:\s*[^\]\s][^\]]*\]|\[HUMANO(?::[^\]]*)?\]|\[PROPUESTA(?::[^\]]*)?\]")
-UNDECIDED = re.compile(r"\[VAC[ÍI]O(?::[^\]]*)?\]|\[CONFLICTO(?::[^\]]*)?\]")
 DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
-ADR = re.compile(r"\bADR-\d+\b")
-EMPTY = {"", "-", "tbd", "todo", "pending", "pendiente"}
+EMPTY = {"", "-", "tbd", "todo", "pending", "pendiente", "none"}
 SEPARATORS = " -—–,;:."
 
 
@@ -64,16 +55,16 @@ def blank(text):
 
 
 def parse(path):
-    """(stories, epics). Story: id, line, status, epic, fields {name: [items]}. Epic: id, line,
-    status. Template examples are skipped."""
+    """(stories, epics). Story: id, line, status, epic, fields. Epic: id, line, fields. Template
+    examples (a heading that still holds a <placeholder>) are skipped."""
     with open(path, encoding="utf-8") as handle:
         lines = handle.read().replace("\r\n", "\n").split("\n")
-    stories, epics, story, field, epic = [], [], None, None, None
+    stories, epics, story, epic, field = [], [], None, None, None
     for number, line in enumerate(lines, 1):
         head = STORY.match(line)
         if head:
             story = None
-            if not PLACEHOLDER.search(line):                 # a template example is not a real Story
+            if not PLACEHOLDER.search(line):
                 story = {"id": head.group(1), "line": number, "status": "", "fields": {},
                          "epic": epic["id"] if epic else None}
                 stories.append(story)
@@ -83,7 +74,7 @@ def parse(path):
         if epic_head:
             story = field = epic = None
             if not PLACEHOLDER.search(line):
-                epic = {"id": epic_head.group(1), "line": number, "status": ""}
+                epic = {"id": epic_head.group(1), "line": number, "fields": {}}
                 epics.append(epic)
             continue
         if line.startswith("#") or line.startswith("---"):
@@ -92,59 +83,21 @@ def parse(path):
             story = field = None
             continue
         if story is None:
-            status = EPIC_STATUS.match(line)
-            if epic is not None and not epic["status"] and status:
-                epic["status"] = status.group(1)
+            own = EPIC_FIELD.match(line)
+            if epic is not None and own and own.group(1).strip() not in epic["fields"]:
+                epic["fields"][own.group(1).strip()] = own.group(2)
             continue
         top = FIELD.match(line)
         if top:
             field = top.group(1).strip()
-            story["fields"][field] = [top.group(2)] if top.group(2).strip() else []
+            story["fields"][field] = top.group(2).strip()
             if field == "Status":
                 story["status"] = top.group(2).strip()
-            continue
-        if field is None or not line.strip():
-            continue
-        item = ITEM.match(line)
-        indent = len(line) - len(line.lstrip())
-        items = story["fields"][field]
-        if item and indent <= 3:                             # a first-level item of the field
-            items.append(item.group(1))
-        elif items:                                          # continuation or nested detail
-            items[-1] += " " + line.strip()
-        else:
-            items.append(line.strip())
+        elif field and line.strip():
+            story["fields"][field] = (story["fields"][field] + " " + line.strip()).strip()
+    for item in epics:
+        item["status"] = item["fields"].get("Status", "")
     return stories, epics
-
-
-def findings(story, adr_dir):
-    fields, out = story["fields"], []
-    for name in REQUIRED:
-        items = [i for i in fields.get(name, []) if not blank(i)]
-        if not items:
-            out.append(f"`{name}` is missing or empty")
-            continue
-        if name in TRACED:
-            untraced = [i for i in items if not ORIGIN.search(i)]
-            if untraced:
-                out.append(f"`{name}` has {len(untraced)} item(s) without an origin "
-                           f"([FUENTE: ref], [HUMANO] or [PROPUESTA]): \"{untraced[0][:70]}\"")
-    for name, items in fields.items():
-        if any(UNDECIDED.search(i) for i in items):
-            out.append(f"`{name}` carries a [VACIO] or [CONFLICTO]: an undecided point is not a design")
-    approved = " ".join(fields.get("Design Approved", []))
-    if not blank(approved) and not DATE.search(approved):
-        out.append("`Design Approved` must name who approved and a YYYY-MM-DD date")
-    for adr in sorted(set(ADR.findall(" ".join(fields.get("Governed by", []))))):
-        if not glob.glob(os.path.join(adr_dir, adr + "*.md")):
-            out.append(f"`Governed by` cites {adr}, which does not exist in {adr_dir}/")
-    if story["status"] == "Done":
-        closed = " ".join(fields.get("Closed", []))
-        if blank(closed):
-            out.append("`Closed` is missing or empty: a Done Story records when and with what it was closed")
-        elif not DATE.search(closed) or blank(DATE.sub("", closed)):
-            out.append("`Closed` must carry a YYYY-MM-DD date and the evidence (commit or PR, tests passed)")
-    return out
 
 
 def load(path):
@@ -155,56 +108,87 @@ def load(path):
         return None
 
 
+def normal(status):
+    return LEGACY.get(status, status)
+
+
 def cmd_check(path):
     loaded = load(path)
     if loaded is None:
         return 2
     stories, epics = loaded
-    adr_dir = os.path.join(os.path.dirname(path) or ".", "adr")
     failed = 0
-    for story in stories:
-        if story["status"] not in GATED:
-            continue
-        problems = findings(story, adr_dir)
-        if problems:
-            failed += 1
-            print(f"gtt-check-backlog: FAILED - {story['id']} is `{story['status']}` but is not a Story Ready "
-                  f"definition ({path}:{story['line']}):", file=sys.stderr)
-            for problem in problems:
-                print(f"  {problem}", file=sys.stderr)
     for epic in epics:
         own = [s for s in stories if s["epic"] == epic["id"]]
         pending = [s["id"] for s in own if s["status"] not in ("Done", "Cancelled")]
+        if epic["status"] in APPROVED_STATES:
+            approved = epic["fields"].get("Approved", "")
+            missing = [name for name, bad in (("Goal", blank(epic["fields"].get("Goal", ""))),
+                                              ("Approved", blank(approved) or not DATE.search(approved)
+                                               or blank(DATE.sub("", approved)))) if bad]
+            if missing:
+                failed += 1
+                print(f"gtt-check-backlog: FAILED - {epic['id']} is `{epic['status']}` without "
+                      f"{' or '.join('`' + m + '`' for m in missing)} ({path}:{epic['line']}). An Epic is intent and "
+                      "scope: the human approves it (`**Approved:** who - YYYY-MM-DD`); until then it stays `Proposed`.",
+                      file=sys.stderr)
         if epic["status"] == "Completed" and pending:
             failed += 1
             print(f"gtt-check-backlog: FAILED - {epic['id']} is `Completed` but {len(pending)} of its Story(ies) "
                   f"are neither Done nor Cancelled ({path}:{epic['line']}): {', '.join(pending)}", file=sys.stderr)
         elif own and not pending and epic["status"] not in ("Completed", "Cancelled"):
-            print(f"gtt-check-backlog: WARNING - every Story of {epic['id']} is Done or Cancelled but the Epic is "
+            print(f"gtt-check-backlog: NOTE - every Story of {epic['id']} is Done or Cancelled but the Epic is "
                   f"`{epic['status']}`: mark it Completed if it is")
-    undesigned = [s["id"] for s in stories if s["status"] == "Undesigned"]
-    if undesigned:
-        print(f"gtt-check-backlog: WARNING - {len(undesigned)} Story(ies) not designed yet (title only; "
-              f"design and approve before implementing): {', '.join(undesigned)}")
+        working = [s["id"] for s in own if s["status"] in ACTIVE]
+        if epic["status"] == "Proposed" and working:
+            print(f"gtt-check-backlog: NOTE - {epic['id']} is still `Proposed` (nobody approved its scope) while "
+                  f"{', '.join(working)} is being worked")
+    for story in stories:
+        closed = story["fields"].get("Closed", "")
+        if story["status"] == "Done" and (blank(closed) or not DATE.search(closed) or blank(DATE.sub("", closed))):
+            print(f"gtt-check-backlog: NOTE - {story['id']} is `Done` without `Closed` (a YYYY-MM-DD date and what "
+                  f"closed it: commit or PR, tests passed) ({path}:{story['line']})")
     return 1 if failed else 0
 
 
-def cmd_summary(path):
+def facts(path):
     loaded = load(path)
     if loaded is None:
+        return None
+    stories, epics = loaded
+    by_status = {}
+    for story in stories:
+        by_status.setdefault(normal(story["status"]) or "no status", []).append(story["id"])
+    return {"stories": len(stories), "by_status": by_status,
+            "epics": len(epics), "epics_awaiting_approval": [e["id"] for e in epics if e["status"] == "Proposed"]}
+
+
+def cmd_summary(path):
+    data = facts(path)
+    if data is None:
         return 2
-    stories = loaded[0]
-    undesigned = [s["id"] for s in stories if s["status"] == "Undesigned"]
-    print(f"{len(undesigned)} of {len(stories)} Story(ies) not designed" + (f": {', '.join(undesigned)}" if undesigned else ""))
+    order = ("In Progress", "Blocked", "Planned", "Done", "Cancelled", "no status")
+    parts = [f"{len(data['by_status'][s])} {s}" for s in order if s in data["by_status"]]
+    waiting = data["epics_awaiting_approval"]
+    print(f"{data['stories']} Story(ies)" + (": " + ", ".join(parts) if parts else "")
+          + f"; {data['epics']} Epic(s)" + (f", awaiting approval: {', '.join(waiting)}" if waiting else ""))
+    return 0
+
+
+def cmd_json(path):
+    data = facts(path)
+    if data is None:
+        return 2
+    print(json.dumps(data, indent=2, sort_keys=True))
     return 0
 
 
 def main(argv):
-    if len(argv) < 2 or argv[1] not in ("check", "summary"):
-        print("usage: gtt_backlog.py check|summary [backlog.md]", file=sys.stderr)
+    commands = {"check": cmd_check, "summary": cmd_summary, "json": cmd_json}
+    if len(argv) < 2 or argv[1] not in commands:
+        print("usage: gtt_backlog.py check|summary|json [backlog.md]", file=sys.stderr)
         return 2
-    path = argv[2] if len(argv) > 2 else DEFAULT
-    return cmd_check(path) if argv[1] == "check" else cmd_summary(path)
+    return commands[argv[1]](argv[2] if len(argv) > 2 else DEFAULT)
 
 
 if __name__ == "__main__":

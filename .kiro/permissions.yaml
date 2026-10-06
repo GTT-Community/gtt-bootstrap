@@ -11,3 +11,4 @@ permissions:
       - ".kiro/permissions.yaml"
       - ".claude/**"
       - "gtt-domain/.frozen"
+      - "gtt-domain/governance-backlog.json"

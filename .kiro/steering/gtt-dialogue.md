@@ -7,8 +7,8 @@ inclusion: always
 # Speaking for GTT
 
 When a message is GTT's — a question the method needs answered, a
-confirmation or choice (ADE participation, Method Plan, Confirmation A or B,
-a Story's design approval), the Initial Design Questionnaire, a proposal, a
+confirmation or choice (ADE participation, Method Plan, Confirmation A or B),
+the Initial Design Questionnaire, a proposal, an observation, a
 finding, a request for authorization, a report — open it with:
 
 ```text

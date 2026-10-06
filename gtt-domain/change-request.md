@@ -3,25 +3,29 @@
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
 
 **This is the front door. To change anything governed — stack, architecture,
-principles, constraints, vision, product-level design intent, or the
-committed development line in `gtt-domain/backlog.md` (adding/removing an
-Epic/Story, or materially changing one) — write it here and nowhere else.**
+principles, constraints, vision, product-level design intent, or an Epic in
+`gtt-domain/backlog.md` (adding or removing one, or materially changing its
+goal or scope) — write it here and nowhere else.**
 
 This file is not a decision log and not a pull request. It is a formal request
-for architectural or development-line review. The agent may read it, analyze
-it, and draft a proposal, but it does not modify the governed context, ADRs,
-or `gtt-domain/backlog.md`'s structure directly.
+for a governance review. The agent may read it, analyze it, and draft a
+proposal, but it does not modify the governed context, the ADRs or an Epic's
+goal, scope or approval directly.
+
+It is not a door in front of ordinary work. Implementation, refactors, tests
+and Stories never pass through here: a Story is the working plan of whoever
+does the work, and nobody approves one.
 
 Overwrite the block below each time. This file is a desk, not an archive — the
 history lives in `gtt-domain/adr/` for architecture and in `gtt-domain/backlog.md` itself
-for the development line.
+for Epics.
 
 ---
 
 ## GTT Request
 
 ```text
-Change: <what needs to change in the design, system architecture, or development line>
+Change: <what needs to change in the design, the system architecture, or an Epic's goal or scope>
 Reason: <why this change is needed>
 Trigger: <what event caused the request: bug, cost, limit, requirement, review, etc.>
 Scope: <what is included and what is intentionally out of scope>
@@ -46,33 +50,34 @@ Priority: High
 
 ## How to use this
 
-1. Fill in the request block above with the architectural or development-line
-   intent.
+1. Fill in the request block above with the architectural intent, or the
+   change to an Epic.
 2. Tell your agent: *"process the change request"*.
 3. The agent reads this file and the relevant governed context (or
-   `gtt-domain/backlog.md`, for a development-line request), then writes a full
-   proposal to `gtt-domain/proposals/`.
+   `gtt-domain/backlog.md`, for an Epic), then writes a full proposal to
+   `gtt-domain/proposals/`.
 4. Review the proposal. Reject it, request changes, or approve it.
 5. On approval: an architecture/context change gets an ADR and the exact
-   stack map delta, which you apply. A development-line change is applied
-   directly to `gtt-domain/backlog.md` — it does not get an ADR unless it also
-   touches governed context.
+   stack map delta, which you apply, and is completed by a new freeze
+   (`gtt-freeze.sh`). An Epic change is written into `gtt-domain/backlog.md`
+   with your approval — it does not get an ADR unless it also touches governed
+   context.
 
 If you are only asking a question ("is this even possible?", "what would this
 cost us?"), ask in chat instead. This file is for changes you intend to make.
 
-Routine Story status updates in `gtt-domain/backlog.md` (moving a Story through
-`Ready` → `In Progress` → `Done` as work actually happens) do not belong
-here either — that is routine implementation, not a change request. This
-file is for adding, removing, or materially changing what the backlog
-commits to, the same bar as an architectural change.
+Stories do not belong here either. Creating, splitting, rewriting and closing
+them (`Planned` → `In Progress` → `Done`) is the working plan of whoever does
+the work — never a change request. In the backlog this file is only for
+adding, removing or materially changing an Epic, the same bar as an
+architectural change.
 
 ## What does not belong here
 
 Implementation work. Bugs, feature requests, refactors inside existing
 boundaries, and anything under `src/` never belongs here — that is L3 and can be
-handled directly in implementation. Routine backlog status updates don't
-belong here either, for the same reason.
+handled directly in implementation. Stories and their status don't belong
+here either, for the same reason.
 
 If you find yourself filling this in for routine work, the constraints in
 `gtt-domain/context/` are written too broadly. Narrow them.

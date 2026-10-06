@@ -13,8 +13,9 @@ Use these skills instead of improvising the format:
 | Architectural or context change needed | `gtt-propose-change` |
 | A change was approved and needs recording | `gtt-adr` |
 | Verify the governed context still matches the code | `gtt-audit` |
-| `gtt-domain/backlog.md` needs an Epic/Story added, removed, or materially changed | `gtt-propose-change` (form 4) |
-| An Epic's Stories are `Undesigned` and it is about to be implemented, or a Story's design must be written or changed | `gtt-propose-change` (form 6) |
+| Ordinary work: implementing, refactoring, testing, writing and closing Stories | none - do it; nobody approves it (`AGENTS.md` → *The two planes*) |
+| An Epic must be added, removed, or its goal or scope materially changed | `gtt-propose-change` (form 4) |
+| Observation reported drift (`@gtt · Observation`, or the user asks whether a change contradicts the design) | `gtt-drift-response` |
 | Reconcile `gtt-domain/backlog.md` against defined Epics/Stories | `gtt-audit` |
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
 | A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
@@ -23,9 +24,13 @@ Use these skills instead of improvising the format:
 are blocked at the permission layer and by a PreToolUse hook. A denial there
 is the system working as designed — write to `gtt-domain/proposals/` instead, and
 never look for another way to reach a blocked path. `gtt-domain/backlog.md` is not
-blocked the same way — routine Story status/focus updates are direct edits;
-only structural changes go through the flow above (see `AGENTS.md` →
-*Backlog governance*).
+blocked: Stories are your working plan and you edit them freely; only an Epic's
+goal and scope are the human's decision (see `AGENTS.md` → *Backlog*).
+
+After a write, `detect-drift.py` runs the observation engine
+(`.gtt/scripts/gtt-observe.sh`). What it hands you is a signal, not an order to
+stop: say it in one line and continue, unless a line says STOP. Accepting,
+rejecting or deferring an observation, and freezing, are the human's.
 
 A GTTGuard-protected file/class/method is a separate, live-resolved block by
 a different PreToolUse hook (`protect-guard.py`), driven by

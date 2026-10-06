@@ -33,11 +33,13 @@ the contract check fails if a plan tries.
 | Rule | What it means for you |
 |---|---|
 | Human decision authority | Agents prepare; only a human decides, ratifies and freezes. |
-| Governed decisions are always confirmed | A change to `gtt-domain/context/`, `gtt-domain/adr/`, the structure of the backlog, a GTTGuard-protected artifact or the freeze always needs your explicit decision. |
+| Governed decisions are always confirmed | A change to `gtt-domain/context/`, `gtt-domain/adr/`, an Epic's goal or scope, a GTTGuard-protected artifact or the freeze always needs your explicit decision. |
+| Ordinary work is never confirmed | Implementation, refactors, tests, commits and Stories need no approval, in any plan. A Story is the working plan, not a gate. |
+| Only BLOCKING stops work | GTT observes the work against the frozen design. An observation that is not `BLOCKING` never stops it; a block always names the rule you ratified. |
 | Destructive operations are always confirmed | Nothing that cannot be regenerated is removed or overwritten without asking. |
 | Proposals are never decisions | A `[PROPUESTA]` never appears inside governed context. |
 | Conflicts stay visible | A conflict between sources is exposed, never silently resolved. |
-| Freeze is a ratification | There is no unfreeze shortcut; frozen context changes only through the governed path. |
+| Freeze is a ratification | It freezes the design, never the code. There is no unfreeze shortcut; frozen context changes only through the governed path, completed by a new freeze. |
 | Protected artifacts | GTTGuard-protected code and frozen context are never modified autonomously. |
 
 ## Vocabulary
@@ -193,6 +195,7 @@ A plan is honest about where each of its rules is enforced:
 | Part of the plan | Enforced by | Verified by the Bootstrap? |
 |---|---|---|
 | Gates (provenance, source manifest, `affects`, warnings) | `gtt-check-provenance.sh`, in `gtt-validate.sh` and `gtt-freeze.sh` | Yes — deterministic |
+| Observation gate (`governance_observation_fails_check`) | `gtt-observe.sh check`, in `gtt-validate.sh`: under Hard and Team an undecided `GOVERNANCE` observation fails the check; under Light and Medium only `BLOCKING` and rejected observations do | Yes — deterministic |
 | Invariants | Hooks, scripts and gates, as each one states in the contract | Yes, where a gate or hook exists |
 | Semantics (proposal rigor, documentation depth, ADR and audit expectations) | Instructions to agents (`AGENTS.md`, the bootstrap skill) | No — nothing verifies that an ADE follows them |
 | Operating policy (what is automatic, what is confirmed, CI, actor traceability) | The GTT CLI, which reads it from the contract | No — the Bootstrap declares it; the CLI executes it |

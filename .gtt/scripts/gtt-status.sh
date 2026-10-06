@@ -22,17 +22,29 @@ set -uo pipefail
 OUT="gtt-domain/session.md"
 
 if [ -f "gtt-domain/.frozen" ]; then
-  FREEZE_LINE="frozen ($(head -1 gtt-domain/.frozen 2>/dev/null))"
+  FREEZE_LINE="frozen ($(head -1 gtt-domain/.frozen 2>/dev/null)) - the design is the authority; the implementation is free"
 else
   FREEZE_LINE="pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)"
 fi
 
+# Observation: what the work has done against the frozen governed state. Running
+# it here is what keeps the governance backlog current in every ADE, with or
+# without a hook: a session that starts by reading this file has just observed.
+# Derived from Git, the filesystem and the freeze baseline - never from a model.
+OBSERVATION="not available (.gtt/scripts/gtt-observe.sh not found)"
+if [ -f ".gtt/scripts/gtt-observe.sh" ]; then
+  bash .gtt/scripts/gtt-observe.sh observe >/dev/null 2>&1 || true
+  OBSERVATION="$(bash .gtt/scripts/gtt-observe.sh baseline 2>&1 || true)
+$(bash .gtt/scripts/gtt-observe.sh summary 2>&1 || true)
+$(bash .gtt/scripts/gtt-observe.sh backlog 2>&1 | grep -E '^[^ ]' | head -20 || true)"
+fi
+
 IN_PROGRESS=""
 BLOCKED=""
-UNDESIGNED="not available (.gtt/scripts/gtt_backlog.py not found)"
+BACKLOG_LINE="not available (.gtt/scripts/gtt_backlog.py not found)"
 if [ -f "gtt-domain/backlog.md" ]; then
   if [ -f ".gtt/scripts/gtt_backlog.py" ] && [ -f ".gtt/scripts/gtt-run-python.sh" ]; then
-    UNDESIGNED="$(bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_backlog.py summary 2>&1 || true)"
+    BACKLOG_LINE="$(bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_backlog.py summary 2>&1 || true)"
   fi
   IN_PROGRESS="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*In Progress\s*$' gtt-domain/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
   BLOCKED="$(grep -B2 -E '^\s*-\s*\*\*Status:\*\*\s*Blocked\s*$' gtt-domain/backlog.md 2>/dev/null | grep -oE '^##### STORY-[0-9]+.*' || true)"
@@ -124,8 +136,11 @@ GIT_RECENT="$(git log -5 --format='%h %s' 2>/dev/null || true)"
   echo "## Blocked (Stories Blocked)"
   if [ -n "$BLOCKED" ]; then echo "$BLOCKED"; else echo "none"; fi
   echo
-  echo "## Story design (Undesigned = title only; not implementable until designed and approved)"
-  echo "${UNDESIGNED}"
+  echo "## Backlog (Epics are approved intent; Stories are the working plan and need no approval)"
+  echo "${BACKLOG_LINE}"
+  echo
+  echo "## Observation (the work against the frozen governed state - signals, never decisions)"
+  echo "${OBSERVATION}"
   echo
   echo "## Pending proposals (gtt-domain/proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi

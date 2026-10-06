@@ -572,6 +572,21 @@ def stories(status):
     return out
 
 
+def observation():
+    """What the work has done against the frozen governed state, read from the governance backlog as it
+    stands (session-context computes nothing: `observe` is the operation that observes). Signals only."""
+    try:
+        import gtt_observe
+        ledger = gtt_observe.load_ledger()
+        items = [i for i in ledger["items"] if i["status"] in gtt_observe.OPEN_STATES]
+        return {"authority": "none", "note": "signals derived from the project; never decisions",
+                "baseline": gtt_observe.baseline(), "operation": "observe",
+                "open": [{k: i[k] for k in ("id", "level", "rule", "artifact", "status", "guards")} for i in items],
+                "stopping": [i["id"] for i in items if gtt_observe.stops(i)]}
+    except (Exception, SystemExit) as exc:
+        return {"authority": "none", "error": str(exc)}
+
+
 def cmd_session(args):
     branch = git("rev-parse", "--abbrev-ref", "HEAD")
     dirty = git("status", "--porcelain")
@@ -592,7 +607,8 @@ def cmd_session(args):
                    "recent_commits": recent.splitlines() if recent else []},
            "operational": {"ade": ade_json("state"), "methodology": {"profile": cur["profile"], "language": cur["language"]},
                            "stories_in_progress": stories("In Progress"), "stories_blocked": stories("Blocked"),
-                           "stories_undesigned": stories("Undesigned"),
+                           "stories_planned": stories("Planned") + stories("Ready") + stories("Undesigned") + stories("Proposed"),
+                           "observation": observation(),
                            "governance": governance()},
            "artifacts": {"governed_context": ctx_files,
                          "adrs": sorted(glob.glob("gtt-domain/adr/ADR-[0-9]*.md")),

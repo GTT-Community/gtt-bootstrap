@@ -2,11 +2,11 @@
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
 
-> The project's living development line — Epics, Stories, and the work
-> currently expected to be built. This is a development-planning artifact,
-> not architecture: see *Precedence* below. It answers "what exists, what's
-> next, what's blocked" — not "how may it be built" or "what decisions are
-> authoritative."
+> The project's development line. It holds two kinds of entry, and they are
+> not governed alike: **Epics** are intent and scope — the human approves
+> them; **Stories** are the working plan of whoever does the work — the ADE
+> writes and runs them on its own. This is a planning artifact, not
+> architecture: see *Precedence* below.
 
 **Last verified:** `<date>` — run the `gtt-audit` skill to reconcile against defined requirements.
 
@@ -23,7 +23,9 @@ Governed Context / L0
         v
 ADR / governed decisions
         v
-This backlog
+Epics (approved intent and scope)
+        v
+Stories (the working plan)
         v
 Implementation work
 ```
@@ -34,92 +36,74 @@ a Story never silently overrides architecture.
 
 ---
 
-## Story Ready
+## Epics and Stories
 
-A title is not a design. A Story may be `Ready`, `In Progress` or `Done` only
-when its design is **written here and approved by the Solution Designer** —
-so that another session, or another person, can implement it from this file
-alone, never from a conversation.
+**An Epic is governed.** It says what is wanted and where it stops: its
+`Goal`, its `Scope` and its `Out of Scope`. The human approves it —
+`**Approved:** who — YYYY-MM-DD` — and only then does it leave `Proposed`.
+Adding or removing an Epic, or materially changing its goal or scope, is the
+human's decision.
 
-| Field | Must contain |
+**A Story is not governed.** Stories are how the work inside an approved
+Epic is organised. The ADE creates them, splits them, rewrites them,
+implements them and closes them without asking — nobody approves a Story.
+What keeps Stories honest is not a signature but observation
+(`.gtt/scripts/gtt-observe.sh`): if the work crosses a boundary of the
+frozen design, GTT reports it, whatever the Story said.
+
+A Story is worth writing when it helps the next session pick the work up:
+what it delivers, how one knows it is done, and — once done — what closed it.
+Nothing else is required.
+
+| Epic status | Meaning |
 |---|---|
-| **Description** | What the Story delivers; every statement carries its origin |
-| **Scope** | What is included; every item carries its origin |
-| **Out of Scope** | What is deliberately excluded (`None` is an answer; it still carries its origin) |
-| **Acceptance Criteria** | Verifiable criteria; every criterion carries its origin |
-| **Tests** | The tests that close the Story |
-| **Sources** | The sources the design was derived from, or `None` |
-| **Governed by** | The governed decisions that apply — ADR ids, sections of `gtt-domain/context/` — or `None`. A reference, never a copy: the context stays the single place where architecture is written |
-| **Design Approved** | Who approved the written design, and the date (`YYYY-MM-DD`) |
-| **Closed** | Only for `Done`: the date (`YYYY-MM-DD`) and what closed it — commit or PR, tests passed |
+| `Proposed` | Suggested; nobody has approved its scope yet |
+| `Planned` | Approved, not started |
+| `In Progress` | Approved, being worked |
+| `Completed` | Every one of its Stories is `Done` or `Cancelled` |
+| `Cancelled` | Dropped |
 
-Origin of each statement — one of:
-
-| Tag | Meaning |
+| Story status | Meaning |
 |---|---|
-| `[FUENTE: ref]` | It comes from a source: a declared source id (`id:loc`) or a repo path (`path:line`) |
-| `[HUMANO]` | The Solution Designer decided it (optionally `[HUMANO: who, date]`) |
-| `[PROPUESTA]` | The agent proposed it; approving the Story is what accepts it, and the tag stays so the origin remains visible |
+| `Planned` | In the plan, not started |
+| `In Progress` | Being worked |
+| `Blocked` | Cannot continue; say why |
+| `Done` | Finished; `Closed` says when and with what |
+| `Cancelled` | Dropped |
 
-A `[VACÍO]` or `[CONFLICTO]` inside a Story means a point is still undecided:
-the Story is not designed yet.
+`.gtt/scripts/gtt-check-backlog.sh` keeps the structure sound: unique ids,
+the status vocabulary, an Epic that is `Planned`, `In Progress` or
+`Completed` carries its `Goal` and its `Approved`, and an Epic is
+`Completed` only when its Stories are. It reports — without failing — a
+`Done` Story with no `Closed`, and Stories being worked under an Epic that
+is still `Proposed`. It approves nothing.
 
-Story status:
-
-| Status | Meaning |
-|---|---|
-| `Proposed` | Suggested, not yet accepted into the development line |
-| `Undesigned` | Accepted into the line, but only a title (or an incomplete design) exists — **not implementable** |
-| `Ready` | Designed and approved: every field above is written and `Design Approved` is set |
-| `In Progress` / `Blocked` / `Cancelled` | As named. `In Progress` keeps the full definition |
-| `Done` | Implemented and closed: the full definition plus `Closed` |
-
-An Epic is `Completed` only when every one of its Stories is `Done` or
-`Cancelled`.
-
-`.gtt/scripts/gtt-check-backlog.sh` fails when a `Ready`, `In Progress` or
-`Done` Story is missing a field or an origin, when a `Done` Story has no
-`Closed`, when `Governed by` cites an ADR that does not exist, and when a
-`Completed` Epic still has open Stories. Implementation is done only
-against what is written here: if something that is not written turns out to
-be needed, stop and update the Story first.
+Work the human asks for directly needs no Epic first: do it, and record it
+under *General Development Work* or as a Story if it is worth resuming.
 
 ---
 
 ## Epics
 
 > Example only — replace it with your own Epics and Stories, or delete it. Nothing here is a real
-> requirement. Structural changes (adding or removing an Epic or Story, or materially changing one —
-> which includes writing or changing a Story's design) go through `gtt-domain/change-request.md`;
-> status and focus updates are direct edits.
+> requirement.
 
 ### EPIC-001 — <Epic title (example)>
 
 **Status:** Proposed
 **Goal:** <the outcome this Epic delivers, in one or two sentences>
+**Scope:** <what is included>
+**Out of Scope:** <what is deliberately excluded>
+**Approved:** <who> — <YYYY-MM-DD>
 
 #### Stories
 
 ##### STORY-001 — <Story title (example)>
 
-- **Status:** Undesigned
-- **Priority:** Medium
-- **Description:**
-  - <what this story delivers> [FUENTE: <source-id:section or path:line>]
-- **Scope:**
-  - <what is included> [FUENTE: <ref>]
-- **Out of Scope:**
-  - <what is deliberately excluded> [HUMANO]
-- **Acceptance Criteria:**
-  - <criterion> [FUENTE: <ref>]
-  - <criterion> [PROPUESTA]
-- **Tests:**
-  - <the test that closes each criterion>
-- **Sources:** <source ids or paths the design was derived from, or None>
-- **Governed by:** <ADR-NNN, context file and section, or None>
-- **Design Approved:** <who> — <YYYY-MM-DD>
+- **Status:** Planned
+- **Description:** <what this Story delivers>
+- **Done when:** <how one knows it is finished — criteria, tests>
 - **Closed:** <YYYY-MM-DD> — <commit or PR> — <tests passed>
-- **Dependencies:** None
 - **Notes:** <optional>
 
 ---
@@ -147,10 +131,7 @@ What comes after Current Focus.
 - None
 
 ---
-Governance: adding or removing an Epic/Story, or materially changing its
-scope or acceptance criteria — including writing its design — goes through `gtt-domain/change-request.md` ->
-`gtt-domain/proposals/` -> Solution Designer decision — the same funnel as an
-architecture change. Updating a Story's status, or the *Current Focus* /
-*Next Work* / *Blocked* lists, as part of already-approved implementation
-work does not need a change request. See `AGENTS.md` → *Backlog governance*
-for the full rule and precedence relative to L0/ADRs.
+Governance: an Epic — its goal and its scope — is the human's decision.
+Stories, their status, and the *Current Focus* / *Next Work* / *Blocked*
+lists are the working plan and are edited freely. See `AGENTS.md` →
+*Backlog* for the full rule and precedence relative to L0/ADRs.

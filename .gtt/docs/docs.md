@@ -11,7 +11,7 @@ None of it loads automatically in any tool, so merging costs nothing and saves
 a file.
 
 - [Methodology](#methodology) — the model itself: layers, enforcement planes, the change flow
-- [Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands](#portability-claude-code-kiro-codex-copilot-cursor-openhands) — what each tool enforces and how to adapt
+- [Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity](#portability-claude-code-kiro-codex-copilot-cursor-openhands-antigravity) — what each tool enforces and how to adapt
 - [Migrating from GTT v1](#migrating-from-gtt-v1) — file mapping and upgrade steps
 
 ---
@@ -125,7 +125,7 @@ Two rules follow, and they are what the split exists to keep true:
   domain never executes and an agent never runs (a human does, under the Human Promotion Boundary).
   `AGENTS.md` and the ADE overlay are instructions to agents, and belong to neither group.
 - **The code the project builds (L3: `src/`, `tests/`, infrastructure) belongs to neither.** The domain
-  governs it by reference — the architecture map, the dependency rules and the drift signals — and
+  governs it by reference — the architecture map, the dependency rules and the boundaries — and
   never contains it.
 
 For an adopting project the split also reduces GTT's footprint at the project root to the two names
@@ -204,6 +204,165 @@ gap already documented for the two-regime condition and for GTTGuard on
 non-Claude-Code adapters below: an instruction-plane rule, not a claimed
 guarantee the tooling doesn't actually have.
 
+### The two planes: Governance and Observation
+
+GTT has two planes. Everything in this document belongs to one of them.
+
+```text
+                 HUMAN INTENT
+                      │
+          ┌───────────▼───────────┐
+          │      GOVERNANCE       │  what the system is supposed to be
+          │  design, architecture,│  -> the human decides, always
+          │  constraints, ADRs,   │
+          │  Epics, boundaries    │
+          └───────────┬───────────┘
+                   FREEZE            the design becomes the authority
+          ┌───────────▼───────────┐
+          │   WORK / OBSERVATION  │  what is actually happening
+          │  the ADE works on its │  -> nobody approves ordinary work
+          │  own; GTT observes    │
+          └───────────────────────┘
+```
+
+> **GTT governs the boundaries. The ADE performs the work.**
+
+The earlier model protected the design by putting the human inside the
+development loop: a Story had to be designed and approved before it could be
+implemented, and every deviation looked like a reason to stop. That does not
+scale - ADEs exist precisely because the development loop can run on its own.
+The two-plane model protects the design by moving the human to the right
+boundary instead.
+
+**A code change is not a governance change.** Renaming, refactoring, fixing a
+bug, adding tests, optimising, reorganising internal code, writing and closing
+Stories: ordinary work, done without approval. A new architectural component,
+a moved boundary, a replaced governed technology, a changed API contract, a
+changed security or data boundary, a violated constraint, a changed Epic
+scope: governance, decided by the human through the change flow.
+
+**Freeze is a governance baseline, not code immutability.** `gtt-freeze.sh`
+records when, by whom, the commit and a digest of the governed state. Intent
+and boundaries are frozen; the implementation is expected to evolve. There is
+no unfreeze: a promoted change moves the governed state, and running
+`gtt-freeze.sh` again records a new baseline and keeps the earlier one as
+history. Run on an unchanged governed state it does nothing.
+
+**Observation replaces continuous approval.** `.gtt/scripts/gtt-observe.sh`
+compares the project with the frozen governed state and turns each meaningful
+deviation into a signal:
+
+| Level | Meaning | What happens |
+|---|---|---|
+| `NOTICE` | informational | recorded; never announced |
+| `WARNING` | meaningful drift | announced once, recorded; work continues |
+| `GOVERNANCE` | a boundary of the design was crossed | announced once, recorded; work continues; someone decides before the next freeze |
+| `BLOCKING` | a state the governed design prohibits | the affected operation stops and `check` fails until it is fixed |
+
+The levels are named, never numbered: L0 and L1 already mean the governed
+context and the ADRs.
+
+Five properties make this a governance mechanism rather than a nagging one:
+
+| Property | What it means here |
+|---|---|
+| Deterministic | Facts come from Git, the filesystem, dependency manifests, the GTTGuard registry and the freeze baseline. No model takes part; no agent supervises another agent. *Use computation to detect facts; use governance to decide meaning.* |
+| Explicit blocking | Something stops only because the governed state says so - a boundary declared `BLOCKING`, an observation the human rejected, a governed path, a GTTGuard artifact - and the block names its rule. "This looks different" never blocks. |
+| Continue unless blocking | A `WARNING` or `GOVERNANCE` observation never stops the work, never asks for approval and never waits. |
+| Idempotent | An observation is correlated by rule and artifact. The same state observed ten times is one item, reported once, and the tenth run writes nothing. |
+| Silent by default | Compliant work produces no output at all. |
+
+**The boundaries are declared, and the human ratifies them.** The
+`gtt-boundaries` block of `gtt-domain/context/stack.md` (section 7) lists the
+few places where a change in the code means the design may have changed:
+
+```text
+B-001 | path       | infra/**                                  | WARNING    | Deployment topology (section 3)
+B-002 | path       | **/openapi.yaml                           | GOVERNANCE | Public API contract
+B-003 | dependency | package.json                              | WARNING    | Stack at a glance (section 1)
+B-004 | forbid     | src/domain/** :: import .*infrastructure  | BLOCKING   | Dependency rules (section 5)
+```
+
+`path` fires when a matching file changed since the freeze; `dependency` when
+a manifest gained a dependency it did not have at the freeze (so "the ADE
+decided to bring in Kafka" surfaces as `package.json#kafkajs`, whatever the
+Story said); `forbid` when a matching file contains a pattern. Two boundaries
+are built in and need no rule: the governed context itself moving
+(`GTT-GOVERNED`) and a `@GTTGuard` artifact changing (`GTT-PROTECTED`).
+Because the block lives in governed context, freezing it is what ratifies
+each rule - and that ratification is the only thing that lets observation
+stop anything.
+
+**The governance backlog.** Observations live in
+`gtt-domain/governance-backlog.json`, written only by the engine:
+
+```text
+detected -> open -> accepted | rejected | deferred -> resolved
+```
+
+`gtt-observe.sh accept | reject | defer OBS-NNNN --by <name> --apply` are the
+human's decisions, never an agent's. *Accepted*: the deviation stands, and is
+raised again only if the artifact changes; it ratifies nothing - a design that
+must change still goes through a change request and a new freeze. *Rejected*:
+`check` fails for as long as it is still observed - a veto that needs no
+standing in the loop. *Deferred*: kept, silent. An observation that is no
+longer true resolves itself.
+
+**Where it runs.** No ADE-specific machinery is required:
+
+| Trigger | What runs | Blocks? |
+|---|---|---|
+| `gtt-status.sh` (every session start, in every ADE) | `observe` | no |
+| After a write, on ADEs with a post-write hook (Claude Code, Kiro) | `observe` | no |
+| `gtt-validate.sh`, `gtt-maintain.sh`, CI | `check` | only `BLOCKING` or rejected |
+| `gtt-git-hook.sh install` (a Git pre-commit hook, the human's choice) | `check` | only `BLOCKING` or rejected |
+| A pre-write hook, on ADEs that have one | the `BLOCKING` *path* rules only | yes, naming the rule |
+| `gtt-freeze.sh` (a new freeze) | `check --strict` | an undecided `GOVERNANCE` observation refuses the new baseline |
+
+Git is the first control every ADE shares: whichever agent made the change, it
+reaches the repository through a commit. It is not the guaranteed one - a local
+pre-commit hook is skipped with `git commit --no-verify`. The guaranteed layer
+is CI: `gtt-validate.sh` and `gtt-check-stack.sh` on the pull request.
+
+**What an agent cannot do, and where that is enforced.** These are not approval
+gates on work; they are the acts that would let an agent rewrite the authority
+it works under. On an ADE with a pre-tool hook they are denied in real time, by
+one decision core that is byte-identical in Claude Code's hook
+(`.claude/hooks/protect-l0.py`) and in the portable engine
+(`.gtt/scripts/gtt_protect.py`), and every denial names its rule:
+
+| Act | Rule |
+|---|---|
+| Removing or writing `gtt-domain/.frozen` (an unfreeze, or a freeze nobody decided) | `freeze-semantics` |
+| Editing `gtt-domain/governance-backlog.json` directly (forging an accept or a reject) | `human-decision-authority` |
+| Running `gtt-domain/proposals/apply-*.sh` in any spelling, or applying a patch staged there (`--check` / `--stat` stay available) | Human Promotion Boundary |
+| Freezing; accepting, rejecting or deferring an observation; installing or removing the Git hook | `human-decision-authority` |
+| With the Git hook installed: `git commit --no-verify`, changing `core.hooksPath`, deleting the hook | `explicit-blocking` |
+| Writing under a path boundary the frozen design declares `BLOCKING` | the boundary's own id |
+
+Two things hold where no hook can: `gtt-check-stack.sh` fails in CI when the
+base ref was frozen and the freeze marker is gone ("there is no unfreeze") or
+no longer carries the baseline the base recorded ("freeze history rewritten");
+and if the observation engine cannot be loaded while the frozen design declares
+a `BLOCKING` boundary, the hook still lets the session continue but says, out
+loud, that the write was not checked. A write made by an interpreter
+(`python -c "open(...)"`) or by Git plumbing (`git checkout <ref> -- <path>`)
+is not seen by any pre-tool hook: that residual is exactly what the CI gate
+covers, and GTT does not chase it with more patterns.
+
+Under a Method Plan whose gate `governance_observation_fails_check` is true
+(Hard, Team) an undecided `GOVERNANCE` observation fails `check` as well;
+under the others only `BLOCKING` and rejected observations do.
+
+**What stays exactly as it was.** Human authority over governed intent; the
+evidence boundary and provenance tags in THINK; OPEN and BLOCKING gaps; the
+no-unfreeze principle; ADR traceability; the Human Promotion Boundary;
+protected artifacts. Provenance is mandatory where governed knowledge is
+established or modified - it is not something a line of implementation, or a
+Story, has to carry.
+
+The architecture as data: `.gtt/contract/profiles.json` -> `two_planes`.
+
 ### Two regimes
 
 `gtt-domain/context/`, `gtt-domain/adr/`, and `SOURCE-BRIEF.*` are not protected
@@ -269,30 +428,33 @@ editing `docker-compose.yml` can silently override a datastore decision locked
 in `stack.md`. Drift detection extends the control plane from paths to
 decisions without making L3 governed territory.
 
-**One engine, two triggers.** A `gtt-drift-signals` block declared inside
-`gtt-domain/context/stack.md` (L0, human-edited only) names the paths outside the
-governed tree that carry architectural weight. A single skill,
-`gtt-drift-response`, is the only path from a detected divergence to a
-proposal draft — it never runs unratified.
+**One engine, several triggers.** The `gtt-boundaries` block declared inside
+`gtt-domain/context/stack.md` (L0, ratified at freeze) names the places outside
+the governed tree that carry architectural weight, and the level each one has.
+One engine, `.gtt/scripts/gtt-observe.sh`, computes what crossed them - see
+[The two planes](#the-two-planes-governance-and-observation) for the levels,
+the governance backlog and where it runs. A single skill,
+`gtt-drift-response`, is the only path from an observation to a proposal
+draft, and only when the governed design itself must change.
 
-1. **Write-time.** `detect-drift.py`, a `PostToolUse` hook, compares each
-   write against the signals block and warns through stderr — advisory, never
-   blocking, deduplicated per session so a category warns once per session
-   rather than once ever.
-2. **Sweep.** `gtt-audit` reads the same signals block and sweeps every
-   matching file, not just what changed this session, then hands any
-   divergence to `gtt-drift-response` instead of drafting in its own format.
+1. **After a write.** On Claude Code, `detect-drift.py` (a `PostToolUse` hook)
+   runs the engine and hands whatever is new to the agent as context. It holds
+   no logic of its own and never blocks.
+2. **At session start, in validation and at commit.** `gtt-status.sh` runs
+   `observe`; `gtt-validate.sh` and the optional Git pre-commit hook run
+   `check`. These see shell mutations too, which a post-write hook cannot.
+3. **Sweep.** `gtt-audit` runs the same engine, then judges what the engine
+   cannot: what an observation means, and what no boundary covers.
 
-Operates only under the governed regime — pre-freeze there is nothing ratified
-yet to contradict. Shell mutations of L3 are not detected by the hook (its
-`tool_input` is a command string, not a path); the CI gate is the net for
-that case, same as it is for the regime-conditional write block above.
+Operates only under the governed regime - before the first freeze there is no
+baseline to compare against. An earlier `gtt-drift-signals` block is still
+read, as path boundaries at `WARNING`.
 
 ### Backlog governance
 
-`gtt-domain/backlog.md` is the development line: Epics, Stories, current focus,
-and next work. It is a development-planning artifact, not architecture, and
-it must never become a second source of truth beside `gtt-domain/context/`.
+`gtt-domain/backlog.md` is the development line. It is a planning artifact,
+not architecture, and it must never become a second source of truth beside
+`gtt-domain/context/`. It holds two kinds of entry, governed differently.
 
 **Precedence:**
 
@@ -301,73 +463,53 @@ Governed Context / L0
         v
 ADR / governed decisions
         v
-gtt-domain/backlog.md
+Epics (approved intent and scope)
+        v
+Stories (the working plan)
         v
 Implementation work
 ```
 
-A Story that contradicts governed context or an accepted ADR is a finding,
-not a resolution. It is surfaced through the normal change process, the same
-way architectural drift is — a Story never silently overrides architecture.
+An Epic or a Story that contradicts governed context or an accepted ADR is a
+finding, not a resolution - the backlog never silently overrides architecture.
 
-**Two kinds of backlog change, two very different bars:**
+| Entry | What it is | Who decides |
+|---|---|---|
+| **Epic** | Intent and scope: `Goal`, `Scope`, `Out of Scope` | The human. `**Approved:** who — YYYY-MM-DD`; until then it stays `Proposed`. Adding, removing or materially changing one goes through `gtt-propose-change` (form 4) |
+| **Story** | The working plan inside an approved Epic | The ADE. It creates, splits, rewrites, implements and closes Stories on its own. Nobody approves a Story |
 
-| Change | Governed how |
-|---|---|
-| New/removed Epic or Story, or a material scope/acceptance-criteria change | `gtt-domain/change-request.md` → `gtt-domain/proposals/` → Solution Designer decision (`gtt-propose-change`, form 4) |
-| Story status, *Current Focus*, *Next Work*, *Blocked* updates during already-approved implementation | Direct edit — routine implementation, not a governed decision |
+**Why Stories are not a gate.** An earlier version required every Story to be
+designed and approved, one by one, before it could be implemented. That put
+the human in the inner loop of ordinary work and bought little: a Story is a
+plan for *how to get there*, not a decision about *what the system is*. What
+actually needs protecting is the design, and a signature on a Story does not
+protect it - observation does. If the work behind a Story introduces a new
+backbone technology or changes a contract, the engine reports it whatever the
+Story said, and that is where governance enters.
 
-This mirrors the routine-implementation carve-out GTT already applies to
-architecture ("routine implementation does not require a change request") —
-extended to development-line tracking instead of invented as a separate
-rule. The distinction between "material" and "routine" requires judgment a
-hook cannot make deterministically, so — deliberately, unlike `gtt-domain/context/`
-and `gtt-domain/adr/` — `gtt-domain/backlog.md` is **not** in `permissions.deny` or
-blocked by `protect-l0.py`. Its protection is instruction-plane (`AGENTS.md`,
-the `gtt-propose-change` and `gtt-audit` skills) plus one deterministic
-backstop: `.gtt/scripts/gtt-check-backlog.sh` fails the build on duplicate
-Epic/Story IDs or a status value outside the agreed vocabulary, fails when a
-`Ready`, `In Progress` or `Done` Story is not a complete Story Ready
-definition (below), warns on an Epic with no Stories yet and reports the
-Stories still `Undesigned`. What it cannot check — whether an Epic/Story is
-real, current, and actually reflects the work being done, or whether a
-structural change actually went through `gtt-domain/change-request.md` — is the
-`gtt-audit` *Backlog reconciliation* pass's job, not the script's.
+A Story is worth writing when it helps the next session resume: what it
+delivers, how one knows it is done, and - once done - `Closed`: the date and
+what closed it (commit or PR, tests passed), from what actually happened.
 
-**Reconciling existing Epics/Stories.** When Epics or Stories are already
-defined somewhere (a requirements doc, an issue tracker, prior conversation)
-but not yet reflected in `gtt-domain/backlog.md`, that is a gap to close through
-`gtt-propose-change`, not something to silently ignore or silently rewrite
-the backlog to match. When none are defined at all, say so explicitly and
-ask whether the development line should be defined — never invent business
-Epics/Stories and present them as user-defined requirements; a proposed one
-stays labeled `Status: Proposed` until accepted.
+`gtt-domain/backlog.md` is **not** in `permissions.deny` and no hook blocks
+it. One deterministic backstop keeps its structure sound:
+`.gtt/scripts/gtt-check-backlog.sh` fails on duplicate Epic/Story ids, a status
+outside the vocabulary, an Epic that is `Planned`, `In Progress` or
+`Completed` without its `Goal` or its `Approved`, and a `Completed` Epic with
+an open Story. It *reports*, without failing, a `Done` Story with no `Closed`
+and Stories being worked under an Epic still `Proposed`. Whether an Epic is
+real, current and matches the work being done is the `gtt-audit` *Backlog
+reconciliation* pass's job.
 
-**Story Ready: the design of a Story is governed too.** GTT governs
-architecture with rigor (context, ADR, freeze); a backlog of titles leaves
-the design of each Story ungoverned, so the agent completes it from its own
-reading of the sources and the result exists only in the conversation. The
-next session, or the next person, has nowhere to get it from. The rule that
-closes this:
+**Work the human asks for directly needs no Epic first.** It is done, and
+recorded under *General Development Work* or as a Story if worth resuming.
+When Epics are defined elsewhere (a requirements document, an issue tracker)
+but missing from the backlog, that gap is reported - never silently ignored,
+and never filled with invented business Epics: a proposed Epic stays
+`Proposed` until the human approves it.
 
-| Element | Rule |
-|---|---|
-| Definition | A Story Ready carries Description, Scope, Out of Scope, Acceptance Criteria, Tests, Sources, `Governed by` and `Design Approved` (who, `YYYY-MM-DD`) — written in `gtt-domain/backlog.md` |
-| Origin | Every statement in the first four is `[FUENTE: ref]`, `[HUMANO]` or `[PROPUESTA]`, so what the sources say and what the agent proposed stay distinguishable after approval. A `[VACÍO]` or `[CONFLICTO]` means the Story is not designed yet |
-| Status | `Undesigned` = in the line, title only, not implementable. `Ready` = designed and approved, and nothing else. `Proposed` keeps its meaning: not yet accepted into the line |
-| Gate | `gtt-check-backlog.sh` fails a `Ready`, `In Progress` or `Done` Story with an empty field, a missing origin or no approval. It checks that the definition is written, not that it is good or that a source says what the tag claims — that is `gtt-audit` |
-| Bootstrap | A source that brings only titles produces `Undesigned` Stories, and the bootstrap reports how many; it never fills them in to look complete |
-| Design stage | Before an Epic is implemented: analyse it against the sources, propose the complete Stories, mark gaps, obtain approval Story by Story (`gtt-propose-change`, form 6). One Story's approval never carries over to the next |
-| Implementation | Only against the written Story. Something unwritten turns out to be needed → stop, update the Story, continue once approved |
-| Governed by | Each Story names the governed decisions that apply (ADR ids, context sections) or `None`. A reference, never a copy: copying context into Stories would create a second source of truth that goes stale when an ADR changes. The gate fails a cited ADR that does not exist |
-| Closure | A `Done` Story carries `Closed` (date, commit or PR, tests passed); an Epic is `Completed` only when all its Stories are `Done` or `Cancelled`. Writing `Closed` is a routine status update, recorded from what actually happened |
-
-Writing a Story's design is a material change to its scope and acceptance
-criteria, so it already belonged to the governed half of the table above;
-this rule only makes that explicit and checkable. `[PROPUESTA]` is legitimate
-here and nowhere in governed context: the backlog is not L0, and an approved
-Story is the place where an agent's proposal, accepted by a human, is
-recorded as exactly that.
+A backlog written under the earlier model still reads: `Undesigned`, `Ready`
+and `Proposed` Stories are treated as `Planned`.
 
 **Why not just another ADR-governed file?** An ADR records a decision that,
 once made, rarely changes shape again. A Story is expected to move through
@@ -620,7 +762,8 @@ exists to prevent:
 | Agent roles (Grounding/Reasoning/Validation) | CANONICAL | Named vocabulary from the Canon; mapped onto existing skills here, not a new framework |
 | GTTGuard | IMPLEMENTED | A Canon capability; this repo's marker syntax, registry format, and Bash-command heuristic are implementation choices, not canonical requirements |
 | Backlog governance (`gtt-domain/backlog.md`) | IMPLEMENTED | Development-line tracking; the Canon requires the precedence rule, not this exact file format |
-| Drift detection | IMPLEMENTED | Extends the control plane from paths to decisions; this repo's `gtt-drift-signals` block mechanism is one way to do it |
+| Observation (two planes) | IMPLEMENTED | Deterministic observation of the work against the frozen governed state: `gtt-boundaries`, four named levels, an idempotent governance backlog, explicit blocking only |
+| Drift detection | IMPLEMENTED | Extends the control plane from paths to decisions; this repo's `gtt-boundaries` block mechanism (earlier `gtt-drift-signals`) is one way to do it |
 | Session continuity (`gtt-status.sh` / `gtt-domain/session.md`) | IMPLEMENTED | Satisfies the Canon's ADE-independence requirement for resuming work; the snapshot format is this repo's choice |
 | `gtt status` / `gtt validate` | IMPLEMENTED | Deterministic aggregation the Canon asks for; implemented here as bash scripts because that is what this repo already uses, not because the Canon mandates a shell script |
 | Artifact identity, integrity & technical index (`.gtt/index/`) | IMPLEMENTED | Canon v2.1 capability; JSON manifest/index, `[[ID]]` reference syntax, and the reconcile heuristics are this repo's choices. The index is derived, never authoritative |
@@ -640,7 +783,7 @@ broadly — narrow them rather than working around them.
 
 ---
 
-## Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands
+## Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity
 
 GTT v2 separates **content** from **mechanism**. The governed context
 (`gtt-domain/context/`, `gtt-domain/adr/`) is plain markdown and is fully portable. What differs per tool is how
@@ -671,19 +814,19 @@ ADE's memory) are integration surfaces, never governance.
 | CI gate (`.gtt/scripts/`) | works | works | works | works |
 | GTTGuard real-time block | yes — `protect-guard.py` | no — CI gate only | no — CI gate only | no — CI gate only |
 
-Cursor and OpenHands, added after the four above, have their own rows:
+Cursor, OpenHands and Antigravity, added after the four above, have their own rows:
 
-| Capability | Cursor | OpenHands |
-|---|---|---|
-| Always-loaded instructions | `AGENTS.md` + `.cursor/rules/gtt.mdc` (`alwaysApply`) | `AGENTS.md` |
-| Reads `AGENTS.md` natively | yes | yes |
-| Path-scoped rules | `.cursor/rules/*.mdc` + `globs` | none — a skill's `triggers` / `paths` |
-| On-demand procedures | rules selected by `description` | repository skills in `.agents/skills/` |
-| Programmatic pre-tool block | `preToolUse` in `.cursor/hooks.json` — shipped, **unverified in the ADE** | `pre_tool_use` in `.openhands/hooks.json` — shipped, **unverified in the ADE** |
-| Session context at session start | `sessionStart` hook — shipped, unverified | `session_start` hook — shipped, unverified |
-| Governed context and CI gate | works | works |
-| GTTGuard real-time block | through the same hook — unverified | through the same hook — unverified |
-| Verified at runtime in the ADE | no | no |
+| Capability | Cursor | OpenHands | Antigravity |
+|---|---|---|---|
+| Always-loaded instructions | `AGENTS.md` + `.cursor/rules/gtt.mdc` (`alwaysApply`) | `AGENTS.md` | `AGENTS.md` + `.agents/rules/gtt.md` (`trigger: always_on`) |
+| Reads `AGENTS.md` natively | yes | yes | yes — whether in full is unverified |
+| Path-scoped rules | `.cursor/rules/*.mdc` + `globs` | none — a skill's `triggers` / `paths` | `.agents/rules/*.md` + `trigger: glob` |
+| On-demand procedures | rules selected by `description` | repository skills in `.agents/skills/` | none shipped — the rule points at the sections of `AGENTS.md` |
+| Programmatic pre-tool block | `preToolUse` in `.cursor/hooks.json` — shipped, **unverified in the ADE** | `pre_tool_use` in `.openhands/hooks.json` — shipped, **unverified in the ADE** | `PreToolUse` in `.agents/hooks.json` — shipped, **unverified in the ADE** |
+| Session context at session start | `sessionStart` hook — shipped, unverified | `session_start` hook — shipped, unverified | no such event — the rule tells the agent to run the service |
+| Governed context and CI gate | works | works | works |
+| GTTGuard real-time block | through the same hook — unverified | through the same hook — unverified | through the same hook — unverified |
+| Verified at runtime in the ADE | no | no | no |
 
 \* GTT's Copilot adapter file actually lives at `.copilot/copilot-instructions.md`
 (naming consistency with `.claude/`/`.kiro/`), so Copilot does not load it
@@ -844,6 +987,79 @@ the documented contract, tested against it, **not verified inside OpenHands**
 elsewhere, because OpenHands is often run unattended — the CI gate and a
 branch rule on `gtt-domain/context/**` and `gtt-domain/adr/**` are the real
 backstop until the hook is proven.
+
+### Antigravity
+
+Google Antigravity is an ADE of its own in the registry (`antigravity`); it is
+not treated as Codex, although both read `AGENTS.md`. The portable core is its
+entry point — that is what the registry records as `entry`. The overlay adds
+three files:
+
+| File | What it is |
+|---|---|
+| `.agents/rules/gtt.md` | workspace rule, `trigger: always_on`: read `AGENTS.md` in full, run the session service, the governed paths, the `@gtt` marker, which section of `AGENTS.md` governs which situation |
+| `.agents/rules/gtt-implementation.md` | workspace rule, `trigger: glob` on `src/`, `lib/`, `tests/` |
+| `.agents/hooks.json` | one named hook, `gtt-protect`, on `PreToolUse` for `run_command`, `write_to_file`, `replace_file_content` and `multi_replace_file_content`, running `.gtt/scripts/gtt_protect.py hook --format antigravity` |
+
+**What "supported" means here.** GTT installs, records, validates and maintains
+the integration. It does not mean Antigravity guarantees the real-time block:
+the CI gate is the only guaranteed layer.
+
+| Level | What |
+|---|---|
+| Supported | registry, detection, install / update / remove, participating, Primary, the contract through `AGENTS.md` plus the rule, validation, CI gate |
+| Partial | session context and GTT's procedures — both depend on the model following the rule |
+| **Unverified** | the real-time block on every surface; whether `AGENTS.md` is loaded in full; what Antigravity does with the hook's exit code |
+| Not supported | context injected at session start, merging into an existing `.agents/hooks.json`, native Antigravity skills |
+
+**`.agents/` is shared.** OpenHands' skill lives there too, and so may the
+host's own rules, skills and workflows. GTT owns exactly its three files, never
+the directory: install, update and remove touch nothing else, and the two ADEs
+can participate together. Detection uses `.agents/rules/`, `.agents/hooks.json`,
+`.agents/workflows/` and the legacy `.agent/` — never `.agents/` itself or
+`.agents/skills/`, which would make Antigravity a false candidate wherever
+OpenHands is installed. With both participating, Antigravity also reads
+OpenHands' skill from `.agents/skills/`; it only points back at `AGENTS.md`.
+
+**A host that already has `.agents/hooks.json`.** `gtt-ade.sh install` reports
+the conflict and writes nothing — not the rules either, because an ADE is
+installed whole or not at all. GTT does not merge. Add the `gtt-protect` entry
+to the host's file by hand, or leave the hook out and rely on the rule and the
+CI gate; either way that file stays the host's and is not recorded as GTT's.
+
+**The hook.** Antigravity's payload names no event, so the engine recognises a
+pre-tool call by its `toolCall` field; it reads the path from
+`toolCall.args.TargetFile` and the command from `toolCall.args.CommandLine`,
+and answers `{"decision": "deny", "reason": ...}` with exit code 2. An edit
+whose extent it cannot read fails safe to the whole file for GTTGuard. All of
+this is built from Antigravity's documented contract and tested against it.
+**None of it has been observed inside Antigravity.** Still to be observed, and
+to be recorded in `.gtt/docs/evidence.md` when it is:
+
+| To observe | CLI | IDE | Desktop app |
+|---|---|---|---|
+| The hook is invoked at all | not verified | not verified | not verified |
+| The directory the hook runs in (its command is relative to the project root) | not verified | not verified | not verified |
+| The real payload, per tool | not verified | not verified | not verified |
+| A denial with exit code 2 is honoured | not verified | not verified | not verified |
+| `AGENTS.md` reaches the agent in full | not verified | not verified | not verified |
+
+Antigravity's documentation lists hooks for all three surfaces. A community
+report says they ran only in the CLI. Neither is evidence here: a surface is
+verified when someone runs it.
+
+**`AGENTS.md` and Antigravity's size limits.** Antigravity documents a per-file
+limit for rules and an aggregate budget for always-on content, and says
+`AGENTS.md` is subject to them. GTT's `AGENTS.md` is larger than the per-file
+limit. What Antigravity does then is not documented, which is why the rule is
+short, always on, and tells the agent to open `AGENTS.md` with the file tool.
+A user's global `~/.gemini/GEMINI.md` is outside the project and outside GTT's
+control.
+
+**Session.** Antigravity has no session-start event. `PreInvocation` runs
+before every model call and is not used. The rule tells the agent to run
+`bash .gtt/scripts/gtt-session-context.sh`; `gtt-domain/session.md` is the
+same derived, ADE-independent state every other ADE gets.
 
 ### GitHub Copilot
 

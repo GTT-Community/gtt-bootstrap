@@ -170,6 +170,9 @@ bash .gtt/scripts/gtt-check-stack.sh
 echo ""
 echo "Promoted. ADR-NNN-<slug> is now in gtt-domain/adr/ and gtt-domain/context/ reflects it."
 echo "You can now delete the staged drafts in gtt-domain/proposals/ for this change."
+echo ""
+echo "The governed state has moved. Complete the change with a new freeze:"
+echo "  bash .gtt/scripts/gtt-freeze.sh"
 ```
 
 `set -euo pipefail` is the fail-fast mechanism: if any `mv`/`cp` or the check
@@ -200,8 +203,10 @@ their decision:
 > ```
 >
 > It shows the ADR text and the exact diff (`view`) before it asks `yes` or `no`.
-> Running it is your decision; I have not promoted anything. Once you have run it, I
-> validate the result and continue.
+> Running it is your decision; I have not promoted anything. It ends by telling you to
+> take a new freeze (`bash .gtt/scripts/gtt-freeze.sh`) - also yours to run: that is
+> what makes the promoted design the baseline observation compares the work against.
+> Once you have run both, I validate the result and continue.
 
 Then stop: this is a genuine authorization, not a precaution. When the human says it has run, do not ask
 what to do next - run `bash .gtt/scripts/gtt-maintain.sh`, report the result in a few lines and continue

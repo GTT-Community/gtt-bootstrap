@@ -42,20 +42,20 @@ marker (listed in `.gtt/protection/registry.yaml`) — see `AGENTS.md` →
 either; `.gtt/scripts/gtt-check-protection.sh` in CI is the actual
 enforcement, so treat the instruction as binding regardless.
 
-## Implement against the written Story
+## Work on your own; GTT observes
 
-Before writing code, establish the Story in `gtt-domain/backlog.md`. It must
-be `Ready` or `In Progress` — designed and approved, with every field of the
-*Story Ready* definition written. An `Undesigned` Story is not implementable:
-its Epic goes through the design stage first (`AGENTS.md` → *Backlog
-governance*). Implement only what is written; if something not written is
-needed, stop and update the Story first.
+The implementation is yours: write, refactor, test and commit without asking
+for approval. `gtt-domain/backlog.md` is your working plan - create, split,
+rewrite and close Stories as the work needs; nobody approves a Story. When one
+is finished, close it: `Status: Done` and `Closed: <date> — <commit or PR> —
+<tests passed>`, from what actually happened. An Epic is different: its goal
+and scope are the human's decision (`AGENTS.md` → *Backlog*), and an Epic is
+`Completed` only when every one of its Stories is `Done` or `Cancelled`.
 
-Read what the Story's `Governed by` points to before writing code. When its
-tests pass and its acceptance criteria hold, close it in the backlog:
-`Status: Done` and `Closed: <date> — <commit or PR> — <tests passed>`, from
-what actually happened. An Epic is `Completed` only when every one of its
-Stories is `Done` or `Cancelled`.
+After a change that could touch a boundary of the design, run
+`bash .gtt/scripts/gtt-observe.sh observe`. What it prints is an observation,
+not an order to stop: say it in one line and continue. Only a line marked STOP
+interrupts the affected operation (`AGENTS.md` → *The two planes*).
 
 ## Speaking for GTT
 

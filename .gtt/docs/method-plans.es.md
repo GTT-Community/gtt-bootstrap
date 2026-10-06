@@ -33,11 +33,13 @@ debilita, y la verificación del contrato falla si un plan lo intenta.
 | Regla | Qué significa para ti |
 |---|---|
 | Autoridad de decisión humana | Los agentes preparan; solo una persona decide, ratifica y congela. |
-| Las decisiones gobernadas siempre se confirman | Un cambio en `gtt-domain/context/`, `gtt-domain/adr/`, la estructura del backlog, un artefacto protegido por GTTGuard o el freeze siempre necesita tu decisión explícita. |
+| Las decisiones gobernadas siempre se confirman | Un cambio en `gtt-domain/context/`, `gtt-domain/adr/`, el objetivo o alcance de una Epic, un artefacto protegido por GTTGuard o el freeze siempre necesita tu decisión explícita. |
+| El trabajo ordinario nunca se confirma | Implementación, refactors, tests, commits y Stories no necesitan aprobación, en ningún plan. Una Story es el plan de trabajo, no una compuerta. |
+| Solo BLOCKING detiene el trabajo | GTT observa el trabajo contra el diseño congelado. Una observación que no es `BLOCKING` nunca lo detiene; un bloqueo siempre nombra la regla que ratificaste. |
 | Las operaciones destructivas siempre se confirman | Nada que no pueda regenerarse se elimina o sobrescribe sin preguntar. |
 | Una propuesta nunca es una decisión | Un `[PROPUESTA]` nunca aparece dentro del contexto gobernado. |
 | Los conflictos permanecen visibles | Un conflicto entre fuentes se expone, nunca se resuelve en silencio. |
-| El freeze es una ratificación | No existe atajo para descongelar; el contexto congelado solo cambia por la vía gobernada. |
+| El freeze es una ratificación | Congela el diseño, nunca el código. No existe atajo para descongelar; el contexto congelado solo cambia por la vía gobernada, que se completa con un nuevo freeze. |
 | Artefactos protegidos | El código protegido por GTTGuard y el contexto congelado nunca se modifican de forma autónoma. |
 
 ## Vocabulario
@@ -200,6 +202,7 @@ Un plan es honesto sobre dónde se hace cumplir cada una de sus reglas:
 | Parte del plan | La hace cumplir | ¿La verifica el Bootstrap? |
 |---|---|---|
 | Compuertas (procedencia, manifiesto de fuentes, `affects`, advertencias) | `gtt-check-provenance.sh`, dentro de `gtt-validate.sh` y `gtt-freeze.sh` | Sí — de forma determinista |
+| Compuerta de observación (`governance_observation_fails_check`) | `gtt-observe.sh check`, en `gtt-validate.sh`: en Hard y Team una observación `GOVERNANCE` sin decidir hace fallar la verificación; en Light y Medium solo las `BLOCKING` y las rechazadas | Sí — determinista |
 | Invariantes | Hooks, scripts y compuertas, según declara cada una en el contrato | Sí, donde existe una compuerta o un hook |
 | Semántica (rigor de la propuesta, profundidad documental, expectativas de ADR y auditoría) | Instrucciones a los agentes (`AGENTS.md`, el skill de bootstrap) | No — nada verifica que un ADE las siga |
 | Política operativa (qué es automático, qué se confirma, CI, trazabilidad de actores) | El CLI de GTT, que la lee del contrato | No — el Bootstrap la declara; el CLI la ejecuta |

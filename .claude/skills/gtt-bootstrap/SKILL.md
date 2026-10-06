@@ -407,7 +407,9 @@ The accepted-decisions folder is writable in this same window: if
 `ADR-001-context-governance.md` is not already there, write it too.
 
 Then stop, without touching the freeze marker. End with a note telling the
-Solution Designer to review and then run the freeze script to ratify.
+Solution Designer to review and then run the freeze script to ratify. Freezing
+makes this design the authority and records the baseline observation compares
+the work against; it does not stop the code from changing.
 
 ## After bootstrap
 
@@ -423,23 +425,23 @@ Append, don't overwrite, if the file already has an entry from a prior
 bootstrap or re-run.
 
 Before stopping, check `gtt-domain/backlog.md`: if the source document or the
-conversation surfaced Epics or Stories, ask whether they should be recorded
-there now (via `gtt-propose-change`, form 4, same as any other backlog
-change) — do not silently leave them out, and do not invent ones that
-weren't actually stated. If nothing like that came up, say so plainly and
-move on; an empty backlog is a valid state, not a gap to fill by guessing.
+conversation surfaced Epics, ask whether they should be recorded there now
+(`gtt-propose-change`, form 4) - do not silently leave them out, and do not
+invent ones that were not actually stated. An Epic the human has not approved
+is recorded as `Proposed`; never write its `Approved` yourself. If nothing
+like that came up, say so plainly and move on; an empty backlog is a valid
+state, not a gap to fill by guessing.
 
-Record each Story with exactly what the source gives. When the source
-brings only titles — the usual case — the Story is `Undesigned`: title and
-status, nothing else. Do not complete Description, Scope or Acceptance
-Criteria from your own reading of the source to make the backlog look
-finished, and never record such a Story as `Ready`. Then say it plainly in
-the report: how many Stories were recorded, how many are `Undesigned`, and
-that none of those is implementable until its Epic goes through the design
-stage (`gtt-propose-change`, form 6) and the Solution Designer approves each
-Story. A source that does carry a full definition for a Story is mapped
-field by field with `[FUENTE: ref]` on every statement; it still becomes
-`Ready` only after the Solution Designer approves it.
+Stories need none of this. If the source lists Stories, record them under
+their Epic as `Planned`, with what the source gives; they are the working plan
+and whoever does the work will rewrite them. Nobody approves a Story.
+
+Check the `gtt-boundaries` block of `gtt-domain/context/stack.md` too: it is
+what observation will watch once the project is frozen. If it is empty, say so
+in the report - observation then only knows the built-in boundaries - and
+offer to draft rules from the decisions the context now holds (each one
+pointing at its decision; `BLOCKING` only where the source itself prohibits
+something). The human confirms them like the rest of the context.
 
 If the host project already contains source files with `@GTTGuard` markers
 (a prior partial setup, or code copied in before GTT was bootstrapped), run

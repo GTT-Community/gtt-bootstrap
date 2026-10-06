@@ -183,20 +183,42 @@ happened without a row, the governance loop was skipped.
 
 ---
 
-## 7. Drift signals
+## 7. Boundaries
 
-Paths outside the scaffold — the code the project builds and its infrastructure
-(`src/`, `infra/`, dependency manifests, …) — that carry architectural weight even
-though they are not themselves governed. `detect-drift.py` and the `gtt-audit` sweep
-read this block to know what to watch; without it, the detector is blind. One line per
-signal: a glob, then the decision or view it guards.
+The implementation is free: once this design is frozen, the ADE works on its own and
+nobody approves ordinary code changes. What stays under watch is the **boundary** of
+the design — the few places where a change in the code means the design itself may
+have changed. This block declares them, in a form a script can check. Observation
+(`.gtt/scripts/gtt-observe.sh`) reads it; without it, observation only knows the
+built-in boundaries (the governed context itself and `@GTTGuard` artifacts).
 
-```gtt-drift-signals
-# <glob>  ->  <what it guards, referencing a view above or an ADR>
+One rule per line: `ID | kind | match | LEVEL | what it guards`.
+
+| Kind | `match` | A signal is raised when |
+|---|---|---|
+| `path` | a glob | a file matching it changed since the last freeze |
+| `dependency` | a manifest glob (`package.json`, `requirements*.txt`, `go.mod`, `pyproject.toml`, `Cargo.toml`) | the manifest gained a dependency it did not have at the last freeze |
+| `forbid` | `glob :: regex` | a file matching the glob contains the pattern |
+
+| Level | What happens |
+|---|---|
+| `NOTICE` | recorded in the governance backlog; never announced |
+| `WARNING` | announced once and recorded; work continues |
+| `GOVERNANCE` | announced once and recorded; work continues; someone decides before the next freeze |
+| `BLOCKING` | the affected operation stops, and validation fails, until it is fixed |
+
+```gtt-boundaries
+# <ID> | <kind> | <match> | <LEVEL> | <what it guards, referencing a view above or an ADR>
 ```
 
-Leave the block empty (as above) rather than inventing paths that do not
-carry a real decision yet. A signal with no matching decision above is noise.
+Write a rule only where a real decision above stands behind it, and say which one: a
+boundary with no decision behind it is noise. **`BLOCKING` is the exception, not the
+default** — use it only for what must never happen without a decision (a security or
+data boundary, a dependency direction the architecture forbids). Freezing this file is
+what ratifies each rule, and that ratification is the only thing that lets observation
+stop anything: a detector that merely finds something unusual never blocks.
+
+Leave the block empty (as above) rather than inventing rules.
 
 ---
 

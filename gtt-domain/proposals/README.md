@@ -11,8 +11,8 @@ artifact without ever touching `gtt-domain/context/` or `gtt-domain/adr/`.
 ## Flow
 
 ```
-gtt-domain/change-request.md  →  gtt-domain/proposals/  →  you review, then `bash apply-*.sh`  →  gtt-domain/adr/ + gtt-domain/context/
-                                                or a direct edit (dev-line changes)     or gtt-domain/backlog.md
+gtt-domain/change-request.md  →  gtt-domain/proposals/  →  you review, then `bash apply-*.sh`  →  gtt-domain/adr/ + gtt-domain/context/  →  new freeze
+                                                or a direct edit (an approved Epic)     or gtt-domain/backlog.md
    you write intent         agent drafts             the Human Promotion Boundary
    (always writable)        (agent writable)
 ```
@@ -25,11 +25,11 @@ executable script that applies all of them together. Review it, then run it
 yourself. The agent never runs it — see `AGENTS.md` → *Human Promotion
 Boundary*.
 
-A development-line proposal (new/removed Epic or Story, or a material scope
-change — `gtt-propose-change` form 4) is applied to `gtt-domain/backlog.md`
-directly by you after approval, not via a script — it does not get an ADR
-unless it also happens to touch governed context. Routine Story status
-updates never pass through here at all — they're direct edits.
+An Epic proposal (a new or removed Epic, or a material change to its goal or
+scope — `gtt-propose-change` form 4) is written into `gtt-domain/backlog.md`
+after you approve it, not via a script — it does not get an ADR unless it also
+happens to touch governed context. Stories never pass through here at all:
+they are the working plan of whoever does the work, and nobody approves one.
 
 ## Lifecycle
 

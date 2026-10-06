@@ -129,7 +129,7 @@ Adopting an adapter changes the adapter matrix in `AGENTS.md`,
 native ADE paths (e.g. `.codex/`, `.github/hooks/`). That path is:
 
 ```text
-Proposal → Epic/Story → ADR → Human ratification → (Freeze)
+Proposal → (Epic, if the scope changes) → ADR → Human decision → New freeze
 ```
 
 Until then adapters other than the Claude Code one live **staged** under

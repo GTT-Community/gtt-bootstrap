@@ -9,6 +9,12 @@
 #   scripts/gtt-check-stack.sh              # compare against origin/main
 #   scripts/gtt-check-stack.sh <base-ref>   # compare against another ref
 #
+# It also guards the freeze itself. There is no unfreeze: if the base ref was
+# frozen, the change under review must still be frozen, and the baseline the base
+# recorded must still be there - as the current baseline or in the history of
+# earlier freezes. This is the one check that holds for an ADE with no hooks, and
+# for a write no hook can see (an interpreter, Git plumbing).
+#
 # Exit 0 = pass, 1 = violation, 2 = cannot determine.
 
 set -euo pipefail
@@ -16,7 +22,31 @@ set -euo pipefail
 BASE="${1:-origin/main}"
 MAP="gtt-domain/context/stack.md"
 
-if [ ! -f "gtt-domain/.frozen" ]; then
+MARKER="gtt-domain/.frozen"
+
+# --- the freeze marker is never removed and its history is never rewritten ---
+# Looked at before the "not frozen yet" exit below on purpose: a tree whose marker
+# was deleted looks exactly like a project that was never frozen.
+if git rev-parse --verify --quiet "$BASE" >/dev/null 2>&1 && git cat-file -e "$BASE:$MARKER" 2>/dev/null; then
+  if [ ! -f "$MARKER" ]; then
+    echo "gtt-check-stack: FAILED - freeze marker removed — there is no unfreeze." >&2
+    echo "  $BASE has $MARKER and this tree does not. A governed change is completed by a" >&2
+    echo "  new freeze (gtt-freeze.sh, run by the human), never by removing the marker." >&2
+    exit 1
+  fi
+  BASE_AT="$(git show "$BASE:$MARKER" | head -1)"
+  BASE_DIGEST="$(git show "$BASE:$MARKER" | sed -n '/^#/q;s/^Governed digest:[[:space:]]*//p' | head -1)"
+  if ! git show "$BASE:$MARKER" | cmp -s - "$MARKER"; then
+    if ! grep -qF -- "$BASE_AT" "$MARKER" || { [ -n "$BASE_DIGEST" ] && ! grep -qF -- "$BASE_DIGEST" "$MARKER"; }; then
+      echo "gtt-check-stack: FAILED - freeze history rewritten." >&2
+      echo "  The baseline $BASE recorded ($BASE_AT) is no longer in $MARKER, neither as the" >&2
+      echo "  current baseline nor under '# earlier freezes'. A new freeze keeps the earlier one." >&2
+      exit 1
+    fi
+  fi
+fi
+
+if [ ! -f "$MARKER" ]; then
   echo "gtt-check-stack: project is not frozen yet, nothing to enforce."
   exit 0
 fi
@@ -39,11 +69,11 @@ if [ -n "$MISSING" ]; then
   exit 1
 fi
 
-# --- drift-signals block presence ---
-if ! grep -q '^```gtt-drift-signals' "$MAP"; then
-  echo "gtt-check-stack: WARNING - $MAP has no gtt-drift-signals block."
-  echo "                  The drift detector cannot operate without it."
-  echo "                  This will become a hard failure in a future version."
+# --- boundaries block presence (gtt-boundaries; gtt-drift-signals is its earlier name) ---
+if ! grep -qE '^```gtt-(boundaries|drift-signals)' "$MAP"; then
+  echo "gtt-check-stack: NOTE - $MAP declares no gtt-boundaries block."
+  echo "                  Observation then knows only the built-in boundaries"
+  echo "                  (the governed context itself and @GTTGuard artifacts)."
 fi
 
 if ! git rev-parse --verify --quiet "$BASE" >/dev/null; then

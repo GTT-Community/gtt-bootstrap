@@ -42,6 +42,8 @@ The same applies to any file, class or method carrying a `@GTTGuard` marker
 (listed in `.gtt/protection/registry.yaml`). `.gtt/scripts/gtt-check-protection.sh`
 in CI is the actual enforcement.
 
+Never freeze (`gtt-freeze.sh`) and never accept, reject or defer an observation
+(`gtt-observe.sh accept | reject | defer`): those are the human's decisions.
 Never run a promotion script (`gtt-domain/proposals/apply-*.sh`). Prepare it
 and stop; the human runs it. A governed decision is never taken in an
 unattended run: when one is needed, stop and report.
@@ -52,8 +54,9 @@ unattended run: when one is needed, stop and report.
 |---|---|
 | Set up GTT, or `gtt-domain/context/` still holds placeholders | *Bootstrap behavior*, *Design assessment*, *Initial Design Questionnaire* |
 | An architectural or context change is needed | *Change requests*, *Human Promotion Boundary* |
-| An Epic or Story must be added, removed or designed | *Backlog governance*, *Story Ready* |
-| Before implementing a Story | *Story Ready* — it must be `Ready`; implement only against what is written |
+| Ordinary work: implementing, refactoring, testing, writing and closing Stories | *The two planes* — do it; nobody approves it |
+| An Epic must be added, removed, or its goal or scope changed | *Backlog* — the human decides |
+| Observation printed something | *The two planes* → *Observation* — say it in one line and continue, unless it says STOP |
 | A change touches a `@GTTGuard` artifact | *Protected artifacts (GTTGuard)* |
 | After any operation | `bash .gtt/scripts/gtt-maintain.sh` |
 

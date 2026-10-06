@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-05T19:39:23Z
+# Generated: 2026-10-06T19:22:04Z
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
@@ -18,11 +18,25 @@ none
 ## Blocked (Stories Blocked)
 none
 
-## Story design (Undesigned = title only; not implementable until designed and approved)
-0 of 0 Story(ies) not designed
+## Backlog (Epics are approved intent; Stories are the working plan and need no approval)
+0 Story(ies); 0 Epic(s)
+
+## Observation (the work against the frozen governed state - signals, never decisions)
+not frozen: no baseline yet.
+open: BLOCKING 0, GOVERNANCE 0, WARNING 0, NOTICE 0; deferred 0; rejected and still present 0
+Governance backlog: empty.
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
+apply-two-planes.sh
+PROPOSAL-session-memory-consolidation.md
+PROPOSAL-backlog-antigravity-epic.md
+AGENTS-antigravity.patch
+PROPOSAL-antigravity-ade-support.md
+PROPOSAL-bootstrap-1.3.1-closure.md
+apply-bootstrap-1.3.1-closure.sh
+AGENTS-two-planes.patch
+apply-AGENTS-antigravity.sh
 
 ## Change request
 empty (still template placeholders)
@@ -46,19 +60,19 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.3.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
+gtt-bootstrap 1.3.1 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
-identity: 53 active artifact(s), 0 retired
+identity: 57 active artifact(s), 0 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 51
+branch: release/bootstrap-1.3.1; uncommitted paths: 76
 recent commits:
+66b7e15 feat: governed backlog, design assessment, THINK Depth, Cursor and OpenHands - Bootstrap 1.3.0
 0d187b4 chore: virgin product - drop citations of ADRs that are not shipped
 af1dc3f feat: developer friction minimization, plan-aware automation - Bootstrap 1.2.0
 de1d40e feat: Method Plans (Light / Medium / Hard / Team)
 113df25 update
-eb23b92 chore: untrack bytecode accidentally re-added

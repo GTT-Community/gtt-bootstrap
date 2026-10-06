@@ -5,8 +5,13 @@
 GTT governs the context that guides AI-assisted development. The normal development loop is:
 
 ```text
-Context → Decision → Proposal → Approval → Implementation → Verification
+Governance   Context → Decision → Proposal → Human decision → Freeze
+Work         Freeze → the ADE works on its own → GTT observes → the work continues
 ```
+
+The upper line is travelled only when the governed design itself changes -
+architecture, a boundary, a constraint, an Epic's goal or scope. Ordinary work
+never takes it: once the design is frozen, implementation needs no approval.
 
 ## The normal workflow
 
@@ -113,7 +118,7 @@ must fail when the governed architecture and its map become inconsistent.
 4. observability
 5. dependency rules
 6. map change log
-7. drift signals — paths outside the GTT-owned directories that carry architectural weight, watched by `detect-drift.py`
+7. boundaries — where a change in the code means the design may have changed, and how serious it is; watched by `gtt-observe.sh`
 
 Use the map as the first architectural orientation point.
 
@@ -128,31 +133,78 @@ next work. It is a planning artifact, not architecture — precedence is
 governed context → ADR → backlog → implementation, and a Story never
 overrides an architectural decision.
 
-Before development work, establish the applicable Epic/Story from the
-backlog. Adding, removing, or materially changing one goes through
-`gtt-domain/change-request.md`, same as an architecture change. Updating a Story's
-status or the Current Focus / Next Work / Blocked lists during
-already-approved work is a direct edit, not a change request.
+The backlog holds two kinds of entry, governed differently:
 
-A title is not a design. A Story is implementable only when it is `Ready`:
-description, scope, out of scope, acceptance criteria, tests, sources and the
-origin of every statement (`[FUENTE: ref]`, `[HUMANO]`, `[PROPUESTA]`) are
-written in the backlog and you approved them. A Story with only a title is
-`Undesigned`. To get from one to the other, ask the agent to design the Epic
-(`gtt-propose-change`, form 6): it proposes the complete Stories against the
-sources, marks what the sources do not determine, and you approve Story by
-Story. The agent then implements only against what is written.
+- **An Epic is yours to decide.** It is intent and scope: its goal, what it
+  includes, where it stops. You approve it (`**Approved:** who — YYYY-MM-DD`)
+  and only then does it leave `Proposed`. Adding, removing or materially
+  changing one is your decision (`gtt-propose-change`, form 4).
+- **A Story is the agent's working plan.** The agent creates, splits,
+  rewrites, implements and closes Stories on its own. You approve none of
+  them, and a Story is never a gate in front of the work.
 
-Each Story names in `Governed by` the ADRs and context sections that apply
-to it — a reference, not a copy; the architecture stays written in one
-place. When a Story is finished it is marked `Done` with `Closed` (date,
-commit or PR, tests passed), and an Epic is `Completed` only when all its
-Stories are `Done` or `Cancelled`.
+You do not keep Stories honest by signing them. GTT does, by observing the
+work (next section): if what a Story leads to crosses a boundary of the
+design you froze, you hear about it, whatever the Story said.
+
+Work you ask for directly needs no Epic first. When a Story is finished it is
+marked `Done` with `Closed` (date, commit or PR, tests passed), and an Epic
+is `Completed` only when all its Stories are `Done` or `Cancelled`.
 
 Run `.gtt/scripts/gtt-check-backlog.sh` for structural integrity (unique
-IDs, valid status values) and Story Ready (a `Ready`, `In Progress` or `Done`
-Story with an empty field, a missing origin or no approval fails); run `gtt-audit` to reconcile the backlog against
-what is actually defined and actually done.
+IDs, valid status values, an approved Epic carries its goal and who approved
+it); run `gtt-audit` to reconcile the backlog against what is actually
+defined and actually done.
+
+---
+
+## Working: the agent works, GTT observes
+
+Once the design is frozen you are not in the loop of ordinary work. The agent
+implements, refactors, tests and commits without asking. Freeze does not stop
+the code from changing; it makes the design you approved the authority.
+
+While the agent works, GTT compares the project with that frozen design and
+tells you only what matters:
+
+```text
+@gtt · Observation
+⚠ OBS-0003 WARNING    B-003  package.json#kafkajs
+    new dependency `kafkajs`
+    guards: Stack at a glance (section 1)
+    work continues
+```
+
+| Level | What it means for you |
+|---|---|
+| `NOTICE` | Nothing. It is recorded |
+| `WARNING` | You are told once. The work continues |
+| `GOVERNANCE` | You are told once. The work continues. Decide before the next freeze |
+| `BLOCKING` | The affected operation stopped: a rule you ratified says this must not happen |
+
+What you can do, when you choose to:
+
+```bash
+bash .gtt/scripts/gtt-observe.sh backlog                              # what is open
+bash .gtt/scripts/gtt-observe.sh accept OBS-0003 --by <you> --apply   # it stands
+bash .gtt/scripts/gtt-observe.sh reject OBS-0003 --by <you> --apply   # validation fails until it is gone
+bash .gtt/scripts/gtt-observe.sh defer  OBS-0003 --by <you> --apply   # later
+```
+
+Accepting an observation does not change the design. If the design itself
+must change — the event bus really is part of the architecture now — that is
+a change request, an ADR, and then a **new freeze**:
+`bash .gtt/scripts/gtt-freeze.sh` records a new baseline and keeps the earlier
+one as history. There is no unfreeze.
+
+What GTT watches is what you declared in section 7 of
+`gtt-domain/context/stack.md` (`gtt-boundaries`). Keep it short, and keep
+`BLOCKING` for what must never happen without a decision.
+
+The first control every agent and every person shares is the Git pre-commit
+hook: `bash .gtt/scripts/gtt-git-hook.sh install --apply`. It can be skipped
+with `git commit --no-verify`, so the guaranteed layer is CI: run
+`gtt-validate.sh` and `gtt-check-stack.sh` on the pull request.
 
 ---
 
@@ -336,17 +388,16 @@ so any ADE that resumes the project sees it.
 Before implementation:
 
 - [ ] Read applicable governed context.
-- [ ] Establish the applicable Epic/Story from `gtt-domain/backlog.md`, if one exists.
-- [ ] Confirm the Story is `Ready` (designed and approved). If it is `Undesigned`, design the Epic first.
-- [ ] Determine whether the task is routine or architectural.
-- [ ] If architectural, or a new/changed Epic/Story, create/process a change request.
+- [ ] Determine whether the task is ordinary work or a change to the governed design.
+- [ ] Ordinary work: do it. No Story has to be approved first.
+- [ ] A change to the governed design, or a new/changed Epic: create/process a change request.
 
 During implementation:
 
 - [ ] Keep implementation aligned with governed context.
 - [ ] Do not silently modify governed decisions.
 - [ ] If a file/class/method carries a `@GTTGuard` marker, use `gtt-propose-change` (form 5) instead of editing it directly.
-- [ ] Implement only against the written Story; if something unwritten is needed, stop and update the Story first.
+- [ ] Keep the Story current as you go: it is your working plan, so when something unwritten turns out to be needed, update it and continue - nobody approves it.
 - [ ] Update the Story's status and Current Focus as work actually progresses.
 - [ ] On finishing, mark the Story `Done` with `Closed` (date, commit or PR, tests passed); mark the Epic `Completed` when all its Stories are.
 - [ ] Preserve host-project structure.

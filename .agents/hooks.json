@@ -1,0 +1,16 @@
+{
+  "gtt-protect": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command|write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format antigravity",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

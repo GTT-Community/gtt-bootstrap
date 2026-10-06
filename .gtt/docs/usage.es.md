@@ -7,8 +7,14 @@ GTT gobierna el contexto que guía el desarrollo asistido por IA.
 El ciclo normal es:
 
 ```text
-Contexto → Decisión → Propuesta → Aprobación → Implementación → Verificación
+Gobierno   Contexto → Decisión → Propuesta → Decisión humana → Freeze
+Trabajo    Freeze → el ADE trabaja por su cuenta → GTT observa → el trabajo continúa
 ```
+
+La línea de arriba solo se recorre cuando cambia el diseño gobernado mismo:
+la arquitectura, un límite, una restricción, el objetivo o el alcance de una
+Epic. El trabajo ordinario nunca pasa por ella: con el diseño congelado, la
+implementación no necesita aprobación.
 
 ## Flujo normal
 
@@ -114,7 +120,7 @@ debe fallar cuando el mapa arquitectónico y las decisiones gobernadas dejan de 
 4. observabilidad
 5. reglas de dependencias
 6. historial de cambios del mapa
-7. señales de drift — rutas fuera de los directorios propios de GTT que cargan peso arquitectónico, vigiladas por `detect-drift.py`
+7. límites — dónde un cambio en el código significa que el diseño pudo haber cambiado, y qué tan serio es; los vigila `gtt-observe.sh`
 
 Utiliza este mapa como primer punto de orientación arquitectónica.
 
@@ -129,34 +135,80 @@ próximo trabajo. Es un artefacto de planificación, no arquitectura — la
 precedencia es contexto gobernado → ADR → backlog → implementación, y una
 Story nunca sobrescribe una decisión arquitectónica.
 
-Antes de trabajar en desarrollo, establecé la Epic/Story aplicable desde el
-backlog. Agregar, eliminar, o cambiar materialmente una va por
-`gtt-domain/change-request.md`, igual que un cambio de arquitectura. Actualizar el
-estado de una Story o las listas de Current Focus / Next Work / Blocked
-durante trabajo ya aprobado es una edición directa, no una solicitud de
-cambio.
+El backlog tiene dos clases de entrada, gobernadas de forma distinta:
 
-Un título no es un diseño. Una Story es implementable solo cuando está
-`Ready`: descripción, alcance, fuera de alcance, criterios de aceptación,
-tests, fuentes y el origen de cada afirmación (`[FUENTE: ref]`, `[HUMANO]`,
-`[PROPUESTA]`) están escritos en el backlog y vos los aprobaste. Una Story
-que solo tiene título está `Undesigned` (sin diseñar). Para pasar de una a
-otra, pedile al agente que diseñe la Epic (`gtt-propose-change`, formulario
-6): propone las Stories completas contra las fuentes, marca lo que las
-fuentes no determinan, y vos aprobás Story por Story. Después el agente
-implementa solo contra lo escrito.
+- **Una Epic la decides tú.** Es intención y alcance: su objetivo, qué
+  incluye, dónde termina. La apruebas (`**Approved:** quién — AAAA-MM-DD`) y
+  solo entonces deja de estar `Proposed`. Agregar, eliminar o cambiar
+  materialmente una es tu decisión (`gtt-propose-change`, formulario 4).
+- **Una Story es el plan de trabajo del agente.** El agente crea, divide,
+  reescribe, implementa y cierra Stories por su cuenta. No apruebas ninguna, y
+  una Story nunca es una compuerta delante del trabajo.
 
-Cada Story nombra en `Governed by` los ADR y las secciones de contexto que
-le aplican — una referencia, no una copia; la arquitectura se escribe en un
-solo lugar. Cuando una Story se termina se marca `Done` con `Closed` (fecha,
-commit o PR, tests que pasaron), y una Epic está `Completed` solo cuando
-todas sus Stories están `Done` o `Cancelled`.
+Las Stories no se mantienen honestas firmándolas. Lo hace GTT, observando el
+trabajo (sección siguiente): si lo que una Story produce cruza un límite del
+diseño que congelaste, te enteras, diga lo que diga la Story.
 
-Corré `.gtt/scripts/gtt-check-backlog.sh` para la integridad estructural
-(IDs únicos, valores de estado válidos) y la regla de Story lista (falla una
-Story en `Ready`, `In Progress` o `Done` con un campo vacío, sin origen o sin
-aprobación); corré `gtt-audit` para reconciliar
-el backlog contra lo que realmente está definido y realmente se hizo.
+El trabajo que pides directamente no necesita una Epic primero. Cuando una
+Story se termina se marca `Done` con `Closed` (fecha, commit o PR, tests que
+pasaron), y una Epic está `Completed` solo cuando todas sus Stories están
+`Done` o `Cancelled`.
+
+Ejecuta `.gtt/scripts/gtt-check-backlog.sh` para la integridad estructural
+(IDs únicos, valores de estado válidos, una Epic aprobada lleva su objetivo y
+quién la aprobó); ejecuta `gtt-audit` para reconciliar el backlog contra lo que
+realmente está definido y realmente se hizo.
+
+---
+
+## Trabajar: el agente trabaja, GTT observa
+
+Con el diseño congelado no estás en el ciclo del trabajo ordinario. El agente
+implementa, refactoriza, prueba y commitea sin pedir permiso. El freeze no
+impide que el código cambie; hace que el diseño que aprobaste sea la
+autoridad.
+
+Mientras el agente trabaja, GTT compara el proyecto con ese diseño congelado
+y te avisa solo lo que importa:
+
+```text
+@gtt · Observation
+⚠ OBS-0003 WARNING    B-003  package.json#kafkajs
+    new dependency `kafkajs`
+    guards: Stack at a glance (section 1)
+    work continues
+```
+
+| Nivel | Qué significa para ti |
+|---|---|
+| `NOTICE` | Nada. Queda registrado |
+| `WARNING` | Se te avisa una vez. El trabajo continúa |
+| `GOVERNANCE` | Se te avisa una vez. El trabajo continúa. Decide antes del próximo freeze |
+| `BLOCKING` | La operación afectada se detuvo: una regla que ratificaste dice que esto no debe pasar |
+
+Lo que puedes hacer, cuando quieras:
+
+```bash
+bash .gtt/scripts/gtt-observe.sh backlog                              # qué está abierto
+bash .gtt/scripts/gtt-observe.sh accept OBS-0003 --by <tú> --apply   # queda así
+bash .gtt/scripts/gtt-observe.sh reject OBS-0003 --by <tú> --apply   # la validación falla hasta que desaparezca
+bash .gtt/scripts/gtt-observe.sh defer  OBS-0003 --by <tú> --apply   # más adelante
+```
+
+Aceptar una observación no cambia el diseño. Si el diseño mismo tiene que
+cambiar — el bus de eventos ahora sí es parte de la arquitectura — eso es una
+solicitud de cambio, un ADR y después un **nuevo freeze**:
+`bash .gtt/scripts/gtt-freeze.sh` registra una nueva línea base y conserva la
+anterior como historial. No existe el unfreeze.
+
+Lo que GTT vigila es lo que declaraste en la sección 7 de
+`gtt-domain/context/stack.md` (`gtt-boundaries`). Mantenlo corto, y reserva
+`BLOCKING` para lo que nunca debe pasar sin una decisión.
+
+El primer control que comparten todos los agentes y todas las personas es el
+hook de pre-commit de Git: `bash .gtt/scripts/gtt-git-hook.sh install --apply`.
+Se puede saltar con `git commit --no-verify`, así que la capa garantizada es
+el CI: ejecuta `gtt-validate.sh` y `gtt-check-stack.sh` sobre el pull request.
 
 ---
 
@@ -169,11 +221,11 @@ su cuenta. Eso es GTTGuard — un mecanismo hermano de la gobernanza L0/L1,
 no parte de ella.
 
 **Marcar algo como protegido** es una edición de código normal, no un
-cambio gobernado: agregá `@GTTGuard` (Java/Python), `[GTTGuard]` (C#), o
+cambio gobernado: agrega `@GTTGuard` (Java/Python), `[GTTGuard]` (C#), o
 `// @GTTGuard` / `# @GTTGuard` (lenguajes basados en comentarios),
 opcionalmente con `reason="..."`/`source="..."`, justo arriba de la
 declaración — o como primera línea del archivo para proteger todo el
-archivo. Usá la skill `gtt-guard` para esto, y después corré:
+archivo. Usa la skill `gtt-guard` para esto, y después ejecuta:
 
 ```bash
 bash .gtt/scripts/gtt-guard-sync.sh
@@ -185,11 +237,11 @@ código. El registro es derivado, nunca editado a mano —
 que los marcadores realmente declaran.
 
 **Cambiar algo ya protegido** pasa por el formulario 5 de
-`gtt-propose-change`, no por una edición directa. Una vez que aprobás la
+`gtt-propose-change`, no por una edición directa. Una vez que apruebas la
 propuesta **en la conversación**, el agente implementa el cambio
 directamente y vuelve a sincronizar el registro — sin ADR, sin script de
 promoción. Esto es deliberadamente más liviano que el Límite Humano de
-Promoción de arriba: GTTGuard protege código L3 que vos decidiste
+Promoción de arriba: GTTGuard protege código L3 que tú decidiste
 proteger, no `gtt-domain/context/` ni `gtt-domain/adr/`, y los dos modelos de promoción
 nunca deben confundirse.
 
@@ -342,17 +394,16 @@ modo que cualquier ADE que retome el proyecto lo ve.
 Antes de implementar:
 
 - [ ] Leer el contexto gobernado aplicable.
-- [ ] Establecer la Epic/Story aplicable desde `gtt-domain/backlog.md`, si existe una.
-- [ ] Confirmar que la Story está `Ready` (diseñada y aprobada). Si está `Undesigned`, diseñar primero la Epic.
-- [ ] Determinar si la tarea es rutinaria o arquitectónica.
-- [ ] Si es arquitectónica, o una Epic/Story nueva/modificada, crear/procesar una solicitud de cambio.
+- [ ] Determinar si la tarea es trabajo ordinario o un cambio al diseño gobernado.
+- [ ] Trabajo ordinario: hacerlo. Ninguna Story necesita aprobación previa.
+- [ ] Un cambio al diseño gobernado, o una Epic nueva/modificada: crear/procesar una solicitud de cambio.
 
 Durante la implementación:
 
 - [ ] Mantener la implementación alineada con el contexto.
 - [ ] No modificar silenciosamente decisiones gobernadas.
 - [ ] Si un archivo/clase/método tiene un marcador `@GTTGuard`, usar `gtt-propose-change` (formulario 5) en lugar de editarlo directamente.
-- [ ] Implementar solo contra la Story escrita; si aparece algo no escrito, detenerse y actualizar la Story primero.
+- [ ] Mantener la Story al día sobre la marcha: es el plan de trabajo, así que cuando aparece algo no escrito se actualiza y se continúa; nadie la aprueba.
 - [ ] Actualizar el estado de la Story y el Current Focus a medida que avanza el trabajo real.
 - [ ] Al terminar, marcar la Story `Done` con `Closed` (fecha, commit o PR, tests que pasaron); marcar la Epic `Completed` cuando todas sus Stories lo estén.
 - [ ] Preservar la estructura del proyecto anfitrión.

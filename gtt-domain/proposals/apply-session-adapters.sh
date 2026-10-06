@@ -4,7 +4,7 @@
 # Status: Draft - not a decision. Prepared by an agent; never run by one.
 # Running it does NOT ratify anything: adopting an ADE adapter changes the
 # adapter matrix (AGENTS.md, gtt-check-adapter.sh, the gtt-bootstrap skill) and
-# needs Proposal -> Epic/Story -> ADR -> human ratification. This only copies
+# needs Proposal -> (Epic, if the scope changes) -> ADR -> human decision -> new freeze. This only copies
 # staged files to the ADE's native paths and flips the declaration to
 # "installed" so you can try them.
 #

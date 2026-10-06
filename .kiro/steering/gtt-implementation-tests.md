@@ -15,17 +15,19 @@ governed context.
 
 Before changing module boundaries, public interfaces, or the shape of a layer,
 read `gtt-domain/context/stack.md` — sections 2 and 5 define the component map and the
-dependency rules. If the change does not fit, stop and write a proposal.
+dependency rules. If the change does not fit, that is a governance change, not an implementation detail: write a proposal.
 
-Implement only against the written Story in `gtt-domain/backlog.md`: it must
-be `Ready` or `In Progress` (designed and approved). An `Undesigned` Story is
-not implementable. If something not written in the Story is needed, stop and
-update the Story first through a proposal, then continue.
+The implementation is yours: write, refactor, test and commit without asking
+for approval. `gtt-domain/backlog.md` is your working plan - create, split,
+rewrite and close Stories as the work needs; nobody approves a Story. When one
+is finished, close it: `Status: Done` and `Closed: <date> — <commit or PR> —
+<tests passed>`, from what actually happened. An Epic is different: its goal
+and scope are the human's decision.
 
-Read what the Story's `Governed by` points to before writing code. When its
-tests pass and its acceptance criteria hold, close it in the backlog:
-`Status: Done` and `Closed: <date> — <commit or PR> — <tests passed>`, from
-what actually happened.
+After a change that could touch a boundary of the design, run
+`bash .gtt/scripts/gtt-observe.sh observe`. What it prints is an observation,
+not an order to stop: say it in one line and continue. Only a line marked STOP
+interrupts the affected operation.
 
 Stay inside the existing folder structure and paradigm. Do not add abstraction
 layers or patterns that are not already present.
