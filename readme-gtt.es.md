@@ -1,4 +1,4 @@
-# GTT Bootstrap  test
+# GTT Bootstrap  test - griott
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
 
@@ -18,7 +18,7 @@ Compatible con Claude Code, Kiro, Codex y GitHub Copilot · CC BY 4.0
 
 ## Navegación rápida
 
-- [GTT Bootstrap  test](#gtt-bootstrap--test)
+- [GTT Bootstrap  test - griott](#gtt-bootstrap--test---griott)
   - [Navegación rápida](#navegación-rápida)
   - [Flujo de uso](#flujo-de-uso)
     - [1. Inicializar el contexto gobernado](#1-inicializar-el-contexto-gobernado)
