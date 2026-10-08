@@ -7,14 +7,15 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-08T17:14:40Z
+# Generated: 2026-10-08T17:24:49Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
 CHANGED  100 files (+33 new, −2) · +9596 −2478 · uncommitted: 96   ▲ HIGH: 100 files > 10
 IMPACT   governed: architecture.md, stack.md · protected: none
-VALID    14:14 · OK 22 PASS 1 SKIPPED
-NEXT     nothing pending
+RISKS    validation not run since the last change
+VALID    14:22 · OK 22 PASS 1 SKIPPED · stale
+NEXT     bash .gtt/scripts/gtt-validate.sh
 more: gtt-review.sh --files · git diff --stat · gtt-status.sh
 
 ## Freeze state
