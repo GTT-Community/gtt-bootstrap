@@ -727,6 +727,38 @@ production
 
 <!-- ADE populates this section -->
 
+## 15.6 Git workflow
+
+> Which commit convention does the project follow?
+
+``` text
+none | Conventional Commits | the project's own (path to its rule) | other
+```
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
+> May the ADE create commits on its own?
+
+``` text
+only when I ask | yes, finished work | never
+```
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
+Once reviewed, this questionnaire is registered as the source `IDQ`
+(`bash .gtt/scripts/gtt-source.sh add <this file> --id IDQ --apply`), so a design can cite an answer the
+way it cites any document: `[FUENTE: IDQ:§git-workflow]`.
+
+The ADE adopts neither answer. It shows the human the exact lines to put in
+`gtt-domain/workflow.md`, which only the human edits - for example
+`convention: conventional` and `commits: on-request`. A convention found in the
+project's own documents (`bash .gtt/scripts/gtt-workflow.sh detect`) is reported
+as a finding, in one line, and never written.
+
 ------------------------------------------------------------------------
 
 # 16. Observability

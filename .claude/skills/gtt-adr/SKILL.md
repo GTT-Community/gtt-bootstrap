@@ -27,6 +27,20 @@ over to the next.
 If a proposal for this change exists in `gtt-domain/proposals/`, base the ADR on it
 rather than restating the reasoning from scratch.
 
+## First: does this change need an ADR?
+
+An ADR is for architecture only. Apply the rule before drafting anything - it is deterministic:
+
+- The change touches `architecture.md` or `constraints.md`, sections 1 to 5 or 7 of `stack.md`, or a
+  `BLOCKING` gap → it is **architectural**: draft the ADR, as below.
+- It touches only an Epic's design (`gtt-domain/context/design/`), `glossary.md`, `solution-vision.md` or
+  another detail → it is a **specification change**: stage the set **without an ADR**
+  (`bash .gtt/scripts/gtt-stage.sh <name> --reason "…" <draft>=<destination> …`) and say so in one line. The
+  promotion records it as `CHANGE-<date>-<name>` in the map change log and takes the new freeze in the
+  same confirmation.
+
+You may still propose an ADR for a specification change that had real alternatives; the human chooses.
+
 ## Numbering
 
 Take the number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - deterministic, and it never
@@ -97,120 +111,37 @@ ADR but absent from the map is invisible in practice.
 For every file the ADR's *Affected context* section names — `stack.md` always,
 plus any others — write the file's **full new content**, not a diff, to
 `gtt-domain/proposals/context-<basename>.md` (for example
-`gtt-domain/proposals/context-stack.md`). The promotion script will copy each one
+`gtt-domain/proposals/context-stack.md`). The promotion will copy each one
 straight over its target, so the staged draft must be the complete file exactly
 as it should read after promotion, changelog row included.
 
-## Generate the promotion script
+## Stage the promotion set
 
-Write `gtt-domain/proposals/apply-ADR-NNN-<slug>.sh`, executable, matching this
-shape (fill in the placeholders with the real ADR number and slug everywhere;
-keep the review loop, the confirmation, and the fail-fast behavior — do not
-weaken any of them). Quote every `mv`/`cp` path as shown, and never leave a
-literal `<...>` placeholder in an unquoted command line — bash reads an
-unquoted `<` as input redirection, not as a filler you forgot to replace:
+Never write an application script by hand. Stage the ADR draft and every affected
+context file as one set, named after the ADR:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# GTT GOVERNED CHANGE
-# Proposal: PROPOSAL-<slug>
-# ADR: ADR-NNN-<slug>
-# Human execution required: YES
-#
-# Review the proposal, the ADR draft, and this script before running it.
-# This script must not be executed automatically by an AI agent.
-
-cd "$(dirname "$0")/../.." # run from the project root regardless of cwd
-
-echo "GTT governed change"
-echo "Proposal: PROPOSAL-<slug>"
-echo "ADR: ADR-NNN-<slug>"
-echo ""
-echo "This will apply:"
-echo "  gtt-domain/proposals/ADR-DRAFT-<slug>.md  ->  gtt-domain/adr/ADR-NNN-<slug>.md   (new file)"
-echo "  gtt-domain/proposals/context-stack.md     ->  gtt-domain/context/stack.md       (overwrite)"
-# ... one line per additional affected context file, noting new file / overwrite
-echo ""
-
-while true; do
-    read -r -p "Review the change, or approve it? [view/yes/no]: " choice
-    case "$choice" in
-        view|v)
-            echo ""
-            echo "===== gtt-domain/proposals/ADR-DRAFT-<slug>.md (new ADR) ====="
-            cat "gtt-domain/proposals/ADR-DRAFT-<slug>.md"
-            echo ""
-            echo "===== gtt-domain/context/stack.md: current -> staged ====="
-            diff -u "gtt-domain/context/stack.md" "gtt-domain/proposals/context-stack.md" || true
-            # ... one "cat" for the new ADR is enough; one "diff -u" per
-            # additional affected context file, same files listed above
-            echo ""
-            ;;
-        yes|y)
-            break
-            ;;
-        no|n)
-            echo "Change not promoted."
-            exit 1
-            ;;
-        *)
-            echo "Please answer view, yes, or no."
-            ;;
-    esac
-done
-
-mv "gtt-domain/proposals/ADR-DRAFT-<slug>.md" "gtt-domain/adr/ADR-NNN-<slug>.md"  # <slug> replaced with the real value, no literal brackets
-cp "gtt-domain/proposals/context-stack.md" "gtt-domain/context/stack.md"
-# ... one quoted cp per additional affected context file, same order as above
-
-bash .gtt/scripts/gtt-check-stack.sh
-
-echo ""
-echo "Promoted. ADR-NNN-<slug> is now in gtt-domain/adr/ and gtt-domain/context/ reflects it."
-echo "You can now delete the staged drafts in gtt-domain/proposals/ for this change."
-echo ""
-echo "The governed state has moved. Complete the change with a new freeze:"
-echo "  bash .gtt/scripts/gtt-freeze.sh"
+bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --reason "<what the decision changes, one line>" \
+  gtt-domain/proposals/ADR-DRAFT-<slug>.md=gtt-domain/adr/ADR-NNN-<slug>.md \
+  gtt-domain/proposals/context-stack.md=gtt-domain/context/stack.md
 ```
 
-`set -euo pipefail` is the fail-fast mechanism: if any `mv`/`cp` or the check
-script fails, the script stops immediately with a visible error instead of
-silently continuing with a half-applied change. List every affected file from
-the ADR's *Affected context* section as its own `mv`/`cp` line, applied in one
-run — do not ask the user to execute several unrelated commands by hand.
-
-The `view`/`yes`/`no` loop is not optional polish: a `[yes/no]` prompt alone
-asks the user to approve a change they can only read about in your chat
-message. `view` lets them inspect the actual ADR text and the exact diff
-against the current `gtt-domain/context/` files, from inside the script itself,
-as many times as they want, before deciding — and it loops back to the same
-prompt afterward instead of assuming they now mean yes.
+One `source=destination` pair per file. The command copies them into
+`gtt-domain/proposals/staged/ADR-NNN-<slug>/` and records what each destination
+looked like, so the promotion refuses to run if one changes in the meantime. You
+may delete the drafts once they are staged. You never run the promotion.
 
 ## Tell the user
 
-State, in chat, briefly - what is ready, that nothing was applied, the one command, and that running it is
-their decision:
+Exactly this, and nothing more:
 
-> ⚠ `ADR-NNN-<slug>` is ready and needs your authorization: it changes governed
-> context (<the files it touches>). **Nothing has been applied.**
->
-> Review the proposal, the ADR draft and the script, then run it from the project root:
->
-> ```bash
-> bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
-> ```
->
-> It shows the ADR text and the exact diff (`view`) before it asks `yes` or `no`.
-> Running it is your decision; I have not promoted anything. It ends by telling you to
-> take a new freeze (`bash .gtt/scripts/gtt-freeze.sh`) - also yours to run: that is
-> what makes the promoted design the baseline observation compares the work against.
-> Once you have run both, I validate the result and continue.
+```text
+@gtt · Authorization required
+Changes: gtt-domain/adr/ADR-NNN-<slug>.md, gtt-domain/context/stack.md - <one-line reason>
+Run: bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
+Nothing was applied; it is your decision.
+```
 
-Then stop: this is a genuine authorization, not a precaution. When the human says it has run, do not ask
-what to do next - run `bash .gtt/scripts/gtt-maintain.sh`, report the result in a few lines and continue
-with the planned work. Do not execute the script yourself under any circumstance — not to
-save the user a step, not because the change looks obviously correct, and not
-because a prior change was approved. Each governed promotion needs its own
-explicit human decision.
+The promotion shows the reason, the files and the diff before it asks for `apply`,
+applies everything or nothing, prints its undo and validates the result. A governed
+change is then completed by a new freeze, which is also the human's.

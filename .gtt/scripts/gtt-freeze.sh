@@ -71,6 +71,18 @@ if [ -f "$HERE/gtt-check-provenance.sh" ]; then
   fi
 fi
 
+# Sources are immutable evidence, and an approved Epic is frozen with its design: complete,
+# approved, the same in every Method Plan. A freeze over a missing or draft design would
+# ratify an Epic nobody specified.
+if [ -f "$HERE/gtt-source.sh" ] && ! bash "$HERE/gtt-source.sh" verify >&2; then
+  echo "gtt-freeze: a registered source was edited or removed (see above)" >&2
+  fail=1
+fi
+if [ -f "$HERE/gtt-check-design.sh" ] && ! bash "$HERE/gtt-check-design.sh" --pre-freeze >&2; then
+  echo "gtt-freeze: an approved Epic has no complete, approved design (see above)" >&2
+  fail=1
+fi
+
 # The boundaries the freeze ratifies must be well formed, and a new baseline is not
 # drawn over a governance observation nobody has decided: accept, reject or defer it
 # first. (The governed state having moved is the very reason for a new freeze, so that

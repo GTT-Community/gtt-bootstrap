@@ -3,7 +3,10 @@
     {
       "matcher": "*",
       "hooks": [
-        { "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format openhands", "timeout": 20 }
+        {
+          "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format openhands",
+          "timeout": 20
+        }
       ]
     }
   ],
@@ -11,7 +14,21 @@
     {
       "matcher": "*",
       "hooks": [
-        { "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format openhands", "timeout": 30 }
+        {
+          "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_session_hook.py openhands",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "stop": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "command": "bash .gtt/scripts/gtt-checkpoint.sh --quiet",
+          "timeout": 30
+        }
       ]
     }
   ]

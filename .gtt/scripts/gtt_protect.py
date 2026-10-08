@@ -15,16 +15,19 @@ unknown fails safe to the whole file), which Claude Code gets from its own prote
 Everything else is ordinary work and passes untouched: this engine blocks only where the governed
 state says so, and every denial names the rule it comes from.
 
-  gtt_protect.py hook --format antigravity|cursor|openhands
-                                                    decide a pre-tool event, or answer a session start
+  gtt_protect.py hook --format antigravity|copilot|cursor|kiro|openhands
+                                                    decide a pre-tool event
   gtt_protect.py decide --file PATH | --shell CMD   the bare decision, for tests and for a human
 
-A denial exits 2 with the ADE's deny payload. Anything this script does not understand - an unknown
-event, an unreadable payload, an unexpected error - exits 0: a broken hook never blocks a session.
+A denial exits 2 with the ADE's deny payload - except for GitHub Copilot, whose pre-tool hook fails
+closed: there a denial is its JSON decision with exit 0, and this script never exits non-zero.
+Anything this script does not understand - an unknown event, an unreadable payload, an unexpected
+error - exits 0: a broken hook never blocks a session, and an unexpected error says on stderr that
+the call was not checked.
 The one thing it does not do quietly is lose a BLOCKING boundary: if the frozen design declares one
 and the observation engine cannot be loaded, the write is allowed and a warning says so on stderr.
-Shipped for Cursor, OpenHands and Antigravity from their documented hook contracts; NOT verified
-inside any of them. The CI gate (gtt-check-protection.sh, gtt-check-stack.sh) remains the
+Shipped for Cursor, OpenHands, Antigravity, Kiro and GitHub Copilot from their documented hook
+contracts; NOT verified inside any of them. The CI gate (gtt-check-protection.sh, gtt-check-stack.sh) remains the
 guaranteed layer.
 """
 
@@ -54,12 +57,25 @@ PROPOSE = "Draft a proposal (AGENTS.md -> Protected artifacts) instead of editin
 #   governed paths     AGENTS.md, change-request.md, SOURCE-BRIEF.* - always; gtt-domain/context/
 #                      and gtt-domain/adr/ - once frozen; gtt-domain/proposals/ is always writable
 #   machinery          the hook configuration and engine that carry this protection
+#   instruction plane  only in an installed project (.gtt/ade.json exists): the GTT engine
+#                      (.gtt/scripts/, .gtt/contract/), the ADE state and the instructions agents
+#                      work under. In the catalog repository they are the product being built
 #   freeze marker      gtt-domain/.frozen, in both regimes: the human freezes; there is no unfreeze
 #   governance ledger  gtt-domain/governance-backlog.json: only the observation engine writes it
 #   promotion          an agent never runs gtt-domain/proposals/apply-*.sh, in any spelling, and
 #                      never applies a patch staged there (--check / --stat stay available)
 #   human acts         freezing; accepting, rejecting or deferring an observation; installing or
-#                      removing the Git hook
+#                      removing the Git hook; applying a staged promotion set (gtt-promote.sh)
+#   Git workflow       what gtt-domain/workflow.md forbids: `commits: never` (commit, tag, push) and
+#                      `branches-tags: never` (a new branch or tag). `on-request` is an instruction,
+#                      not a rule here: a hook cannot see what the user asked for. In an installed
+#                      project the workflow file itself is the human's
+#   sources            docs/sources/: a registered source is immutable evidence - a new version is
+#                      added with gtt-source.sh, never edited; after the freeze, registering one is
+#                      the human's act
+#   approval           an Epic and its design are approved by the human (gtt-approve.sh)
+#   local state        .gtt/local/checkpoint.json and last-validation.json: written by GTT's scripts
+#                      only - the review would lie if an agent could forge them
 #   Git hook bypass    only where the GTT pre-commit hook is installed: --no-verify, core.hooksPath
 #   boundaries         a path the frozen design declares BLOCKING (gtt-boundaries in stack.md)
 #
@@ -74,15 +90,40 @@ DOMAIN_DIR = "gtt-domain"
 REGIME_DIRS = ("gtt-domain/context", "gtt-domain/adr")
 PROPOSALS_DIR = "gtt-domain/proposals"
 GIT_HOOK = ".git/hooks/pre-commit"
+WORKFLOW_FILE = "gtt-domain/workflow.md"
+LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json")
+SOURCES_DIR = "docs/sources"
+BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--contains", "--merged",
+                  "--no-merged", "--points-at"}
 GIT_HOOK_MARK = "# gtt-git-hook: installed by .gtt/scripts/gtt-git-hook.sh"
 
-# Matched against the basename of a path token, never against the raw command.
-ROOT_FILES = re.compile(r"^(?:AGENTS\.md|change-request\.md|SOURCE-BRIEF\.[^/]*)[*?]*$", re.IGNORECASE)
+# Matched against the project-relative path of a write target: the contract and the source brief at
+# the project root, and the change-request front door. A nested AGENTS.md - scoped rules for Codex or
+# Copilot - is the project's own file.
+ROOT_FILES = re.compile(r"^(?:AGENTS\.md|(?:gtt-domain/)?change-request\.md|SOURCE-BRIEF\.[^/]*)[*?]*$", re.IGNORECASE)
 MACHINERY = re.compile(
     r"\.claude/settings(\.local)?\.json|\.claude/hooks/|\.cursor/hooks\.json|\.openhands/hooks\.json"
-    r"|\.agents/hooks\.json|\.gtt/scripts/gtt_protect\.py",
+    r"|\.agents/hooks\.json|\.kiro/hooks/|\.github/hooks/gtt-protect\.json|\.gtt/scripts/gtt_protect\.py",
     re.IGNORECASE,
 )
+# The instruction plane. A project is installed when .gtt/ade.json exists: the manifest requires it
+# there and the catalog repository never has it.
+INSTALLED_MARK = ".gtt/ade.json"
+PLANE_DIRS = (".gtt/scripts", ".gtt/contract", ".gtt/docs/agents", ".claude/skills", ".claude/rules", ".kiro/steering",
+              ".agents/skills/gtt")
+PLANE_FILES = re.compile(
+    r"^(?:\.gtt/ade\.json|\.claude/claude\.md|\.cursor/rules/gtt[^/]*\.mdc|\.agents/rules/gtt[^/]*\.md"
+    r"|\.github/instructions/gtt[^/]*\.md)$",
+    re.IGNORECASE,
+)
+# A shell command is judged by what it writes: the operands of a command that mutates and the target
+# of a redirect. A path it only reads, and the words of a here-document nobody executes, are not writes.
+COPIES = {"cp", "copy", "copy-item", "install", "ln", "rsync", "scp"}       # only the last operand is written
+MUTATORS = {"rm", "mv", "tee", "truncate", "unlink", "shred", "touch", "del", "erase", "rd", "rmdir", "ri", "move", "ren",
+            "set-content", "add-content", "out-file", "new-item", "remove-item", "move-item", "rename-item", "clear-content"}
+IN_PLACE = re.compile(r"^(?:-[A-Za-z]*i|--in-place)")
+HEREDOC = re.compile(r"<<-?\s*['\"]?([A-Za-z_][A-Za-z0-9_]*)['\"]?")
+SHELL_READS = re.compile(r"(?:^|[|;&(]\s*)(?:(?:sudo|env|exec)\s+)*(?:bash|sh|zsh|dash|ksh)\b")
 MUTATING_SHELL = re.compile(
     r"\b(sed\s+-i|tee|mv|cp|rm|truncate|dd|install"
     r"|del|erase|rd|rmdir|ri|move|copy|ren"
@@ -92,7 +133,9 @@ MUTATING_SHELL = re.compile(
     # of anything GTT governs, whatever the command reads.
     r"|>>?\s*\S*(gtt-domain/|AGENTS\.md|change-request\.md|SOURCE-BRIEF\."
     r"|\.claude/settings(\.local)?\.json|\.claude/hooks/|\.cursor/hooks\.json|\.openhands/hooks\.json"
-    r"|\.agents/hooks\.json|gtt_protect\.py|\.git/hooks/)",
+    r"|\.agents/hooks\.json|gtt_protect\.py|\.git/hooks/|\.kiro/|\.github/hooks/|\.github/instructions/"
+    r"|\.gtt/scripts/|\.gtt/contract/|\.gtt/ade\.json|\.claude/skills/|\.claude/rules/|CLAUDE\.md"
+    r"|\.cursor/rules/|\.agents/skills/|\.agents/rules/)",
     re.IGNORECASE,
 )
 TOKEN_SPLIT = re.compile(r"[\s\"'=(<>|;&,`]+")
@@ -112,16 +155,36 @@ FREEZE = ("GTT governance (freeze-semantics): gtt-domain/.frozen is the freeze m
 LEDGER_OWNED = ("GTT governance (human-decision-authority): gtt-domain/governance-backlog.json is written only by the "
                 "observation engine, and the decisions recorded in it are the human's. Refresh it with "
                 "`bash .gtt/scripts/gtt-observe.sh observe`; never edit it.")
-PROMOTION = ("GTT governance (Human Promotion Boundary): a promotion script is run by the human, never by an agent. "
+PROMOTION = ("GTT governance (Human Promotion Boundary): a promotion is run by the human, never by an agent. "
              "Tell the human the command and stop.")
 PATCH = ("GTT governance (Human Promotion Boundary): applying a patch staged under gtt-domain/proposals/ is the "
          "human's act. `git apply --check` and `--stat` stay available. Tell the human the command.")
 HUMAN_ACT = ("GTT governance (human-decision-authority): freezing, accepting, rejecting or deferring an observation, "
              "and installing or removing the Git hook are the human's decisions (AGENTS.md -> The two planes). Tell "
              "the human the command and continue with the work.")
+PLANE = ("GTT governance (instruction-plane): in an installed project the GTT engine (.gtt/scripts/, .gtt/contract/), "
+         ".gtt/ade.json and the instructions agents work under are the Solution Designer's - an agent does not rewrite "
+         "its own governance. Run the scripts freely; to change one, write a draft under gtt-domain/proposals/ and "
+         "tell the human. `gtt-ade.sh update` is how a new Bootstrap version lands.")
 BYPASS = ("GTT governance (explicit-blocking): the GTT pre-commit hook is installed in this repository. Skipping it "
           "(--no-verify), redirecting core.hooksPath or removing it is not an agent's call: if the check stops the "
           "commit, fix what it reports or tell the human.")
+NO_COMMITS = ("GTT governance (workflow.md: commits: never): this project's gtt-domain/workflow.md says an ADE never "
+              "commits, tags or pushes. Git history is the human's: leave the work in the tree and say that it is "
+              "uncommitted.")
+NO_BRANCHES = ("GTT governance (workflow.md: branches-tags: never): this project's gtt-domain/workflow.md says an ADE "
+               "never creates a branch or a tag. Work on the branch the human gave you.")
+WORKFLOW_OWNED = ("GTT governance (workflow.md): gtt-domain/workflow.md is the human's - an ADE reads it and never edits "
+                  "it. Report the convention you found in one line and say which line the human would add.")
+SOURCES_OWNED = ("GTT governance (sources-immutable): docs/sources/ holds the registered design sources, and a source "
+                 "is never edited. Register a new version next to the old one: bash .gtt/scripts/gtt-source.sh add "
+                 "<file> --id <ID> --apply.")
+SOURCE_FROZEN = ("GTT governance (human-decision-authority): after the freeze, registering a source is the human's act. "
+                 "Tell the human the command: bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply.")
+APPROVAL = ("GTT governance (human-decision-authority): approving an Epic and its design is the human's decision. "
+            "Tell the human the command - bash .gtt/scripts/gtt-approve.sh EPIC-NNN - and continue with the work.")
+LOCAL_OWNED = ("GTT governance (deterministic-first): .gtt/local/checkpoint.json and .gtt/local/last-validation.json are "
+               "written only by GTT's own scripts. Run gtt-checkpoint.sh or gtt-validate.sh; never edit their result.")
 
 
 def normalize(path):
@@ -156,6 +219,18 @@ def frozen(root):
     return os.path.exists(os.path.join(root, FROZEN_MARKER))
 
 
+def installed(root):
+    return os.path.isfile(os.path.join(root, INSTALLED_MARK))
+
+
+def in_plane(low, shell):
+    """True when the project-relative path is the engine, the ADE state or an instruction file - or,
+    for a shell command, a directory that holds one of them."""
+    if PLANE_FILES.match(low) or any(under(low, directory) for directory in PLANE_DIRS):
+        return True
+    return bool(shell and low) and any(directory.startswith(low.rstrip("/") + "/") for directory in PLANE_DIRS)
+
+
 def git_hook_installed(root):
     """True when the pre-commit hook GTT installs is in place. Nothing about Git is restricted
     otherwise: a bypass can only be denied where there is something to bypass."""
@@ -164,6 +239,24 @@ def git_hook_installed(root):
             return GIT_HOOK_MARK in handle.read()
     except OSError:
         return False
+
+
+def workflow_policy(root):
+    """(commits, branches-tags) as the human declared them in gtt-domain/workflow.md. A missing file, block
+    or value - or one this engine does not know - is the default, which restricts nothing here."""
+    commits, branches = "on-request", "on-request"
+    try:
+        with open(os.path.join(root, WORKFLOW_FILE), encoding="utf-8", errors="replace") as handle:
+            block = re.search(r"```gtt-workflow\r?\n(.*?)```", handle.read(), re.DOTALL)
+    except OSError:
+        return commits, branches
+    for line in (block.group(1).splitlines() if block else []):
+        key, _, value = re.sub(r"\s+#.*$", "", line).partition(":")
+        if key.strip() == "commits" and value.strip() in ("on-request", "allowed", "never"):
+            commits = value.strip()
+        elif key.strip() == "branches-tags" and value.strip() in ("on-request", "never"):
+            branches = value.strip()
+    return commits, branches
 
 
 def protected_token(root, token, shell=False):
@@ -177,15 +270,23 @@ def protected_token(root, token, shell=False):
         return FREEZE
     if low == LEDGER:
         return LEDGER_OWNED
+    if low in LOCAL_STATE:
+        return LOCAL_OWNED
+    if under(low, SOURCES_DIR) or (shell and low == "docs"):
+        return SOURCES_OWNED
+    if low == WORKFLOW_FILE and installed(root):
+        return WORKFLOW_OWNED
     if low == GIT_HOOK:
         return BYPASS if git_hook_installed(root) else None
     if under(rel, PROPOSALS_DIR):
         return None
+    if in_plane(low, shell) and installed(root):
+        return PLANE
     if any(under(rel, directory) for directory in REGIME_DIRS):
         return GOVERNED if frozen(root) else None
     if shell and low == DOMAIN_DIR:                         # the whole governed domain, in one move
         return FREEZE if frozen(root) else GOVERNED
-    if ROOT_FILES.match(rel.rstrip("/").rsplit("/", 1)[-1]):
+    if ROOT_FILES.match(rel.rstrip("/")):
         return GOVERNED
     return None
 
@@ -194,36 +295,61 @@ def base(word):
     return normalize(word).rstrip("/").rsplit("/", 1)[-1].lower()
 
 
+def strip_heredocs(command):
+    """The command without the bodies of here-documents that are only data. `python - <<EOF` writes
+    nothing this engine can see, whatever its text says; `bash <<EOF` runs every line, so that body
+    stays and is read as commands."""
+    out, end, keep = [], None, True
+    for line in command.replace("\r", "").split("\n"):
+        if end is not None:
+            if line.strip() == end:
+                end = None
+            elif keep:
+                out.append(line)
+            continue
+        out.append(line)
+        found = HEREDOC.search(line)
+        if found:
+            end = found.group(1)
+            keep = bool(SHELL_READS.search(line))
+    return "\n".join(out)
+
+
 def shell_units(command, depth=0):
-    """The simple commands of a shell line, quotes respected: [(words, piped)], where `piped` says
-    the unit reads the previous one through a pipe. The inner command of `bash -c "..."` / `eval`
-    is unfolded. Leading wrappers (env, sudo, VAR=value ...) are dropped."""
-    text = command.replace("\r", " ").replace("\n", " ; ").replace("`", " ; ").replace("$(", " ( ")
+    """The simple commands of a shell line, quotes respected: [(words, piped, redirects)], where
+    `piped` says the unit reads the previous one through a pipe and `redirects` are the targets of
+    its `>` / `>>`. The inner command of `bash -c "..."` / `eval` is unfolded. Leading wrappers
+    (env, sudo, VAR=value ...) are dropped."""
+    text = strip_heredocs(command).replace("\n", " ; ").replace("`", " ; ").replace("$(", " ( ")
     try:
         lexer = shlex.shlex(text, posix=True, punctuation_chars=True)
         lexer.whitespace_split = True
         tokens = list(lexer)
     except ValueError:                                      # unbalanced quotes: a coarser split still decides
         tokens = [t for t in re.split(r"\s+|([;&|()<>]+)", text.replace('"', " ").replace("'", " ")) if t]
-    units, words, piped = [], [], False
+    units, words, redirects, piped, writes = [], [], [], False, False
     for token in tokens + [";"]:
         if token and not token.strip(";&|()<>"):            # an operator
             if ("<" in token or ">" in token) and not set(token) & set(";|()"):
-                continue                                    # a redirect: its target stays in the unit
+                writes = ">" in token                       # a redirect: its target stays in the unit
+                continue
             if words:
-                units.append((words, piped))
-            words, piped = [], token in ("|", "|&")
+                units.append((words, piped, redirects))
+            words, redirects, piped, writes = [], [], token in ("|", "|&"), False
             continue
+        if writes:
+            redirects.append(token)
+            writes = False
         words.append(token)
     out = []
-    for words, piped in units:
+    for words, piped, redirects in units:
         while words and (base(words[0]) in WRAPPERS or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0])):
             words = words[1:]
             while words and words[0].startswith("-"):       # the wrapper's own options (env -i ...)
                 words = words[1:]
         if not words:
             continue
-        out.append((words, piped))
+        out.append((words, piped, redirects))
         head = base(words[0])
         if depth < 3 and head in SHELLS | {"eval"}:
             if head == "eval":
@@ -232,6 +358,44 @@ def shell_units(command, depth=0):
                 if re.fullmatch(r"-[A-Za-z]*c", word):
                     out += shell_units(words[index + 1], depth + 1)
     return out
+
+
+def operands(words):
+    """The paths one simple command writes, removes or replaces, as far as its own words say."""
+    head, rest = base(words[0]), words[1:]
+    plain = [w for w in rest if not w.startswith("-")]
+    named = [rest[i + 1] for i, w in enumerate(rest[:-1]) if w in ("-o", "--output")]
+    named += [w.split("=", 1)[1] for w in rest if w.startswith("--output=")]
+    if head == "git":
+        sub, args, _ = git_subcommand(words)
+        return [a for a in args if not a.startswith("-")] if sub in ("rm", "mv") else []
+    if head == "xargs":
+        return operands(plain) if plain and base(plain[0]) != "xargs" else []
+    if head == "find":
+        if "-delete" in rest:
+            return plain
+        for flag in ("-exec", "-execdir", "-ok"):
+            if flag in rest:
+                inner = rest[rest.index(flag) + 1:]
+                return (plain + operands(inner)) if inner and operands(inner + ["x"]) else []
+        return []
+    if head == "dd":
+        return [w[3:] for w in rest if w.lower().startswith("of=")]
+    if head in ("sed", "perl"):
+        return plain if any(IN_PLACE.match(w) for w in rest) else named
+    if head in COPIES:
+        to = [rest[i + 1] for i, w in enumerate(rest[:-1]) if w.lower() in ("-destination", "-t", "--target-directory")]
+        return to or plain[-1:]
+    if head in MUTATORS:
+        return plain
+    return named
+
+
+def write_targets(command):
+    targets = []
+    for words, _, redirects in shell_units(command):
+        targets += redirects + operands(words)
+    return targets
 
 
 def git_subcommand(words):
@@ -254,15 +418,16 @@ def git_subcommand(words):
 def decide_units(root, command):
     """Why the shell command is an act an agent does not perform, or None. Reading is never one."""
     chain_reads_apply = False
-    hook = None
-    for words, piped in shell_units(command):
+    hook = policy = None
+    for words, piped, _ in shell_units(command):
         head, rest = base(words[0]), words[1:]
         if not piped:
             chain_reads_apply = False
         # --- promotion scripts, in any spelling
         if APPLY_SCRIPT.search(normalize(words[0])):
             return PROMOTION
-        if head in SHELLS and (any(APPLY_SCRIPT.search(normalize(w)) for w in rest) or (piped and chain_reads_apply)):
+        syntax_only = head in SHELLS and "-n" in rest and "-c" not in rest      # `bash -n script` reads, never runs
+        if head in SHELLS and not syntax_only and (any(APPLY_SCRIPT.search(normalize(w)) for w in rest) or (piped and chain_reads_apply)):
             return PROMOTION
         chain_reads_apply = chain_reads_apply or any(APPLY_SCRIPT.search(normalize(w)) for w in words)
         # --- patches staged under proposals/
@@ -271,6 +436,20 @@ def decide_units(root, command):
             sub, args, settings = git_subcommand(words)
             if sub in ("apply", "am") and staged and not READ_ONLY_APPLY & set(args):
                 return PATCH
+            # --- what the human's workflow file forbids
+            if sub in ("commit", "push", "tag", "branch", "switch", "checkout"):
+                if policy is None:
+                    policy = workflow_policy(root)
+                plain = [a for a in args if not a.startswith("-")]
+                listing = BRANCH_LISTING & set(args)
+                makes_tag = sub == "tag" and not listing and bool(plain or {"-d", "--delete"} & set(args))
+                makes_branch = ((sub == "branch" and bool(plain) and not listing)
+                                or (sub == "switch" and bool({"-c", "-C", "--create", "--force-create"} & set(args)))
+                                or (sub == "checkout" and bool({"-b", "-B", "--orphan"} & set(args))))
+                if policy[0] == "never" and (sub in ("commit", "push") or makes_tag):
+                    return NO_COMMITS
+                if policy[1] == "never" and (makes_tag or makes_branch):
+                    return NO_BRANCHES
             # --- bypassing the Git hook, only where it is installed
             if hook is None:
                 hook = git_hook_installed(root)
@@ -289,8 +468,20 @@ def decide_units(root, command):
         # --- acts that are the human's
         if base(words[0]) == "gtt-freeze.sh" or (head in SHELLS and any(base(w) == "gtt-freeze.sh" for w in rest)):
             return HUMAN_ACT
+        if not syntax_only and (base(words[0]) == "gtt-promote.sh" or (head in SHELLS and any(base(w) == "gtt-promote.sh" for w in rest))):
+            return PROMOTION
+        if not syntax_only and (base(words[0]) == "gtt-approve.sh" or (head in SHELLS and any(base(w) == "gtt-approve.sh" for w in rest))):
+            return APPROVAL
         for index, word in enumerate(words):
             follow = words[index + 1:]
+            if base(word) == "gtt_flow.py" and follow and follow[0] == "promote":
+                return PROMOTION
+            if base(word) == "gtt_design.py" and follow and follow[0] == "approve":
+                return APPROVAL
+            registers = (base(word) == "gtt-source.sh" and follow[:1] and follow[0] in ("add", "adopt")) or \
+                        (base(word) == "gtt_design.py" and follow[:2] in (["source", "add"], ["source", "adopt"]))
+            if registers and "--apply" in follow and frozen(root):
+                return SOURCE_FROZEN
             if base(word) in ("gtt-observe.sh", "gtt_observe.py") and follow and follow[0] in OBSERVE_DECISIONS:
                 return HUMAN_ACT
             if base(word) == "gtt-git-hook.sh" and follow and follow[0] in ("install", "remove") and "--apply" in follow:
@@ -299,17 +490,15 @@ def decide_units(root, command):
 
 
 def core_shell(root, command):
-    """Why a shell command is denied, or None."""
+    """Why a shell command is denied, or None. Reading is never a reason: only what the command
+    writes is looked at, so naming a governed file next to a mutation of something else is allowed."""
     reason = decide_units(root, command)
     if reason:
         return reason
-    text = normalize(command)
-    if not MUTATING_SHELL.search(text):
-        return None                                         # reads stay allowed
-    if MACHINERY.search(text):
-        return GOVERNED
-    for token in TOKEN_SPLIT.split(text):
-        reason = protected_token(root, token, shell=True) if token else None
+    for target in write_targets(command):
+        if MACHINERY.search(normalize(target)):
+            return GOVERNED
+        reason = protected_token(root, target, shell=True)
         if reason:
             return reason
     return None
@@ -435,12 +624,6 @@ def decide_shell(root, command):
     return None
 
 
-def session_context(root):
-    proc = subprocess.run(["bash", os.path.join(".gtt", "scripts", "gtt-session-context.sh")], cwd=root,
-                          capture_output=True, text=True, encoding="utf-8", errors="replace")
-    return proc.stdout if proc.returncode == 0 and proc.stdout.strip() else None
-
-
 PATH_KEYS = ("file_path", "path", "target_file", "filePath", "notebook_path")
 
 
@@ -452,15 +635,13 @@ def first_path(tool_input):
 
 
 def cursor(event):
-    """Cursor: .cursor/hooks.json -> preToolUse / beforeShellExecution / sessionStart."""
+    """Cursor: .cursor/hooks.json -> preToolUse / beforeShellExecution. Session start is not decided here:
+    it is the session adapter's (.gtt/scripts/gtt_session_hook.py), under the Session Memory contract."""
     roots = event.get("workspace_roots") or []
     root = normalize(os.path.abspath(roots[0] if roots else event.get("cwd") or os.getcwd())).rstrip("/")
     name = event.get("hook_event_name", "")
     tool_input = event.get("tool_input") or {}
     reason = None
-    if name == "sessionStart":
-        text = session_context(root)
-        return (0, {"additional_context": text}) if text else (0, None)
     if name == "beforeShellExecution":
         reason = decide_shell(root, event.get("command", ""))
     elif name == "preToolUse":
@@ -476,14 +657,11 @@ def cursor(event):
 
 
 def openhands(event):
-    """OpenHands: .openhands/hooks.json -> pre_tool_use / session_start."""
+    """OpenHands: .openhands/hooks.json -> pre_tool_use. Session start is the session adapter's."""
     root = normalize(os.path.abspath(os.environ.get("OPENHANDS_PROJECT_DIR") or event.get("working_dir") or os.getcwd())).rstrip("/")
     name = event.get("event_type") or os.environ.get("OPENHANDS_EVENT_TYPE", "")
     tool_input = event.get("tool_input") or {}
     reason = None
-    if name == "SessionStart":
-        text = session_context(root)
-        return (0, {"additionalContext": text}) if text else (0, None)
     if name == "PreToolUse":
         path = first_path(tool_input)
         command = tool_input.get("command", "")
@@ -530,16 +708,111 @@ def antigravity(event):
     return 0, None
 
 
-FORMATS = {"antigravity": antigravity, "cursor": cursor, "openhands": openhands}
+def project_root(*candidates):
+    """The project a hook was called for: the first candidate that is, or is inside, a directory with
+    a GTT engine. An ADE that starts its hooks somewhere below the root is still resolved to it."""
+    for candidate in candidates:
+        if not isinstance(candidate, str) or not candidate:
+            continue
+        here = os.path.abspath(candidate)
+        while True:
+            if os.path.isdir(os.path.join(here, ".gtt", "scripts")):
+                return normalize(here).rstrip("/")
+            parent = os.path.dirname(here)
+            if parent == here:
+                break
+            here = parent
+    return normalize(os.path.abspath(os.getcwd())).rstrip("/")
+
+
+def first_of(event, *keys):
+    for key in keys:
+        if event.get(key) not in (None, ""):
+            return event[key]
+    return None
+
+
+KIRO_WRITES = re.compile(r"write|edit|create|replace|delete|remove|append|patch", re.IGNORECASE)
+
+
+def kiro(event):
+    """Kiro: .kiro/hooks/gtt-protect.json (hook schema v1) -> PreToolUse.
+
+    Documented (https://kiro.dev/docs/ide/whats-new-v1/hooks/ and https://kiro.dev/docs/hooks/actions/,
+    read 2026-10-07): a command action runs in the project root with the session context as JSON on
+    stdin; exit 2 blocks the tool call and stderr goes to the agent; on exit 0 stdout is added to the
+    agent's context, so an allow prints nothing. A file tool carries `path`, a shell tool `command`.
+    NOT documented there: the field names of the JSON around them, and the tool names. So this reads
+    the names the other ADEs use, takes a tool for a file write only when its name says so, and lets
+    through whatever it does not recognise - a read of a governed file is never denied by a guess."""
+    root = project_root(os.getcwd(), event.get("cwd"))
+    tool = first_of(event, "tool_name", "toolName", "tool")
+    tool_input = first_of(event, "tool_input", "toolInput", "input", "arguments", "args")
+    if not isinstance(tool_input, dict):
+        return 0, None
+    path, command = first_path(tool_input), tool_input.get("command")
+    reason = None
+    if path:
+        if isinstance(tool, str) and KIRO_WRITES.search(tool):
+            reason = decide_file(root, path, tool_input.get("old_str") or tool_input.get("old_string"))
+    elif isinstance(command, str) and command:
+        reason = decide_shell(root, command)
+    return (2, reason) if reason else (0, None)             # a string goes to stderr: Kiro hands it to the agent
+
+
+COPILOT_SHELLS = ("bash", "powershell")
+COPILOT_WRITES = ("create", "edit")
+
+
+def copilot(event):
+    """GitHub Copilot: .github/hooks/gtt-protect.json -> preToolUse (cloud agent and CLI).
+
+    Documented (https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference,
+    read 2026-10-07): stdin carries sessionId, timestamp, cwd, toolName and toolArgs; the tools are
+    bash, powershell, create, edit and view; a denial is {"permissionDecision": "deny",
+    "permissionDecisionReason": ...} on stdout. preToolUse fails CLOSED: a crash, or an exit other than
+    0, denies the call. So this format never exits non-zero - a denial is that JSON with exit 0, and
+    only a decision of the core is ever a denial. NOT documented there: the fields inside toolArgs.
+    This reads `command` and the path names the other ADEs use; a tool that carries neither
+    (apply_patch) is not seen here and stays with the CI gate."""
+    root = project_root(event.get("cwd"), os.getcwd())
+    tool, tool_args = event.get("toolName"), event.get("toolArgs")
+    if isinstance(tool_args, str):
+        try:
+            tool_args = json.loads(tool_args)
+        except ValueError:
+            return 0, None
+    if not isinstance(tool, str) or not isinstance(tool_args, dict):
+        return 0, None
+    reason = None
+    if tool in COPILOT_SHELLS:
+        command = tool_args.get("command")
+        reason = decide_shell(root, command) if isinstance(command, str) and command else None
+    elif tool in COPILOT_WRITES:
+        path = first_path(tool_args)
+        reason = decide_file(root, path, tool_args.get("old_str") or tool_args.get("old_string")) if path else None
+    if reason:
+        return 0, {"permissionDecision": "deny", "permissionDecisionReason": reason}
+    return 0, None
+
+
+FORMATS = {"antigravity": antigravity, "copilot": copilot, "cursor": cursor, "kiro": kiro, "openhands": openhands}
 
 
 def cmd_hook(args):
     try:
         event = json.load(sys.stdin)
         code, payload = FORMATS[args.format](event if isinstance(event, dict) else {})
-    except Exception:
+    except ValueError:
+        return 0                                            # not an event this script can read
+    except Exception as error:
+        # A broken hook never blocks a session - and never says nothing about it either.
+        print(f"GTT WARNING: the {args.format} hook could not evaluate this call ({type(error).__name__}: {error}). "
+              "It was NOT checked; the CI gate is the layer that holds.", file=sys.stderr)
         return 0
-    if payload is not None:
+    if isinstance(payload, str):
+        print(payload, file=sys.stderr)
+    elif payload is not None:
         print(json.dumps(payload))
     return code
 

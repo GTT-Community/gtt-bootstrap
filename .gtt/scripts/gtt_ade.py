@@ -38,6 +38,7 @@ import json
 import os
 import posixpath
 import shutil
+import subprocess
 import sys
 
 import gtt_manifest as gm
@@ -305,6 +306,8 @@ def cmd_list(args):
         text.append(f"  {row['id']:8} {row['name']:16} entry: {row['entry']:38} owned: {owned}")
         text.append(f"           enforcement: {row['enforcement']}; session adapter: "
                     f"{row['session_adapter']['status'] or 'not declared'}")
+        if row.get("human_setup"):
+            text.append(f"           yours to install, outside the repository: {row['human_setup']}")
     emit(args, {"schema": SCHEMA, "layout": gm.layout_version(manifest), "ades": rows}, "\n".join(text))
     return 0
 
@@ -402,6 +405,34 @@ def finish(args, txn, state, reg, done_message, check=True):
     return 0
 
 
+SESSION_FILE = "gtt-domain/session.md"
+
+
+def keep_session_out_of_git():
+    """The session file is derived state: in a project it is not versioned. Where it is untracked, it is
+    listed in .git/info/exclude - a local file, nothing to commit. Where it is already tracked only the
+    human can untrack it, so this says how and changes nothing."""
+    try:
+        inside = subprocess.run(["git", "rev-parse", "--git-dir"], capture_output=True, text=True)
+    except OSError:
+        return
+    if inside.returncode != 0:
+        return
+    if subprocess.run(["git", "ls-files", "--error-unmatch", SESSION_FILE], capture_output=True).returncode == 0:
+        print(f"gtt-ade: {SESSION_FILE} is tracked, and it is derived state. To stop versioning it: git rm --cached {SESSION_FILE}")
+        return
+    exclude = os.path.join(inside.stdout.strip(), "info", "exclude")
+    try:
+        current = open(exclude, encoding="utf-8").read() if os.path.isfile(exclude) else ""
+        if SESSION_FILE not in current.split():
+            os.makedirs(os.path.dirname(exclude), exist_ok=True)
+            with open(exclude, "a", encoding="utf-8") as handle:
+                handle.write(("" if current.endswith("\n") or not current else "\n") + SESSION_FILE + "\n")
+            print(f"gtt-ade: {SESSION_FILE} added to .git/info/exclude - derived state is not versioned.")
+    except OSError:
+        pass
+
+
 def cmd_install(args):
     cat = args.frm or "."
     manifest, reg = registry(cat)
@@ -458,8 +489,15 @@ def cmd_install(args):
             txn.copy(os.path.join(cat, rel), rel)
             installed[ade]["files"][rel] = sha(rel)
         excluded = ((set(state.get("excluded", [])) if state else set()) | (set(reg) - set(part))) - set(part)
-        return finish(args, txn, new_state(primary, part, excluded, installed), reg,
+        done = finish(args, txn, new_state(primary, part, excluded, installed), reg,
                       f"gtt-ade: installed {len(plan)} file(s); state written to {STATE}.")
+        for ade in new:
+            if reg[ade].get("human_setup"):
+                print(f"gtt-ade: {reg[ade]['name']} keeps part of its configuration outside the repository, where GTT cannot "
+                      f"install it. It is yours to install: read {reg[ade]['human_setup']}")
+        if done == 0:
+            keep_session_out_of_git()
+        return done
     except OSError as exc:
         txn.rollback()
         die(f"install failed and was rolled back: {exc}", 1)
@@ -504,7 +542,10 @@ def cmd_adopt(args):
         print("(dry run - nothing written; re-run with --apply)")
         return 0
     txn = Txn()
-    return finish(args, txn, state, reg, f"gtt-ade: state written to {STATE}.")
+    done = finish(args, txn, state, reg, f"gtt-ade: state written to {STATE}.")
+    if done == 0:
+        keep_session_out_of_git()
+    return done
 
 
 def cmd_set_primary(args):

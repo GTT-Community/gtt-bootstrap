@@ -79,9 +79,8 @@ using the same shape it defines:
   delta promoted into the same template shape
 - `gtt-domain/proposals/context-<basename>.md` for every affected file (`stack.md`
   at minimum, changelog row included)
-- `gtt-domain/proposals/apply-ADR-NNN-<slug>.sh` — the executable promotion script,
-  with the required header, the `view`/`yes`/`no` review loop, one `mv`/`cp`
-  per staged file, and a final `bash .gtt/scripts/gtt-check-stack.sh`
+- the promotion set, staged with `bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --reason "..." <draft>=<destination> ...`
+  (never an application script written by hand); the human applies it with `bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>`
 
 Take the ADR number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - do not ask for it; the
 human sees it when reviewing the package. Then deliver the same brief hand-off message

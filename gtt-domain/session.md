@@ -7,7 +7,15 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-06T19:22:04Z
+# Generated: 2026-10-08T17:14:40Z
+
+## Review (computed from the repository - what to look at first; never a decision)
+@gtt · Review
+CHANGED  100 files (+33 new, −2) · +9596 −2478 · uncommitted: 96   ▲ HIGH: 100 files > 10
+IMPACT   governed: architecture.md, stack.md · protected: none
+VALID    14:14 · OK 22 PASS 1 SKIPPED
+NEXT     nothing pending
+more: gtt-review.sh --files · git diff --stat · gtt-status.sh
 
 ## Freeze state
 pre-freeze (gtt-domain/context/ and gtt-domain/adr/ are agent-writable)
@@ -28,15 +36,6 @@ Governance backlog: empty.
 
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
 apply-session-adapters.sh
-apply-two-planes.sh
-PROPOSAL-session-memory-consolidation.md
-PROPOSAL-backlog-antigravity-epic.md
-AGENTS-antigravity.patch
-PROPOSAL-antigravity-ade-support.md
-PROPOSAL-bootstrap-1.3.1-closure.md
-apply-bootstrap-1.3.1-closure.sh
-AGENTS-two-planes.patch
-apply-AGENTS-antigravity.sh
 
 ## Change request
 empty (still template placeholders)
@@ -60,19 +59,19 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.3.1 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
+gtt-bootstrap 1.5.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
-identity: 57 active artifact(s), 0 retired
+identity: 58 active artifact(s), 0 retired
 technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: release/bootstrap-1.3.1; uncommitted paths: 76
+branch: feat/story-precedence; uncommitted paths: 98
 recent commits:
+29c62a6 feat(bootstrap): close governance and observation architecture in 1.3.1
 66b7e15 feat: governed backlog, design assessment, THINK Depth, Cursor and OpenHands - Bootstrap 1.3.0
 0d187b4 chore: virgin product - drop citations of ADRs that are not shipped
 af1dc3f feat: developer friction minimization, plan-aware automation - Bootstrap 1.2.0
 de1d40e feat: Method Plans (Light / Medium / Hard / Team)
-113df25 update

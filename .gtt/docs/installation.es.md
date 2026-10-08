@@ -44,7 +44,7 @@ Identifica:
 - `gtt-domain/` existente (el dominio gobernado: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`)
 - `.claude/` existente
 - `.kiro/` existente
-- `.copilot/copilot-instructions.md` existente
+- `.github/instructions/gtt.instructions.md` existente
 - `.gitignore` existente
 - documentos de diseño/origen
 - archivos o directorios cuyos nombres sean requeridos por GTT
@@ -85,7 +85,7 @@ El workspace final debe contener:
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
-└── .claude/ | .kiro/ | .copilot/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
+└── .claude/ | .kiro/ | .github/instructions/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
 ```
 
 El Motor vive en `.gtt/` (su documentación, incluyendo este archivo, en
@@ -96,7 +96,7 @@ después. Ambos nombres de directorio son propios de GTT y no colisionan con los
 si el proyecto ya tiene un `.gtt/` o un `gtt-domain/`, detente e informa el conflicto en lugar de combinarlos.
 
 
-Instala el adaptador de cada ADE que realmente usas en el proyecto — `.claude/` para Claude Code, `.kiro/` para Kiro, `.copilot/copilot-instructions.md` para GitHub Copilot (Codex no necesita ningún archivo adicional) — y declara exactamente uno como ADE Primario (el entorno principal de tu flujo de trabajo; no tiene autoridad). No copies los demás "por las dudas"; el repositorio fuente distribuye todos los adaptadores como catálogo, no como paquete para instalar completo. La vía soportada es `gtt-ade.sh`, que copia los overlays, registra lo que instaló en `.gtt/ade.json` y valida el resultado; ejecútalo primero sin `--apply`:
+Instala el adaptador de cada ADE que realmente usas en el proyecto — `.claude/` para Claude Code, `.kiro/` para Kiro, `.github/instructions/gtt.instructions.md` para GitHub Copilot (Codex no necesita ningún archivo adicional) — y declara exactamente uno como ADE Primario (el entorno principal de tu flujo de trabajo; no tiene autoridad). No copies los demás "por las dudas"; el repositorio fuente distribuye todos los adaptadores como catálogo, no como paquete para instalar completo. La vía soportada es `gtt-ade.sh`, que copia los overlays, registra lo que instaló en `.gtt/ade.json` y valida el resultado; ejecútalo primero sin `--apply`:
 
 ```bash
 bash .gtt/scripts/gtt-ade.sh detect                       # solo candidatos - detectar no es participar
@@ -200,6 +200,21 @@ Conecta:
 ```
 
 al CI contra la rama por defecto. Esto asegura que los cambios arquitectónicos gobernados y el mapa permanezcan sincronizados, y que `.gtt/protection/registry.yaml` (GTTGuard) siempre coincida con los marcadores `@GTTGuard` realmente presentes en el código.
+
+En GitHub el Bootstrap trae el workflow: `bash .gtt/scripts/gtt-template.sh materialize ci-github-actions --apply`
+copia `.gtt/scaffold/ci/github-actions-gtt.yml` a `.github/workflows/gtt.yml` (nunca sobrescribe uno que ya
+existe). Instalarlo es un acto tuyo, no de un agente. Ejecuta `gtt-validate.sh` y `gtt-check-stack.sh --ci`.
+
+Tres cosas hacen que el gate sea real, en cualquier sistema de CI:
+
+- **Historial completo.** Haz el checkout con la rama base disponible (`fetch-depth: 0` en GitHub Actions). Sin
+  la ref base, un marcador de freeze borrado no se distingue de un proyecto que nunca se congeló; en CI
+  `gtt-check-stack.sh` sale entonces con 2 ("cannot determine") en lugar de pasar.
+- **La ref base.** El script la toma de su argumento, luego de la rama destino del pull request
+  (`GITHUB_BASE_REF`, `CI_MERGE_REQUEST_TARGET_BRANCH_NAME`, `SYSTEM_PULLREQUEST_TARGETBRANCH`), luego de la rama
+  por defecto del remoto y por último de `origin/main`.
+- **Un required status check.** Marca el job como requerido en la protección de rama (o en un ruleset) de la
+  rama por defecto. Hasta entonces un FAIL no bloquea ningún merge: es solo una marca roja.
 
 ---
 
@@ -314,9 +329,9 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
-└── .claude/ | .kiro/ | .copilot/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
+└── .claude/ | .kiro/ | .github/instructions/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
 ```
 
-El adaptador de cada ADE participante — `.claude/` (Claude Code), `.kiro/` (Kiro), o `.copilot/copilot-instructions.md` (GitHub Copilot) — permanece en la raíz del proyecto anfitrión. Solo se instalan los adaptadores de los ADE participantes; la elección queda en `.gtt/ade.json`, escrito solo por `gtt-ade.sh`.
+El adaptador de cada ADE participante — `.claude/` (Claude Code), `.kiro/` (Kiro), o `.github/instructions/gtt.instructions.md` (GitHub Copilot) — permanece en la raíz del proyecto anfitrión. Solo se instalan los adaptadores de los ADE participantes; la elección queda en `.gtt/ade.json`, escrito solo por `gtt-ade.sh`.
 
 El agente debe preservar los archivos existentes del proyecto, no sobrescribir conflictos silenciosamente y no ejecutar automáticamente el freeze. La revisión y confirmación humana deben ocurrir antes del freeze.

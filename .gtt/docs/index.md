@@ -92,7 +92,7 @@ overrides governed context.
 
 | File | Contains | Loads |
 |---|---|---|
-| `gtt-domain/proposals/` | Agent drafts, and approved changes' promotion packages (ADR draft + affected context files + `apply-*.sh`), awaiting your review. Delete when resolved | never |
+| `gtt-domain/proposals/` | Agent drafts, and approved changes' promotion packages (ADR draft + affected context files, staged as a promotion set under `staged/`), awaiting your review. Delete when resolved | never |
 
 ## Protection registry — derived, self-correcting
 
@@ -151,7 +151,7 @@ source repository is the catalog, not an installed project.
 | `.agents/rules/gtt.md`, `.agents/rules/gtt-implementation.md` *(Antigravity adapter)* | Antigravity workspace rules: the first always on (read `AGENTS.md` in full, run the session service, governed paths, the `@gtt` marker, where the procedures are), the second attached to implementation files. GTT owns only these two files and `.agents/hooks.json`, never the host's `.agents/`, which is shared with other ADEs | Antigravity |
 | `.cursor/rules/gtt.mdc`, `.cursor/rules/gtt-implementation.mdc` *(Cursor adapter)* | Cursor project rules: the first always applied (governed paths, the `@gtt` marker, where the procedures are), the second attached to implementation files. GTT owns only these two files, never the host's `.cursor/` | Cursor |
 | `.agents/skills/gtt/SKILL.md` *(OpenHands adapter)* | OpenHands repository skill: which section of `AGENTS.md` governs which situation, and the rule that a governed decision is never taken in an unattended run. `AGENTS.md` itself is OpenHands' always-on entry point | OpenHands |
-| `.copilot/copilot-instructions.md` *(Copilot adapter)* | Points Copilot at `AGENTS.md` and the governed directories (`gtt-domain/context/`, `gtt-domain/adr/`) as the canonical source; no duplicated methodology. Not auto-loaded by Copilot at this path — see the note in `readme-gtt.md` → *ADE adapters* | never (manual reference only, unless also mirrored to `.github/copilot-instructions.md`) |
+| `.github/instructions/gtt.instructions.md` *(Copilot adapter)* | Points Copilot at `AGENTS.md` and the governed directories (`gtt-domain/context/`, `gtt-domain/adr/`) as the canonical source; no duplicated methodology. `applyTo: "**"`, at a path Copilot reads | Copilot, on every request |
 
 ## Procedures — load only when invoked
 
@@ -159,7 +159,7 @@ source repository is the catalog, not an installed project.
 |---|---|
 | `.claude/skills/gtt-bootstrap/SKILL.md` | first time populating `gtt-domain/context/`, pre-freeze, right after cloning the kit |
 | `.claude/skills/gtt-propose-change/SKILL.md` | processing a change request — architecture, context, conflict, a development-line (Epic/Story) change (form 4), or a change to a GTTGuard-protected artifact (form 5) |
-| `.claude/skills/gtt-adr/SKILL.md` | a change was approved and needs recording — drafts the ADR, the affected context files, and the `apply-ADR-NNN-<slug>.sh` promotion script together (architecture/context changes only — a backlog-only or GTTGuard-only change does not get an ADR) |
+| `.claude/skills/gtt-adr/SKILL.md` | a change was approved and needs recording — drafts the ADR, the affected context files, and the promotion set (`gtt-stage.sh`) together (architecture/context changes only — a backlog-only or GTTGuard-only change does not get an ADR) |
 | `.claude/skills/gtt-audit/SKILL.md` | checking whether context still matches the code, or whether `gtt-domain/backlog.md` is reconciled with defined Epics/Stories — also the scheduled sweep counterpart to the drift detector below |
 | `.claude/skills/gtt-drift-response/SKILL.md` | a `GTT DRIFT SIGNAL` fired, `gtt-audit` found a divergence, or you're asking whether an L3 change contradicts ratified architecture — stages the same promotion-script package as `gtt-adr` |
 | `.claude/skills/gtt-retrieve/SKILL.md` | locating a concept/section or an artifact's relationships, or reconciling a move — through the technical index instead of scanning Markdown |
@@ -179,9 +179,14 @@ source repository is the catalog, not an installed project.
 | `.claude/hooks/protect-guard.py` | `PreToolUse`. Blocks an autonomous edit to a `HUMAN_APPROVAL` entry in `.gtt/protection/registry.yaml` in real time — file-scope blocks the whole file, symbol-scope resolves the exact span live from disk and fails safe to whole-file if resolution is ambiguous. Exit 2 |
 | `.claude/hooks/detect-drift.py` | `PostToolUse`, governed regime only. Runs the observation engine after a write and hands whatever is new to the agent as context. Holds no logic of its own; never blocks |
 | `.claude/hooks/notify-change-request.py` | `UserPromptSubmit`. Advisory only: notices a filled-in, unprocessed `gtt-domain/change-request.md` and surfaces it in context — never analyzes or drafts. Deduplicated per session/content |
-| `.kiro/permissions.yaml` | Kiro's declarative equivalent of the machinery-path deny (1.0+) |
-| `.kiro/hooks/detect-drift.json` | Kiro's post-write trigger for the same engine (`gtt-observe.sh observe`) |
-| `.gtt/scripts/gtt-check-stack.sh` | CI gate: an ADR without a map update fails the build; also checks referential integrity of ADR citations and notes when no `gtt-boundaries` block is declared. Also fails when the base ref was frozen and the freeze marker was removed or no longer carries the baseline the base recorded - there is no unfreeze |
+| `.gtt/scaffold/ade/kiro-permissions.yaml` | Template of Kiro workspace permission rules, in Kiro's format. Kiro reads none from a repository: the human installs it per machine (`gtt-ade.sh` points at it) |
+| `.kiro/hooks/gtt-protect.json` | Kiro's pre-tool hook (v1 schema): runs `gtt_protect.py hook --format kiro`. Shipped, unverified in the ADE |
+| `.github/hooks/gtt-protect.json` | Copilot's `preToolUse` hook (cloud agent and CLI): runs `gtt_protect.py hook --format copilot`; never exits non-zero, because Copilot's hook fails closed. Shipped, unverified in the ADE |
+| `.kiro/hooks/detect-drift.json` | Kiro's `PostToolUse` hook (v1 schema) for the same engine (`gtt-observe.sh observe`) |
+| `.gtt/scripts/gtt-check-agents.sh` | Agent contract gate: fails when `AGENTS.md` is larger than 24 KiB, when *Non-negotiable rules* starts after its first 8 KiB, when a governance section (Governed regime, Change requests, Human Promotion Boundary, Protected context, Conflict policy, Non-negotiable rules) is missing, or when a section points at a detail file that is not there - an ADE that reads only the beginning (Codex: 32 KiB) must still see every rule |
+| `.gtt/docs/agents/bootstrap.md`, `ades.md`, `operations.md` | The detail of the agent contract, moved out of `AGENTS.md` verbatim so that file stays small: bootstrapping, ADE participation, and working inside a governed project. `AGENTS.md` points at each section; they bind as it does | the agent, when a task needs one |
+| `.gtt/scripts/gtt-check-stack.sh` | CI gate: an ADR without a map update fails the build; also checks referential integrity of ADR citations and notes when no `gtt-boundaries` block is declared. Also fails when the base ref was frozen and the freeze marker was removed or no longer carries the baseline the base recorded - there is no unfreeze. Resolves the base ref from its argument, the pull request's target branch, the remote's default branch, then `origin/main`; with no base ref it exits 2 in CI (`CI=true` or `--ci`) and says the check did not run elsewhere |
+| `.gtt/scaffold/ci/github-actions-gtt.yml` | CI workflow template for GitHub Actions (full-history checkout, `gtt-validate.sh`, `gtt-check-stack.sh --ci`). Owned by the Bootstrap; the human installs it with `gtt-template.sh materialize ci-github-actions --apply` and makes the job a required status check |
 | `.gtt/scripts/gtt-check-adapter.sh` | Deterministic validation of the ADE integrations: with no argument, every participating ADE against `.gtt/ade.json` (FAIL if a participating integration is missing or inconsistent, WARN for a detected ADE that does not participate); given a target ADE, the single-ADE matrix of projects that predate `.gtt/ade.json` |
 | `.gtt/scripts/gtt-ade.sh` / `.gtt/scripts/gtt_ade.py` / `.gtt/scripts/gtt_manifest.py` | The ADE integration service (Multi-ADE): registry (`list`), candidates (`detect`), `state`, `validate`, GTT-installed surfaces (`owned`), and the mutating `install` / `adopt` / `set-primary` / `record` / `remove` / `update` (dry run until `--apply`). ADE-independent; the Primary ADE holds no authority |
 | `.gtt/scripts/gtt-template.sh` / `.gtt/scripts/gtt_template.py` | The Bootstrap's template service: `list`, `show`, `materialize` (dry run until `--apply`, never overwrites) — how a CLI requests the Initial Design Questionnaire instead of carrying a copy |
@@ -203,6 +208,22 @@ source repository is the catalog, not an installed project.
 | `.gtt/scaffold/templates/gtt-sources-manifest.md`, `gtt-working-agreements.md` | Bootstrap-owned templates for the two files above, requested through `gtt-template.sh` |
 | `.gtt/scripts/gtt-contract.sh` / `.gtt/scripts/gtt_contract.py` | The CLI-facing Bootstrap 1.0 contract entry point: `release`, `negotiate` (COMPATIBLE or REFUSE, never modifies), `capabilities`, `operations`, `show`, `run <operation>` (declared operations only, typed arguments, no shell), `check`. See `.gtt/docs/bootstrap-contract.md` |
 | `.gtt/scripts/gtt-project.sh` / `.gtt/scripts/gtt_project.py` | Structured project contracts: `detect`, `think` (the THINK Depth recorded in the Design Assessment working copy; fails on a depth nobody decided or a verdict above `POOR` with the floor unmet — run by `gtt-validate.sh` while the copy exists), `status`, `session`, `validation`, `next-id` (next free ADR/Epic/Story id, never reusing a retired one), `interaction` (what the selected plan does without asking and what it asks for), `profile get/set`, `source select/list`, `export-policy`, `clean-plan`, `recovery snapshot/restore` (dry run until `--apply`; derived from the project, never authority) |
+| `.gtt/scripts/gtt-source.sh` | Design sources (operations `source.*`): `add` copies a file to `docs/sources/<ID>/v<N>/`, hashes and registers it; `adopt` registers one where it is; `verify` fails if a source was edited; `list`; `impact <ID>` shows the citations a new version affects. Dry run without `--apply` |
+| `.gtt/scripts/gtt-design.sh` | The design of each Epic (operations `design.*`): `scaffold EPIC-NNN` creates the draft, `check` proves it complete, `coverage` lists what no Story builds yet |
+| `.gtt/scripts/gtt-check-design.sh` | Design gate, part of `gtt-validate.sh` and of the freeze: eight sections, every listed source section cited, every rule and flow in an example, nothing unbuilt when an Epic closes |
+| `.gtt/scripts/gtt-approve.sh` | Approves an Epic and its design together, after showing what is approved. Run by the human, never by an agent |
+| `.gtt/scripts/gtt_design.py` | The engine behind the four scripts above, and the citation check `gtt-check-provenance.sh` uses |
+| `.gtt/scaffold/templates/gtt-design-epic.md` | Template of an Epic's solution design (eight sections); materialized per Epic by `gtt-design.sh scaffold` | the Bootstrap |
+| `gtt-domain/context/design/EPIC-NNN.md` | The solution design of one Epic: its complete specification, governed, approved with the Epic | you approve it |
+| `docs/sources/<ID>/v<N>/` | A registered source: immutable evidence, with its hash | `gtt-source.sh` |
+| `.gtt/scripts/gtt-review.sh` | The review surface (operation `review`): what changed, what it touches, risks, what the human must decide, the last validation, the next step - at most 12 lines, read-only. `--files`, `--json`, `--gate` |
+| `.gtt/scripts/gtt-checkpoint.sh` | Refreshes `gtt-domain/session.md` when the work changed (operation `checkpoint`); never a commit; called by each ADE's end-of-turn hook |
+| `.gtt/scripts/gtt-workflow.sh` | Reads and checks `gtt-domain/workflow.md` (operation `workflow.get`); `detect` reports the conventions the project's documents mention and adopts none |
+| `.gtt/scripts/gtt-stage.sh` | Prepares a promotion set under `gtt-domain/proposals/staged/<name>/`; applies nothing |
+| `.gtt/scripts/gtt-promote.sh` | Applies a staged promotion set: shows the diff, asks for `apply`, all or nothing, prints its undo. Run by the human, never by an agent |
+| `.gtt/scripts/gtt_flow.py` | The engine behind the five scripts above and the static checks `gtt-validate.sh` runs on them |
+| `.gtt/scripts/gtt_session_hook.py` | Session Memory adapter for ADEs whose session-start hook answers in JSON (Cursor, OpenHands); only wraps what `gtt-session-context.sh` produces |
+| `gtt-domain/workflow.md` | The Git policy of the project: commits, convention, branches and tags, review thresholds. Human-owned; the ADE reads it and never edits it | you |
 | `.gtt/scripts/gtt-maintain.sh` | The deterministic work after any operation in one run: GTTGuard registry sync, index rebuild, `gtt-validate.sh`. Brief report by default, `--verbose` for the full output. Under Light it also reconciles unambiguous moves; under the other plans it stops with the command. Never touches governed context |
 | `.gtt/scripts/gtt-check-contract.sh` | Gate: the contracts are consistent, versioned and fail closed (no unfreeze operation, no shell in argv, implementations confined to `.gtt/scripts/`, invariants not relaxable) |
 | `.gtt/contract/*.json` | The Bootstrap 1.0 contracts as data: `release`, `capabilities`, `operations`, `profiles`, `export-policy`, `recovery`, `elicitation` |
@@ -229,7 +250,7 @@ source repository is the catalog, not an installed project.
 ## The one flow that matters
 
 ```
-gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  your review + `bash apply-*.sh`  ->  gtt-domain/adr/ + gtt-domain/context/stack.md
+gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  your review + `bash .gtt/scripts/gtt-promote.sh <name>`  ->  gtt-domain/adr/ + gtt-domain/context/stack.md
    you state intent      agent drafts        the Human Promotion Boundary       blocked for agents
    always writable       agent writable      your terminal, your decision
 ```

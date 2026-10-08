@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "ade": "openhands",
+  "display_name": "OpenHands",
+  "adapter_status": "installed",
+  "coverage": "N1",
+  "files": [
+    {
+      "role": "script",
+      "install_path": ".gtt/scripts/gtt_session_hook.py"
+    },
+    {
+      "role": "config",
+      "install_path": ".openhands/hooks.json"
+    }
+  ],
+  "registration": {
+    "file": ".openhands/hooks.json",
+    "event": "session_start",
+    "token": "gtt_session_hook.py"
+  },
+  "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_session_hook.py openhands",
+  "output": "json-additionalContext",
+  "events": {
+    "startup": "documented",
+    "resume": "unknown",
+    "clear": "unknown",
+    "compact": "unknown",
+    "fork": "unknown"
+  },
+  "verification": {
+    "static": "checked by gtt-check-session-adapter.sh",
+    "runtime": "not-verified",
+    "notes": "STATICALLY VALIDATED, NOT RUNTIME VERIFIED. Built from OpenHands's documented session-start hook; never run inside OpenHands."
+  },
+  "ade_binary": "openhands",
+  "limitations": [
+    "Whether OpenHands adds the returned field to the agent's context was not observed in a real session.",
+    "The same hook file also ends a turn with gtt-checkpoint.sh; that event is equally unverified.",
+    "Adapter files are governance machinery: a change goes through the Solution Designer."
+  ]
+}

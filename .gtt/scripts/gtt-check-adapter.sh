@@ -79,7 +79,7 @@ check() {
 
 check ".claude/"                        ".claude"                          "$EXPECT_CLAUDE"
 check ".kiro/"                           ".kiro"                           "$EXPECT_KIRO"
-check ".copilot/copilot-instructions.md"  ".copilot/copilot-instructions.md" "$EXPECT_COPILOT"
+check ".github/instructions/gtt.instructions.md" ".github/instructions/gtt.instructions.md" "$EXPECT_COPILOT"
 check "AGENTS.md"                        "AGENTS.md"                       "$EXPECT_AGENTS"
 
 if [ "$FAIL" -ne 0 ]; then

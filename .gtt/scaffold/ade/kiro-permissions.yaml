@@ -1,0 +1,32 @@
+# GTT - Kiro workspace permission rules (a template; Kiro does NOT read this file here).
+#
+# Kiro keeps workspace permissions per user, outside the repository:
+#
+#   ~/.kiro/workspace-roots/<hash>/permissions.yaml
+#
+# "A cloned repo cannot inject permission rules - trust is something you configure on
+# your own machine."  (https://kiro.dev/docs/permissions/, read 2026-10-07)
+#
+# So installing these rules is the human's act, on each machine: open the workspace
+# permissions in Kiro and add the rules below, or copy this file to the path above.
+# Until then they protect nothing. What GTT ships inside the repository for Kiro is
+# the pre-tool hook (.kiro/hooks/gtt-protect.json); the layer that always holds is CI.
+#
+# These are the paths that are never an agent's to write, in either regime. The
+# frozen-only paths (gtt-domain/context/, gtt-domain/adr/) and GTTGuard artifacts
+# depend on the state of the project, which a static rule cannot express: the hook
+# and the CI gate cover those.
+
+rules:
+  - capability: fs_write
+    match:
+      - "AGENTS.md"
+      - "gtt-domain/change-request.md"
+      - "SOURCE-BRIEF.*"
+      - "gtt-domain/.frozen"
+      - "gtt-domain/governance-backlog.json"
+      - ".kiro/settings/**"
+      - ".kiro/steering/**"
+      - ".kiro/hooks/**"
+      - ".claude/**"
+    effect: deny

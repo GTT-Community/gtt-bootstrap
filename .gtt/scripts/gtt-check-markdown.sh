@@ -37,7 +37,7 @@ while IFS= read -r f; do
 done < <(find .gtt gtt-domain -name "*.md" ! -name session.md 2>/dev/null | sort)
 while IFS= read -r f; do
   files+=("$f")
-done < <(find .claude .kiro .copilot -name "*.md" 2>/dev/null | sort)
+done < <({ find .claude .kiro -name "*.md" 2>/dev/null; find .github/instructions -name "gtt*.md" 2>/dev/null; } | sort)
 
 echo "GTT Markdown Check"
 echo

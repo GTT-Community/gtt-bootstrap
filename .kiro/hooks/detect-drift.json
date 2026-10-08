@@ -1,6 +1,15 @@
 {
-  "version": "1",
-  "event": "postToolUse",
-  "matcher": { "tools": ["write", "edit"] },
-  "command": "bash .gtt/scripts/gtt-observe.sh observe"
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "gtt-detect-drift",
+      "trigger": "PostToolUse",
+      "matcher": "[Ww]rite|[Ee]dit|[Cc]reate|[Rr]eplace|[Dd]elete|[Pp]atch",
+      "action": {
+        "type": "command",
+        "command": "bash .gtt/scripts/gtt-observe.sh observe --debounce 20",
+        "timeout": 60
+      }
+    }
+  ]
 }

@@ -133,6 +133,7 @@ def overlays(manifest):
             "scaffold": entry.get("scaffold"),
             "version": entry.get("version", 1),
             "role": str(entry.get("role", "")),
+            "human_setup": entry.get("human_setup"),
         }
     return out
 

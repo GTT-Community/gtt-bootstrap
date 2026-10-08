@@ -1,0 +1,51 @@
+# GTT - CI gate (GitHub Actions). Canonical reference:
+# https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+#
+# A template the GTT Bootstrap owns. Installing it is the human's act:
+#
+#   bash .gtt/scripts/gtt-template.sh materialize ci-github-actions --apply
+#
+# which copies it to .github/workflows/gtt.yml (never overwriting one that exists).
+#
+# A failing job blocks nothing by itself. Make the `gtt` job a REQUIRED STATUS CHECK
+# under branch protection (or a ruleset) on the default branch; until then a FAIL is
+# only a red mark next to a merge button that still works.
+#
+# CI is the layer that holds for every ADE, including the ones with no pre-write hook
+# and for a write no hook can see. It needs the full history: with a shallow checkout
+# the base ref is not there, and a removed freeze marker cannot be told from a project
+# that was never frozen - gtt-check-stack.sh then exits 2 instead of passing.
+
+name: GTT governance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gtt:
+    name: gtt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate
+        run: bash .gtt/scripts/gtt-validate.sh
+
+      # On a pull request the base is the target branch (GITHUB_BASE_REF, which the
+      # script reads). On a push it is the commit the branch pointed at before.
+      - name: Stack and freeze gate
+        env:
+          PUSH_BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
+        run: |
+          if [ -n "$PUSH_BEFORE" ]; then
+            bash .gtt/scripts/gtt-check-stack.sh --ci "$PUSH_BEFORE"
+          else
+            bash .gtt/scripts/gtt-check-stack.sh --ci
+          fi

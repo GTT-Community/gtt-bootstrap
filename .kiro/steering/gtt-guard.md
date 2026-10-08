@@ -16,11 +16,11 @@ marker, or is listed with `protection: HUMAN_APPROVAL` in
 proposal instead (`gtt-domain/change-request.md`-style flow, form 5 in the
 `gtt-propose-change` procedure described in `AGENTS.md`).
 
-**No real-time block exists on Kiro.** `.gtt/protection/registry.yaml` is
-dynamic content that `.kiro/permissions.yaml` cannot evaluate the way it
-does a fixed path, the same gap that already exists for the two-regime
-`gtt-domain/context/`/`gtt-domain/adr/` condition. `.gtt/scripts/gtt-check-protection.sh`
-in CI is the actual enforcement — treat this instruction as binding anyway.
+**The real-time block on Kiro is unverified.** `.kiro/hooks/gtt-protect.json`
+runs GTT's protection engine before a tool call, and that engine knows
+`.gtt/protection/registry.yaml`; nobody has proven it inside Kiro. Kiro reads
+no permission rules from the repository. `.gtt/scripts/gtt-check-protection.sh`
+in CI is the enforcement that holds — treat this instruction as binding anyway.
 
 Unrelated to `gtt-domain/context/`/`gtt-domain/adr/`: GTTGuard protects L3 code a
 developer opted into protecting, not governed architecture. Once the

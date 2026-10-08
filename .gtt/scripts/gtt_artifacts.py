@@ -125,11 +125,14 @@ def tracked_files():
     # Scope, not semantics: these directories hold kit files (instructions,
     # skills, rules) that must be indexed like any other artifact. Nothing below
     # branches on which tool owns a directory.
-    for base in (".gtt", "gtt-domain", ".claude", ".kiro", ".copilot"):
+    # .github/ belongs to the host project: only GTT's own instruction files there (gtt*.md) are kit files.
+    for base in (".gtt", "gtt-domain", ".claude", ".kiro", ".github/instructions"):
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__"))
             for name in sorted(filenames):
                 if not name.lower().endswith(".md"):
+                    continue
+                if base == ".github/instructions" and not name.startswith("gtt"):
                     continue
                 if name == "session.md" and norm(dirpath) == "gtt-domain":
                     continue                # derived, never an artifact

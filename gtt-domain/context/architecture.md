@@ -37,4 +37,5 @@ Places where the implementation knowingly diverges from the ideal, and why.
 Recording these prevents an agent from "fixing" a deliberate trade-off.
 
 ---
-Governance: L0. Read-only for AI agents. Changes require an approved ADR.
+Governance: L0. Read-only for AI agents. Changes go through a change request and the human's promotion;
+architectural ones also need an ADR (AGENTS.md → Governed regime).

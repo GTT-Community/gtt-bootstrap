@@ -90,7 +90,7 @@ are written. Then check what only judgment can catch:
 | Work under an Epic that is still `Proposed` | `gtt-check-backlog.sh` reports it: the scope being built was never approved - a finding for the Solution Designer, not a reason to stop the work |
 | An Epic whose goal or scope no longer matches what is being built | Compare the Epic's `Goal` / `Scope` with the Stories closed under it and with the code; scope that grew without a decision is a finding |
 | Closure that the repository does not support | Open each `Done` Story's `Closed`: the commit or PR exists and the tests it names pass; a closure nobody can trace is a finding |
-| Story contradicting governed context or an ADR | Same severity as architectural drift — see *Precedence* in `AGENTS.md` |
+| Story contradicting governed context or an ADR | Report it; what it means and who acts is *Precedence* in `AGENTS.md` → *Backlog* |
 
 Report findings. An Epic is governed: do not add, remove or "fix" one
 yourself — a correction to an Epic's goal, scope or approval goes through

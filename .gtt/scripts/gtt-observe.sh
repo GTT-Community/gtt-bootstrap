@@ -13,6 +13,7 @@
 #
 # Usage (from the project root):
 #   .gtt/scripts/gtt-observe.sh observe            # silent unless something is new
+#   .gtt/scripts/gtt-observe.sh observe --debounce 20   # the same, at most once every 20 seconds (hooks)
 #   .gtt/scripts/gtt-observe.sh check [--strict]   # for CI, freeze and promotion
 #   .gtt/scripts/gtt-observe.sh backlog [--all]    # what is still open
 #   .gtt/scripts/gtt-observe.sh accept|reject|defer OBS-NNNN --by NAME [--apply]

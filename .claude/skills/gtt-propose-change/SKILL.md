@@ -156,10 +156,23 @@ If the request would contradict governed context or an accepted ADR, say so
 explicitly rather than quietly aligning the Epic to the architecture - that
 contradiction is exactly what the Solution Designer needs to see and decide.
 
-Once approved, write the Epic into `gtt-domain/backlog.md` with
-`**Approved:** <who> — <date>`, using the name and date the Solution Designer
-gave - never on your own initiative. Until then it stays `Proposed`. The Stories
-under it are yours to write and need nothing further.
+Write the Epic into `gtt-domain/backlog.md` as `Proposed`, with
+`**Design:** gtt-domain/context/design/EPIC-NNN.md`, and draft that design
+(`bash .gtt/scripts/gtt-design.sh scaffold EPIC-NNN --apply`): the complete specification of the
+Epic, carried over from the sources and cited. After the freeze the draft lands under
+`gtt-domain/proposals/` and reaches its place through a promotion set - a specification change, no ADR.
+The human approves the Epic and its design together with `bash .gtt/scripts/gtt-approve.sh EPIC-NNN`;
+you never write `Approved`. The Stories under it are yours and need no approval, in this format:
+
+```markdown
+##### STORY-NNN — <title>
+- **Status:** Planned
+- **Implements:** design/EPIC-NNN#R-2, #F-1, #E-1 · ADR-NNN
+- **Context:** <5 lines at most, distilled from the design; each line ends with its design anchor (#R-2)>
+- **Done when:** E-1 passes (Given … when … then …) · <test file>
+```
+
+A Story cites the design; it never cites a source directly and never decides.
 
 ## 5. Protected artifact change (GTTGuard)
 
@@ -187,7 +200,7 @@ Status: Requires Solution Designer approval
 ```
 
 **Promotion is lighter here than Forms 1-3.** There is no ADR and no
-`apply-*.sh` script — GTTGuard is deliberately not a second, unrelated
+promotion set — GTTGuard is deliberately not a second, unrelated
 approval model; it reuses this proposal mechanism, nothing heavier. Once
 the Solution Designer approves
 **in conversation**, implement the change directly, update or remove the

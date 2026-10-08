@@ -13,6 +13,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .gtt/scripts/gtt-checkpoint.sh --quiet",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }

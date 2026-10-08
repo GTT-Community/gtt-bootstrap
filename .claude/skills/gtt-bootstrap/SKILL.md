@@ -40,7 +40,7 @@ What each ADE's adapter contains (a project with several participating ADEs
 has the union of their rows; the registry itself is the `overlays:` section of
 the manifest, read through `gtt-ade.sh list`):
 
-| Host ADE | Adapter | `.claude/` | `.kiro/` | `AGENTS.md` | `.copilot/copilot-instructions.md` |
+| Host ADE | Adapter | `.claude/` | `.kiro/` | `AGENTS.md` | `.github/instructions/gtt.instructions.md` |
 |---|---|---|---|---|---|
 | Claude Code | Claude | YES | NO | YES | NO |
 | Kiro | Kiro | NO | YES | YES | NO |
@@ -79,7 +79,7 @@ can read that natively).
 workflow and nothing else. It does not outrank, approve or arbitrate for another ADE, and
 no ADE — the Primary included — ratifies anything: every ADE prepares, the human decides.
 Do not describe or behave as if there were an ADE hierarchy. `AGENTS.md`, `.claude/`,
-`.kiro/`, `.copilot/`, `.codex/` and any ADE's memory or session history are integration
+`.kiro/`, `.github/instructions/`, `.codex/` and any ADE's memory or session history are integration
 surfaces, never governance authority. Several ADEs may run at once (three terminals in one
 editor), which is why every participating ADE gets its overlay.
 
@@ -289,6 +289,14 @@ not a conversation.
 The assessment decides nothing and governs nothing. It is removed by `gtt-freeze.sh` with
 the other bootstrap drafts.
 
+### Git workflow: report what the project says, adopt nothing
+
+Run `bash .gtt/scripts/gtt-workflow.sh detect` once, while you read the sources. If the project's
+documents mention a commit convention (Conventional Commits, commitlint, commitizen, a
+`.gitmessage`), it prints one `@gtt · Finding` line - give it to the human as it is. Never adopt
+it and never write `gtt-domain/workflow.md`: that file is the human's, and the finding already
+names the line they would add. Without it the defaults hold: you commit only when asked.
+
 ### The Initial Design Questionnaire (no sufficient design document)
 
 If the human has no design document, or the assessment above found it `POOR`, or they chose
@@ -405,6 +413,28 @@ paraphrased.
 
 The accepted-decisions folder is writable in this same window: if
 `ADR-001-context-governance.md` is not already there, write it too.
+
+### Register the sources and write the design of each Epic
+
+- **Sources.** Register each one with `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply` (it copies the
+  file to `docs/sources/<ID>/v1/` and records its hash) or `adopt <path> --id <ID> --apply` for one that stays
+  where it is. The completed questionnaire is a source too: add it as `IDQ`. Never edit a source afterwards.
+- **One design per Epic.** For every `Proposed` Epic in scope run
+  `bash .gtt/scripts/gtt-design.sh scaffold EPIC-NNN --apply`, then fill
+  `gtt-domain/context/design/EPIC-NNN.md`: list under *Source sections* every section of the sources that belongs
+  to the Epic and carry its content over **in full** - data, rules (`R-n`), flows (`F-n`, with their error path),
+  interfaces (`I-n`), examples (`E-n`) - a `[FUENTE: ID:§…]` on every line. Do not summarise and do not decide:
+  what the sources do not define is a `[VACÍO]`.
+- **Ask.** Turn the `[VACÍO]`s into questions under `@gtt · Design EPIC-NNN`: at most five a turn, grouped by
+  Epic, with options where the source suggests them. Each answer is written in section 8 as `D-n`, with who and
+  when, and closes its `[VACÍO]`.
+- **Check.** `bash .gtt/scripts/gtt-check-design.sh` must pass: eight sections, every listed source section
+  cited, every rule and flow in an example. This is the same in every Method Plan and at every THINK Depth.
+- **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1`, a `Context:` of
+  at most five lines each ending with its anchor, and `Done when:` naming an example of the design and its test
+  file. A Story cites the design; it never cites a source and never decides.
+- **Approval is the human's.** Give the command - `bash .gtt/scripts/gtt-approve.sh EPIC-NNN` - and never write
+  `Approved` yourself.
 
 Then stop, without touching the freeze marker. End with a note telling the
 Solution Designer to review and then run the freeze script to ratify. Freezing

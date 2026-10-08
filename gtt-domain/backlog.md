@@ -30,9 +30,7 @@ Stories (the working plan)
 Implementation work
 ```
 
-If a Story appears to contradict governed context or an accepted ADR, that
-is a finding, not a resolution. Raise it through `gtt-domain/change-request.md` —
-a Story never silently overrides architecture.
+A Story never silently overrides architecture. What to do when one contradicts it: `AGENTS.md` → *Backlog* (*Precedence*).
 
 ---
 
@@ -51,9 +49,14 @@ What keeps Stories honest is not a signature but observation
 (`.gtt/scripts/gtt-observe.sh`): if the work crosses a boundary of the
 frozen design, GTT reports it, whatever the Story said.
 
-A Story is worth writing when it helps the next session pick the work up:
-what it delivers, how one knows it is done, and — once done — what closed it.
-Nothing else is required.
+**Where the detail lives.** An Epic names its design
+(`**Design:** gtt-domain/context/design/EPIC-NNN.md`): the complete specification of the Epic - data,
+rules, flows, interfaces, examples - carried over from the sources and cited. A Story cites that design
+and never decides: `Implements:` points at the parts it builds (`design/EPIC-NNN#R-2, #F-1`), `Context:`
+distils at most five lines, each ending with its anchor, and `Done when:` names an example of the design
+(`E-1`) and the test that proves it. A Story never cites a source directly, and a design decision is never
+written here: what the design lacks is a `[VACÍO]` to ask about. `gtt-check-backlog.sh` checks that every
+reference resolves. An Epic and its design are approved together: `bash .gtt/scripts/gtt-approve.sh EPIC-NNN`.
 
 | Epic status | Meaning |
 |---|---|
@@ -94,6 +97,7 @@ under *General Development Work* or as a Story if it is worth resuming.
 **Goal:** <the outcome this Epic delivers, in one or two sentences>
 **Scope:** <what is included>
 **Out of Scope:** <what is deliberately excluded>
+**Design:** gtt-domain/context/design/EPIC-NNN.md
 **Approved:** <who> — <YYYY-MM-DD>
 
 #### Stories
@@ -101,10 +105,10 @@ under *General Development Work* or as a Story if it is worth resuming.
 ##### STORY-001 — <Story title (example)>
 
 - **Status:** Planned
-- **Description:** <what this Story delivers>
-- **Done when:** <how one knows it is finished — criteria, tests>
+- **Implements:** design/EPIC-NNN#R-2, #F-1, #E-1 · ADR-NNN
+- **Context:** <5 lines at most, distilled from the design; each line ends with its design anchor (#R-2)>
+- **Done when:** E-1 passes (Given … when … then …) · <test file>
 - **Closed:** <YYYY-MM-DD> — <commit or PR> — <tests passed>
-- **Notes:** <optional>
 
 ---
 

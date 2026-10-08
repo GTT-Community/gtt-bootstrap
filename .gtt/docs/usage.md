@@ -79,14 +79,14 @@ gtt-domain/proposals/
 (including the updated `gtt-domain/context/stack.md`), and an executable script:
 
 ```text
-gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
+gtt-domain/proposals/staged/ADR-NNN-<slug>/
 ```
 
 The agent never runs it. Review the package, then run it yourself from the
 project root:
 
 ```bash
-bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
+bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
 ```
 
 It asks for a final confirmation, applies every affected file together, and
@@ -370,7 +370,7 @@ Boundary apply to all of them.
 - Claude Code uses `.claude/`.
 - Kiro uses `.kiro/`.
 - Codex uses `AGENTS.md` and applicable configuration, no extra adapter file.
-- GitHub Copilot uses `.copilot/copilot-instructions.md` plus `AGENTS.md`.
+- GitHub Copilot uses `.github/instructions/gtt.instructions.md` plus `AGENTS.md`.
 
 Manage the set with `.gtt/scripts/gtt-ade.sh` (dry run until `--apply`): `state` shows the
 Primary and participating ADEs and the health of each integration, `validate` fails when a
@@ -456,9 +456,9 @@ When an agent deploys GTT into a host project, it MUST reorganize the installed 
 │   ├── session.md                #   derived operational state (never authority)
 │   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │
-└── .claude/ | .kiro/ | .copilot/ # ADE OVERLAYS - one per participating ADE; exactly one ADE is Primary
+└── .claude/ | .kiro/ | .github/instructions/ # ADE OVERLAYS - one per participating ADE; exactly one ADE is Primary
 ```
 
-Every participating ADE's adapter — `.claude/`, `.kiro/`, or `.copilot/copilot-instructions.md` — remains at the host-project root. Only the adapters of participating ADEs are installed.
+Every participating ADE's adapter — `.claude/`, `.kiro/`, or `.github/instructions/gtt.instructions.md` — remains at the host-project root. Only the adapters of participating ADEs are installed.
 
 The agent must preserve existing host-project files, must not silently overwrite conflicts, and must not run the freeze step automatically. Human review and confirmation precede freezing.

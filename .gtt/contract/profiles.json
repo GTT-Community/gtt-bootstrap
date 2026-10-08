@@ -90,7 +90,13 @@
       "default": "brief",
       "contains": ["what was done", "the result", "whether the developer must act, with the exact command", "the next step, when relevant"],
       "omits_unless_asked": ["long explanations", "internal reasoning", "operational history"],
-      "detail_on_demand": "Detail is always available and never withheld: the `--verbose` form of an operation, `status`, `query`, and the full output of any check."
+      "detail_on_demand": "Detail is always available and never withheld: the `--verbose` form of an operation, `status`, `query`, and the full output of any check.",
+      "max_lines": 12,
+      "shape": ["result", "review", "decide", "next"],
+      "max_questions": 1,
+      "language": "the user's",
+      "never": ["step narration", "repeating what the review shows", "tables unless asked", "unrequested Git suggestions", "more than one question"],
+      "line_limits": { "review": 12, "review_width": 110, "maintain": 6, "validate": 30, "checkpoint_quiet": 0, "completion_in_chat": 6 }
     }
   },
   "two_planes": {
@@ -103,7 +109,8 @@
     },
     "work": {
       "answers": "What is actually happening.",
-      "holds": ["implementation", "tests", "refactors", "commits", "Stories and the working plan"],
+      "holds": ["implementation", "tests", "refactors", "Stories and the working plan"],
+      "commits": "Git history belongs to the human: an ADE commits only as gtt-domain/workflow.md allows, and without it only when the user asks",
       "authority": "the ADE: autonomous by default; no approval is asked for ordinary work",
       "watched_by": "observation (operation `observe`): computed facts against the frozen governed state"
     },
@@ -141,7 +148,22 @@
     { "id": "open-is-not-authorization", "statement": "An OPEN gap is scoped, visible and authorises nothing; a BLOCKING gap refuses freeze.", "enforcement": "gate:gtt-check-provenance.sh#gaps", "relaxable": false },
     { "id": "freeze-semantics", "statement": "Freeze is a human ratification; there is no unfreeze shortcut. A frozen L0/L1 is changed only through the governed path.", "enforcement": "script:gtt-freeze.sh+hook+gate:gtt-check-stack.sh", "relaxable": false },
     { "id": "protected-artifacts", "statement": "GTTGuard-protected artifacts and the frozen governed context are never modified autonomously.", "enforcement": "hook+gate:gtt-check-protection.sh", "relaxable": false },
-    { "id": "selected-is-not-authority", "statement": "A selected source is not a governed authority; authority and precedence are declared, never inferred.", "enforcement": "gate:gtt-check-provenance.sh#sources", "relaxable": false }
+    { "id": "selected-is-not-authority", "statement": "A selected source is not a governed authority; authority and precedence are declared, never inferred.", "enforcement": "gate:gtt-check-provenance.sh#sources", "relaxable": false },
+    { "id": "GTT-AR-01", "statement": "GTT's view of a project is computed from the repository - Git, the filesystem and the governed artifacts - never from a conversation, an ADE's memory or what an agent says it did.", "enforcement": "test:review and status read only the repository", "relaxable": false },
+    { "id": "GTT-AR-02", "same_as": "session-state-is-derived", "enforcement": "script:gtt-status.sh+check:gtt-status.sh --check", "relaxable": false },
+    { "id": "GTT-AR-03", "statement": "GTT and the ADE invent no Git workflow: no checkpoint, session or agent commits, and no prefixes, branches, tags, squashes, rebases or pushes the project does not define or the user did not ask for.", "enforcement": "instruction+check:no GTT script or hook writes Git history", "relaxable": false },
+    { "id": "GTT-AR-04", "statement": "Git history belongs to the human. An ADE commits only as gtt-domain/workflow.md allows; without that file, only when the user asks.", "enforcement": "hook:workflow.md `commits: never`+instruction:`on-request`", "relaxable": false },
+    { "id": "GTT-AR-05", "statement": "Detecting is not authorizing: a convention found in the project's documents is reported as a finding and adopted only when the human writes it in gtt-domain/workflow.md, which no agent edits.", "enforcement": "hook:workflow.md in an installed project+test:detection only reports", "relaxable": false },
+    { "id": "GTT-AR-06", "statement": "Truth has an order: governed context, ADRs, approved Epics, the change request, proposals, the derived session state, the conversation. A lower layer never overrides a higher one.", "enforcement": "instruction:precedence+test:the session state is not a grounding source", "relaxable": false },
+    { "id": "GTT-AR-07", "statement": "What the human must review arrives on one short surface: the review block, at most 12 lines, and reports that do not repeat it.", "enforcement": "test:line and width limits of review and of the default outputs", "relaxable": false },
+    { "id": "GTT-AR-08", "statement": "Proposing is not executing: releases, tags, destructive operations and workflow changes wait for an explicit request.", "enforcement": "instruction", "relaxable": false },
+    { "id": "GTT-AR-09", "statement": "Nothing said in a conversation - this ADE's or another's - is project authority. An ADE's resume restores the conversation; the repository restores the project.", "enforcement": "instruction:precedence+test:the session state is not a grounding source", "relaxable": false },
+    { "id": "GTT-AR-10", "same_as": "human-decision-authority", "enforcement": "hook+script+instruction", "relaxable": false },
+    { "id": "sources-immutable", "statement": "A registered source is evidence and is never edited: it is copied, versioned and hashed, and a new version is added next to the old one.", "enforcement": "hook:docs/sources/+check:gtt-source.sh verify+script:gtt-freeze.sh", "relaxable": false },
+    { "id": "design-per-epic", "statement": "Every Epic has a complete design - its specification, carried over from the sources and cited - approved by the human together with the Epic. It is mandatory in every Method Plan and at every THINK Depth, which change how much is analysed and never what is written.", "enforcement": "check:gtt-check-design.sh+script:gtt-freeze.sh+script:gtt-approve.sh", "relaxable": false },
+    { "id": "traceability", "statement": "A Story cites the design of its Epic and the design cites the source; every rule, flow and interface of a design is built by at least one Story before its Epic closes.", "enforcement": "check:gtt-check-backlog.sh+check:gtt-check-design.sh+gate:gtt-check-provenance.sh#tags", "relaxable": false },
+    { "id": "governance-levels", "statement": "Three levels of control. Architecture changes only through an ADR; an ADR is for architecture only. Specification - each Epic's design - is governed lightly: staged, promoted by the human with one command and recorded as CHANGE in the map change log. Work - Stories, minor details, code - has no human control.", "enforcement": "script:gtt-promote.sh+instruction", "relaxable": false },
+    { "id": "backlog-cites-never-decides", "statement": "The backlog cites the design and never decides: a Story names the parts of the design it builds and takes its examples as acceptance criteria; what the design lacks is a gap to ask about, never a decision written in a Story.", "enforcement": "check:gtt-check-backlog.sh+instruction", "relaxable": false }
   ],
   "profiles": {
     "light": {

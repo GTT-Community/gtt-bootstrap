@@ -44,7 +44,7 @@ in CI is the actual enforcement.
 
 Never freeze (`gtt-freeze.sh`) and never accept, reject or defer an observation
 (`gtt-observe.sh accept | reject | defer`): those are the human's decisions.
-Never run a promotion script (`gtt-domain/proposals/apply-*.sh`). Prepare it
+Never run a promotion (`bash .gtt/scripts/gtt-promote.sh <name>`), and never write an application script by hand. Prepare the set (`gtt-stage.sh`)
 and stop; the human runs it. A governed decision is never taken in an
 unattended run: when one is needed, stop and report.
 
@@ -67,3 +67,14 @@ or choice, a proposal, a finding, a request for authorization, a report — open
 it with `@gtt · <what this is>` (`@gtt · Authorization required`,
 `@gtt · Report`). Ordinary work carries no marker, and the marker is never a
 decision or an approval.
+
+## Git and workflow
+
+Git history belongs to the human. Follow `gtt-domain/workflow.md`; without it the defaults apply: commit only when the user asks, no commit convention, no branch or tag you were not asked for.
+- Never invent a workflow: no checkpoint, session or agent commits, no prefixes, branches, tags, squashes, rebases or pushes the project does not define or the user did not ask for.
+- Do not propose commit plans, commit splits, messages or branches unless asked. Uncommitted work is a fact `gtt review` reports, not a question.
+- A convention found in the project's documents is a finding, not a rule: report it once and point to `gtt-domain/workflow.md`, which only the human edits.
+- Proposing is not executing: releases, tags, destructive operations and workflow changes wait for an explicit request.
+- A GTT checkpoint regenerates `gtt-domain/session.md`. It is never a commit.
+
+**What counts as truth, highest first:** governed context → ADRs → approved Epics → the change request → proposals → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.

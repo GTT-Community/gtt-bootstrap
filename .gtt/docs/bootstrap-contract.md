@@ -37,7 +37,7 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.3.1, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.5.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
 | 4 Capability registry | 15 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |

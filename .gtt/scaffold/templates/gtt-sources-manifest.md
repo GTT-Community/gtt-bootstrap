@@ -11,7 +11,10 @@ authority on the declaration, never the technical index.
 
 ## Rules
 
-- One source per line: `id | path | version | authority | precedence | status`.
+- One line per version of a source: `id | path | version | authority | precedence | status | sha256`
+  (the hash is optional; `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply` copies the file to
+  `docs/sources/<ID>/v<N>/`, computes it and writes the line). A source is immutable once registered: a new
+  version is added next to the old one, which becomes `superseded`.
 - `authority`: `primary`, `secondary`, `reference` or `evidence` (history only).
 - `precedence`: an integer, unique across the manifest. It orders sources when interpreting
   a conflict; it never erases one. Two sources that disagree are recorded as
@@ -21,8 +24,9 @@ authority on the declaration, never the technical index.
   or a `Locked by` ADR; `advisory` (the default) only checks what is written.
 - After freeze `SOURCE-BRIEF.*` is evidence and history: declare it `evidence`, never
   `primary` or `secondary`. The governed context wins over it.
-- Cite a source in governed context as `[FUENTE: id]`, `[FUENTE: id:section]` or
-  `[FUENTE: path:line]`.
+- Cite a source in governed context as `[FUENTE: id]`, `[FUENTE: id:§3.4]`, a range `[FUENTE: id:§16–22]`,
+  a pinned version `[FUENTE: id@v1:§18]`, or `[FUENTE: path:line]`. In a Markdown source `§` must match the
+  number or the slug of a heading; `gtt-check-provenance.sh` fails on a section that does not exist.
 
 ## Sources
 

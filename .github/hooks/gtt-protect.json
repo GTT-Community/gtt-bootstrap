@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format copilot || { echo 'GTT WARNING: the GTT pre-tool hook could not run; this call was NOT checked. The CI gate is the layer that holds.' >&2; exit 0; }",
+        "powershell": "try { python .gtt/scripts/gtt_protect.py hook --format copilot; if ($LASTEXITCODE -ne 0) { throw 'hook failed' } } catch { [Console]::Error.WriteLine('GTT WARNING: the GTT pre-tool hook could not run; this call was NOT checked. The CI gate is the layer that holds.'); exit 0 }",
+        "timeoutSec": 20
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "bash .gtt/scripts/gtt-checkpoint.sh --quiet",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

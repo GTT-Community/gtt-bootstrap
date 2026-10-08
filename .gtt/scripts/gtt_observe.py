@@ -53,6 +53,8 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -315,6 +317,25 @@ def observe_protected(base):
     return out
 
 
+def observe_commits():
+    """With `convention: conventional` in gtt-domain/workflow.md: one NOTICE for each commit subject since
+    the merge base with the default branch that is not a Conventional Commit. It informs and never blocks."""
+    try:
+        import gtt_flow
+        values = gtt_flow.workflow()[0]
+        start = gtt_flow.base_ref() if values["convention"] == "conventional" else None
+    except Exception:
+        return []
+    log = git("log", "--no-merges", "--format=%h%x09%s", f"{start}..HEAD") if start else None
+    rule = {"id": "GTT-COMMITS", "kind": "convention", "level": "NOTICE", "guards": "gtt-domain/workflow.md - convention: conventional"}
+    out = []
+    for entry in (log or "").splitlines():
+        sha, _, subject = entry.partition("\t")
+        if subject and not gtt_flow.CONVENTIONAL.match(subject):
+            out.append(signal(rule, sha, f"commit subject is not a Conventional Commit: {subject[:80]}", subject))
+    return out
+
+
 def unchanged_symbol(guard, artifact, symbol, commit):
     """True only when the protected symbol's own text is provably the same as at the baseline."""
     import tempfile
@@ -347,7 +368,7 @@ def collect():
         return [], ["not frozen yet: there is no governed state to observe against"], base
     rules, problems = boundaries()
     signals, notes = observe_rules(rules, base)
-    signals += observe_governed(base) + observe_protected(base)
+    signals += observe_governed(base) + observe_protected(base) + observe_commits()
     seen, unique = set(), []
     for sig in signals:
         if sig["fingerprint"] not in seen:
@@ -481,7 +502,28 @@ def run(args, checking):
     return 1 if (failing if checking else stopping) else 0
 
 
+def debounced(seconds):
+    """True when an observation ran for this project less than `seconds` ago. A hook that fires after
+    every write asks for this, so a burst of edits costs one observation and not one per edit. Nothing
+    is lost: what a skipped run would have seen is seen by the next one, at commit, in validation and at
+    session start. The stamp lives in the system's temp directory, never in the project."""
+    stamp = os.path.join(tempfile.gettempdir(), "gtt-observe-" + hashlib.sha1(os.getcwd().encode("utf-8")).hexdigest()[:16])
+    try:
+        if time.time() - os.path.getmtime(stamp) < seconds:
+            return True
+    except OSError:
+        pass
+    try:
+        with open(stamp, "w", encoding="utf-8"):
+            pass
+    except OSError:
+        pass
+    return False
+
+
 def cmd_observe(args):
+    if getattr(args, "debounce", 0) and debounced(args.debounce):
+        return 0
     return run(args, False)
 
 
@@ -602,6 +644,8 @@ def main(argv):
         p.add_argument("--dry-run", action="store_true", help="do not update the governance backlog")
         p.add_argument("--strict", action="store_true", help="check: an undecided GOVERNANCE observation fails too")
         p.add_argument("--for-freeze", action="store_true", help="check: the governed state having moved is expected")
+        p.add_argument("--debounce", type=int, default=0, metavar="SECONDS",
+                       help="observe: do nothing if an observation ran less than SECONDS ago (for a hook that fires on every write)")
         p.set_defaults(func=func)
     p = sub.add_parser("backlog"); p.add_argument("--all", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_backlog)
     p = sub.add_parser("summary"); p.set_defaults(func=cmd_summary)

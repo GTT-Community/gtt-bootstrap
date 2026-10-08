@@ -7,6 +7,9 @@ the frozen design. After a Write / Edit / NotebookEdit this runs the observation
 engine (.gtt/scripts/gtt-observe.sh observe) and hands whatever is NEW to the agent as
 context, so it can say it in one line and keep working.
 
+A burst of edits costs one observation, not one per edit: the engine is asked to do nothing if it
+ran less than 20 seconds ago. What a skipped run would have seen, the next one sees.
+
 It holds no logic of its own: which boundaries exist, what level each one has and
 whether anything is new are the engine's answers, computed from Git, the filesystem
 and the freeze baseline. The engine is idempotent and silent by default, so this hook
@@ -44,7 +47,7 @@ def main() -> int:
     if not os.path.exists(os.path.join(root, FROZEN_MARKER)) or not os.path.isfile(os.path.join(root, ENGINE)):
         return 0
     try:
-        proc = subprocess.run(["bash", ENGINE, "observe"], cwd=root, capture_output=True, text=True,
+        proc = subprocess.run(["bash", ENGINE, "observe", "--debounce", "20"], cwd=root, capture_output=True, text=True,
                               encoding="utf-8", errors="replace", timeout=60)
     except (OSError, subprocess.TimeoutExpired):
         return 0

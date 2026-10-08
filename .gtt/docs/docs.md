@@ -141,7 +141,7 @@ file that is always in the same place.
 
 ```
 gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  Designer reviews + runs script  ->  gtt-domain/adr/ + gtt-domain/context/
-     Designer states          agent drafts a           bash apply-ADR-NNN-*.sh            applied
+     Designer states          agent drafts a           gtt-promote.sh ADR-NNN-*          applied
      intent, 4 lines          promotion package
 ```
 
@@ -154,7 +154,7 @@ discouraged in prose.
 
 The last step is the **Human Promotion Boundary**: the agent's draft, however
 complete, is not the change. It becomes one only when the Designer reads the
-generated `apply-ADR-NNN-<slug>.sh` and runs it themselves. The agent may
+staged promotion set and applies it themselves (`bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>`). The agent may
 prepare a governed change — analyze it, draft the proposal, draft the ADR,
 draft the affected context files, generate the script; it may never promote
 one by running that script, editing `gtt-domain/adr/` or `gtt-domain/context/` directly,
@@ -335,7 +335,10 @@ one decision core that is byte-identical in Claude Code's hook
 |---|---|
 | Removing or writing `gtt-domain/.frozen` (an unfreeze, or a freeze nobody decided) | `freeze-semantics` |
 | Editing `gtt-domain/governance-backlog.json` directly (forging an accept or a reject) | `human-decision-authority` |
-| Running `gtt-domain/proposals/apply-*.sh` in any spelling, or applying a patch staged there (`--check` / `--stat` stay available) | Human Promotion Boundary |
+| Running a promotion - `gtt-promote.sh`, or a `gtt-domain/proposals/apply-*.sh` script - in any spelling, or applying a patch staged there (`--check` / `--stat` stay available) | Human Promotion Boundary |
+| With `commits: never` in `gtt-domain/workflow.md`: `git commit`, `git tag`, `git push`. With `branches-tags: never`: a new branch or tag | `workflow.md: commits: never` / `branches-tags: never` |
+| In an installed project: writing `gtt-domain/workflow.md` | `workflow.md` |
+| Writing `.gtt/local/checkpoint.json` or `.gtt/local/last-validation.json` | `deterministic-first` |
 | Freezing; accepting, rejecting or deferring an observation; installing or removing the Git hook | `human-decision-authority` |
 | With the Git hook installed: `git commit --no-verify`, changing `core.hooksPath`, deleting the hook | `explicit-blocking` |
 | Writing under a path boundary the frozen design declares `BLOCKING` | the boundary's own id |
@@ -349,6 +352,16 @@ loud, that the write was not checked. A write made by an interpreter
 (`python -c "open(...)"`) or by Git plumbing (`git checkout <ref> -- <path>`)
 is not seen by any pre-tool hook: that residual is exactly what the CI gate
 covers, and GTT does not chase it with more patterns.
+
+The CI gate holds only if three things are true, and the Bootstrap cannot make
+any of them true by itself. The checkout has the base ref (full history): without
+it a removed marker looks exactly like a project that was never frozen, so in CI
+(`CI=true` or `--ci`) `gtt-check-stack.sh` exits 2, "cannot determine", and
+outside CI it says that the check did not run - it never passes in silence. The
+workflow exists: `.gtt/scaffold/ci/github-actions-gtt.yml` is a template the
+human installs (`gtt-template.sh materialize ci-github-actions --apply`), never
+an agent. And the job is a **required status check** under branch protection:
+a failing job that is not required blocks no merge.
 
 Under a Method Plan whose gate `governance_observation_fails_check` is true
 (Hard, Team) an undecided `GOVERNANCE` observation fails `check` as well;
@@ -470,8 +483,7 @@ Stories (the working plan)
 Implementation work
 ```
 
-An Epic or a Story that contradicts governed context or an accepted ADR is a
-finding, not a resolution - the backlog never silently overrides architecture.
+The backlog never silently overrides architecture; what happens when an Epic or a Story contradicts it is stated once, in `AGENTS.md` → *Backlog* (*Precedence*).
 
 | Entry | What it is | Who decides |
 |---|---|---|
@@ -587,7 +599,7 @@ never claims a guarantee an ADE does not actually provide.
 **Changing a protected artifact.** `gtt-propose-change` gets a fifth form
 for exactly this. Once the Solution Designer approves it **in
 conversation**, the agent implements the change directly, updates or
-removes the marker, and re-syncs the registry — no ADR, no `apply-*.sh`
+removes the marker, and re-syncs the registry — no ADR, no promotion set
 script. This is deliberately lighter than the Human Promotion Boundary:
 GTTGuard protects L3 code a developer opted into protecting, not governed
 context, and is deliberately not a second, unrelated approval model — it
@@ -613,7 +625,7 @@ script.
 
 `.gtt/scripts/gtt-validate.sh` runs the existing deterministic check scripts
 (`gtt-check-backlog.sh`, `gtt-check-adapter.sh`, `gtt-check-protection.sh`,
-`gtt-check-stack.sh`, `gtt-check-markdown.sh`, `gtt-check-integrity.sh`) in sequence and reports PASS / FAIL /
+`gtt-check-stack.sh`, `gtt-check-markdown.sh`, `gtt-check-agents.sh`, `gtt-check-integrity.sh`) in sequence and reports PASS / FAIL /
 CANNOT-DETERMINE per check — it does not reimplement any of their logic,
 only aggregates it. The adapter check has two regimes. When `.gtt/ade.json`
 exists it validates every participating ADE against it: a missing or
@@ -783,6 +795,52 @@ broadly — narrow them rather than working around them.
 
 ---
 
+## Where each thing lives: sources, design, backlog
+
+```text
+docs/sources/<ID>/vN/            the original source: copied, versioned, immutable     (evidence)
+gtt-domain/context/              architecture, stack, constraints                      (governed)
+gtt-domain/adr/                  architecturally significant decisions only            (governed)
+gtt-domain/context/design/       the solution design: one file per Epic                (governed)
+gtt-domain/backlog.md            Epics (approved intent) · Stories (the ADE's plan)    → cite the design
+code
+```
+
+- **Sources** are registered with `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply`, which copies
+  the file, records its hash and makes it immutable; a new version goes next to the old one. Citations are
+  verifiable: `[FUENTE: D:§3.4]` must match a heading of the source.
+- **The design of an Epic** is its complete specification - data, rules, flows, interfaces, examples - carried
+  over from the sources and cited, never summarised. `gtt-design.sh scaffold EPIC-NNN --apply` starts it,
+  `gtt-check-design.sh` checks it is complete, and you approve it together with the Epic:
+  `bash .gtt/scripts/gtt-approve.sh EPIC-NNN`.
+- **How it is read.** Story → `Implements:` → design → architecture or ADR → the cited section of the source.
+  A Story is built from the Story and the design; a source is opened only to verify a citation.
+- **Two routes of change, three levels of control.** *Architecture* changes through an ADR. *Specification* -
+  an Epic's design - is staged and promoted with one command, recorded as `CHANGE-…` in the map change log, no
+  ADR. *Work* - Stories and code - is the ADE's, with no approval. After a freeze both routes end in a new one,
+  taken in the same confirmation.
+
+## Continuity, review and Git
+
+Three things, all computed from the repository and none from a conversation:
+
+- **`bash .gtt/scripts/gtt-review.sh`** is the one review surface: what changed since the default
+  branch, what it touches, what is risky, what you must decide, the last validation and the next
+  step - in at most twelve lines. `--files` lists the files, `--gate` says whether a `BLOCKING`
+  condition is open and whether the size of the change calls for a human review. It never says the
+  design is right. `gtt-domain/session.md` opens with the same block, so the handoff between
+  sessions and your review are one thing.
+- **A checkpoint** (`gtt-checkpoint.sh`, called by each ADE's end-of-turn hook) regenerates
+  `gtt-domain/session.md` when the work changed. It is never a commit, and it does nothing when
+  nothing changed. Another ADE picks the project up from that file, not from a chat history.
+- **`gtt-domain/workflow.md`** is where you say how Git is used here: whether the ADE may commit
+  (`on-request` by default, `allowed`, or `never`), the commit convention, branches and tags, and
+  the size above which a review is recommended. Only you edit it. Without it the ADE commits only
+  when you ask, and GTT itself never commits, tags, branches or pushes.
+
+A change that needs your authorization arrives as one promotion set; you apply it with
+`bash .gtt/scripts/gtt-promote.sh <name>`, which shows the diff, asks for `apply`, and prints its undo.
+
 ## Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity
 
 GTT v2 separates **content** from **mechanism**. The governed context
@@ -797,22 +855,22 @@ matrix in `README.md` and in `.claude/skills/gtt-bootstrap/SKILL.md` (step 0).
 Detection is not participation: an ADE found on the machine or in the repository
 is a candidate until the human chooses it. The Primary ADE is a workflow
 identifier; it holds no authority over any governed artifact, and instruction
-files or overlays (`AGENTS.md`, `.claude/`, `.kiro/`, `.copilot/`, `.codex/`, an
+files or overlays (`AGENTS.md`, `.claude/`, `.kiro/`, `.github/instructions/`, `.codex/`, an
 ADE's memory) are integration surfaces, never governance.
 
 ### Compatibility matrix
 
 | Capability | Claude Code | Kiro | Codex | GitHub Copilot |
 |---|---|---|---|---|
-| Always-loaded instructions | `.claude/CLAUDE.md` | `AGENTS.md`, or steering `inclusion: always` | `AGENTS.md` | `AGENTS.md` + `.github/copilot-instructions.md`* |
+| Always-loaded instructions | `.claude/CLAUDE.md` | `AGENTS.md`, or steering `inclusion: always` | `AGENTS.md` | `AGENTS.md` + `.github/instructions/gtt.instructions.md` (`applyTo: "**"`) |
 | Reads `AGENTS.md` natively | no — imports it | yes | yes | yes |
-| Path-scoped rules | `.claude/rules/` + `paths:` | `.kiro/steering/` + `inclusion: fileMatch` | nested `AGENTS.md` only | none documented |
+| Path-scoped rules | `.claude/rules/` + `paths:` | `.kiro/steering/` + `inclusion: fileMatch` | nested `AGENTS.md` only | `.github/instructions/*.instructions.md` + `applyTo` (GTT ships one, repo-wide) |
 | On-demand procedures | Skills | steering `inclusion: manual` / `auto` | prompt or custom command | prompt |
-| Declarative file-write blocking | `permissions.deny` | not equivalent | `[permissions.*.filesystem]` globs | not equivalent |
-| Programmatic pre-tool block | PreToolUse hook | agent hooks (different model) | hooks / sandbox | none documented |
+| Declarative file-write blocking | `permissions.deny` | per user, outside the repository - a template the human installs | `[permissions.*.filesystem]` globs | not equivalent |
+| Programmatic pre-tool block | PreToolUse hook | `PreToolUse` in `.kiro/hooks/gtt-protect.json` — shipped, **unverified in the ADE** | hooks / sandbox | `preToolUse` in `.github/hooks/gtt-protect.json` (cloud agent and CLI) — shipped, **unverified in the ADE** |
 | Governed context in `gtt-domain/context/` and `gtt-domain/adr/` | works | works | works | works |
 | CI gate (`.gtt/scripts/`) | works | works | works | works |
-| GTTGuard real-time block | yes — `protect-guard.py` | no — CI gate only | no — CI gate only | no — CI gate only |
+| GTTGuard real-time block | yes — `protect-guard.py` | through the same hook — unverified | no — CI gate only | through the same hook — unverified |
 
 Cursor, OpenHands and Antigravity, added after the four above, have their own rows:
 
@@ -827,10 +885,6 @@ Cursor, OpenHands and Antigravity, added after the four above, have their own ro
 | Governed context and CI gate | works | works | works |
 | GTTGuard real-time block | through the same hook — unverified | through the same hook — unverified | through the same hook — unverified |
 | Verified at runtime in the ADE | no | no | no |
-
-\* GTT's Copilot adapter file actually lives at `.copilot/copilot-instructions.md`
-(naming consistency with `.claude/`/`.kiro/`), so Copilot does not load it
-automatically — see the note under *GitHub Copilot* below.
 
 **Short version:** Claude Code runs everything. Kiro runs everything except the
 deterministic write block, which it approximates. Codex runs the content and the
@@ -865,27 +919,40 @@ The path-scoped rules are mirrored in `.kiro/steering/` using
 `inclusion: fileMatch` with a `fileMatchPattern`. Kiro accepts one pattern per
 file, so a rule covering several globs becomes several steering files.
 
-Since Kiro IDE 1.0, declarative permissions exist in `.kiro/permissions.yaml`
-(`deny` wins over `ask`/`allow`), covering the unconditional machinery paths —
-`AGENTS.md`, `.claude/**`, `.kiro/settings|steering|hooks/**`,
-`gtt-domain/.frozen` — the same way `permissions.deny` does for Claude Code.
+**Kiro reads no permission rules from a repository.** Workspace permissions
+live per user, at `~/.kiro/workspace-roots/<hash>/permissions.yaml`, and Kiro's
+documentation is explicit: "A cloned repo cannot inject permission rules - trust
+is something you configure on your own machine" (https://kiro.dev/docs/permissions/,
+read 2026-10-07). The `.kiro/permissions.yaml` GTT shipped until 1.3.1 was
+therefore never read, and it was not in Kiro's format either. It is now a
+template in Kiro's real format (`rules:` with `capability`, `match`, `effect`),
+`.gtt/scaffold/ade/kiro-permissions.yaml`: `gtt-ade.sh install` and `gtt-ade.sh
+list` point the human at it, and installing it is the human's act, on each
+machine.
 
-What `permissions.yaml` cannot express is the two-regime condition on
-`gtt-domain/context/` and `gtt-domain/adr/`: whether they are writable depends on whether
-`gtt-domain/.frozen` exists, and a static config file has no way to test that. Those
-two paths still fall back to the CI gate: `.gtt/scripts/gtt-check-stack.sh`
-plus a branch rule requiring review on `gtt-domain/context/**` and `gtt-domain/adr/**` catches what reaches a pull
-request. (The drift detector, `detect-drift.py`, is different: it is advisory
-rather than a write block, so it mirrors cleanly to Kiro as
-`.kiro/hooks/detect-drift.json` — see the Drift detection section.)
+What the repository does carry is a pre-tool hook, `.kiro/hooks/gtt-protect.json`,
+in Kiro's v1 hook schema (`"version": "v1"`, `hooks[]` with `name`, `trigger`,
+`action`; https://kiro.dev/docs/ide/whats-new-v1/hooks/, read 2026-10-07). It
+runs `.gtt/scripts/gtt_protect.py hook --format kiro`: exit 2 blocks the tool
+call and the reason goes to the agent on stderr. Through that engine Kiro gets
+what a static rule cannot express - the two-regime condition on
+`gtt-domain/context/` and `gtt-domain/adr/`, and GTTGuard. It is **not verified
+inside Kiro** (`enforcement: realtime-hook-unverified`), and two things are not
+in the documentation GTT could read: the names of the fields in the event Kiro
+sends on stdin, and the names of its tools. The engine reads the names the
+other ADEs use plus Kiro's documented `path` and `command`, takes a tool for a
+file write only when its name says so, and lets through whatever it does not
+recognise - so until someone proves it in Kiro, the CI gate
+(`.gtt/scripts/gtt-check-stack.sh`, `gtt-check-protection.sh`, a required
+status check) is the layer that holds. The drift detector is advisory rather
+than a write block: `.kiro/hooks/detect-drift.json`, a `PostToolUse` hook in
+the same schema.
 
 Known issue: global steering in `~/.kiro/steering/` has had reports of
 `fileMatch` not triggering. Keep GTT steering in the workspace, not global.
 
-GTTGuard has the same gap as the two-regime paths: `permissions.yaml` is
-static and cannot evaluate `.gtt/protection/registry.yaml`'s dynamic
-contents, so there is no real-time block. `.gtt/scripts/gtt-check-protection.sh`
-in CI, plus `.kiro/steering/gtt-guard.md`, is the enforcement.
+GTTGuard goes through the same unverified hook. `.gtt/scripts/gtt-check-protection.sh`
+in CI, plus `.kiro/steering/gtt-guard.md`, is the enforcement that holds.
 
 ### Codex
 
@@ -909,7 +976,11 @@ This is coarser than path globs but preserves the principle: rules load near the
 code they govern rather than all at once.
 
 **Size cap.** Codex caps project docs at `project_doc_max_bytes`, 32 KiB by
-default. GTT v2's core is far under that. GTT v1 was not obviously safe.
+default, counting nested `AGENTS.md` files in the same budget, and cuts the rest
+without saying so. `AGENTS.md` is therefore kept at 24 KiB or less, with the
+non-negotiable rules first and the detail in `.gtt/docs/agents/`, which it
+points at section by section; `gtt-check-agents.sh` (part of `gtt-validate.sh`)
+fails when that stops being true.
 
 **Write protection** is available through filesystem permission globs in
 `~/.codex/config.toml`:
@@ -1063,24 +1134,34 @@ same derived, ADE-independent state every other ADE gets.
 
 ### GitHub Copilot
 
-Copilot reads two files per current GitHub documentation: repository-wide
-instructions from `.github/copilot-instructions.md`, and agent instructions
-from `AGENTS.md`. GTT's adapter file lives at `.copilot/copilot-instructions.md`
-instead — a deliberate naming choice, consistent with `.claude/` and
-`.kiro/` being named after the tool rather than the platform — which means
-Copilot does **not** load it automatically at that path; mirror it to
-`.github/copilot-instructions.md` too if automatic loading matters for the
-project. The portable core loads through `AGENTS.md` with no other adapter
-machinery beyond that single pointer file.
+Per GitHub's documentation
+(https://docs.github.com/en/copilot/reference/custom-instructions-support, read
+2026-10-07) Copilot reads three kinds of repository file: `AGENTS.md`,
+`.github/copilot-instructions.md` and `.github/instructions/**/*.instructions.md`.
+GTT's adapter file is `.github/instructions/gtt.instructions.md`, with
+`applyTo: "**"`. Until 1.3.1 it lived at `.copilot/copilot-instructions.md`,
+which no Copilot surface reads. GTT never touches the project's own
+`.github/copilot-instructions.md`.
 
-**Conditional loading does not exist.** `.github/copilot-instructions.md` is
-repository-wide only — there is no documented path-scoped equivalent to
-`paths:` or `inclusion: fileMatch`.
+**Conditional loading** exists through `applyTo` in an instructions file. GTT
+ships one file, repository-wide.
 
-**Write protection** has no declarative or programmatic equivalent in the
-Copilot adapter today. `.gtt/scripts/gtt-check-stack.sh` plus a required
-review on `gtt-domain/context/**` and `gtt-domain/adr/**` is the only backstop, the same fallback Kiro uses for the
-two regime-conditional paths.
+**Write protection.** GitHub documents hooks in `.github/hooks/*.json` for the
+Copilot cloud agent and the Copilot CLI
+(https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-hooks-reference,
+read 2026-10-07). GTT ships `.github/hooks/gtt-protect.json`, whose `preToolUse`
+runs `.gtt/scripts/gtt_protect.py hook --format copilot` and denies with
+`{"permissionDecision": "deny", "permissionDecisionReason": ...}`. Copilot's
+`preToolUse` **fails closed**: a hook that crashes or exits with anything but 0
+denies the tool call. So GTT's hook never exits non-zero - only a decision of
+the core is a denial, and an engine that cannot run allows the call and says on
+stderr that it was not checked. It is **not verified inside Copilot**; the
+fields inside `toolArgs` are not documented, so the engine reads `command` and
+the path names the other ADEs use; a tool that carries neither (`apply_patch`)
+is not seen; the `powershell` entry calls `python` directly and has not been
+run on Windows; and every Copilot surface other than the cloud agent and the
+CLI has no hook at all. `.gtt/scripts/gtt-check-stack.sh` as a required status
+check is the layer that holds.
 
 The adapter file itself must stay thin: it points at `AGENTS.md` and the governed directories
 (`gtt-domain/context/`, `gtt-domain/adr/`) as the canonical source rather than restating GTT methodology, so there is
@@ -1102,7 +1183,7 @@ only on Claude Code; every other participating ADE is governed by its
 instructions plus the CI gate, and the registry's `enforcement:` field says which.
 
 Keep `AGENTS.md` as the single source for the core rules. Never restate a rule
-in `.claude/CLAUDE.md` or `.copilot/copilot-instructions.md` that already lives
+in `.claude/CLAUDE.md` or `.github/instructions/gtt.instructions.md` that already lives
 in `AGENTS.md` — that duplication is exactly the defect v2 was built to
 remove.
 

@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "gtt-protect",
+      "trigger": "PreToolUse",
+      "action": {
+        "type": "command",
+        "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format kiro; rc=$?; [ \"$rc\" -eq 2 ] && exit 2; [ \"$rc\" -eq 0 ] || echo 'GTT WARNING: the GTT pre-tool hook could not run; this call was NOT checked. The CI gate is the layer that holds.' >&2; exit 0",
+        "timeout": 20
+      }
+    }
+  ]
+}

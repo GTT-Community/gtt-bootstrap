@@ -29,7 +29,7 @@ EVENT_VALUES = {"verified", "documented", "unsupported", "unknown"}
 RUNTIME_VALUES = {"runtime-verified", "not-verified",
                   "requires-interactive-session", "not-installed"}
 COVERAGE = {"N1", "N2", "N3"}
-OUTPUTS = {"text", "json-hookSpecificOutput", "json-additionalContext"}
+OUTPUTS = {"text", "json-hookSpecificOutput", "json-additionalContext", "json-additional_context"}
 
 # GTT logic that belongs to the service, never to an adapter.
 DUPLICATED_LOGIC = [
@@ -235,6 +235,8 @@ def extract_context(m, stdout):
         data = json.loads(stdout)
         if kind == "json-hookSpecificOutput":
             return data["hookSpecificOutput"]["additionalContext"]
+        if kind == "json-additional_context":
+            return data["additional_context"]
         return data["additionalContext"]
     except (ValueError, KeyError, TypeError):
         return None

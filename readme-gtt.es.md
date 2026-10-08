@@ -20,8 +20,8 @@ Compatible con Claude Code, Kiro, Codex y GitHub Copilot · CC BY 4.0
 
 - [Flujo de uso](#flujo-de-uso)
 - [Adaptadores de ADE](#adaptadores-de-ade)
-- [Instalación manual](#instalación-manual)
-- [Instalación asistida por agente](#instalación-asistida-por-agente)
+- [Instalación manual](#2-instalación-manual)
+- [Instalación asistida por agente](#3-instalación-asistida-por-agente)
 - [Scaffolding obligatorio del workspace GTT](#scaffolding-obligatorio-del-workspace-gtt)
 - [Higiene del workspace](#higiene-del-workspace)
 - [El problema](#el-problema)
@@ -167,7 +167,7 @@ de `.gtt/scripts/gtt-ade.sh` (`list`, `detect`, `state`, `validate`, `owned`, `i
 `adopt`, `set-primary`, `record`, `remove`, `update`). Todo comando que escribe es un
 ensayo hasta `--apply`, nunca sobrescribe un archivo que GTT no instaló y revierte si
 algo falla. Los archivos de instrucciones y los overlays (`AGENTS.md`, `.claude/`,
-`.kiro/`, `.copilot/`, `.codex/`, la memoria o el historial de sesiones de un ADE) son
+`.kiro/`, `.github/instructions/`, `.codex/`, la memoria o el historial de sesiones de un ADE) son
 superficies de integración: permiten que un ADE participe en GTT y nunca se convierten
 en una autoridad propia.
 
@@ -175,7 +175,7 @@ en una autoridad propia.
 
 Qué contiene el adaptador de cada ADE — un proyecto con varios ADE participantes tiene la unión de sus filas:
 
-| ADE anfitrión | Adaptador | `.claude/` | `.kiro/` | `AGENTS.md` | `.copilot/copilot-instructions.md` |
+| ADE anfitrión | Adaptador | `.claude/` | `.kiro/` | `AGENTS.md` | `.github/instructions/gtt.instructions.md` |
 | --- | --- | :---: | :---: | :---: | :---: |
 | Claude Code | Claude | SÍ | NO | SÍ | NO |
 | Kiro | Kiro | NO | SÍ | SÍ | NO |
@@ -222,14 +222,22 @@ tiempo real.
 | El bloqueo en tiempo real en su CLI, su IDE y su app de escritorio; si `AGENTS.md` se carga entero (es más grande que el límite por archivo que Antigravity documenta para las reglas); qué hace Antigravity con el código de salida del hook | **sin verificar** |
 | Contexto inyectado al iniciar sesión, fusión con un `.agents/hooks.json` existente, skills nativas de Antigravity | no soportado |
 
-> **Limitación conocida:** la ruta real que GitHub Copilot lee para
-> instrucciones personalizadas a nivel de repositorio es
-> `.github/copilot-instructions.md`, según la documentación actual de
-> GitHub. GTT mantiene el archivo deliberadamente en
-> `.copilot/copilot-instructions.md`, por consistencia de nombres con
-> `.claude/` y `.kiro/` — lo que significa que Copilot no lo carga
-> automáticamente en esa ruta. Duplícalo en `.github/copilot-instructions.md`
-> también si necesitas que Copilot lo cargue por sí solo.
+Kiro y GitHub Copilot reciben el mismo motor mediante sus propios archivos de hooks:
+
+| ADE | Qué instala GTT | Cómo lo carga el ADE |
+| --- | --- | --- |
+| Kiro | `.kiro/steering/*.md`, `.kiro/hooks/gtt-protect.json` (el bloqueo de escritura) y `.kiro/hooks/detect-drift.json` (observación después de una escritura), ambos en el esquema v1 de hooks de Kiro | Kiro lee steering y hooks desde `.kiro/`. **No** lee reglas de permisos desde un repositorio: viven por usuario, fuera de él. `.gtt/scaffold/ade/kiro-permissions.yaml` es una plantilla que instalas tú |
+| GitHub Copilot | `.github/instructions/gtt.instructions.md` (`applyTo: "**"`) y `.github/hooks/gtt-protect.json` | Copilot lee `AGENTS.md`, `.github/copilot-instructions.md` y `.github/instructions/**/*.instructions.md`; los hooks de `.github/hooks/*.json` corren solo en el cloud agent y en el CLI. GTT es dueño únicamente de esos dos archivos, nunca del resto de tu `.github/` |
+
+Ambos hooks se construyeron a partir de la documentación de cada proveedor y
+**ninguno se ha verificado dentro del ADE** (`enforcement: realtime-hook-unverified`).
+Hay dos cosas que su documentación no fija, y por eso GTT no las afirma: los
+nombres de las herramientas de Kiro y de los campos del evento que envía, y los
+campos dentro del `toolArgs` de Copilot. El motor lee los nombres que usan los
+demás ADEs y deja pasar lo que no reconoce. El hook pre-tool de Copilot falla
+cerrado - un hook que se cae deniega la llamada -, así que el de GTT nunca sale
+con un código distinto de 0 ahí: un motor roto permite la llamada y avisa por
+stderr de que no se comprobó.
 
 La detección se basa en el entorno realmente presente, nunca en el modelo
 subyacente. Un modelo Claude no es Claude Code; un modelo GPT no es Codex; la API
@@ -395,7 +403,7 @@ Al realizar el bootstrap de GTT en un proyecto, **el agente de programación con
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
-└── .claude/ | .kiro/ | .copilot/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
+└── .claude/ | .kiro/ | .github/instructions/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
 ```
 
 ### Reglas del scaffolding
@@ -406,7 +414,7 @@ Al realizar el bootstrap de GTT en un proyecto, **el agente de programación con
 
 - El agente NO DEBE mover, renombrar, duplicar ni redistribuir artefactos de GTT fuera de esta estructura.
 - El agente DEBE preservar la estructura existente del proyecto anfitrión y NO DEBE sobrescribir silenciosamente un archivo existente con el mismo nombre. Los conflictos DEBEN informarse y resolverse explícitamente.
-- Los archivos específicos del ADE — `.claude/`, `.kiro/` o `.copilot/copilot-instructions.md` — permanecen en sus ubicaciones requeridas y no modifican el contrato de workspace de GTT. Solo se instalan los adaptadores de los ADE participantes; ver [Adaptadores de ADE](#adaptadores-de-ade).
+- Los archivos específicos del ADE — `.claude/`, `.kiro/` o `.github/instructions/gtt.instructions.md` — permanecen en sus ubicaciones requeridas y no modifican el contrato de workspace de GTT. Solo se instalan los adaptadores de los ADE participantes; ver [Adaptadores de ADE](#adaptadores-de-ade).
 
 Esta estructura es un **contrato de bootstrap de GTT**, no solamente una convención documental.
 
@@ -443,7 +451,7 @@ maquinaria o documentación sobre GTT (`.gtt/`), o estado gobernado del proyecto
 | --- | --- | --- |
 | Motor | `.gtt/` (incluido `.gtt/docs/`) | GTT |
 | Dominio gobernado | `gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` | el Solution Designer (los agentes solo redactan en `gtt-domain/proposals/`) |
-| Overlay del ADE | `.claude/`, `.kiro/`, `.copilot/` | las integraciones de ADE — una por ADE participante, exactamente una Primaria (un identificador de flujo, nunca una autoridad) |
+| Overlay del ADE | `.claude/`, `.kiro/`, `.github/instructions/` | las integraciones de ADE — una por ADE participante, exactamente una Primaria (un identificador de flujo, nunca una autoridad) |
 
 
 `.gtt/scaffold/manifest.yaml` declara este scaffold. Hay un único scaffold; los ADE
@@ -530,7 +538,7 @@ El agente devuelve una propuesta completa con:
 Tú apruebas la propuesta. El agente entonces prepara un **paquete de promoción** en `gtt-domain/proposals/`: el borrador del ADR, el texto completo de cada archivo afectado bajo `gtt-domain/context/`, y un script ejecutable:
 
 ```bash
-bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
+bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
 ```
 
 Revisa la propuesta, el ADR y el script, y ejecuta tú mismo ese único comando desde la raíz del proyecto. El script te deja `view` (ver) el texto del ADR y el diff exacto contra el contexto actual, y solo aplica todos los archivos afectados juntos cuando respondes `yes`; nunca lo ejecuta el agente — ver [Límite Humano de Promoción](#límite-humano-de-promoción).
@@ -579,9 +587,7 @@ nunca una segunda fuente de verdad junto a `gtt-domain/context/`.
 Contexto Gobernado / L0  ->  ADR  ->  gtt-domain/backlog.md  ->  Implementación
 ```
 
-Una Story que contradice el contexto gobernado o un ADR aceptado es un
-hallazgo, no una resolución — nunca sobrescribe silenciosamente la
-arquitectura.
+Una Story nunca sobrescribe silenciosamente la arquitectura; lo que hace el ADE cuando una la contradice está dicho una sola vez, en `AGENTS.md` → *Backlog* (*Precedence*).
 
 **Dos clases de entrada, gobernadas de forma distinta:**
 
@@ -683,6 +689,52 @@ de pre-commit de Git — tu decisión, un comando:
 Descripción completa: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#the-two-planes-governance-and-observation).
 
 ---
+
+## Dónde vive cada cosa: fuentes, diseño, backlog
+
+```text
+docs/sources/<ID>/vN/            la fuente original: copiada, versionada, inmutable    (evidencia)
+gtt-domain/context/              arquitectura, stack, restricciones                    (gobernado)
+gtt-domain/adr/                  solo decisiones arquitectónicamente significativas    (gobernado)
+gtt-domain/context/design/       el diseño de solución: un archivo por Epic            (gobernado)
+gtt-domain/backlog.md            Epics (intención aprobada) · Stories (plan del ADE)   → citan el diseño
+código
+```
+
+- **Las fuentes** se registran con `bash .gtt/scripts/gtt-source.sh add <archivo> --id <ID> --apply`, que copia
+  el archivo, registra su hash y lo vuelve inmutable; una versión nueva queda al lado de la anterior. Las citas
+  se pueden verificar: `[FUENTE: D:§3.4]` tiene que coincidir con un encabezado de la fuente.
+- **El diseño de una Epic** es su especificación completa (datos, reglas, flujos, interfaces y ejemplos),
+  traspasada desde las fuentes y citada, nunca resumida. `gtt-design.sh scaffold EPIC-NNN --apply` lo inicia,
+  `gtt-check-design.sh` comprueba que esté completo, y tú lo apruebas junto con la Epic:
+  `bash .gtt/scripts/gtt-approve.sh EPIC-NNN`.
+- **Cómo se lee.** Story → `Implements:` → diseño → arquitectura o ADR → la sección citada de la fuente.
+  Una Story se construye leyendo la Story y el diseño; la fuente se abre solo para verificar una cita.
+- **Dos rutas de cambio, tres niveles de control.** La *arquitectura* cambia con un ADR. La *especificación*
+  (el diseño de una Epic) se prepara y se promueve con un comando, queda como `CHANGE-…` en el change log del
+  mapa y no lleva ADR. El *trabajo* (Stories y código) es del ADE, sin aprobación. Después de un freeze, las dos
+  rutas terminan en uno nuevo, tomado en la misma confirmación.
+
+## Continuidad, revisión y Git
+
+Tres cosas, todas calculadas desde el repositorio y ninguna desde una conversación:
+
+- **`bash .gtt/scripts/gtt-review.sh`** es la única superficie de revisión: qué cambió desde la rama
+  por defecto, qué toca, qué es riesgoso, qué debes decidir, la última validación y el siguiente
+  paso, en doce líneas como máximo. `--files` lista los archivos; `--gate` dice si hay una condición
+  `BLOCKING` abierta y si el tamaño del cambio amerita una revisión humana. Nunca afirma que el
+  diseño sea correcto. `gtt-domain/session.md` empieza con ese mismo bloque, así que el traspaso
+  entre sesiones y tu revisión son una sola cosa.
+- **Un checkpoint** (`gtt-checkpoint.sh`, que llama el hook de fin de turno de cada ADE) regenera
+  `gtt-domain/session.md` cuando el trabajo cambió. Nunca es un commit, y no hace nada si nada
+  cambió. Otro ADE retoma el proyecto desde ese archivo, no desde el historial de un chat.
+- **`gtt-domain/workflow.md`** es donde dices cómo se usa Git aquí: si el ADE puede hacer commits
+  (`on-request` por defecto, `allowed` o `never`), la convención de commits, las ramas y los tags, y
+  el tamaño a partir del cual se recomienda una revisión. Solo tú lo editas. Sin ese archivo el ADE
+  hace commit solo cuando se lo pides, y GTT nunca hace commits, tags, ramas ni push.
+
+Un cambio que necesita tu autorización llega como un único set de promoción; lo aplicas con
+`bash .gtt/scripts/gtt-promote.sh <name>`, que muestra el diff, pide `apply` e imprime cómo deshacerlo.
 
 ## Artefactos protegidos (GTTGuard)
 
@@ -833,12 +885,12 @@ gtt-domain/                     # EL DOMINIO GOBERNADO POR GTT-METHOD
 │
 .kiro/steering/                 # adaptador de Kiro
 │
-.copilot/copilot-instructions.md # adaptador de GitHub Copilot
+.github/instructions/gtt.instructions.md # adaptador de GitHub Copilot
 ```
 
 ### Por qué algunos archivos permanecen en la raíz
 
-`.claude/`, `.kiro/` y `.copilot/copilot-instructions.md` permanecen en la raíz porque estas herramientas descubren su configuración en ubicaciones determinadas. Moverlos dentro de `.gtt/` puede hacer que dejen de cargar silenciosamente las reglas y skills previstas. Solo se instala el que corresponde a tu adaptador resuelto — ver [Adaptadores de ADE](#adaptadores-de-ade).
+`.claude/`, `.kiro/` y `.github/instructions/gtt.instructions.md` permanecen en la raíz porque estas herramientas descubren su configuración en ubicaciones determinadas. Moverlos dentro de `.gtt/` puede hacer que dejen de cargar silenciosamente las reglas y skills previstas. Solo se instala el que corresponde a tu adaptador resuelto — ver [Adaptadores de ADE](#adaptadores-de-ade).
 
 `AGENTS.md` permanece en la raíz porque Kiro, Codex y Copilot lo leen por convención.
 
@@ -863,12 +915,12 @@ El dominio gobernado está en `gtt-domain/`, aparte del Motor, porque es el esta
 
 ## Primeros pasos
 
-1. Copia el núcleo portable — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (el Motor, incluyendo `.gtt/scripts/`, `.gtt/docs/` y `.gtt/scaffold/manifest.yaml`) y el esqueleto del dominio gobernado (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`) — en la raíz del proyecto, más únicamente el adaptador correspondiente a tu ADE: `.claude/` (incluyendo `.claude/CLAUDE.md`) para Claude Code, `.kiro/` para Kiro, `.copilot/copilot-instructions.md` para GitHub Copilot, o nada adicional para Codex. Ver [Adaptadores de ADE](#adaptadores-de-ade); no copies los demás adaptadores "por las dudas".
+1. Copia el núcleo portable — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (el Motor, incluyendo `.gtt/scripts/`, `.gtt/docs/` y `.gtt/scaffold/manifest.yaml`) y el esqueleto del dominio gobernado (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`) — en la raíz del proyecto, más únicamente el adaptador correspondiente a tu ADE: `.claude/` (incluyendo `.claude/CLAUDE.md`) para Claude Code, `.kiro/` para Kiro, `.github/instructions/gtt.instructions.md` para GitHub Copilot, o nada adicional para Codex. Ver [Adaptadores de ADE](#adaptadores-de-ade); no copies los demás adaptadores "por las dudas".
 2. Combina el `.gitignore` de GTT con el existente; no sobrescribas el archivo del proyecto.
 3. Ejecuta la skill `gtt-bootstrap` (por ejemplo, “bootstrap GTT” o “set up GTT”) en lugar de completar `gtt-domain/context/` manualmente — realiza el paso 1 anterior por ti, de forma determinista.
 4. Si prefieres crear el contexto manualmente, comienza con `gtt-domain/context/stack.md`. Deja una celda vacía en vez de adivinar; un dato desconocido explícito es mejor que una decisión inventada.
 5. Ajusta los globs `paths:` de `.claude/rules/` al layout del proyecto anfitrión (solo Claude Code).
-6. Conecta `.gtt/scripts/gtt-check-stack.sh`, `.gtt/scripts/gtt-check-backlog.sh` y `.gtt/scripts/gtt-check-protection.sh` al CI contra la rama por defecto.
+6. Conecta `.gtt/scripts/gtt-check-stack.sh`, `.gtt/scripts/gtt-check-backlog.sh` y `.gtt/scripts/gtt-check-protection.sh` al CI contra la rama por defecto. En GitHub: `bash .gtt/scripts/gtt-template.sh materialize ci-github-actions --apply`, y después marca el job `gtt` como required status check (ver `.gtt/docs/installation.es.md` → *Instalar el CI gate*).
 7. Ejecuta una sesión e inspecciona `/context`. Solo deberían cargarse automáticamente las reglas centrales y las restricciones esperadas.
 8. Verifica el guardrail: pide al agente editar un archivo protegido, como `gtt-domain/context/stack.md`. La escritura debe ser bloqueada por el mecanismo de enforcement correspondiente y no simplemente desaconsejada.
 9. Verifica los adaptadores: `.gtt/scripts/gtt-check-adapter.sh` confirma que cada ADE participante tiene una integración intacta (contra `.gtt/ade.json`).
@@ -895,11 +947,11 @@ Mapa completo de archivos: [`.gtt/docs/index.md`](.gtt/docs/index.md) · Migraci
 | Reglas centrales portables | mediante import | nativo | nativo | nativo (`AGENTS.md`) + puntero `.github/copilot-instructions.md` |
 | Carga condicional | `paths:` | `inclusion: fileMatch` | `AGENTS.md` anidados | ninguna — solo a nivel repo |
 | Procedimientos bajo demanda | Skills | `inclusion: manual` | prompt | prompt |
-| Bloqueo determinista de escritura | sí | `permissions.yaml` (1.0+) | globs de configuración | no — solo CI gate |
+| Bloqueo determinista de escritura | sí | hook pre-tool, sin verificar en el ADE; CI gate | globs de configuración | hook pre-tool (cloud agent y CLI), sin verificar; CI gate |
 | Contexto gobernado + CI gate | sí | sí | sí | sí |
 | Bloqueo en tiempo real de GTTGuard | sí — `protect-guard.py` | no — solo CI gate | no — solo CI gate | no — solo CI gate |
 
-Claude Code soporta el conjunto completo de adaptadores. `permissions.yaml` de Kiro cubre declarativamente las rutas de infraestructura incondicionales; las rutas dependientes del régimen utilizan el hook compartido y el CI gate cuando corresponde. Codex mantiene el modelo de protección de escritura, pero dispone de menos controles de carga condicional. GitHub Copilot lee instrucciones a nivel de repositorio desde `.github/copilot-instructions.md` e instrucciones de agente desde `AGENTS.md`, según la documentación actual de GitHub — el archivo adaptador de GTT vive en `.copilot/copilot-instructions.md` en cambio, así que no se carga automáticamente en la ruta real de Copilot; ver la nota arriba. No tiene carga condicional por rutas ni bloqueo determinista de escritura más allá del CI gate — el adaptador de Copilot es deliberadamente delgado y no reclama capacidades que GTT no haya implementado realmente para él.
+Claude Code soporta el conjunto completo de adaptadores, y es el único ADE cuyo bloqueo en tiempo real está verificado. Kiro y GitHub Copilot reciben un hook pre-tool construido a partir de su documentación y no verificado dentro de ellos; Kiro no lee reglas de permisos desde un repositorio, así que el `permissions.yaml` que GTT traía ahí no protegía nada y ahora es una plantilla que instala el humano (`.gtt/scaffold/ade/kiro-permissions.yaml`). Codex mantiene el modelo de protección de escritura pero tiene menos controles de carga condicional, y solo lee los primeros 32 KiB de `AGENTS.md`. GitHub Copilot lee `AGENTS.md`, `.github/copilot-instructions.md` y `.github/instructions/**/*.instructions.md`; el archivo de GTT es `.github/instructions/gtt.instructions.md`. Para todos los ADEs salvo Claude Code, el CI gate es la capa que se sostiene.
 
 Detalles y notas de portabilidad: [`.gtt/docs/docs.md`](.gtt/docs/docs.md#portability-claude-code-kiro-codex-copilot-cursor-openhands-antigravity)
 
@@ -928,7 +980,7 @@ Para un proyecto instalado antes del soporte multi-ADE, ejecuta una vez
 
 **Nunca elimines `AGENTS.md`.** Contiene las reglas centrales portables. Claude Code las importa; Kiro, Codex y Copilot las leen de forma nativa.
 
-Eliminar `.claude/` elimina su capa local de enforcement. En Kiro, `permissions.yaml` proporciona protección incondicional donde es compatible; las rutas dependientes del régimen pueden depender del hook compartido y del CI gate. En Codex o Copilot, utiliza `AGENTS.md` anidados cuando necesites reglas específicas por ámbito:
+Eliminar `.claude/` elimina su capa local de enforcement. En Kiro el hook pre-tool no está verificado y el repositorio no lleva reglas de permisos que Kiro lea, así que lo que se sostiene es el CI gate. En Codex o Copilot, usa archivos `AGENTS.md` anidados cuando necesites reglas con alcance:
 
 ```text
 AGENTS.md
@@ -944,7 +996,7 @@ infra/AGENTS.md
 - `gtt-domain/backlog.md`: las Epics/Stories cambian vía `gtt-domain/change-request.md` como una decisión arquitectónica; las actualizaciones de estado y foco durante implementación rutinaria son ediciones directas.
 - `gtt-domain/change-request.md`: tu puerta de entrada cuando deba cambiar una decisión gobernada o la línea de desarrollo comprometida.
 - `SOURCE-BRIEF.*`: se escribe una vez durante el bootstrap y se conserva como fuente original, en la raíz del proyecto.
-- Los adaptadores de tus ADE participantes (`.claude/`, `.kiro/`, `.copilot/copilot-instructions.md`), `.gtt/ade.json` (escrito solo por `gtt-ade.sh`) y `.gtt/scripts/`: activos de runtime/integración de GTT que normalmente requieren pocos cambios, aparte de la configuración de rutas.
+- Los adaptadores de tus ADE participantes (`.claude/`, `.kiro/`, `.github/instructions/gtt.instructions.md`), `.gtt/ade.json` (escrito solo por `gtt-ade.sh`) y `.gtt/scripts/`: activos de runtime/integración de GTT que normalmente requieren pocos cambios, aparte de la configuración de rutas.
 - `.gtt/protection/registry.yaml`: nunca se mantiene a mano — se regenera desde los marcadores `@GTTGuard` en el código mediante `.gtt/scripts/gtt-guard-sync.sh`. Tu parte es poner/quitar el marcador; el registro sigue.
 
 ---

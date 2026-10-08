@@ -26,6 +26,14 @@
       "aliases": []
     },
     {
+      "id": "ART-GTT-DOMAIN-WORKFLOW",
+      "type": "documentation",
+      "path": "gtt-domain/workflow.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-KIRO-STEERING-GTT-DIALOGUE",
       "type": "instruction",
       "path": ".kiro/steering/gtt-dialogue.md",
@@ -124,9 +132,11 @@
     {
       "id": "COPILOT-COPILOT-INSTRUCTIONS",
       "type": "instruction",
-      "path": ".copilot/copilot-instructions.md",
+      "path": ".github/instructions/gtt.instructions.md",
       "status": "active",
-      "history": [],
+      "history": [
+        ".copilot/copilot-instructions.md"
+      ],
       "aliases": []
     },
     {
@@ -178,6 +188,22 @@
       "aliases": []
     },
     {
+      "id": "DOC-ADES",
+      "type": "documentation",
+      "path": ".gtt/docs/agents/ades.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-BOOTSTRAP",
+      "type": "documentation",
+      "path": ".gtt/docs/agents/bootstrap.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-BOOTSTRAP-CONTRACT",
       "type": "documentation",
       "path": ".gtt/docs/bootstrap-contract.md",
@@ -210,6 +236,14 @@
       "aliases": []
     },
     {
+      "id": "DOC-OPERATIONS",
+      "type": "documentation",
+      "path": ".gtt/docs/agents/operations.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-SESSION-ADAPTER-CONTRACT",
       "type": "documentation",
       "path": ".gtt/docs/session-adapter-contract.md",
@@ -237,6 +271,14 @@
       "id": "GTT-GTT-DESIGN-ASSESSMENT",
       "type": "documentation",
       "path": ".gtt/scaffold/templates/gtt-design-assessment.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-GTT-DESIGN-EPIC",
+      "type": "documentation",
+      "path": ".gtt/scaffold/templates/gtt-design-epic.md",
       "status": "active",
       "history": [],
       "aliases": []
@@ -325,38 +367,6 @@
       "id": "KIRO-GTT-INFRASTRUCTURE",
       "type": "instruction",
       "path": ".kiro/steering/gtt-infrastructure.md",
-      "status": "active",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-ANTIGRAVITY-ADE-SUPPORT",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-antigravity-ade-support.md",
-      "status": "active",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-BACKLOG-ANTIGRAVITY-EPIC",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-backlog-antigravity-epic.md",
-      "status": "active",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-BOOTSTRAP-1-3-1-CLOSURE",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-bootstrap-1.3.1-closure.md",
-      "status": "active",
-      "history": [],
-      "aliases": []
-    },
-    {
-      "id": "PROP-PROPOSAL-SESSION-MEMORY-CONSOLIDATION",
-      "type": "proposal",
-      "path": "gtt-domain/proposals/PROPOSAL-session-memory-consolidation.md",
       "status": "active",
       "history": [],
       "aliases": []

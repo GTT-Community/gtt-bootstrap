@@ -174,10 +174,10 @@ detectable — without it, "Service A calls the database directly" is an opinion
 
 ## 6. Map change log
 
-Every row here corresponds to an accepted ADR. If an architectural change
-happened without a row, the governance loop was skipped.
+Every row is an accepted ADR or a promoted specification change. If a governed
+change happened without a row, the governance loop was skipped.
 
-| Date | ADR | What changed in this map |
+| Date | ADR or CHANGE | What changed |
 |---|---|---|
 | | | |
 
@@ -227,13 +227,14 @@ Leave the block empty (as above) rather than inventing rules.
 Decisions that are known and not made. A gap is **BLOCKING** when the design cannot be frozen without it
 (freeze is refused while one is pending) and **OPEN** when the current design stands without it (it crosses
 freeze, carries an explicit `scope:` and authorises nothing: changing anything outside that scope follows the
-normal change path). A resolved gap stays as an append-only `RESOLVED` line citing the ADR that resolved it.
+normal change path). A resolved gap stays as an append-only `RESOLVED` line citing what resolved it: an ADR,
+a promoted specification change (`CHANGE-…`) or a decision in an Epic's design (`design/EPIC-NNN#D-n`).
 Format, one per line: `KIND | ID | topic | scope: ... | affects: ...`, or
-`RESOLVED | ID | topic | was: OPEN | by: ADR-NNN`. Read by `.gtt/scripts/gtt-check-provenance.sh`.
+`RESOLVED | ID | topic | was: OPEN | by: ADR-NNN` (or `by: CHANGE-…`, or `by: design/EPIC-NNN#D-n`). Read by `.gtt/scripts/gtt-check-provenance.sh`.
 
 ```gtt-gaps
 ```
 
 ---
-Governance: L0. Read-only for AI agents. Changes require an approved ADR and are
-applied by the Solution Designer.
+Governance: L0. Read-only for AI agents. Changes go through a change request and the human's
+promotion; architectural ones also need an ADR (AGENTS.md → Governed regime).

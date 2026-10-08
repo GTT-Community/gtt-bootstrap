@@ -10,7 +10,13 @@
     ],
     "sessionStart": [
       {
-        "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format cursor",
+        "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_session_hook.py cursor",
+        "timeout": 30
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .gtt/scripts/gtt-checkpoint.sh --quiet",
         "timeout": 30
       }
     ]

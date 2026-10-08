@@ -81,14 +81,14 @@ gtt-domain/proposals/
 script ejecutable:
 
 ```text
-gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
+gtt-domain/proposals/staged/ADR-NNN-<slug>/
 ```
 
 El agente nunca lo ejecuta. Revisa el paquete y ejecútalo tú mismo desde la
 raíz del proyecto:
 
 ```bash
-bash gtt-domain/proposals/apply-ADR-NNN-<slug>.sh
+bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
 ```
 
 Pide una confirmación final, aplica todos los archivos afectados juntos, y
@@ -376,7 +376,7 @@ misma Frontera de Promoción Humana rigen para todos.
 - Claude Code utiliza `.claude/`.
 - Kiro utiliza `.kiro/`.
 - Codex utiliza `AGENTS.md` y la configuración aplicable, sin archivo adicional.
-- GitHub Copilot utiliza `.copilot/copilot-instructions.md` más `AGENTS.md`.
+- GitHub Copilot utiliza `.github/instructions/gtt.instructions.md` más `AGENTS.md`.
 
 Gestiona el conjunto con `.gtt/scripts/gtt-ade.sh` (ensayo hasta `--apply`): `state` muestra
 el Primario, los ADE participantes y la salud de cada integración, `validate` falla cuando una
@@ -462,9 +462,9 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
-└── .claude/ | .kiro/ | .copilot/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
+└── .claude/ | .kiro/ | .github/instructions/ # OVERLAYS DE ADE - uno por ADE participante; exactamente un ADE es Primario
 ```
 
-El adaptador de cada ADE participante — `.claude/`, `.kiro/`, o `.copilot/copilot-instructions.md` — permanece en la raíz del proyecto anfitrión. Solo se instalan los adaptadores de los ADE participantes.
+El adaptador de cada ADE participante — `.claude/`, `.kiro/`, o `.github/instructions/gtt.instructions.md` — permanece en la raíz del proyecto anfitrión. Solo se instalan los adaptadores de los ADE participantes.
 
 El agente debe preservar los archivos existentes del proyecto, no sobrescribir conflictos silenciosamente y no ejecutar automáticamente el freeze. La revisión y confirmación humana deben ocurrir antes del freeze.

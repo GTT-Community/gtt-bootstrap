@@ -30,7 +30,9 @@ What the work actually does to the governed design is watched by observation
 Exit 0 = ok (warnings allowed), 1 = violation, 2 = cannot determine.
 """
 
+import glob
 import json
+import os
 import re
 import sys
 
@@ -148,7 +150,115 @@ def cmd_check(path):
         if story["status"] == "Done" and (blank(closed) or not DATE.search(closed) or blank(DATE.sub("", closed))):
             print(f"gtt-check-backlog: NOTE - {story['id']} is `Done` without `Closed` (a YYYY-MM-DD date and what "
                   f"closed it: commit or PR, tests passed) ({path}:{story['line']})")
+    failed += check_trace(path, stories, epics)
     return 1 if failed else 0
+
+
+DESIGN_DIR = "gtt-domain/context/design"
+DESIGN_REF = re.compile(r"(?:design/(EPIC-\d+))?#([RFIED]-\d+)")
+ANCHOR_END = re.compile(r"#[RFIED]-\d+\)?[.;,]?\s*$")
+TEST_PATH = re.compile(r"[\w./-]*(?:tests?|specs?|__tests__|e2e)/[\w./-]+|[\w/-]+[._](?:test|spec)\.\w+|\b[\w/-]+\.(?:py|ts|tsx|js|jsx|java|cs|go|rb|kt|rs|php|feature)\b")
+SCENARIO = re.compile(r"(?i)\b(given|dado)\b.*\b(when|cuando)\b.*\b(then|entonces)\b")
+
+
+def design_anchors(epic_id, cache={}):
+    """The item ids (R-1, F-2, E-3, D-1 ...) of an Epic's design, or None when it has no design file."""
+    if epic_id not in cache:
+        try:
+            with open(os.path.join(DESIGN_DIR, epic_id + ".md"), encoding="utf-8") as handle:
+                cache[epic_id] = set(re.findall(r"\*\*([RFIED]-\d+)\*\*", handle.read()))
+        except OSError:
+            cache[epic_id] = None
+    return cache[epic_id]
+
+
+def context_lines(path, story):
+    """The physical lines of a Story's `Context:` field."""
+    with open(path, encoding="utf-8") as handle:
+        lines = handle.read().replace("\r\n", "\n").split("\n")
+    out, inside = [], False
+    for line in lines[story["line"]:]:
+        if line.startswith("#") or line.startswith("---"):
+            break
+        top = FIELD.match(line)
+        if top:
+            inside = top.group(1).strip() == "Context"
+            if inside and top.group(2).strip():
+                out.append(top.group(2).strip())
+        elif inside and line.strip():
+            out.append(line.strip())
+    return out
+
+
+def check_trace(path, stories, epics):
+    """Story -> design -> source. An Epic names its design; a Story points at the parts of the design it
+    builds, distils them with their anchors and takes the design's examples as its acceptance criteria.
+    A backlog cites; it never decides. What predates this - an approved Epic with no design, a Story with
+    no `Implements:` - is a warning, never a failure, except for a Story that is being worked."""
+    failed = 0
+
+    def fail(message):
+        nonlocal failed
+        failed += 1
+        print(f"gtt-check-backlog: FAILED - {message}", file=sys.stderr)
+
+    declared = {}
+    for epic in epics:
+        design = epic["fields"].get("Design", "").strip().strip("`")
+        if design and not blank(design):
+            declared[epic["id"]] = design
+            if not os.path.isfile(design):
+                fail(f"{epic['id']} names a design that does not exist: {design} ({path}:{epic['line']})")
+        elif epic["status"] in APPROVED_STATES:
+            print(f"gtt-check-backlog: WARN - {epic['id']} is `{epic['status']}` and names no `Design:` "
+                  f"({DESIGN_DIR}/{epic['id']}.md); the next freeze needs it complete and approved")
+    for story in stories:
+        if not story["epic"] or normal(story["status"]) == "Cancelled":
+            continue
+        where = f"{path}:{story['line']}"
+        implements = story["fields"].get("Implements", "")
+        if blank(implements):
+            if story["epic"] in declared and normal(story["status"]) == "In Progress":
+                fail(f"{story['id']} is `In Progress` without `Implements:` - say which parts of design/{story['epic']} it builds ({where})")
+            elif story["epic"] in declared:
+                print(f"gtt-check-backlog: WARN - {story['id']} has no `Implements:` (the parts of its Epic's design it builds) ({where})")
+            continue
+        last, cited = story["epic"], 0
+        for epic_id, item in DESIGN_REF.findall(implements):
+            last = epic_id or last
+            anchors = design_anchors(last)
+            cited += 1
+            if anchors is None:
+                fail(f"{story['id']} implements design/{last}#{item}, and {DESIGN_DIR}/{last}.md does not exist ({where})")
+            elif item not in anchors:
+                fail(f"{story['id']} implements design/{last}#{item}, which is not in that design ({where})")
+        for adr in re.findall(r"\bADR-\d{3,}\b", implements):
+            cited += 1
+            if not glob.glob(f"gtt-domain/adr/{adr}*.md"):
+                fail(f"{story['id']} implements {adr}, which does not exist ({where})")
+        if not cited:
+            fail(f"{story['id']}: `Implements:` cites nothing - point at the design (design/{story['epic']}#R-1) ({where})")
+        anchors = design_anchors(story["epic"]) or set()
+        done = story["fields"].get("Done when", "")
+        examples = re.findall(r"\bE-\d+\b", done)
+        problems = [f"{e} is not an example of the design" for e in examples if e not in anchors]
+        if not examples and not (SCENARIO.search(done) and re.search(r"#[RFIED]-\d+", done)):
+            problems.append("it names no example of the design (E-n), nor a Given/When/Then with its anchor")
+        if not TEST_PATH.search(done):
+            problems.append("it names no test file")
+        for problem in problems:
+            message = f"{story['id']} `Done when:` - {problem} ({where})"
+            if normal(story["status"]) in ACTIVE:
+                fail(message)
+            else:
+                print(f"gtt-check-backlog: WARN - {message}")
+        lines = context_lines(path, story)
+        if len(lines) > 5:
+            fail(f"{story['id']} `Context:` has {len(lines)} lines - distil at most five from the design ({where})")
+        for line in lines:
+            if not ANCHOR_END.search(line):
+                fail(f"{story['id']} `Context:` line does not end with its design anchor (#R-2): {line[:60]} ({where})")
+    return failed
 
 
 def facts(path):

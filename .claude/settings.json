@@ -16,7 +16,13 @@
       "Edit(/.claude/settings.local.json)",
       "Write(/.claude/settings.local.json)",
       "Edit(/.claude/hooks/**)",
-      "Write(/.claude/hooks/**)"
+      "Write(/.claude/hooks/**)",
+      "Edit(/.gtt/local/checkpoint.json)",
+      "Write(/.gtt/local/checkpoint.json)",
+      "Edit(/.gtt/local/last-validation.json)",
+      "Write(/.gtt/local/last-validation.json)",
+      "Edit(/docs/sources/**)",
+      "Write(/docs/sources/**)"
     ]
   },
   "hooks": {
@@ -26,11 +32,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -c '' >/dev/null 2>&1 && python3 .claude/hooks/protect-l0.py || python .claude/hooks/protect-l0.py"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/protect-l0.py"
           },
           {
             "type": "command",
-            "command": "python3 -c '' >/dev/null 2>&1 && python3 .claude/hooks/protect-guard.py || python .claude/hooks/protect-guard.py"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/protect-guard.py"
           }
         ]
       }
@@ -41,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/detect-drift.py"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/detect-drift.py"
           }
         ]
       }
@@ -51,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/notify-change-request.py"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/notify-change-request.py"
           }
         ]
       }
@@ -61,7 +67,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/session-start.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-checkpoint.sh --quiet"
           }
         ]
       }

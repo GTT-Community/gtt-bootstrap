@@ -95,7 +95,7 @@ def cmd_materialize(args):
     src, dst = os.path.join(root, row["path"]), row["materialize_to"]
     print(f"materialize {row['id']}: {row['path']} -> {dst}")
     if os.path.exists(dst):
-        print(f"CONFLICT  {dst} already exists - never overwritten (a filled questionnaire is work in progress).",
+        print(f"CONFLICT  {dst} already exists - never overwritten (what is already there is the project's).",
               file=sys.stderr)
         return 1
     if not args.apply:
@@ -104,8 +104,11 @@ def cmd_materialize(args):
     os.makedirs(os.path.dirname(dst) or ".", exist_ok=True)
     shutil.copyfile(src, dst)
     print(f"created {dst}")
-    print("It is source material: not governed context, not a decision. The Primary ADE reads its "
-          "Operating Contract first; unknowns, conflicts and proposals stay visible until the human decides.")
+    if row.get("becomes") == "ci-workflow":
+        print("It blocks nothing until the human makes its job a required status check on the default branch.")
+    else:
+        print("It is source material: not governed context, not a decision. The Primary ADE reads its "
+              "Operating Contract first; unknowns, conflicts and proposals stay visible until the human decides.")
     index = ".gtt/scripts/gtt-index.sh"
     if os.path.isfile(index):
         done = subprocess.run(["bash", index], capture_output=True, text=True, encoding="utf-8",

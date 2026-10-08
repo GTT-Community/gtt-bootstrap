@@ -16,7 +16,8 @@ What it reads (all optional; a project without them is unchanged)
                       RESOLVED | ID | topic | was: OPEN | by: ADR-NNN        (append-only trace)
   source manifest   block `gtt-sources` in gtt-domain/context/sources.md
                       policy: provenance=advisory|required
-                      id | path | version | authority | precedence | status
+                      id | path | version | authority | precedence | status [| sha256]
+                      (one line per version of a source; gtt-source.sh writes them)
   working agreements  block `gtt-preferences` in gtt-domain/working-agreements.md (team, versioned)
                       and .gtt/local/preferences.md (user, local, never committed)
                       id | scope | applies-to | text
@@ -38,6 +39,8 @@ import os
 import re
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 STACK = "gtt-domain/context/stack.md"
 SOURCES = "gtt-domain/context/sources.md"
@@ -183,12 +186,15 @@ def load_sources(findings):
             policy = match.group(1).lower()
             continue
         cells = [c.strip() for c in raw.split("|")]
-        if len(cells) != 6:
-            findings.add("FAIL", "sources", where, "expected: id | path | version | authority | precedence | status")
+        if len(cells) not in (6, 7):
+            findings.add("FAIL", "sources", where, "expected: id | path | version | authority | precedence | status [| sha256]")
             continue
-        sid, path, version, authority, precedence, state = cells
-        if any(s["id"] == sid for s in sources):
-            findings.add("FAIL", "sources", where, f"duplicate source id `{sid}`")
+        sid, path, version, authority, precedence, state = cells[:6]
+        # One line per version of a source: the id repeats, the version does not, and one version is active.
+        if any(s["id"] == sid and s["version"] == version for s in sources):
+            findings.add("FAIL", "sources", where, f"duplicate source `{sid}` version `{version}`")
+        if state == "active" and any(s["id"] == sid and s["status"] == "active" for s in sources):
+            findings.add("FAIL", "sources", where, f"`{sid}` has two active versions: the earlier one is `superseded`")
         if authority not in AUTHORITIES:
             findings.add("FAIL", "sources", where, f"authority `{authority}` must be one of {sorted(AUTHORITIES)}")
         if state not in SOURCE_STATES:
@@ -196,7 +202,7 @@ def load_sources(findings):
         prec = int(precedence) if precedence.isdigit() else None
         if prec is None and authority in ("primary", "secondary") and state == "active":
             findings.add("FAIL", "sources", where, f"`{sid}`: an active {authority} source needs an integer precedence")
-        if prec is not None:
+        if prec is not None and state == "active":
             if prec in seen_prec:
                 findings.add("FAIL", "sources", where,
                              f"precedence {prec} is shared by `{seen_prec[prec]}` and `{sid}` - ambiguous")
@@ -215,7 +221,7 @@ def load_sources(findings):
 
 
 def governed_files():
-    files = sorted(glob.glob(CTX_GLOB))
+    files = sorted(glob.glob(CTX_GLOB)) + sorted(glob.glob("gtt-domain/context/design/*.md"))
     files += [f for f in sorted(glob.glob(ADR_GLOB)) if "ADR-TEMPLATE" not in f]
     return [f.replace("\\", "/") for f in files]
 
@@ -322,10 +328,22 @@ def run_checks(only=None, prefreeze=False):
         else:
             if gap["was"] not in ("OPEN", "BLOCKING"):
                 findings.add("FAIL", "gaps", gap["where"], f"{gap['id']}: RESOLVED must state `was: OPEN|BLOCKING`")
-            adr = gap["by"] or ""
-            if not re.fullmatch(r"ADR-\d{3,}", adr) or not glob.glob(f"gtt-domain/adr/{adr}*.md"):
+            by = gap["by"] or ""
+            design = re.fullmatch(r"design/(EPIC-\d+)#(D-\d+)", by)
+            if re.fullmatch(r"ADR-\d{3,}", by):
+                ok = bool(glob.glob(f"gtt-domain/adr/{by}*.md"))
+            elif re.fullmatch(r"CHANGE-[\w.-]+", by):
+                # a promoted specification change: its row in the map change log
+                ok = re.search(r"^\|[^|\n]*\|\s*%s\s*\|" % re.escape(by), read(STACK) or "", re.M) is not None
+            elif design:
+                ok = f"**{design.group(2)}**" in (read(f"gtt-domain/context/design/{design.group(1)}.md") or "")
+            else:
+                ok = False
+            if not ok:
                 findings.add("FAIL", "gaps", gap["where"],
-                             f"{gap['id']}: RESOLVED must cite an existing ADR (`by: ADR-NNN`), got `{adr}`")
+                             f"{gap['id']}: RESOLVED must cite what resolved it and it must exist - `by: ADR-NNN`, "
+                             f"`by: CHANGE-...` or `by: design/EPIC-NNN#D-n` - got `{by}`")
+    resolved_by = {g["id"]: g["by"] or "" for g in gaps if g["kind"] == "RESOLVED"}
     resolved = {g["id"] for g in gaps if g["kind"] == "RESOLVED"}
     live = {g["id"] for g in gaps if g["kind"] in ("OPEN", "BLOCKING")}
     for gid in sorted(resolved & live):
@@ -348,16 +366,30 @@ def run_checks(only=None, prefreeze=False):
                 findings.add("FAIL", "tags", where, "[FUENTE] without a reference")
                 continue
             head = token.split(":")[0]
+            head = head.split("@")[0]
             ok = head in known_ids or bool(glob.glob(head))
             if not ok:
                 level = "FAIL" if (manifest or strict) else "WARN"
                 findings.add(level, "tags", where, f"[FUENTE: {arg}] does not resolve to a declared source or an existing path")
+            elif head in known_ids:
+                # A citation of a declared source is verifiable: its section exists in the version it points at.
+                try:
+                    import gtt_design
+                    problem = gtt_design.check_citation(arg)
+                except Exception:
+                    problem = None
+                if problem:
+                    findings.add("FAIL" if problem[0] == "FAIL" else "WARN", "tags", where, problem[1])
         elif name == "VACIO":
             if not arg:
                 level = "FAIL" if strict else "WARN"
                 findings.add(level, "tags", where, "[VACÍO] is not classified: cite the gap it belongs to ([VACÍO: GAP-001])")
             elif arg not in gap_ids:
-                findings.add("FAIL", "tags", where, f"[VACÍO: {arg}] names a gap that is not OPEN or BLOCKING in the register")
+                by = resolved_by.get(arg, "")
+                history = bool(by) and ((by.startswith("ADR-") and by in path) or by.startswith("CHANGE-")
+                                        or (by.startswith("design/") and path.endswith(by.split("#")[0] + ".md")))
+                if not history:                             # inside the document that resolved the gap it is history
+                    findings.add("FAIL", "tags", where, f"[VACÍO: {arg}] names a gap that is not OPEN or BLOCKING in the register")
         elif name == "CONFLICTO":
             parts = [p.strip() for p in re.split(r"\s+vs\.?\s+|,|\|", arg) if p.strip()]
             if len(parts) < 2:
