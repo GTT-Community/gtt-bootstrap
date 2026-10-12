@@ -29,6 +29,8 @@ import re
 import subprocess
 import sys
 
+from gtt_bash import bash_executable
+
 import gtt_manifest as gm
 import gtt_provenance as gp
 
@@ -72,7 +74,7 @@ def write_json(path, data):
 
 
 def sh(*cmd):
-    proc = subprocess.run(["bash", *cmd], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    proc = subprocess.run([bash_executable(), *cmd], capture_output=True, text=True, encoding="utf-8", errors="replace")
     return proc.returncode, proc.stdout, proc.stderr
 
 

@@ -121,7 +121,7 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.5.0" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.5.1" and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
@@ -500,7 +500,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.5.0" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == "1.5.1" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -560,7 +560,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.5.0", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.5.1", "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),
@@ -2321,15 +2321,15 @@ def design_sources(project, tmp):
           and open(marker, encoding="utf-8").read() == frozen_now and os.path.isdir(os.path.join(f, "gtt-domain/proposals/staged/new-boundary")),
           "an architectural change with no ADR in its set is refused: nothing is written and the freeze stands", (out + err)[-300:])
 
-    print("[contract] the model is data: five invariants no plan relaxes, version 1.5.0")
+    print("[contract] the model is data: five invariants no plan relaxes, version 1.5.1")
     spec = json.loads(contract(project, "show", "profiles")[1])
     rules = {i["id"]: i for i in spec["invariants"]}
     check(all(k in rules and rules[k]["relaxable"] is False and rules[k]["enforcement"] and rules[k]["statement"]
               for k in ("sources-immutable", "design-per-epic", "traceability", "governance-levels", "backlog-cites-never-decides")),
           "sources-immutable, design-per-epic, traceability, governance-levels and backlog-cites-never-decides are invariants")
     release = json.loads(contract(project, "release", "--json")[1]) if False else read_json(os.path.join(project, ".gtt", "contract", "release.json"))
-    check(release["bootstrap"]["version"] == "1.5.0" and release["contracts"]["methodology_profile"] == 6 and release["contracts"]["sources"] == 1
-          and release["contracts"]["design"] == 1, "the release is 1.5.0, methodology profile 6, with the sources and design contracts")
+    check(release["bootstrap"]["version"] == "1.5.1" and release["contracts"]["methodology_profile"] == 6 and release["contracts"]["sources"] == 1
+          and release["contracts"]["design"] == 1, "the release is 1.5.1, methodology profile 6, with the sources and design contracts")
     with open(os.path.join(project, CONTRACT), encoding="utf-8") as handle:
         agents = handle.read()
     check("**Where the detail lives.**" in agents and "**Three levels of control.**" in agents and len(agents.encode("utf-8")) <= 24576,

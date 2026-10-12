@@ -21,6 +21,8 @@ import subprocess
 import sys
 import tempfile
 
+from gtt_bash import bash_executable
+
 SERVICE = "gtt-session-context.sh"
 MARKERS = ["operational-only", "NOT authority", "NOT evidence",
            "NOT a decision record", "NOT a grounding source"]
@@ -261,7 +263,7 @@ def build_sandbox(m):
 
 
 def run(command, cwd):
-    return subprocess.run(["bash", "-c", command], cwd=cwd, stdin=subprocess.DEVNULL,
+    return subprocess.run([bash_executable(), "-c", command], cwd=cwd, stdin=subprocess.DEVNULL,
                           capture_output=True, text=True, encoding="utf-8",
                           errors="replace", timeout=90)
 

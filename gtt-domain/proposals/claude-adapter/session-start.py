@@ -7,10 +7,20 @@ SessionStart JSON Claude Code consumes. Any failure is reported on stderr
 with a non-zero exit (a visible, non-blocking hook error) - never swallowed.
 """
 import json
+import os
 import subprocess
 import sys
 
 WRAPPER = ".gtt/scripts/gtt-session-context.sh"
+
+# The bash to run GTT scripts with: on Windows a program started by name is
+# found in the system directory first, and that is the WSL launcher.
+sys.path.insert(0, os.path.join(".gtt", "scripts"))
+try:
+    from gtt_bash import bash_executable
+except ImportError:  # an Engine without the resolver: the PATH decides
+    def bash_executable():
+        return "bash"
 
 BANNER = (
     "GTT SESSION MEMORY - operational-only.\n"
@@ -29,7 +39,7 @@ def fail(message):
 
 try:
     proc = subprocess.run(
-        ["bash", WRAPPER],
+        [bash_executable(), WRAPPER],
         capture_output=True,
         text=True,
         encoding="utf-8",

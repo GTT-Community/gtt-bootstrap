@@ -38,6 +38,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+
+from gtt_bash import bash_executable  # noqa: E402
 sys.dont_write_bytecode = True            # a review that leaves files behind would change what it reports
 
 WORKFLOW = "gtt-domain/workflow.md"
@@ -676,7 +678,7 @@ def cmd_promote(args):
         print(f"gtt-promote: failed ({error}); every file was put back. Nothing was changed.", file=sys.stderr)
         return 1
     if frozen_change:
-        freeze = subprocess.run(["bash", os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        freeze = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if freeze.returncode != 0:
             restore(args.name, quiet=True)
             print((freeze.stdout + freeze.stderr).rstrip(), file=sys.stderr)
@@ -691,7 +693,7 @@ def cmd_promote(args):
     print(f"Undo: bash .gtt/scripts/gtt-promote.sh --undo {args.name}")
     maintain = os.path.join(".gtt", "scripts", "gtt-maintain.sh")
     if os.path.isfile(maintain):
-        done = subprocess.run(["bash", maintain], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        done = subprocess.run([bash_executable(), maintain], capture_output=True, text=True, encoding="utf-8", errors="replace")
         print(done.stdout.rstrip())
         return 0 if done.returncode == 0 else 1
     return 0

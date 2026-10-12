@@ -46,8 +46,16 @@ def main() -> int:
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     if not os.path.exists(os.path.join(root, FROZEN_MARKER)) or not os.path.isfile(os.path.join(root, ENGINE)):
         return 0
+    # On Windows a program started by name is found in the system directory
+    # first, and that is the WSL launcher: ask the Engine which bash to run.
+    sys.path.insert(0, os.path.join(root, ".gtt", "scripts"))
     try:
-        proc = subprocess.run(["bash", ENGINE, "observe", "--debounce", "20"], cwd=root, capture_output=True, text=True,
+        from gtt_bash import bash_executable
+        bash = bash_executable()
+    except ImportError:
+        bash = "bash"
+    try:
+        proc = subprocess.run([bash, ENGINE, "observe", "--debounce", "20"], cwd=root, capture_output=True, text=True,
                               encoding="utf-8", errors="replace", timeout=60)
     except (OSError, subprocess.TimeoutExpired):
         return 0

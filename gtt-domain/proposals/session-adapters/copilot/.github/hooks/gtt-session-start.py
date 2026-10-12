@@ -10,10 +10,20 @@ Copilot for this event, so it is not emitted.
 Failure: a message on stderr and exit 1 (never 2), no context emitted.
 """
 import json
+import os
 import subprocess
 import sys
 
 SERVICE = ".gtt/scripts/gtt-session-context.sh"
+
+# The bash to run GTT scripts with: on Windows a program started by name is
+# found in the system directory first, and that is the WSL launcher.
+sys.path.insert(0, os.path.join(".gtt", "scripts"))
+try:
+    from gtt_bash import bash_executable
+except ImportError:  # an Engine without the resolver: the PATH decides
+    def bash_executable():
+        return "bash"
 
 BANNER = (
     "GTT SESSION MEMORY - operational-only.\n"
@@ -31,7 +41,7 @@ def fail(message):
 
 try:
     proc = subprocess.run(
-        ["bash", SERVICE],
+        [bash_executable(), SERVICE],
         capture_output=True,
         text=True,
         encoding="utf-8",

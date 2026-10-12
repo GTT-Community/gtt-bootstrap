@@ -37,6 +37,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+
+from gtt_bash import bash_executable  # noqa: E402
 sys.dont_write_bytecode = True
 
 SOURCES_MD = "gtt-domain/context/sources.md"
@@ -732,7 +734,7 @@ def cmd_approve(args):
     replace_line(path, r"^\*\*Epic:\*\*.*\*\*Status:\*\*", re.sub(r"\*\*Status:\*\*.*$", f"**Status:** Approved — {stamp}",
                                                                  next(l for l in design["text"].split("\n") if "**Status:**" in l)))
     if frozen():
-        done = subprocess.run(["bash", os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        done = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if done.returncode != 0:
             for target, text in originals.items():
                 write(target, text)

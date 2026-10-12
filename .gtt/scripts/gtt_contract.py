@@ -25,6 +25,8 @@ import re
 import subprocess
 import sys
 
+from gtt_bash import bash_executable
+
 import gtt_manifest as gm
 
 CONTRACT_DIR = ".gtt/contract"
@@ -297,7 +299,7 @@ def cmd_run(args):
         print(f"gtt-contract: `{op['implementation']}` is not a trusted implementation (must exist under .gtt/scripts/). "
               "Nothing was run.", file=sys.stderr)
         return EXIT_ARGS
-    command = ["bash", impl] + argv
+    command = [bash_executable(), impl] + argv
     proc = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", shell=False)
     if args.envelope:
         emit({"operation": args.operation, "version": op["version"], "exit_code": proc.returncode,

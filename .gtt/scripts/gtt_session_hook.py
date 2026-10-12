@@ -15,6 +15,8 @@ import os
 import subprocess
 import sys
 
+from gtt_bash import bash_executable
+
 FIELDS = {"cursor": "additional_context", "openhands": "additionalContext"}
 WRAPPER = os.path.join(".gtt", "scripts", "gtt-session-context.sh")
 
@@ -29,7 +31,7 @@ def main(argv):
         fail("usage: gtt_session_hook.py " + "|".join(sorted(FIELDS)))
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     try:
-        proc = subprocess.run(["bash", WRAPPER], cwd=root, capture_output=True, text=True, encoding="utf-8",
+        proc = subprocess.run([bash_executable(), WRAPPER], cwd=root, capture_output=True, text=True, encoding="utf-8",
                               errors="replace", timeout=60)
     except FileNotFoundError:
         fail("`bash` not found on PATH; cannot run " + WRAPPER)

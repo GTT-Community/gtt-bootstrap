@@ -26,6 +26,8 @@ import shutil
 import subprocess
 import sys
 
+from gtt_bash import bash_executable
+
 import gtt_manifest as gm
 
 SCHEMA = 1
@@ -111,7 +113,7 @@ def cmd_materialize(args):
               "Operating Contract first; unknowns, conflicts and proposals stay visible until the human decides.")
     index = ".gtt/scripts/gtt-index.sh"
     if os.path.isfile(index):
-        done = subprocess.run(["bash", index], capture_output=True, text=True, encoding="utf-8",
+        done = subprocess.run([bash_executable(), index], capture_output=True, text=True, encoding="utf-8",
                               errors="replace")
         if done.returncode != 0:
             # The working copy is the result of this operation; the index is derived state. In a host project
