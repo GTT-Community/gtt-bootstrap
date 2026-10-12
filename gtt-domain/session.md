@@ -7,15 +7,14 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-08T17:24:49Z
+# Generated: 2026-10-12T20:15:45Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
-CHANGED  100 files (+33 new, −2) · +9596 −2478 · uncommitted: 96   ▲ HIGH: 100 files > 10
-IMPACT   governed: architecture.md, stack.md · protected: none
-RISKS    validation not run since the last change
-VALID    14:22 · OK 22 PASS 1 SKIPPED · stale
-NEXT     bash .gtt/scripts/gtt-validate.sh
+CHANGED  1 files (+0 new, −0) · +119 −50 · uncommitted: 1
+IMPACT   governed: none · protected: none
+VALID    17:15 · OK 22 PASS 1 SKIPPED
+NEXT     nothing pending
 more: gtt-review.sh --files · git diff --stat · gtt-status.sh
 
 ## Freeze state
@@ -69,10 +68,10 @@ technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: feat/story-precedence; uncommitted paths: 98
+branch: main; uncommitted paths: 2
 recent commits:
+0e1b86d update
+0747b93 update
+3067216 update
+7aaece0 feat(bootstrap): sources, design per Epic, review surface and Git workflow - Bootstrap 1.5.0
 29c62a6 feat(bootstrap): close governance and observation architecture in 1.3.1
-66b7e15 feat: governed backlog, design assessment, THINK Depth, Cursor and OpenHands - Bootstrap 1.3.0
-0d187b4 chore: virgin product - drop citations of ADRs that are not shipped
-af1dc3f feat: developer friction minimization, plan-aware automation - Bootstrap 1.2.0
-de1d40e feat: Method Plans (Light / Medium / Hard / Team)

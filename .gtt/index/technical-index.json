@@ -714,7 +714,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v2.1",
-      "sha256": "bea8a6ce770b68742bacbe87b207ce292c5f563ad1e587e758356eb6c481c5dc",
+      "sha256": "1d44d79f3bcac399bcba47d54e8cbdfe9fe8b02424c274d7b4aa07acb891c95e",
       "aliases": [],
       "sections": [
         {
@@ -723,95 +723,159 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 142
+          "line_end": 211
         },
         {
           "heading": "Development Line",
           "level": 2,
           "anchor": "development-line",
           "path": "Project Backlog > Development Line",
-          "line_start": 15,
-          "line_end": 18
+          "line_start": 24,
+          "line_end": 29
         },
         {
-          "heading": "Precedence",
+          "heading": "How to read this file",
           "level": 2,
-          "anchor": "precedence",
-          "path": "Project Backlog > Precedence",
-          "line_start": 19,
-          "line_end": 36
+          "anchor": "how-to-read-this-file",
+          "path": "Project Backlog > How to read this file",
+          "line_start": 30,
+          "line_end": 99
         },
         {
-          "heading": "Epics and Stories",
-          "level": 2,
-          "anchor": "epics-and-stories",
-          "path": "Project Backlog > Epics and Stories",
-          "line_start": 37,
-          "line_end": 88
+          "heading": "The two kinds of entry",
+          "level": 3,
+          "anchor": "the-two-kinds-of-entry",
+          "path": "Project Backlog > How to read this file > The two kinds of entry",
+          "line_start": 32,
+          "line_end": 40
+        },
+        {
+          "heading": "What an Epic says",
+          "level": 3,
+          "anchor": "what-an-epic-says",
+          "path": "Project Backlog > How to read this file > What an Epic says",
+          "line_start": 41,
+          "line_end": 51
+        },
+        {
+          "heading": "What a Story says",
+          "level": 3,
+          "anchor": "what-a-story-says",
+          "path": "Project Backlog > How to read this file > What a Story says",
+          "line_start": 52,
+          "line_end": 61
+        },
+        {
+          "heading": "Statuses",
+          "level": 3,
+          "anchor": "statuses",
+          "path": "Project Backlog > How to read this file > Statuses",
+          "line_start": 62,
+          "line_end": 79
+        },
+        {
+          "heading": "What you can change here",
+          "level": 3,
+          "anchor": "what-you-can-change-here",
+          "path": "Project Backlog > How to read this file > What you can change here",
+          "line_start": 80,
+          "line_end": 99
         },
         {
           "heading": "Epics",
           "level": 2,
           "anchor": "epics",
           "path": "Project Backlog > Epics",
-          "line_start": 89,
-          "line_end": 114
+          "line_start": 100,
+          "line_end": 125
         },
         {
           "heading": "EPIC-001 — <Epic title (example)>",
           "level": 3,
           "anchor": "epic-001--epic-title-example",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)>",
-          "line_start": 94,
-          "line_end": 114
+          "line_start": 105,
+          "line_end": 125
         },
         {
           "heading": "Stories",
           "level": 4,
           "anchor": "stories",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories",
-          "line_start": 103,
-          "line_end": 114
+          "line_start": 114,
+          "line_end": 125
         },
         {
           "heading": "STORY-001 — <Story title (example)>",
           "level": 5,
           "anchor": "story-001--story-title-example",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories > STORY-001 — <Story title (example)>",
-          "line_start": 105,
-          "line_end": 114
+          "line_start": 116,
+          "line_end": 125
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 115,
-          "line_end": 120
+          "line_start": 126,
+          "line_end": 131
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 121,
-          "line_end": 126
+          "line_start": 132,
+          "line_end": 137
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 127,
-          "line_end": 132
+          "line_start": 138,
+          "line_end": 143
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 133,
-          "line_end": 142
+          "line_start": 144,
+          "line_end": 149
+        },
+        {
+          "heading": "Reference",
+          "level": 2,
+          "anchor": "reference",
+          "path": "Project Backlog > Reference",
+          "line_start": 150,
+          "line_end": 211
+        },
+        {
+          "heading": "Where the detail lives",
+          "level": 3,
+          "anchor": "where-the-detail-lives",
+          "path": "Project Backlog > Reference > Where the detail lives",
+          "line_start": 155,
+          "line_end": 172
+        },
+        {
+          "heading": "When the plan and the design disagree",
+          "level": 3,
+          "anchor": "when-the-plan-and-the-design-disagree",
+          "path": "Project Backlog > Reference > When the plan and the design disagree",
+          "line_start": 173,
+          "line_end": 191
+        },
+        {
+          "heading": "What keeps it honest",
+          "level": 3,
+          "anchor": "what-keeps-it-honest",
+          "path": "Project Backlog > Reference > What keeps it honest",
+          "line_start": 192,
+          "line_end": 211
         }
       ],
       "references": [],
@@ -5029,7 +5093,7 @@
       "title": "GTT Bootstrap",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "860b0150ac63c072b19ed736bfc298653fbfb99ca175d66e8fdb8408cb84a29c",
+      "sha256": "3de7a960dbb34d5e9c788e7384f988baad01227e4ede8db49ea51625fec56678",
       "aliases": [],
       "sections": [
         {
@@ -5038,7 +5102,7 @@
           "anchor": "gtt-bootstrap",
           "path": "GTT Bootstrap",
           "line_start": 1,
-          "line_end": 1037
+          "line_end": 1048
         },
         {
           "heading": "Navegación rápida",
@@ -5046,271 +5110,271 @@
           "anchor": "navegación-rápida",
           "path": "GTT Bootstrap > Navegación rápida",
           "line_start": 19,
-          "line_end": 47
+          "line_end": 58
         },
         {
           "heading": "Flujo de uso",
           "level": 2,
           "anchor": "flujo-de-uso",
           "path": "GTT Bootstrap > Flujo de uso",
-          "line_start": 48,
-          "line_end": 139
+          "line_start": 59,
+          "line_end": 150
         },
         {
           "heading": "1. Inicializar el contexto gobernado",
           "level": 3,
           "anchor": "1-inicializar-el-contexto-gobernado",
           "path": "GTT Bootstrap > Flujo de uso > 1. Inicializar el contexto gobernado",
-          "line_start": 50,
-          "line_end": 110
+          "line_start": 61,
+          "line_end": 121
         },
         {
           "heading": "2. Instalación manual",
           "level": 3,
           "anchor": "2-instalación-manual",
           "path": "GTT Bootstrap > Flujo de uso > 2. Instalación manual",
-          "line_start": 111,
-          "line_end": 118
+          "line_start": 122,
+          "line_end": 129
         },
         {
           "heading": "3. Instalación asistida por agente",
           "level": 3,
           "anchor": "3-instalación-asistida-por-agente",
           "path": "GTT Bootstrap > Flujo de uso > 3. Instalación asistida por agente",
-          "line_start": 119,
-          "line_end": 139
+          "line_start": 130,
+          "line_end": 150
         },
         {
           "heading": "Adaptadores de ADE",
           "level": 2,
           "anchor": "adaptadores-de-ade",
           "path": "GTT Bootstrap > Adaptadores de ADE",
-          "line_start": 140,
-          "line_end": 282
+          "line_start": 151,
+          "line_end": 293
         },
         {
           "heading": "Evaluar y potenciar un diseño existente",
           "level": 2,
           "anchor": "evaluar-y-potenciar-un-diseño-existente",
           "path": "GTT Bootstrap > Evaluar y potenciar un diseño existente",
-          "line_start": 283,
-          "line_end": 350
+          "line_start": 294,
+          "line_end": 361
         },
         {
           "heading": "Empezar sin documento de diseño",
           "level": 2,
           "anchor": "empezar-sin-documento-de-diseño",
           "path": "GTT Bootstrap > Empezar sin documento de diseño",
-          "line_start": 351,
-          "line_end": 375
+          "line_start": 362,
+          "line_end": 386
         },
         {
           "heading": "Scaffolding obligatorio del workspace GTT",
           "level": 2,
           "anchor": "scaffolding-obligatorio-del-workspace-gtt",
           "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT",
-          "line_start": 376,
-          "line_end": 422
+          "line_start": 387,
+          "line_end": 433
         },
         {
           "heading": "Reglas del scaffolding",
           "level": 3,
           "anchor": "reglas-del-scaffolding",
           "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT > Reglas del scaffolding",
-          "line_start": 409,
-          "line_end": 422
+          "line_start": 420,
+          "line_end": 433
         },
         {
           "heading": "Higiene del workspace",
           "level": 2,
           "anchor": "higiene-del-workspace",
           "path": "GTT Bootstrap > Higiene del workspace",
-          "line_start": 423,
-          "line_end": 467
+          "line_start": 434,
+          "line_end": 478
         },
         {
           "heading": "El problema",
           "level": 2,
           "anchor": "el-problema",
           "path": "GTT Bootstrap > El problema",
-          "line_start": 468,
-          "line_end": 479
+          "line_start": 479,
+          "line_end": 490
         },
         {
           "heading": "Los dos archivos que siempre tocarás",
           "level": 2,
           "anchor": "los-dos-archivos-que-siempre-tocarás",
           "path": "GTT Bootstrap > Los dos archivos que siempre tocarás",
-          "line_start": 480,
-          "line_end": 492
+          "line_start": 491,
+          "line_end": 503
         },
         {
           "heading": "El mapa",
           "level": 2,
           "anchor": "el-mapa",
           "path": "GTT Bootstrap > El mapa",
-          "line_start": 493,
-          "line_end": 514
+          "line_start": 504,
+          "line_end": 525
         },
         {
           "heading": "Cambiar algo",
           "level": 2,
           "anchor": "cambiar-algo",
           "path": "GTT Bootstrap > Cambiar algo",
-          "line_start": 515,
-          "line_end": 551
+          "line_start": 526,
+          "line_end": 562
         },
         {
           "heading": "Límite Humano de Promoción",
           "level": 2,
           "anchor": "límite-humano-de-promoción",
           "path": "GTT Bootstrap > Límite Humano de Promoción",
-          "line_start": 552,
-          "line_end": 578
+          "line_start": 563,
+          "line_end": 589
         },
         {
           "heading": "Backlog",
           "level": 2,
           "anchor": "backlog",
           "path": "GTT Bootstrap > Backlog",
-          "line_start": 579,
-          "line_end": 622
+          "line_start": 590,
+          "line_end": 633
         },
         {
           "heading": "Gobierno y observación: los dos planos",
           "level": 2,
           "anchor": "gobierno-y-observación-los-dos-planos",
           "path": "GTT Bootstrap > Gobierno y observación: los dos planos",
-          "line_start": 623,
-          "line_end": 692
+          "line_start": 634,
+          "line_end": 703
         },
         {
           "heading": "Dónde vive cada cosa: fuentes, diseño, backlog",
           "level": 2,
           "anchor": "dónde-vive-cada-cosa-fuentes-diseño-backlog",
           "path": "GTT Bootstrap > Dónde vive cada cosa: fuentes, diseño, backlog",
-          "line_start": 693,
-          "line_end": 717
+          "line_start": 704,
+          "line_end": 728
         },
         {
           "heading": "Continuidad, revisión y Git",
           "level": 2,
           "anchor": "continuidad-revisión-y-git",
           "path": "GTT Bootstrap > Continuidad, revisión y Git",
-          "line_start": 718,
-          "line_end": 738
+          "line_start": 729,
+          "line_end": 749
         },
         {
           "heading": "Artefactos protegidos (GTTGuard)",
           "level": 2,
           "anchor": "artefactos-protegidos-gttguard",
           "path": "GTT Bootstrap > Artefactos protegidos (GTTGuard)",
-          "line_start": 739,
-          "line_end": 785
+          "line_start": 750,
+          "line_end": 796
         },
         {
           "heading": "Mantener el mapa honesto",
           "level": 2,
           "anchor": "mantener-el-mapa-honesto",
           "path": "GTT Bootstrap > Mantener el mapa honesto",
-          "line_start": 786,
-          "line_end": 800
+          "line_start": 797,
+          "line_end": 811
         },
         {
           "heading": "Principio de diseño",
           "level": 2,
           "anchor": "principio-de-diseño",
           "path": "GTT Bootstrap > Principio de diseño",
-          "line_start": 801,
-          "line_end": 821
+          "line_start": 812,
+          "line_end": 832
         },
         {
           "heading": "Estructura",
           "level": 2,
           "anchor": "estructura",
           "path": "GTT Bootstrap > Estructura",
-          "line_start": 822,
-          "line_end": 904
+          "line_start": 833,
+          "line_end": 915
         },
         {
           "heading": "Por qué algunos archivos permanecen en la raíz",
           "level": 3,
           "anchor": "por-qué-algunos-archivos-permanecen-en-la-raíz",
           "path": "GTT Bootstrap > Estructura > Por qué algunos archivos permanecen en la raíz",
-          "line_start": 891,
-          "line_end": 904
+          "line_start": 902,
+          "line_end": 915
         },
         {
           "heading": "Capas de contexto",
           "level": 2,
           "anchor": "capas-de-contexto",
           "path": "GTT Bootstrap > Capas de contexto",
-          "line_start": 905,
-          "line_end": 915
+          "line_start": 916,
+          "line_end": 926
         },
         {
           "heading": "Primeros pasos",
           "level": 2,
           "anchor": "primeros-pasos",
           "path": "GTT Bootstrap > Primeros pasos",
-          "line_start": 916,
-          "line_end": 942
+          "line_start": 927,
+          "line_end": 953
         },
         {
           "heading": "Actualización al modelo de dos regímenes",
           "level": 3,
           "anchor": "actualización-al-modelo-de-dos-regímenes",
           "path": "GTT Bootstrap > Primeros pasos > Actualización al modelo de dos regímenes",
-          "line_start": 929,
-          "line_end": 942
+          "line_start": 940,
+          "line_end": 953
         },
         {
           "heading": "Compatibilidad con herramientas",
           "level": 2,
           "anchor": "compatibilidad-con-herramientas",
           "path": "GTT Bootstrap > Compatibilidad con herramientas",
-          "line_start": 943,
-          "line_end": 992
+          "line_start": 954,
+          "line_end": 1003
         },
         {
           "heading": "Cambiar de ADE más adelante",
           "level": 3,
           "anchor": "cambiar-de-ade-más-adelante",
           "path": "GTT Bootstrap > Compatibilidad con herramientas > Cambiar de ADE más adelante",
-          "line_start": 958,
-          "line_end": 992
+          "line_start": 969,
+          "line_end": 1003
         },
         {
           "heading": "Lo que mantienes",
           "level": 2,
           "anchor": "lo-que-mantienes",
           "path": "GTT Bootstrap > Lo que mantienes",
-          "line_start": 993,
-          "line_end": 1003
+          "line_start": 1004,
+          "line_end": 1014
         },
         {
           "heading": "Requisitos",
           "level": 2,
           "anchor": "requisitos",
           "path": "GTT Bootstrap > Requisitos",
-          "line_start": 1004,
-          "line_end": 1011
+          "line_start": 1015,
+          "line_end": 1022
         },
         {
           "heading": "Evolución",
           "level": 2,
           "anchor": "evolución",
           "path": "GTT Bootstrap > Evolución",
-          "line_start": 1012,
-          "line_end": 1023
+          "line_start": 1023,
+          "line_end": 1034
         },
         {
           "heading": "Licencia",
           "level": 2,
           "anchor": "licencia",
           "path": "GTT Bootstrap > Licencia",
-          "line_start": 1024,
-          "line_end": 1037
+          "line_start": 1035,
+          "line_end": 1048
         }
       ],
       "references": [
@@ -6789,9 +6853,6 @@
     "epics": [
       "BACKLOG#epics"
     ],
-    "epics and stories": [
-      "BACKLOG#epics-and-stories"
-    ],
     "escalation log": [
       "GTT-GTT-DESIGN-ASSESSMENT#escalation-log",
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#escalation-log"
@@ -6972,6 +7033,9 @@
     ],
     "how gtt avoids interrupting you": [
       "DOC-METHOD-PLANS#how-gtt-avoids-interrupting-you"
+    ],
+    "how to read this file": [
+      "BACKLOG#how-to-read-this-file"
     ],
     "how to use this": [
       "CHANGE-REQUEST#how-to-use-this"
@@ -7202,9 +7266,6 @@
     "por qué algunos archivos permanecen en la raíz": [
       "README-GTT-ES#por-qué-algunos-archivos-permanecen-en-la-raíz"
     ],
-    "precedence": [
-      "BACKLOG#precedence"
-    ],
     "prerequisites": [
       "GTT-INSTALLATION#prerequisites"
     ],
@@ -7285,6 +7346,9 @@
     ],
     "readiness": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#readiness"
+    ],
+    "reference": [
+      "BACKLOG#reference"
     ],
     "references you write": [
       "SKILL-GTT-RETRIEVE#references-you-write"
@@ -7415,6 +7479,9 @@
     "status and validation": [
       "DOC-DOCS#status-and-validation"
     ],
+    "statuses": [
+      "BACKLOG#statuses"
+    ],
     "step 1 — assess": [
       "SKILL-GTT-DRIFT-RESPONSE#step-1--assess"
     ],
@@ -7498,6 +7565,9 @@
     "the two files you will always touch": [
       "README-GTT#the-two-files-you-will-always-touch"
     ],
+    "the two kinds of entry": [
+      "BACKLOG#the-two-kinds-of-entry"
+    ],
     "the two planes": [
       "AGENTS#the-two-planes"
     ],
@@ -7558,6 +7628,12 @@
     "what a snapshot preserves — and what it does not": [
       "DOC-BOOTSTRAP-CONTRACT#what-a-snapshot-preserves--and-what-it-does-not"
     ],
+    "what a story says": [
+      "BACKLOG#what-a-story-says"
+    ],
+    "what an epic says": [
+      "BACKLOG#what-an-epic-says"
+    ],
     "what changed and why": [
       "DOC-DOCS#what-changed-and-why"
     ],
@@ -7569,6 +7645,9 @@
     ],
     "what is enforced, and by what": [
       "DOC-METHOD-PLANS#what-is-enforced-and-by-what"
+    ],
+    "what keeps it honest": [
+      "BACKLOG#what-keeps-it-honest"
     ],
     "what lives where": [
       "DOC-DOCS#what-lives-where"
@@ -7585,12 +7664,21 @@
     "what the bootstrap deliberately does not add": [
       "DOC-METHOD-PLANS#what-the-bootstrap-deliberately-does-not-add"
     ],
+    "what you can change here": [
+      "BACKLOG#what-you-can-change-here"
+    ],
     "what you maintain": [
       "README-GTT#what-you-maintain"
+    ],
+    "when the plan and the design disagree": [
+      "BACKLOG#when-the-plan-and-the-design-disagree"
     ],
     "where each thing lives: sources, design, backlog": [
       "DOC-DOCS#where-each-thing-lives-sources-design-backlog",
       "README-GTT#where-each-thing-lives-sources-design-backlog"
+    ],
+    "where the detail lives": [
+      "BACKLOG#where-the-detail-lives"
     ],
     "where the output goes": [
       "SKILL-GTT-PROPOSE-CHANGE#where-the-output-goes"
