@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format antigravity",
+            "command": "d=\"$PWD\"; while [ ! -f \"$d/.gtt/scripts/gtt_protect.py\" ] && [ \"$d\" != \"/\" ] && [ \"$d\" != \".\" ]; do d=\"$(dirname \"$d\")\"; done; cd \"$d\" 2>/dev/null; bash .gtt/scripts/gtt-run-python.sh .gtt/scripts/gtt_protect.py hook --format antigravity; rc=$?; [ \"$rc\" -eq 2 ] && exit 2; [ \"$rc\" -eq 0 ] || echo 'GTT WARNING: the GTT pre-tool hook could not run; this call was NOT checked. The CI gate is the layer that holds.' >&2; exit 0",
             "timeout": 20
           }
         ]

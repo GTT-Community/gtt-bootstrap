@@ -22,10 +22,29 @@ copy of the methodology and never a source of authority.
 
 ## When a session starts
 
+Antigravity has no session-start event, so this happens in your first answer of
+the conversation, whatever the user's first message says — even a greeting.
+
 Run `bash .gtt/scripts/gtt-session-context.sh` and read what it prints.
 It is operational state derived from the repository: never authority, never
 evidence. `gtt-domain/context/`, `gtt-domain/adr/` and `gtt-domain/backlog.md`
 always prevail over it.
+
+If it prints `## Next action` naming the Initial Design Questionnaire, that
+first answer starts or resumes the interview, opened with
+`@gtt · Initial Design Questionnaire`: read the working copy it names, inspect the
+project and what the user already said, record what that answers, and ask the
+next open question — one question per message, in plain words, with numbered
+options the user can answer with a number, never a list of questions
+(the questionnaire's section 2 → *How each turn looks*). The interview is not
+finished until the architecture and the stack are decided by the human (its
+*Minimum floor*), at every depth. Do not wait to be asked
+and do not ask the user where the questionnaire is. If a write to the working
+copy is blocked, say so in one line and keep going in the conversation; never
+edit or disable `.agents/hooks.json`, and never ask the user to. If the first message asks for other work, say in one line
+that the questionnaire is open, offer to resume it, and do what was asked. The
+procedure is `AGENTS.md` → *Bootstrap behavior* and *Initial Design
+Questionnaire*; `/gtt` (`.agents/workflows/gtt.md`) starts it explicitly.
 
 ## What Antigravity must not do
 

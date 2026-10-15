@@ -5,6 +5,7 @@ Structured, deterministic views and the small per-project state the CLI needs, d
 actual project (never from an agent's recollection, never authority):
 
   detect                     project detection: GTT state, layout, freeze, design-source candidates
+  elicitation [--next-action] Initial Design Questionnaire state (absent|pending|in-progress|complete), read-only
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
@@ -410,6 +411,93 @@ def cmd_think(args):
     return 1 if state["findings"] else 0
 
 
+QUESTIONNAIRE_SLOT = re.compile(r"<!-- ADE (?:inspects project and )?populates this section -->")
+PROVENANCE_TAG = re.compile(r"\[(FUENTE|VAC[IÍ]O|CONFLICTO|PROPUESTA)\b")
+READINESS = ("READY", "READY_WITH_OPEN_ITEMS", "NOT_READY")
+ELICITATION_OPEN = ("pending", "in-progress")
+
+
+def elicitation_state():
+    """Where the Initial Design Questionnaire stands: absent, pending, in-progress or complete. Computed from the
+    working copy against the template it was materialized from - slots still holding the template's placeholder,
+    provenance tags beyond the template's own, the THINK Depth, the readiness of section 23 and the human review of
+    section 24, and the minimum floor of section 23 (a readiness above NOT_READY below the floor is not complete).
+    Read-only: it never writes the copy, never turns a [PROPUESTA] into an answer, never judges one.
+    The next action is shown only while the questionnaire is open and the project is not frozen."""
+    templates = gm.templates(gm.load())
+    tpl = templates.get("initial-design-questionnaire") or {}
+    path = tpl.get("materialize_to")
+    out = {"schema": 1, "kind": "gtt-elicitation-state", "authority": "none", "template": "initial-design-questionnaire",
+           "working_copy": path, "state": "absent", "slots": {"total": 0, "answered": 0},
+           "provenance_tags_added": 0, "think_depth": None, "readiness": None, "floor": {"lines": 0, "met": 0}, "human_review": None,
+           "frozen": os.path.isfile(FROZEN), "next_action": None, "findings": []}
+    if not path or not os.path.isfile(path):
+        return out
+    try:
+        with open(tpl["path"], encoding="utf-8") as handle:
+            template = handle.read()
+    except (KeyError, OSError):
+        template = ""
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read().replace("\r\n", "\n")
+    total = len(QUESTIONNAIRE_SLOT.findall(template))
+    out["slots"] = {"total": total, "answered": max(0, total - len(QUESTIONNAIRE_SLOT.findall(text)))}
+    out["provenance_tags_added"] = max(0, len(PROVENANCE_TAG.findall(text)) - len(PROVENANCE_TAG.findall(template)))
+    out["think_depth"] = think_state(path)["selected"]
+
+    def section(heading):
+        found = re.search(r"^#+ " + re.escape(heading) + r"[^\n]*\n(.*?)(?=^#+ |\Z)", text, re.M | re.S)
+        return found.group(1) if found else ""
+
+    status = re.search(r"^Status:[ \t]*(\S*)", section("Readiness"), re.M)
+    if status and status.group(1):
+        if status.group(1) in READINESS:
+            out["readiness"] = status.group(1)
+        else:
+            out["findings"].append(f"readiness `{status.group(1)}` is not one of {', '.join(READINESS)}")
+    floor = [[c.strip() for c in line.strip().strip("|").split("|")]
+             for line in section("Minimum floor").split("\n") if line.startswith("|")][2:]   # header and separator out
+    out["floor"] = {"lines": len(floor), "met": sum(1 for r in floor if r[1:2] and r[1].upper() == "MET")}
+    if out["readiness"] in ("READY", "READY_WITH_OPEN_ITEMS") and out["floor"]["met"] < out["floor"]["lines"]:
+        out["findings"].append(f"readiness {out['readiness']} with {out['floor']['lines'] - out['floor']['met']} floor line(s) "
+                               f"not MET (section 23): below the floor the readiness is NOT_READY")
+    review = re.search(r"^Reviewed by:[ \t]*(.*)$", section("24. Human Review"), re.M)
+    # A copy materialized before section 24 carried a review record has no line to fill: readiness decides alone.
+    out["human_review"] = "not recorded in this copy" if review is None else ("recorded" if review.group(1).strip() else "pending")
+    touched = (out["slots"]["answered"] or out["provenance_tags_added"] or out["think_depth"] or out["readiness"]
+               or out["human_review"] == "recorded")
+    below_floor = out["floor"]["met"] < out["floor"]["lines"]
+    if out["readiness"] in ("READY", "READY_WITH_OPEN_ITEMS") and out["human_review"] != "pending" and not below_floor:
+        out["state"] = "complete"
+    else:
+        out["state"] = "in-progress" if touched else "pending"
+    if out["state"] in ELICITATION_OPEN and not out["frozen"]:
+        detail = (f"{out['slots']['answered']}/{total} sections answered" if out["state"] == "in-progress" else "not started")
+        if out["readiness"] in ("READY", "READY_WITH_OPEN_ITEMS") and below_floor:
+            detail += f"; readiness {out['readiness']} but the floor is not met (section 23): architecture and stack still to decide"
+        elif out["readiness"] in ("READY", "READY_WITH_OPEN_ITEMS"):
+            detail += f"; readiness {out['readiness']}, awaiting the human's review (section 24)"
+        out["next_action"] = (f"Initial Design Questionnaire {out['state']} ({detail}) -> {path}. "
+                              f"Start or resume it on the user's first message, whatever it says, "
+                              f"or when they run /gtt: AGENTS.md -> Bootstrap behavior.")
+    return out
+
+
+def cmd_elicitation(args):
+    state = elicitation_state()
+    if args.json:
+        emit(state)
+    elif args.next_action:
+        if state["next_action"]:
+            print(state["next_action"])
+    else:
+        print(f"Initial Design Questionnaire: {state['state']}; sections answered: {state['slots']['answered']}/{state['slots']['total']}; "
+              f"readiness: {state['readiness'] or 'not set'}; human review: {state['human_review'] or 'n/a'}")
+    for finding in state["findings"]:
+        print(f"WARN  questionnaire: {finding}", file=sys.stderr)
+    return 0
+
+
 def cmd_detect(args):
     engine, domain = os.path.isdir(".gtt"), os.path.isdir("gtt-domain")
     layout = None
@@ -452,7 +540,8 @@ def cmd_detect(args):
            "questionnaire": {"offer": offer, "operation": "template.materialize", "template": "initial-design-questionnaire",
                              "working_copy": tpl["materialize_to"] if tpl else None,
                              "working_copy_exists": bool(tpl) and os.path.isfile(tpl["materialize_to"]),
-                             "think_depth": "recorded in the questionnaire working copy when there is no Design Assessment"},
+                             "think_depth": "recorded in the questionnaire working copy when there is no Design Assessment",
+                             "state": elicitation_state()["state"] if engine and layout else "absent"},
            "ade_configured": os.path.isfile(".gtt/ade.json"),
            "methodology": {k: current_profile()[k] for k in ("profile", "source", "language")}}
     if args.json:
@@ -611,6 +700,7 @@ def cmd_session(args):
                            "stories_in_progress": stories("In Progress"), "stories_blocked": stories("Blocked"),
                            "stories_planned": stories("Planned") + stories("Ready") + stories("Undesigned") + stories("Proposed"),
                            "observation": observation(),
+                           "elicitation": elicitation_state(),
                            "governance": governance()},
            "artifacts": {"governed_context": ctx_files,
                          "adrs": sorted(glob.glob("gtt-domain/adr/ADR-[0-9]*.md")),
@@ -757,6 +847,8 @@ def build_parser():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("detect"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_detect)
     p = sub.add_parser("think"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_think)
+    p = sub.add_parser("elicitation"); p.add_argument("--json", action="store_true"); p.add_argument("--next-action", action="store_true")
+    p.set_defaults(func=cmd_elicitation)
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.add_argument("--with-validation", action="store_true"); p.set_defaults(func=cmd_status)
     p = sub.add_parser("session"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_session)
     p = sub.add_parser("validation"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_validation)

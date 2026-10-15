@@ -25,6 +25,10 @@ import tempfile
 
 FAILS, COUNT = [], 0
 
+# The release under test, read once from the release descriptor: the suite carries no version literal.
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "contract", "release.json"), encoding="utf-8") as _handle:
+    VERSION = json.load(_handle)["bootstrap"]["version"]
+
 
 def check(cond, label, detail=""):
     global COUNT
@@ -121,7 +125,7 @@ def release_identity(project, tmp):
     rc, out, _ = contract(p, "release", "--json")
     rel = json.loads(out)
     b = rel["bootstrap"]
-    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == "1.5.1" and b["schema_version"] == 1 and b["channel"] == "stable",
+    check(rc == 0 and b["id"] == "gtt-bootstrap" and b["version"] == VERSION and re.fullmatch(r"\d+\.\d+\.\d+", VERSION) is not None and b["schema_version"] == 1 and b["channel"] == "stable",
           "id, version, schema_version and channel are machine-readable", out[:200])
     check(rel["scaffold"]["version"] == 2 and rel["scaffold"]["version"] != b["version"], "scaffold version is distinct from the release version")
     check(all(isinstance(v, int) for v in rel["contracts"].values()) and "export_policy" in rel["contracts"], "every contract has a version")
@@ -322,18 +326,28 @@ def cursor_and_openhands(project, tmp):
 
 
 def antigravity(project, tmp):
-    print("[ADE] Antigravity: its own id, three owned files inside a shared .agents/, never a merge")
-    owned = [".agents/rules/gtt.md", ".agents/rules/gtt-implementation.md", ".agents/hooks.json"]
+    print("[ADE] Antigravity: its own id, four owned files inside a shared .agents/, never a merge")
+    owned = [".agents/rules/gtt.md", ".agents/rules/gtt-implementation.md", ".agents/hooks.json", ".agents/workflows/gtt.md"]
     reg = {a["id"]: a for a in json.loads(contract(project, "show", "ade-registry")[1])["ades"]}
     check(reg["antigravity"]["owned_paths"] == owned and reg["antigravity"]["handoff"]["instruction_entry"].endswith("GENTS.md")
           and reg["antigravity"]["enforcement"] == "realtime-hook-unverified",
-          "Antigravity is an ADE of its own: the portable contract as entry point, two rules and a hooks file, hook unverified")
+          "Antigravity is an ADE of its own: the portable contract as entry point, two rules, the /gtt workflow and a hooks file, hook unverified")
     with open(os.path.join(project, ".agents/rules/gtt.md"), encoding="utf-8") as handle:
         rule = handle.read()
     check(rule.startswith("---\n") and "trigger: always_on" in rule.split("---")[1] and "@gtt" in rule and "gtt-session-context.sh" in rule,
           "the Antigravity rule is always on, says how to speak for GTT and tells the agent to run the session service")
     check(len(rule) < 12000 and "## Non-negotiable rules" not in rule and "## Human Promotion Boundary" not in rule,
           "the rule is short and refers to the agent contract instead of copying it")
+    check("first answer" in rule and "whatever the user's first message says" in rule and "## Next action" in rule
+          and "Initial Design Questionnaire" in rule and "starts or resumes" in rule and ".agents/workflows/gtt.md" in rule,
+          "the Antigravity rule starts or resumes an open questionnaire in its first answer, whatever the first message says")
+    with open(os.path.join(project, ".agents/workflows/gtt.md"), encoding="utf-8") as handle:
+        flow = handle.read()
+    manifest = open(os.path.join(project, ".gtt/scaffold/manifest.yaml"), encoding="utf-8").read()
+    check(flow.startswith("---\n") and "description:" in flow.split("---")[1] and "gtt-session-context.sh" in flow and "## Next action" in flow
+          and "@gtt · Initial Design Questionnaire" in flow and "[PROPUESTA]" in flow
+          and re.search(r"id: antigravity,[^\n]*owned: \[[^\]]*\.agents/workflows/gtt\.md", manifest),
+          "the /gtt workflow is declared in the manifest as Antigravity's and starts or resumes what GTT is waiting on")
     hooks = read_json(os.path.join(project, ".agents/hooks.json"))
     entry = hooks["gtt-protect"]["PreToolUse"][0]
     check("gtt_protect.py hook --format antigravity" in entry["hooks"][0]["command"]
@@ -439,6 +453,150 @@ def questionnaire(project, tmp):
     check(rc == 1 and "elicitation directive" in out, "the elicitation contract stays tied to the questionnaire's own structure", out[-200:])
 
 
+def elicitation_start(project, tmp):
+    print("[questionnaire] computed state, a Next action while it is open, resumed from the working copy")
+    eli = json.loads(contract(project, "show", "elicitation")[1])
+    check(eli["start"]["when"] == "on-first-turn" and "AGENTS.md" in eli["start"]["applies_to"]
+          and eli["state"]["values"] == ["absent", "pending", "in-progress", "complete"] and eli["state"]["authority"].startswith("none")
+          and eli["handoff"]["next_action"] and any("[PROPUESTA]" in r for r in eli["persistence"]["rules"]),
+          "the contract says when the questionnaire starts, how its state is computed and how progress persists, for every ADE")
+    template = open(os.path.join(project, ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md"), encoding="utf-8").read()
+    check({"one-question-per-turn", "conversation-is-evidence", "plain-language"} <= {d["id"] for d in eli["directives"]}
+          and "## How each turn looks" in template and "**One question per message.**" in template
+          and "Never ask for a name, a purpose or a problem the human has" in template and "no \"THINK Depth\"" in template,
+          "the interview is a conversation: one question per message, what the human said is evidence, plain words")
+    check(all(h in template for h in ("## 4.5 Vision", "## 4.6 Key terms", "## 13.5 Design principles", "## 14.6 Where it runs", "## Minimum floor"))
+          and "reach-the-floor" in {d["id"] for d in eli["directives"]} and len(eli["minimum_viable_design"]["floor"]["lines"]) == 4
+          and "QUICK included" in template,
+          "the questionnaire covers the vision, the key terms and the principles, and reaches architecture and stack at every depth")
+    check("numbered-options" in {d["id"] for d in eli["directives"]} and "**Answer with a number.**" in template and "Other (write it)" in template
+          and "typing is never required" in template,
+          "every question offers numbered options, so the human can answer with a number")
+    rule = " ".join(open(os.path.join(project, ".agents/rules/gtt.md"), encoding="utf-8").read().split())
+    check("one question per message" in rule and "never edit or disable `.agents/hooks.json`" in rule,
+          "the Antigravity rule asks one question at a time and never works around a blocked write")
+    host = make_host(project, tmp, "eli-host")
+    tpl = os.path.join(host, ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md")
+    copy = os.path.join(host, "gtt-domain/proposals/bootstrap/initial-design-questionnaire.md")
+
+    def state():
+        rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "elicitation", "--json")
+        return json.loads(out) if rc == 0 else {"state": f"error {err[-200:]}"}
+
+    def session(where):
+        bash(where, ".gtt/scripts/gtt-status.sh")
+        with open(os.path.join(where, "gtt-domain", "session.md"), encoding="utf-8") as handle:
+            return handle.read()
+
+    def edit(fn):
+        with open(copy, encoding="utf-8") as handle:
+            text = handle.read()
+        write(copy, fn(text))
+
+    def readiness(value):
+        return lambda t: t[:t.index("Status:", t.index("## Readiness"))] + "Status: " + value + t[t.index("Status:", t.index("## Readiness")) + 7:]
+
+    st = state()
+    body = session(host)
+    check(st["state"] == "absent" and st["next_action"] is None and "## Next action" not in body
+          and data(op(host, "project.detect")[1])["questionnaire"]["state"] == "absent",
+          "no working copy -> absent, and the session shows no Next action")
+    op(host, "template.materialize", id="initial-design-questionnaire", apply=True)
+    st = state()
+    body = session(host)
+    check(st["state"] == "pending" and st["slots"]["answered"] == 0 and st["slots"]["total"] > 40
+          and data(op(host, "project.detect")[1])["questionnaire"]["state"] == "pending",
+          "a working copy as materialized -> pending, in the detection the CLI reads too", str(st)[:300])
+    check("## Next action" in body and body.index("## Next action") < body.index("## Review")
+          and "Initial Design Questionnaire pending" in body and "gtt-domain/proposals/bootstrap/initial-design-questionnaire.md" in body,
+          "pending -> the session opens with a Next action naming the questionnaire and its path")
+    rc, env, _ = op(host, "session-context")
+    check(rc == 0 and data(env)["operational"]["elicitation"]["state"] == "pending", "and the structured session context carries the state")
+    before = open(copy, "rb").read()
+    edit(lambda t: t.replace("<!-- ADE populates this section -->", "Opción sugerida [PROPUESTA]", 1))
+    after_edit = open(copy, "rb").read()
+    st = state()
+    check(st["state"] == "in-progress" and st["slots"]["answered"] == 1 and st["readiness"] is None
+          and open(copy, "rb").read() == after_edit != before,
+          "one section recorded, even as a [PROPUESTA] -> in-progress; computing the state never writes the copy", str(st)[:300])
+    body = session(host)
+    check("Initial Design Questionnaire in-progress (1/" in body and "resume" in body, "in-progress -> the Next action says how far it got, to resume there")
+    edit(readiness("READY"))
+    st = state()
+    body = session(host)
+    check(st["state"] == "in-progress" and st["readiness"] == "READY" and st["floor"] == {"lines": 4, "met": 0} and any("floor" in f for f in st["findings"])
+          and "the floor is not met" in body and "architecture and stack still to decide" in body,
+          "READY below the floor -> still in-progress: the architecture and the stack are not decided yet", str(st)[:300])
+
+    def floor_met(text, keep_one=False):
+        rows = re.findall(r"^\| (?:The problem|The architectural|The technology|The datastore)[^\n]*\| \| \|$", text, re.M)
+        for i, row in enumerate(rows):
+            if not (keep_one and i == 1):
+                text = text.replace(row, row[:-len("| | |")] + "| MET | 13, 14 |", 1)
+        return text
+    edit(lambda t: floor_met(t, keep_one=True))
+    check(state()["state"] == "in-progress", "one floor line still open (the architectural style) keeps it in-progress")
+    edit(floor_met)
+    st = state()
+    body = session(host)
+    check(st["state"] == "in-progress" and st["floor"] == {"lines": 4, "met": 4} and st["human_review"] == "pending" and "awaiting the human's review" in body,
+          "the floor met but the human review not recorded -> still in-progress, waiting for the review")
+    edit(lambda t: t.replace("Reviewed by:\n", "Reviewed by: MG\n", 1))
+    st = state()
+    body = session(host)
+    check(st["state"] == "complete" and st["next_action"] is None and "## Next action" not in body
+          and data(op(host, "project.detect")[1])["questionnaire"]["state"] == "complete",
+          "readiness READY, every floor line MET and the review recorded -> complete, and the Next action is gone")
+    edit(readiness("READY_WITH_OPEN_ITEMS"))
+    check(state()["state"] == "complete", "READY_WITH_OPEN_ITEMS is complete too")
+    edit(readiness("NOT_READY"))
+    check(state()["state"] == "in-progress", "NOT_READY is not complete")
+    edit(readiness("MAYBE"))
+    st = state()
+    check(st["state"] == "in-progress" and st["readiness"] is None and any("MAYBE" in f for f in st["findings"]),
+          "an unknown readiness is reported, never read as complete")
+    with open(tpl, encoding="utf-8") as handle:
+        legacy = re.sub(r"\n``` text\nReviewed by:\nDate:\n```\n", "\n", handle.read())
+    legacy = re.sub(r"## Minimum floor\n.*?(?=## Readiness)", "", legacy, flags=re.S)
+    write(copy, readiness("READY")(legacy))
+    st = state()
+    check(st["state"] == "complete" and st["human_review"] == "not recorded in this copy",
+          "a copy materialized before the review record and the floor table existed is complete on its readiness")
+    write(copy, open(tpl, encoding="utf-8").read())
+    edit(lambda t: t.replace("THINK Depth:\n", "THINK Depth: QUICK\n", 1))
+    check(state()["state"] == "in-progress", "a THINK Depth chosen means the interview started")
+
+    # The freeze removes gtt-domain/proposals/bootstrap/; a working copy that appears afterwards is the case to cover.
+    f, rc, out = frozen_project(project, tmp, "eli-frozen")
+    write(os.path.join(f, "gtt-domain/proposals/bootstrap/initial-design-questionnaire.md"),
+          open(os.path.join(f, ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md"), encoding="utf-8").read())
+    rc, sout, _ = bash(f, ".gtt/scripts/gtt-project.sh", "elicitation", "--json")
+    st = json.loads(sout) if rc == 0 else {}
+    check(st.get("state") == "pending" and st.get("frozen") and st.get("next_action") is None and "## Next action" not in session(f),
+          "a frozen project shows no Next action, even with the questionnaire still pending", str(st)[:300])
+
+    bad = fresh(project, tmp, "eli-contract")
+    path = os.path.join(bad, ".gtt/contract/elicitation.json")
+    good = read_json(path)
+    for label, mutate in (("start", lambda d: d.pop("start")), ("state", lambda d: d["state"].update(values=["pending", "complete"])),
+                          ("persistence", lambda d: d["persistence"].update(rules=[])), ("next_action", lambda d: d["handoff"].pop("next_action"))):
+        broken = json.loads(json.dumps(good))
+        mutate(broken)
+        save_json(path, broken)
+        rc, out, _ = contract(bad, "check")
+        check(rc == 1 and f"elicitation.{'handoff.' if label == 'next_action' else ''}{label}" in out,
+              f"the contract check fails when elicitation.{label} is missing or wrong", out[-200:])
+    save_json(path, good)
+    tpl_bad = os.path.join(bad, ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md")
+    original_tpl = open(tpl_bad, encoding="utf-8").read()
+    write(tpl_bad, original_tpl.replace("Reviewed by:", "Seen by:"))
+    rc, out, _ = contract(bad, "check")
+    check(rc == 1 and "Reviewed by:" in out, "and when the questionnaire loses the review record the complete state depends on", out[-200:])
+    write(tpl_bad, original_tpl.replace("| The datastore is decided, or the design states that it needs none | | |\n", ""))
+    rc, out, _ = contract(bad, "check")
+    check(rc == 1 and "floor" in out, "and when a floor line is missing from the questionnaire", out[-200:])
+
+
 def sources(project, tmp):
     print("[initial sources] selected source != governed authority")
     p = fresh(project, tmp, "src")
@@ -500,7 +658,7 @@ def recovery(project, tmp):
     snap = read_json(snap_path)
     for key in ("bootstrap", "compatibility", "ade", "methodology", "sources", "operational", "recovery"):
         check(key in snap, f"snapshot carries `{key}`")
-    check(snap["bootstrap"]["version"] == "1.5.1" and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
+    check(snap["bootstrap"]["version"] == VERSION and snap["ade"]["primary"] == "codex" and snap["methodology"] == {"profile": "hard", "language": "es"}
           and snap["sources"]["selected"][0]["path"] == "docs/spec.md", "identity, Primary, profile, language and selected sources are preserved")
     rc, env, _ = op(host, "recovery.snapshot", output=snap_path)
     check(env["exit_code"] == 1, "a snapshot is never overwritten")
@@ -560,7 +718,7 @@ def session_status_validation(project, tmp):
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
-    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == "1.5.1", "the status contract has every section", str(need - set(st)))
+    check(rc == 0 and need <= set(st) and st["bootstrap"]["version"] == VERSION, "the status contract has every section", str(need - set(st)))
     rc, env, _ = op(p, "validation.run")
     v = data(env)
     check(rc == 0 and v["result"] == "pass" and any(c["check"].startswith("gtt-check-contract.sh") and c["result"] == "pass" for c in v["checks"]),
@@ -754,6 +912,23 @@ def protection_hooks(project, tmp):
           "Antigravity: reading a governed file stays allowed, mutating it through the shell is denied")
     check(ag("run_command", CommandLine="rm .agents/hooks.json")[0] == 2 and ag("write_to_file", TargetFile=f"{root}/.agents/hooks.json")[0] == 2,
           "Antigravity: the agent cannot disarm its own protection")
+    # The command in .agents/hooks.json itself, started from the root and from .agents/ as Antigravity may do.
+    # GTT_TEST_ANTIGRAVITY_HOOKS names a staged hooks.json to prove before the human promotes it.
+    hooks_file = os.environ.get("GTT_TEST_ANTIGRAVITY_HOOKS") or os.path.join(p, ".agents", "hooks.json")
+    ag_command = read_json(hooks_file)["gtt-protect"]["PreToolUse"][0]["hooks"][0]["command"]
+
+    def ag_cmd(where, target, at=p):
+        event = json.dumps({"toolCall": {"name": "write_to_file", "args": {"TargetFile": f"{root}/{target}"}}, "stepIdx": 1, "workspacePaths": [root]})
+        proc = subprocess.run(["sh", "-c", ag_command], cwd=os.path.join(at, where), input=event, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        return proc.returncode, proc.stderr
+    for where in ("", ".agents"):
+        label = where or "the project root"
+        check(ag_cmd(where, "gtt-domain/proposals/bootstrap/initial-design-questionnaire.md")[0] == 0 and ag_cmd(where, governed_file)[0] == 2,
+              f"Antigravity: the hook command decides alike when started from {label} - the working copy is writable, the contract is not")
+    broken = fresh(project, tmp, "ag-hook-broken")
+    write(os.path.join(broken, ".gtt", "scripts", "gtt_protect.py"), "this is not python (\n")
+    rc, err = ag_cmd(".agents", "src/app.py", at=broken)
+    check(rc == 0 and "NOT checked" in err, "Antigravity: a hook that cannot run never blocks the call, and says it was not checked", err[-200:])
     check(ag("read_file", TargetFile=f"{root}/{governed_file}") == (0, None) and hook("antigravity", {"invocationNum": 1, "workspacePaths": [root]}) == (0, None),
           "Antigravity: an unknown tool and an event that is not a tool call pass untouched")
     check(hook("antigravity", "not json") == (0, None) and hook("antigravity", {"toolCall": {"name": "write_to_file"}}) == (0, None)
@@ -2321,15 +2496,15 @@ def design_sources(project, tmp):
           and open(marker, encoding="utf-8").read() == frozen_now and os.path.isdir(os.path.join(f, "gtt-domain/proposals/staged/new-boundary")),
           "an architectural change with no ADR in its set is refused: nothing is written and the freeze stands", (out + err)[-300:])
 
-    print("[contract] the model is data: five invariants no plan relaxes, version 1.5.1")
+    print(f"[contract] the model is data: five invariants no plan relaxes, version {VERSION}")
     spec = json.loads(contract(project, "show", "profiles")[1])
     rules = {i["id"]: i for i in spec["invariants"]}
     check(all(k in rules and rules[k]["relaxable"] is False and rules[k]["enforcement"] and rules[k]["statement"]
               for k in ("sources-immutable", "design-per-epic", "traceability", "governance-levels", "backlog-cites-never-decides")),
           "sources-immutable, design-per-epic, traceability, governance-levels and backlog-cites-never-decides are invariants")
     release = json.loads(contract(project, "release", "--json")[1]) if False else read_json(os.path.join(project, ".gtt", "contract", "release.json"))
-    check(release["bootstrap"]["version"] == "1.5.1" and release["contracts"]["methodology_profile"] == 6 and release["contracts"]["sources"] == 1
-          and release["contracts"]["design"] == 1, "the release is 1.5.1, methodology profile 6, with the sources and design contracts")
+    check(release["bootstrap"]["version"] == VERSION and release["contracts"]["methodology_profile"] == 6 and release["contracts"]["sources"] == 1
+          and release["contracts"]["design"] == 1, f"the release is {VERSION}, methodology profile 6, with the sources and design contracts")
     with open(os.path.join(project, CONTRACT), encoding="utf-8") as handle:
         agents = handle.read()
     check("**Where the detail lives.**" in agents and "**Three levels of control.**" in agents and len(agents.encode("utf-8")) <= 24576,
@@ -2454,7 +2629,7 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
-        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, sources, export_and_clean, recovery,
+        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
                          session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth):
             scenario(project, tmp)
     finally:

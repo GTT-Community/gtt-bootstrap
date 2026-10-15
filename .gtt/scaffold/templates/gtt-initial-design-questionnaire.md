@@ -61,8 +61,9 @@ When this questionnaire is used, the Primary ADE MUST:
     from existing project evidence.
 4.  Ask the human only for information that is not sufficiently
     established by available evidence.
-5.  Work progressively rather than presenting a large questionnaire all
-    at once.
+5.  Work progressively: one question per message, in plain words, as
+    section 2 → *How each turn looks* describes — never a large
+    questionnaire or a list of questions at once.
 6.  Populate this document as the conversation progresses.
 7.  Clearly distinguish:
     -   information provided by the human;
@@ -95,8 +96,9 @@ The human remains the decision authority.
 
 ## THINK Depth
 
-How deep this interview goes. The human selects it — ask once, before the
-first question, showing the three levels; never infer it from the project, the
+How deep this interview goes. The human selects it — ask once, near the
+start, as one plain question offering the three levels (section 2 → *How each
+turn looks*, item 5); never infer it from the project, the
 Method Plan or the ADE. When a Design Assessment exists the depth is recorded
 there and this block stays empty. Left empty everywhere, it is **not
 selected** and `STANDARD` applies as a fallback.
@@ -154,6 +156,8 @@ Understand known architecture
         ↓
 Understand integrations and data
         ↓
+Decide the architecture style, the stack and the datastore (the floor, section 23)
+        ↓
 Understand security / non-functional requirements
         ↓
 Understand deployment / operations
@@ -169,6 +173,48 @@ The exact sequence may change according to the project.
 
 The ADE should follow evidence and conversation rather than mechanically
 following the numbered sections.
+
+## How each turn looks
+
+The interview is a conversation, not a form sent in pieces.
+
+1.  **One question per message.** Two only when they are about the same
+    thing and can be answered in one sentence. Never a numbered list of
+    questions, never a whole section, never a menu followed by more
+    questions.
+2.  **Start from what is already said.** The human's own messages in this
+    conversation are evidence, as the project's files are. If the first
+    message already describes the project, record what it answers, say
+    back in two or three lines what you understood, and ask whether it is
+    right. Never ask for a name, a purpose or a problem the human has
+    already given.
+3.  **Plain words, in the human's language.** Ask about their project, not
+    about GTT: no "THINK Depth", "Minimum Viable Governed Design", "floor",
+    section numbers or provenance tags in a question. Those belong in this
+    document, not in the conversation.
+4.  **Technical questions only when they matter** to what the human
+    described — and the architecture and the stack always matter: the
+    floor lines of section 23 are asked at every depth, QUICK included,
+    before the interview can end. Ask so that a non-specialist can answer: a short
+    choice with what each option means, your recommendation marked as
+    such, and "I don't know yet" as a valid answer. "I don't know" is
+    recorded as `[VACÍO]` and not pressed.
+5.  **The depth question is one plain question**, asked once near the
+    start — for example: "Do we keep this short (only the essentials),
+    normal, or thorough?" — and recorded here as `QUICK`, `STANDARD` or
+    `DEEP`. It is not a menu of definitions.
+6.  **After each answer**, write it into this document first, acknowledge
+    it in a few words, and ask the next question. A short summary only
+    when an area is finished, not after every answer.
+7.  **Answer with a number.** Every question offers numbered options the
+    human can answer by typing only the number: options drawn from what
+    the project and the conversation already show, your recommendation
+    marked as such, "I don't know yet", and a last "Other (write it)".
+    For a question that is open by nature (a name, a purpose), offer what
+    the evidence suggests as options and keep "Other (write it)". The
+    human may always write instead; typing is never required.
+8.  **When resuming**, say in one line where it stopped ("I have the
+    purpose and the users; next is scope") and ask the next open question.
 
 ------------------------------------------------------------------------
 
@@ -256,6 +302,35 @@ The ADE must not use a proposal marker to disguise a decision.
 > What should be possible when this project is successfully delivered?
 
 **Answer:**
+
+<!-- ADE populates this section -->
+
+## 4.5 Vision
+
+**Question:**
+
+> Looking further ahead, where should this project be in a year or two, and how
+> will you know it is succeeding?
+
+Feeds the solution vision with the purpose, the problem and what is out of scope
+(5.2). A short answer is enough.
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
+## 4.6 Key terms
+
+Collect, as the interview goes, the words this project uses with a meaning of
+its own (a domain term, an acronym, a word used differently from its usual
+sense). Ask only when a term is ambiguous; never quiz the human for a
+glossary. Feeds the glossary.
+
+``` text
+Term:
+Meaning:
+Source:
+```
 
 <!-- ADE populates this section -->
 
@@ -622,6 +697,20 @@ final decision.
 
 <!-- ADE populates this section -->
 
+## 13.5 Design principles
+
+**Question:**
+
+> Are there rules this design should always follow? For example: "simple
+> before clever", "everything runs offline", "no vendor lock-in".
+
+Record only the principles the human states or confirms; an ADE suggestion
+is a `[PROPUESTA]`. None is a valid answer. Feeds the principles.
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
 ## 13.4 Architecture unknowns
 
 <!-- ADE populates this section -->
@@ -671,6 +760,19 @@ when architecture is genuinely unknown.
 <!-- ADE populates this section -->
 
 ## 14.5 Existing technology constraints
+
+<!-- ADE populates this section -->
+
+## 14.6 Where it runs
+
+**Question:**
+
+> Where will this run: on a server, as a cloud function, on the user's
+> machine (desktop or command line), on a phone, as a scheduled job?
+
+Part of the floor (section 23): the compute model.
+
+**Answer:**
 
 <!-- ADE populates this section -->
 
@@ -1006,6 +1108,23 @@ Important conflicts
 Human decisions still required
 ```
 
+## Minimum floor
+
+The same floor a design document must meet before it is mapped into governed
+context (Bootstrap → *Design assessment*). Ask for every line, at every depth.
+A line is `MET` only when the human stated or confirmed it; an ADE suggestion
+is a `[PROPUESTA]` and leaves the line `NOT MET`.
+
+| Floor line | State (MET / NOT MET) | Where (section) |
+|---|---|---|
+| The problem and the scope are stated | | |
+| The architectural style is stated | | |
+| The technology stack is decided: language and runtime, framework, where it runs | | |
+| The datastore is decided, or the design states that it needs none | | |
+
+`READY` and `READY_WITH_OPEN_ITEMS` require every floor line `MET`. Below the
+floor the readiness is `NOT_READY`, whatever else is answered.
+
 ## Readiness
 
 ``` text
@@ -1045,6 +1164,16 @@ What decisions require confirmation?
 ```
 
 The human must have an opportunity to correct the document.
+
+Record the review only when the human has said, in the conversation, that
+the summary reflects their understanding — with their name and the date.
+The ADE never fills it on its own initiative, and a recorded review is not
+a decision on any `[PROPUESTA]`.
+
+``` text
+Reviewed by:
+Date:
+```
 
 ------------------------------------------------------------------------
 

@@ -208,7 +208,7 @@ proyecto:
 | --- | --- | --- |
 | Cursor | `.cursor/rules/gtt.mdc` (siempre aplicada), `.cursor/rules/gtt-implementation.mdc` (adjunta a `src/`, `lib/`, `tests/`) y `.cursor/hooks.json` | Cursor lee las reglas de proyecto en `.cursor/rules/*.mdc`, `AGENTS.md` de forma nativa, y los hooks de proyecto en `.cursor/hooks.json` |
 | OpenHands | `.agents/skills/gtt/SKILL.md` y `.openhands/hooks.json` | OpenHands incluye `AGENTS.md` en cada conversación, carga los skills del repositorio desde `.agents/skills/`, y los hooks desde `.openhands/hooks.json` |
-| Google Antigravity | `.agents/rules/gtt.md` (siempre activa), `.agents/rules/gtt-implementation.md` (adjunta a `src/`, `lib/`, `tests/`) y `.agents/hooks.json` | Antigravity lee `AGENTS.md`, las reglas de workspace en `.agents/rules/*.md`, y los hooks desde `.agents/hooks.json` |
+| Google Antigravity | `.agents/rules/gtt.md` (siempre activa), `.agents/rules/gtt-implementation.md` (adjunta a `src/`, `lib/`, `tests/`), `.agents/workflows/gtt.md` (`/gtt`) y `.agents/hooks.json` | Antigravity lee `AGENTS.md`, las reglas de workspace en `.agents/rules/*.md`, y los hooks desde `.agents/hooks.json` |
 
 Los tres archivos de hooks apuntan a un único motor compartido,
 `.gtt/scripts/gtt_protect.py`, que aplica las mismas reglas que los hooks de
@@ -373,10 +373,18 @@ Primario, no lógica del CLI ni arquitectura gobernada:
 2. El ADE Primario conduce una entrevista adaptativa: primero inspecciona el proyecto,
    te pregunta solo lo que falta y va completando el documento. No se espera que
    completes tú solo todo el formulario.
+   No necesitas saber dónde está ni pedirlo: abre el proyecto en el ADE Primario y
+   escribe cualquier cosa — su primera respuesta inicia la entrevista, o la reanuda donde
+   quedó en una sesión anterior, sin volver a preguntar lo ya respondido. `/gtt` la inicia
+   explícitamente donde el ADE lo admite. `bash .gtt/scripts/gtt-project.sh elicitation`
+   muestra en qué estado está: `pending`, `in-progress` o `complete`.
 3. Lo desconocido queda como `[VACÍO]` (mejor que una respuesta inventada); los
    desacuerdos como `[CONFLICTO]`; las sugerencias del ADE como `[PROPUESTA]` hasta que
    decidas. Ninguno es una decisión confirmada.
-4. Tras tu revisión, con Readiness `READY` o `READY_WITH_OPEN_ITEMS`, el cuestionario
+4. La entrevista siempre llega a la arquitectura y al stack: no está lista hasta que el
+   problema y el alcance, el estilo de arquitectura, el stack y el almacenamiento estén
+   decididos por ti (su *Minimum floor*, el mismo que debe cumplir un documento de diseño).
+5. Tras tu revisión (registrada en su sección 24), con Readiness `READY` o `READY_WITH_OPEN_ITEMS`, el cuestionario
    completo es tu documento fuente (Confirmación A): se preserva textualmente como
    `SOURCE-BRIEF.md` y el contexto gobernado se deriva de él mediante el bootstrap
    normal y la Confirmación B. Completar el cuestionario nunca hace que algo quede

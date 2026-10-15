@@ -154,10 +154,11 @@ Install the portable core plus the overlay of every ADE the human chose to have 
 .openhands/hooks.json             # OpenHands (write block + session context, unverified in the ADE)
 .agents/rules/gtt*.md             # Antigravity (two rule files; the rest of .agents/ is the host's or another ADE's)
 .agents/hooks.json                # Antigravity (write block, unverified in the ADE)
+.agents/workflows/gtt.md          # Antigravity (/gtt: start or resume what GTT is waiting on)
 ```
 
 Codex takes no adapter file beyond `AGENTS.md` itself. OpenHands reads `AGENTS.md` as its
-always-on entry point and takes one repository skill beyond it. Antigravity reads `AGENTS.md` and takes two workspace rules and a hooks file beyond it. Do not install the adapters for ADEs the human did not choose, even if the GTT Bootstrap source contains them all.
+always-on entry point and takes one repository skill beyond it. Antigravity reads `AGENTS.md` and takes two workspace rules, a `/gtt` workflow and a hooks file beyond it. Do not install the adapters for ADEs the human did not choose, even if the GTT Bootstrap source contains them all.
 
 `readme-gtt.md` and `readme-gtt.es.md` ARE installed at the host-project
 root — they are the human-facing GTT entry points and must stay
@@ -216,6 +217,10 @@ During initial bootstrap:
 12. Freeze only after explicit confirmation.
 
 Before step 4, have the human select the Method Plan (see *Method Plans*): ask, never infer.
+
+When the questionnaire of step 2 already exists and is open, start or resume it in your
+first answer of the session, without being asked (*Initial Design Questionnaire* →
+*Start and resume*).
 
 Register every source before reading it for the design: `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply`
 copies it to `docs/sources/<ID>/v1/` and records its hash (`adopt <path> --id <ID>` registers one where it is,
@@ -363,11 +368,33 @@ exactly one questionnaire.
   confirmed decisions, and a proposal is never written as a decision.
 - **Status.** The filled questionnaire is source material. It becomes the source
   document only after the human reviews it (Confirmation A) with Readiness `READY`
-  or `READY_WITH_OPEN_ITEMS`; it is then preserved verbatim as `SOURCE-BRIEF.md`, and
+  or `READY_WITH_OPEN_ITEMS` — which require every line of its *Minimum floor* `MET`, the
+  same floor as the *Design assessment* (problem and scope, architectural style, stack,
+  datastore), asked at every THINK Depth; it is then preserved verbatim as `SOURCE-BRIEF.md`, and
   the governed context is derived from it through the normal bootstrap steps and
   Confirmation B. An unresolved `[CONFLICTO]` or an undecided `[PROPUESTA]` maps to
   nothing in governed context. Completing the questionnaire never makes anything
   governed by itself.
+- **Start and resume.** The human never has to know where the questionnaire is or
+  ask for it. While the session context shows `## Next action` naming it — the
+  questionnaire is `pending` or `in-progress` and the project is not frozen; where your
+  ADE injected no session context, `bash .gtt/scripts/gtt-project.sh elicitation --next-action`
+  prints the same line — your
+  first answer of a session starts or resumes it under
+  `@gtt · Initial Design Questionnaire`, whatever the first message says; `/gtt` does
+  the same where the ADE has it. It is a conversation: one question per message, in
+  plain words, with numbered options the human can answer with a number, starting from what the human already said (the questionnaire's section 2
+  → *How each turn looks*). If that message asks for other work, say in one line
+  that the questionnaire is open, offer to resume it, and do what was asked. The state
+  is computed, never judged: `bash .gtt/scripts/gtt-project.sh elicitation`
+  (`absent`, `pending`, `in-progress`, `complete`); the definition is
+  `.gtt/contract/elicitation.json` → `start`, `state`.
+- **Progress lives in the working copy.** Write what each round established into it
+  before asking the next round. On resume, read it first and never ask again what it
+  already answers. Never overwrite or reword a human answer, never turn a
+  `[PROPUESTA]` into an answer or a decision, and record the human review (section 24)
+  only when the human says the summary reflects their understanding
+  (`.gtt/contract/elicitation.json` → `persistence`).
 
 ## Two confirmations
 

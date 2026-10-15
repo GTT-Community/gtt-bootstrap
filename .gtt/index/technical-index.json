@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v2.1",
-      "sha256": "f575f74c569ebcf10af267ae44fb5b4bc099beba35d19690df2527752cd71f33",
+      "sha256": "06bc75be33040c95d670d383126d0730bdf0e0f8a335d050ec4ac9815dc9d10f",
       "aliases": [],
       "sections": [
         {
@@ -174,7 +174,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 444
+          "line_end": 446
         },
         {
           "heading": "Mission",
@@ -350,71 +350,71 @@
           "anchor": "bootstrap-behavior",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Bootstrap behavior",
           "line_start": 409,
-          "line_end": 412
+          "line_end": 414
         },
         {
           "heading": "Method Plans",
           "level": 2,
           "anchor": "method-plans",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Method Plans",
-          "line_start": 413,
-          "line_end": 416
+          "line_start": 415,
+          "line_end": 418
         },
         {
           "heading": "Working without unnecessary interruption",
           "level": 2,
           "anchor": "working-without-unnecessary-interruption",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Working without unnecessary interruption",
-          "line_start": 417,
-          "line_end": 420
+          "line_start": 419,
+          "line_end": 422
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Design assessment",
-          "line_start": 421,
-          "line_end": 424
+          "line_start": 423,
+          "line_end": 426
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 425,
-          "line_end": 428
+          "line_start": 427,
+          "line_end": 430
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
-          "line_start": 429,
-          "line_end": 432
+          "line_start": 431,
+          "line_end": 434
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 433,
-          "line_end": 436
+          "line_start": 435,
+          "line_end": 438
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 437,
-          "line_end": 440
+          "line_start": 439,
+          "line_end": 442
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 441,
-          "line_end": 444
+          "line_start": 443,
+          "line_end": 446
         }
       ],
       "references": [],
@@ -1422,7 +1422,7 @@
       "title": "ADE adapters and multi-ADE participation",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "25894e7d0f20a0a9b9e34a36c286498372d5bb1502e725cb579b244ce699d672",
+      "sha256": "a6ef76044c6087319365406661705586b8cd26827721e5b7247c92b3d48214c0",
       "aliases": [],
       "sections": [
         {
@@ -1465,7 +1465,7 @@
       "title": "Bootstrapping GTT into a project",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "aff8e4b3852b192b89ed5a259ad30bfb8bd28bdfeb7f365c11ec2ab0718652b8",
+      "sha256": "ccd0b479399f9ec931b4d1b2aa9f94ca973750b45212dc013a5ee22fdb6df9a9",
       "aliases": [],
       "sections": [
         {
@@ -1474,7 +1474,7 @@
           "anchor": "bootstrapping-gtt-into-a-project",
           "path": "Bootstrapping GTT into a project",
           "line_start": 1,
-          "line_end": 462
+          "line_end": 489
         },
         {
           "heading": "Before changing anything",
@@ -1490,7 +1490,7 @@
           "anchor": "required-workspace",
           "path": "Bootstrapping GTT into a project > Required workspace",
           "line_start": 21,
-          "line_end": 196
+          "line_end": 197
         },
         {
           "heading": "Bootstrap documentation vs. installed project layout",
@@ -1498,79 +1498,79 @@
           "anchor": "bootstrap-documentation-vs-installed-project-layout",
           "path": "Bootstrapping GTT into a project > Required workspace > Bootstrap documentation vs. installed project layout",
           "line_start": 87,
-          "line_end": 196
+          "line_end": 197
         },
         {
           "heading": "Bootstrap behavior",
           "level": 2,
           "anchor": "bootstrap-behavior",
           "path": "Bootstrapping GTT into a project > Bootstrap behavior",
-          "line_start": 197,
-          "line_end": 245
+          "line_start": 198,
+          "line_end": 250
         },
         {
           "heading": "Method Plans",
           "level": 2,
           "anchor": "method-plans",
           "path": "Bootstrapping GTT into a project > Method Plans",
-          "line_start": 246,
-          "line_end": 279
+          "line_start": 251,
+          "line_end": 284
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "Bootstrapping GTT into a project > Design assessment",
-          "line_start": 280,
-          "line_end": 341
+          "line_start": 285,
+          "line_end": 346
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "Bootstrapping GTT into a project > Initial Design Questionnaire",
-          "line_start": 342,
-          "line_end": 371
+          "line_start": 347,
+          "line_end": 398
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "Bootstrapping GTT into a project > Two confirmations",
-          "line_start": 372,
-          "line_end": 385
+          "line_start": 399,
+          "line_end": 412
         },
         {
           "heading": "Confirmation A — source/design",
           "level": 3,
           "anchor": "confirmation-a--sourcedesign",
           "path": "Bootstrapping GTT into a project > Two confirmations > Confirmation A — source/design",
-          "line_start": 376,
-          "line_end": 379
+          "line_start": 403,
+          "line_end": 406
         },
         {
           "heading": "Confirmation B — governed context",
           "level": 3,
           "anchor": "confirmation-b--governed-context",
           "path": "Bootstrapping GTT into a project > Two confirmations > Confirmation B — governed context",
-          "line_start": 380,
-          "line_end": 385
+          "line_start": 407,
+          "line_end": 412
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "Bootstrapping GTT into a project > Source preservation",
-          "line_start": 386,
-          "line_end": 393
+          "line_start": 413,
+          "line_end": 420
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "Bootstrapping GTT into a project > Completion report",
-          "line_start": 394,
-          "line_end": 462
+          "line_start": 421,
+          "line_end": 489
         }
       ],
       "references": [],
@@ -1588,7 +1588,7 @@
       "title": "GTT Bootstrap 1.0 — the contract for the CLI",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "b044f24d45408725f67b1bec91f5c1c0e1d37c64bad391cf708bd57e48ac7553",
+      "sha256": "ce2276317347a7e95319988ccc48411058dccd41fd9708385066ba6720fd60ba",
       "aliases": [],
       "sections": [
         {
@@ -1673,7 +1673,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "aa8a56d6486de3c9afc1934c85abd4984c307a2c2ccafcec66a8889e5d344888",
+      "sha256": "ac51afbfc72fd276a4bc99926396de22833111da0c35ee5f29d78e49c18307d6",
       "aliases": [],
       "sections": [
         {
@@ -1682,7 +1682,7 @@
           "anchor": "gtt--reference-docs",
           "path": "GTT — Reference Docs",
           "line_start": 1,
-          "line_end": 1316
+          "line_end": 1317
         },
         {
           "heading": "Methodology",
@@ -1882,7 +1882,7 @@
           "anchor": "portability-claude-code-kiro-codex-copilot-cursor-openhands-antigravity",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity",
           "line_start": 844,
-          "line_end": 1205
+          "line_end": 1206
         },
         {
           "heading": "Compatibility matrix",
@@ -1938,95 +1938,95 @@
           "anchor": "antigravity",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity > Antigravity",
           "line_start": 1062,
-          "line_end": 1134
+          "line_end": 1135
         },
         {
           "heading": "GitHub Copilot",
           "level": 3,
           "anchor": "github-copilot",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity > GitHub Copilot",
-          "line_start": 1135,
-          "line_end": 1173
+          "line_start": 1136,
+          "line_end": 1174
         },
         {
           "heading": "If your team uses more than one ADE",
           "level": 3,
           "anchor": "if-your-team-uses-more-than-one-ade",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity > If your team uses more than one ADE",
-          "line_start": 1174,
-          "line_end": 1193
+          "line_start": 1175,
+          "line_end": 1194
         },
         {
           "heading": "If you use only one",
           "level": 3,
           "anchor": "if-you-use-only-one",
           "path": "GTT — Reference Docs > Portability: Claude Code, Kiro, Codex, Copilot, Cursor, OpenHands, Antigravity > If you use only one",
-          "line_start": 1194,
-          "line_end": 1205
+          "line_start": 1195,
+          "line_end": 1206
         },
         {
           "heading": "Migrating from GTT v1",
           "level": 2,
           "anchor": "migrating-from-gtt-v1",
           "path": "GTT — Reference Docs > Migrating from GTT v1",
-          "line_start": 1206,
-          "line_end": 1316
+          "line_start": 1207,
+          "line_end": 1317
         },
         {
           "heading": "What changed and why",
           "level": 3,
           "anchor": "what-changed-and-why",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > What changed and why",
-          "line_start": 1208,
-          "line_end": 1224
+          "line_start": 1209,
+          "line_end": 1225
         },
         {
           "heading": "File mapping",
           "level": 3,
           "anchor": "file-mapping",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > File mapping",
-          "line_start": 1225,
-          "line_end": 1243
+          "line_start": 1226,
+          "line_end": 1244
         },
         {
           "heading": "Scaffold restructure (layout change within v2.1)",
           "level": 3,
           "anchor": "scaffold-restructure-layout-change-within-v21",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Scaffold restructure (layout change within v2.1)",
-          "line_start": 1244,
-          "line_end": 1264
+          "line_start": 1245,
+          "line_end": 1265
         },
         {
           "heading": "Layout migration to         and",
           "level": 3,
           "anchor": "layout-migration-to---------and",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Layout migration to         and",
-          "line_start": 1265,
-          "line_end": 1277
+          "line_start": 1266,
+          "line_end": 1278
         },
         {
           "heading": "Steps",
           "level": 3,
           "anchor": "steps",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Steps",
-          "line_start": 1278,
-          "line_end": 1298
+          "line_start": 1279,
+          "line_end": 1299
         },
         {
           "heading": "If you use other agents too",
           "level": 3,
           "anchor": "if-you-use-other-agents-too",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > If you use other agents too",
-          "line_start": 1299,
-          "line_end": 1309
+          "line_start": 1300,
+          "line_end": 1310
         },
         {
           "heading": "Verifying the token saving",
           "level": 3,
           "anchor": "verifying-the-token-saving",
           "path": "GTT — Reference Docs > Migrating from GTT v1 > Verifying the token saving",
-          "line_start": 1310,
-          "line_end": 1316
+          "line_start": 1311,
+          "line_end": 1317
         }
       ],
       "references": [],
@@ -2767,7 +2767,7 @@
       "title": "GTT Initial Design Questionnaire",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "aef9b3b8800b958552d4279ad21cbecb1d6dc004942956dff610bd5296c215b1",
+      "sha256": "d78145d07ce4f24cdaef59d1afceb0296c0883809e12285034710ab65fce4a58",
       "aliases": [],
       "sections": [
         {
@@ -2792,751 +2792,799 @@
           "anchor": "1-operating-contract-for-the-ade",
           "path": "1. Operating Contract for the ADE",
           "line_start": 54,
-          "line_end": 131
+          "line_end": 133
         },
         {
           "heading": "THINK Depth",
           "level": 2,
           "anchor": "think-depth",
           "path": "1. Operating Contract for the ADE > THINK Depth",
-          "line_start": 96,
-          "line_end": 131
+          "line_start": 97,
+          "line_end": 133
         },
         {
           "heading": "Escalation log",
           "level": 3,
           "anchor": "escalation-log",
           "path": "1. Operating Contract for the ADE > THINK Depth > Escalation log",
-          "line_start": 121,
-          "line_end": 131
+          "line_start": 123,
+          "line_end": 133
         },
         {
           "heading": "2. Important Rule: Do Not Interrogate the User With the Whole Form",
           "level": 1,
           "anchor": "2-important-rule-do-not-interrogate-the-user-with-the-whole-form",
           "path": "2. Important Rule: Do Not Interrogate the User With the Whole Form",
-          "line_start": 132,
-          "line_end": 174
+          "line_start": 134,
+          "line_end": 220
+        },
+        {
+          "heading": "How each turn looks",
+          "level": 2,
+          "anchor": "how-each-turn-looks",
+          "path": "2. Important Rule: Do Not Interrogate the User With the Whole Form > How each turn looks",
+          "line_start": 177,
+          "line_end": 220
         },
         {
           "heading": "3. Evidence and Attribution",
           "level": 1,
           "anchor": "3-evidence-and-attribution",
           "path": "3. Evidence and Attribution",
-          "line_start": 175,
-          "line_end": 219
+          "line_start": 221,
+          "line_end": 265
         },
         {
           "heading": "4. Project Identity",
           "level": 1,
           "anchor": "4-project-identity",
           "path": "4. Project Identity",
-          "line_start": 220,
-          "line_end": 263
+          "line_start": 266,
+          "line_end": 338
         },
         {
           "heading": "4.1 Project name",
           "level": 2,
           "anchor": "41-project-name",
           "path": "4. Project Identity > 4.1 Project name",
-          "line_start": 222,
-          "line_end": 231
+          "line_start": 268,
+          "line_end": 277
         },
         {
           "heading": "4.2 Project purpose",
           "level": 2,
           "anchor": "42-project-purpose",
           "path": "4. Project Identity > 4.2 Project purpose",
-          "line_start": 232,
-          "line_end": 241
+          "line_start": 278,
+          "line_end": 287
         },
         {
           "heading": "4.3 Problem",
           "level": 2,
           "anchor": "43-problem",
           "path": "4. Project Identity > 4.3 Problem",
-          "line_start": 242,
-          "line_end": 251
+          "line_start": 288,
+          "line_end": 297
         },
         {
           "heading": "4.4 Desired outcome",
           "level": 2,
           "anchor": "44-desired-outcome",
           "path": "4. Project Identity > 4.4 Desired outcome",
-          "line_start": 252,
-          "line_end": 263
+          "line_start": 298,
+          "line_end": 307
+        },
+        {
+          "heading": "4.5 Vision",
+          "level": 2,
+          "anchor": "45-vision",
+          "path": "4. Project Identity > 4.5 Vision",
+          "line_start": 308,
+          "line_end": 321
+        },
+        {
+          "heading": "4.6 Key terms",
+          "level": 2,
+          "anchor": "46-key-terms",
+          "path": "4. Project Identity > 4.6 Key terms",
+          "line_start": 322,
+          "line_end": 338
         },
         {
           "heading": "5. Scope",
           "level": 1,
           "anchor": "5-scope",
           "path": "5. Scope",
-          "line_start": 264,
-          "line_end": 298
+          "line_start": 339,
+          "line_end": 373
         },
         {
           "heading": "5.1 In scope",
           "level": 2,
           "anchor": "51-in-scope",
           "path": "5. Scope > 5.1 In scope",
-          "line_start": 266,
-          "line_end": 275
+          "line_start": 341,
+          "line_end": 350
         },
         {
           "heading": "5.2 Out of scope",
           "level": 2,
           "anchor": "52-out-of-scope",
           "path": "5. Scope > 5.2 Out of scope",
-          "line_start": 276,
-          "line_end": 285
+          "line_start": 351,
+          "line_end": 360
         },
         {
           "heading": "5.3 Scope boundaries",
           "level": 2,
           "anchor": "53-scope-boundaries",
           "path": "5. Scope > 5.3 Scope boundaries",
-          "line_start": 286,
-          "line_end": 298
+          "line_start": 361,
+          "line_end": 373
         },
         {
           "heading": "6. Users and Consumers",
           "level": 1,
           "anchor": "6-users-and-consumers",
           "path": "6. Users and Consumers",
-          "line_start": 299,
-          "line_end": 333
+          "line_start": 374,
+          "line_end": 408
         },
         {
           "heading": "6.1 Primary users",
           "level": 2,
           "anchor": "61-primary-users",
           "path": "6. Users and Consumers > 6.1 Primary users",
-          "line_start": 301,
-          "line_end": 310
+          "line_start": 376,
+          "line_end": 385
         },
         {
           "heading": "6.2 External consumers",
           "level": 2,
           "anchor": "62-external-consumers",
           "path": "6. Users and Consumers > 6.2 External consumers",
-          "line_start": 311,
-          "line_end": 321
+          "line_start": 386,
+          "line_end": 396
         },
         {
           "heading": "6.3 Internal consumers",
           "level": 2,
           "anchor": "63-internal-consumers",
           "path": "6. Users and Consumers > 6.3 Internal consumers",
-          "line_start": 322,
-          "line_end": 333
+          "line_start": 397,
+          "line_end": 408
         },
         {
           "heading": "7. Main Capabilities",
           "level": 1,
           "anchor": "7-main-capabilities",
           "path": "7. Main Capabilities",
-          "line_start": 334,
-          "line_end": 352
+          "line_start": 409,
+          "line_end": 427
         },
         {
           "heading": "Capabilities",
           "level": 2,
           "anchor": "capabilities",
           "path": "7. Main Capabilities > Capabilities",
-          "line_start": 347,
-          "line_end": 352
+          "line_start": 422,
+          "line_end": 427
         },
         {
           "heading": "8. Functional Requirements",
           "level": 1,
           "anchor": "8-functional-requirements",
           "path": "8. Functional Requirements",
-          "line_start": 353,
-          "line_end": 372
+          "line_start": 428,
+          "line_end": 447
         },
         {
           "heading": "Requirements",
           "level": 2,
           "anchor": "requirements",
           "path": "8. Functional Requirements > Requirements",
-          "line_start": 367,
-          "line_end": 372
+          "line_start": 442,
+          "line_end": 447
         },
         {
           "heading": "9. Non-Functional Requirements",
           "level": 1,
           "anchor": "9-non-functional-requirements",
           "path": "9. Non-Functional Requirements",
-          "line_start": 373,
-          "line_end": 438
+          "line_start": 448,
+          "line_end": 513
         },
         {
           "heading": "9.1 Performance",
           "level": 2,
           "anchor": "91-performance",
           "path": "9. Non-Functional Requirements > 9.1 Performance",
-          "line_start": 378,
-          "line_end": 389
+          "line_start": 453,
+          "line_end": 464
         },
         {
           "heading": "9.2 Availability",
           "level": 2,
           "anchor": "92-availability",
           "path": "9. Non-Functional Requirements > 9.2 Availability",
-          "line_start": 390,
-          "line_end": 401
+          "line_start": 465,
+          "line_end": 476
         },
         {
           "heading": "9.3 Scalability",
           "level": 2,
           "anchor": "93-scalability",
           "path": "9. Non-Functional Requirements > 9.3 Scalability",
-          "line_start": 402,
-          "line_end": 413
+          "line_start": 477,
+          "line_end": 488
         },
         {
           "heading": "9.4 Reliability",
           "level": 2,
           "anchor": "94-reliability",
           "path": "9. Non-Functional Requirements > 9.4 Reliability",
-          "line_start": 414,
-          "line_end": 425
+          "line_start": 489,
+          "line_end": 500
         },
         {
           "heading": "9.5 Compliance",
           "level": 2,
           "anchor": "95-compliance",
           "path": "9. Non-Functional Requirements > 9.5 Compliance",
-          "line_start": 426,
-          "line_end": 438
+          "line_start": 501,
+          "line_end": 513
         },
         {
           "heading": "10. Security",
           "level": 1,
           "anchor": "10-security",
           "path": "10. Security",
-          "line_start": 439,
-          "line_end": 487
+          "line_start": 514,
+          "line_end": 562
         },
         {
           "heading": "10.1 Identity",
           "level": 2,
           "anchor": "101-identity",
           "path": "10. Security > 10.1 Identity",
-          "line_start": 444,
-          "line_end": 451
+          "line_start": 519,
+          "line_end": 526
         },
         {
           "heading": "10.2 Authentication",
           "level": 2,
           "anchor": "102-authentication",
           "path": "10. Security > 10.2 Authentication",
-          "line_start": 452,
-          "line_end": 459
+          "line_start": 527,
+          "line_end": 534
         },
         {
           "heading": "10.3 Authorization",
           "level": 2,
           "anchor": "103-authorization",
           "path": "10. Security > 10.3 Authorization",
-          "line_start": 460,
-          "line_end": 467
+          "line_start": 535,
+          "line_end": 542
         },
         {
           "heading": "10.4 Sensitive data",
           "level": 2,
           "anchor": "104-sensitive-data",
           "path": "10. Security > 10.4 Sensitive data",
-          "line_start": 468,
-          "line_end": 476
+          "line_start": 543,
+          "line_end": 551
         },
         {
           "heading": "10.5 Secrets",
           "level": 2,
           "anchor": "105-secrets",
           "path": "10. Security > 10.5 Secrets",
-          "line_start": 477,
-          "line_end": 487
+          "line_start": 552,
+          "line_end": 562
         },
         {
           "heading": "11. Data",
           "level": 1,
           "anchor": "11-data",
           "path": "11. Data",
-          "line_start": 488,
-          "line_end": 541
+          "line_start": 563,
+          "line_end": 616
         },
         {
           "heading": "11.1 Main data",
           "level": 2,
           "anchor": "111-main-data",
           "path": "11. Data > 11.1 Main data",
-          "line_start": 490,
-          "line_end": 500
+          "line_start": 565,
+          "line_end": 575
         },
         {
           "heading": "11.2 Data ownership",
           "level": 2,
           "anchor": "112-data-ownership",
           "path": "11. Data > 11.2 Data ownership",
-          "line_start": 501,
-          "line_end": 510
+          "line_start": 576,
+          "line_end": 585
         },
         {
           "heading": "11.3 Data lifecycle",
           "level": 2,
           "anchor": "113-data-lifecycle",
           "path": "11. Data > 11.3 Data lifecycle",
-          "line_start": 511,
-          "line_end": 520
+          "line_start": 586,
+          "line_end": 595
         },
         {
           "heading": "11.4 Known storage technology",
           "level": 2,
           "anchor": "114-known-storage-technology",
           "path": "11. Data > 11.4 Known storage technology",
-          "line_start": 521,
-          "line_end": 541
+          "line_start": 596,
+          "line_end": 616
         },
         {
           "heading": "12. Integrations and External Systems",
           "level": 1,
           "anchor": "12-integrations-and-external-systems",
           "path": "12. Integrations and External Systems",
-          "line_start": 542,
-          "line_end": 579
+          "line_start": 617,
+          "line_end": 654
         },
         {
           "heading": "12.1 Existing systems",
           "level": 2,
           "anchor": "121-existing-systems",
           "path": "12. Integrations and External Systems > 12.1 Existing systems",
-          "line_start": 544,
-          "line_end": 553
+          "line_start": 619,
+          "line_end": 628
         },
         {
           "heading": "12.2 APIs",
           "level": 2,
           "anchor": "122-apis",
           "path": "12. Integrations and External Systems > 12.2 APIs",
-          "line_start": 554,
-          "line_end": 563
+          "line_start": 629,
+          "line_end": 638
         },
         {
           "heading": "12.3 Messaging / events",
           "level": 2,
           "anchor": "123-messaging--events",
           "path": "12. Integrations and External Systems > 12.3 Messaging / events",
-          "line_start": 564,
-          "line_end": 579
+          "line_start": 639,
+          "line_end": 654
         },
         {
           "heading": "13. Architecture",
           "level": 1,
           "anchor": "13-architecture",
           "path": "13. Architecture",
-          "line_start": 580,
-          "line_end": 638
+          "line_start": 655,
+          "line_end": 727
         },
         {
           "heading": "13.1 Known architectural decisions",
           "level": 2,
           "anchor": "131-known-architectural-decisions",
           "path": "13. Architecture > 13.1 Known architectural decisions",
-          "line_start": 587,
-          "line_end": 605
+          "line_start": 662,
+          "line_end": 680
         },
         {
           "heading": "13.2 Existing architecture",
           "level": 2,
           "anchor": "132-existing-architecture",
           "path": "13. Architecture > 13.2 Existing architecture",
-          "line_start": 606,
-          "line_end": 613
+          "line_start": 681,
+          "line_end": 688
         },
         {
           "heading": "13.3 Preferred architecture",
           "level": 2,
           "anchor": "133-preferred-architecture",
           "path": "13. Architecture > 13.3 Preferred architecture",
-          "line_start": 614,
-          "line_end": 624
+          "line_start": 689,
+          "line_end": 699
+        },
+        {
+          "heading": "13.5 Design principles",
+          "level": 2,
+          "anchor": "135-design-principles",
+          "path": "13. Architecture > 13.5 Design principles",
+          "line_start": 700,
+          "line_end": 713
         },
         {
           "heading": "13.4 Architecture unknowns",
           "level": 2,
           "anchor": "134-architecture-unknowns",
           "path": "13. Architecture > 13.4 Architecture unknowns",
-          "line_start": 625,
-          "line_end": 638
+          "line_start": 714,
+          "line_end": 727
         },
         {
           "heading": "14. Technology",
           "level": 1,
           "anchor": "14-technology",
           "path": "14. Technology",
-          "line_start": 639,
-          "line_end": 678
+          "line_start": 728,
+          "line_end": 780
         },
         {
           "heading": "14.1 Languages",
           "level": 2,
           "anchor": "141-languages",
           "path": "14. Technology > 14.1 Languages",
-          "line_start": 641,
-          "line_end": 648
+          "line_start": 730,
+          "line_end": 737
         },
         {
           "heading": "14.2 Frameworks",
           "level": 2,
           "anchor": "142-frameworks",
           "path": "14. Technology > 14.2 Frameworks",
-          "line_start": 649,
-          "line_end": 656
+          "line_start": 738,
+          "line_end": 745
         },
         {
           "heading": "14.3 Database / storage",
           "level": 2,
           "anchor": "143-database--storage",
           "path": "14. Technology > 14.3 Database / storage",
-          "line_start": 657,
-          "line_end": 664
+          "line_start": 746,
+          "line_end": 753
         },
         {
           "heading": "14.4 Cloud",
           "level": 2,
           "anchor": "144-cloud",
           "path": "14. Technology > 14.4 Cloud",
-          "line_start": 665,
-          "line_end": 672
+          "line_start": 754,
+          "line_end": 761
         },
         {
           "heading": "14.5 Existing technology constraints",
           "level": 2,
           "anchor": "145-existing-technology-constraints",
           "path": "14. Technology > 14.5 Existing technology constraints",
-          "line_start": 673,
-          "line_end": 678
+          "line_start": 762,
+          "line_end": 765
+        },
+        {
+          "heading": "14.6 Where it runs",
+          "level": 2,
+          "anchor": "146-where-it-runs",
+          "path": "14. Technology > 14.6 Where it runs",
+          "line_start": 766,
+          "line_end": 780
         },
         {
           "heading": "15. Deployment and Infrastructure",
           "level": 1,
           "anchor": "15-deployment-and-infrastructure",
           "path": "15. Deployment and Infrastructure",
-          "line_start": 679,
-          "line_end": 763
+          "line_start": 781,
+          "line_end": 865
         },
         {
           "heading": "15.1 Environments",
           "level": 2,
           "anchor": "151-environments",
           "path": "15. Deployment and Infrastructure > 15.1 Environments",
-          "line_start": 681,
-          "line_end": 697
+          "line_start": 783,
+          "line_end": 799
         },
         {
           "heading": "15.2 Containers",
           "level": 2,
           "anchor": "152-containers",
           "path": "15. Deployment and Infrastructure > 15.2 Containers",
-          "line_start": 698,
-          "line_end": 705
+          "line_start": 800,
+          "line_end": 807
         },
         {
           "heading": "15.3 Kubernetes",
           "level": 2,
           "anchor": "153-kubernetes",
           "path": "15. Deployment and Infrastructure > 15.3 Kubernetes",
-          "line_start": 706,
-          "line_end": 713
+          "line_start": 808,
+          "line_end": 815
         },
         {
           "heading": "15.4 CI/CD",
           "level": 2,
           "anchor": "154-cicd",
           "path": "15. Deployment and Infrastructure > 15.4 CI/CD",
-          "line_start": 714,
-          "line_end": 721
+          "line_start": 816,
+          "line_end": 823
         },
         {
           "heading": "15.5 Infrastructure as Code",
           "level": 2,
           "anchor": "155-infrastructure-as-code",
           "path": "15. Deployment and Infrastructure > 15.5 Infrastructure as Code",
-          "line_start": 722,
-          "line_end": 729
+          "line_start": 824,
+          "line_end": 831
         },
         {
           "heading": "15.6 Git workflow",
           "level": 2,
           "anchor": "156-git-workflow",
           "path": "15. Deployment and Infrastructure > 15.6 Git workflow",
-          "line_start": 730,
-          "line_end": 763
+          "line_start": 832,
+          "line_end": 865
         },
         {
           "heading": "16. Observability",
           "level": 1,
           "anchor": "16-observability",
           "path": "16. Observability",
-          "line_start": 764,
-          "line_end": 799
+          "line_start": 866,
+          "line_end": 901
         },
         {
           "heading": "16.1 Logging",
           "level": 2,
           "anchor": "161-logging",
           "path": "16. Observability > 16.1 Logging",
-          "line_start": 766,
-          "line_end": 773
+          "line_start": 868,
+          "line_end": 875
         },
         {
           "heading": "16.2 Metrics",
           "level": 2,
           "anchor": "162-metrics",
           "path": "16. Observability > 16.2 Metrics",
-          "line_start": 774,
-          "line_end": 781
+          "line_start": 876,
+          "line_end": 883
         },
         {
           "heading": "16.3 Tracing",
           "level": 2,
           "anchor": "163-tracing",
           "path": "16. Observability > 16.3 Tracing",
-          "line_start": 782,
-          "line_end": 789
+          "line_start": 884,
+          "line_end": 891
         },
         {
           "heading": "16.4 Alerting",
           "level": 2,
           "anchor": "164-alerting",
           "path": "16. Observability > 16.4 Alerting",
-          "line_start": 790,
-          "line_end": 799
+          "line_start": 892,
+          "line_end": 901
         },
         {
           "heading": "17. Constraints",
           "level": 1,
           "anchor": "17-constraints",
           "path": "17. Constraints",
-          "line_start": 800,
-          "line_end": 828
+          "line_start": 902,
+          "line_end": 930
         },
         {
           "heading": "Constraints",
           "level": 2,
           "anchor": "constraints",
           "path": "17. Constraints > Constraints",
-          "line_start": 823,
-          "line_end": 828
+          "line_start": 925,
+          "line_end": 930
         },
         {
           "heading": "18. Existing Documentation",
           "level": 1,
           "anchor": "18-existing-documentation",
           "path": "18. Existing Documentation",
-          "line_start": 829,
-          "line_end": 852
+          "line_start": 931,
+          "line_end": 954
         },
         {
           "heading": "Documents",
           "level": 2,
           "anchor": "documents",
           "path": "18. Existing Documentation > Documents",
-          "line_start": 842,
-          "line_end": 852
+          "line_start": 944,
+          "line_end": 954
         },
         {
           "heading": "19. Unknowns",
           "level": 1,
           "anchor": "19-unknowns",
           "path": "19. Unknowns",
-          "line_start": 853,
-          "line_end": 882
+          "line_start": 955,
+          "line_end": 984
         },
         {
           "heading": "Unknowns",
           "level": 2,
           "anchor": "unknowns",
           "path": "19. Unknowns > Unknowns",
-          "line_start": 869,
-          "line_end": 882
+          "line_start": 971,
+          "line_end": 984
         },
         {
           "heading": "20. Conflicts",
           "level": 1,
           "anchor": "20-conflicts",
           "path": "20. Conflicts",
-          "line_start": 883,
-          "line_end": 911
+          "line_start": 985,
+          "line_end": 1013
         },
         {
           "heading": "Conflicts",
           "level": 2,
           "anchor": "conflicts",
           "path": "20. Conflicts > Conflicts",
-          "line_start": 900,
-          "line_end": 911
+          "line_start": 1002,
+          "line_end": 1013
         },
         {
           "heading": "21. Proposals",
           "level": 1,
           "anchor": "21-proposals",
           "path": "21. Proposals",
-          "line_start": 912,
-          "line_end": 943
+          "line_start": 1014,
+          "line_end": 1045
         },
         {
           "heading": "Proposals",
           "level": 2,
           "anchor": "proposals",
           "path": "21. Proposals > Proposals",
-          "line_start": 930,
-          "line_end": 943
+          "line_start": 1032,
+          "line_end": 1045
         },
         {
           "heading": "22. Decisions Requiring Human Confirmation",
           "level": 1,
           "anchor": "22-decisions-requiring-human-confirmation",
           "path": "22. Decisions Requiring Human Confirmation",
-          "line_start": 944,
-          "line_end": 982
+          "line_start": 1046,
+          "line_end": 1084
         },
         {
           "heading": "Decisions",
           "level": 2,
           "anchor": "decisions",
           "path": "22. Decisions Requiring Human Confirmation > Decisions",
-          "line_start": 962,
-          "line_end": 982
+          "line_start": 1064,
+          "line_end": 1084
         },
         {
           "heading": "23. Minimum Viable Governed Design",
           "level": 1,
           "anchor": "23-minimum-viable-governed-design",
           "path": "23. Minimum Viable Governed Design",
-          "line_start": 983,
-          "line_end": 1026
+          "line_start": 1085,
+          "line_end": 1145
+        },
+        {
+          "heading": "Minimum floor",
+          "level": 2,
+          "anchor": "minimum-floor",
+          "path": "23. Minimum Viable Governed Design > Minimum floor",
+          "line_start": 1111,
+          "line_end": 1127
         },
         {
           "heading": "Readiness",
           "level": 2,
           "anchor": "readiness",
           "path": "23. Minimum Viable Governed Design > Readiness",
-          "line_start": 1009,
-          "line_end": 1026
+          "line_start": 1128,
+          "line_end": 1145
         },
         {
           "heading": "24. Human Review",
           "level": 1,
           "anchor": "24-human-review",
           "path": "24. Human Review",
-          "line_start": 1027,
-          "line_end": 1050
+          "line_start": 1146,
+          "line_end": 1179
         },
         {
           "heading": "25. Completion Rule",
           "level": 1,
           "anchor": "25-completion-rule",
           "path": "25. Completion Rule",
-          "line_start": 1051,
-          "line_end": 1068
+          "line_start": 1180,
+          "line_end": 1197
         },
         {
           "heading": "26. What Happens Next",
           "level": 1,
           "anchor": "26-what-happens-next",
           "path": "26. What Happens Next",
-          "line_start": 1069,
-          "line_end": 1101
+          "line_start": 1198,
+          "line_end": 1230
         },
         {
           "heading": "27. ADE Behavior Summary",
           "level": 1,
           "anchor": "27-ade-behavior-summary",
           "path": "27. ADE Behavior Summary",
-          "line_start": 1102,
-          "line_end": 1185
+          "line_start": 1231,
+          "line_end": 1314
         },
         {
           "heading": "28. Anti-Patterns",
           "level": 1,
           "anchor": "28-anti-patterns",
           "path": "28. Anti-Patterns",
-          "line_start": 1186,
-          "line_end": 1272
+          "line_start": 1315,
+          "line_end": 1401
         },
         {
           "heading": "28.1 Ask everything at once",
           "level": 3,
           "anchor": "281-ask-everything-at-once",
           "path": "28. Anti-Patterns > 28.1 Ask everything at once",
-          "line_start": 1190,
-          "line_end": 1197
+          "line_start": 1319,
+          "line_end": 1326
         },
         {
           "heading": "28.2 Invent missing architecture",
           "level": 3,
           "anchor": "282-invent-missing-architecture",
           "path": "28. Anti-Patterns > 28.2 Invent missing architecture",
-          "line_start": 1198,
-          "line_end": 1207
+          "line_start": 1327,
+          "line_end": 1336
         },
         {
           "heading": "28.3 Treat inference as decision",
           "level": 3,
           "anchor": "283-treat-inference-as-decision",
           "path": "28. Anti-Patterns > 28.3 Treat inference as decision",
-          "line_start": 1208,
-          "line_end": 1215
+          "line_start": 1337,
+          "line_end": 1344
         },
         {
           "heading": "28.4 Hide uncertainty",
           "level": 3,
           "anchor": "284-hide-uncertainty",
           "path": "28. Anti-Patterns > 28.4 Hide uncertainty",
-          "line_start": 1216,
-          "line_end": 1232
+          "line_start": 1345,
+          "line_end": 1361
         },
         {
           "heading": "28.5 Resolve conflicts silently",
           "level": 3,
           "anchor": "285-resolve-conflicts-silently",
           "path": "28. Anti-Patterns > 28.5 Resolve conflicts silently",
-          "line_start": 1233,
-          "line_end": 1250
+          "line_start": 1362,
+          "line_end": 1379
         },
         {
           "heading": "28.6 Turn proposals into decisions",
           "level": 3,
           "anchor": "286-turn-proposals-into-decisions",
           "path": "28. Anti-Patterns > 28.6 Turn proposals into decisions",
-          "line_start": 1251,
-          "line_end": 1272
+          "line_start": 1380,
+          "line_end": 1401
         },
         {
           "heading": "29. Versioning",
           "level": 1,
           "anchor": "29-versioning",
           "path": "29. Versioning",
-          "line_start": 1273,
-          "line_end": 1292
+          "line_start": 1402,
+          "line_end": 1421
         },
         {
           "heading": "30. Ownership",
           "level": 1,
           "anchor": "30-ownership",
           "path": "30. Ownership",
-          "line_start": 1293,
-          "line_end": 1316
+          "line_start": 1422,
+          "line_end": 1445
         },
         {
           "heading": "31. Core Principle",
           "level": 1,
           "anchor": "31-core-principle",
           "path": "31. Core Principle",
-          "line_start": 1317,
-          "line_end": 1349
+          "line_start": 1446,
+          "line_end": 1478
         }
       ],
       "references": [],
@@ -3640,7 +3688,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "0fc92429c015ac61cf39ce930632e7da19d18dc5b4ef50c4503b93381e7d80a3",
+      "sha256": "95bc96717ecdeac61f4963750055373a7b40c4502c03e3cf271b561b8f8f4108",
       "aliases": [],
       "sections": [
         {
@@ -4783,7 +4831,7 @@
       "title": "GTT Bootstrap",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "05c66cd61c8b20f6a8921cbc41a514b90ee55c1888d95f68a77f2f621a2ab394",
+      "sha256": "b2858d7e64a86315f9ef53adfa27c8c2621b2ab83ecd8c31d20fcfc03d9f2e2f",
       "aliases": [],
       "sections": [
         {
@@ -4792,7 +4840,7 @@
           "anchor": "gtt-bootstrap",
           "path": "GTT Bootstrap",
           "line_start": 1,
-          "line_end": 1020
+          "line_end": 1028
         },
         {
           "heading": "Quick navigation",
@@ -4856,215 +4904,215 @@
           "anchor": "starting-without-a-design-document",
           "path": "GTT Bootstrap > Starting without a design document",
           "line_start": 340,
-          "line_end": 364
+          "line_end": 372
         },
         {
           "heading": "Mandatory GTT workspace scaffolding",
           "level": 2,
           "anchor": "mandatory-gtt-workspace-scaffolding",
           "path": "GTT Bootstrap > Mandatory GTT workspace scaffolding",
-          "line_start": 365,
-          "line_end": 411
+          "line_start": 373,
+          "line_end": 419
         },
         {
           "heading": "Scaffolding rules",
           "level": 3,
           "anchor": "scaffolding-rules",
           "path": "GTT Bootstrap > Mandatory GTT workspace scaffolding > Scaffolding rules",
-          "line_start": 398,
-          "line_end": 411
+          "line_start": 406,
+          "line_end": 419
         },
         {
           "heading": "Workspace hygiene",
           "level": 2,
           "anchor": "workspace-hygiene",
           "path": "GTT Bootstrap > Workspace hygiene",
-          "line_start": 412,
-          "line_end": 453
+          "line_start": 420,
+          "line_end": 461
         },
         {
           "heading": "The problem",
           "level": 2,
           "anchor": "the-problem",
           "path": "GTT Bootstrap > The problem",
-          "line_start": 454,
-          "line_end": 465
+          "line_start": 462,
+          "line_end": 473
         },
         {
           "heading": "The two files you will always touch",
           "level": 2,
           "anchor": "the-two-files-you-will-always-touch",
           "path": "GTT Bootstrap > The two files you will always touch",
-          "line_start": 466,
-          "line_end": 481
+          "line_start": 474,
+          "line_end": 489
         },
         {
           "heading": "The map",
           "level": 2,
           "anchor": "the-map",
           "path": "GTT Bootstrap > The map",
-          "line_start": 482,
-          "line_end": 503
+          "line_start": 490,
+          "line_end": 511
         },
         {
           "heading": "Changing something",
           "level": 2,
           "anchor": "changing-something",
           "path": "GTT Bootstrap > Changing something",
-          "line_start": 504,
-          "line_end": 540
+          "line_start": 512,
+          "line_end": 548
         },
         {
           "heading": "Human Promotion Boundary",
           "level": 2,
           "anchor": "human-promotion-boundary",
           "path": "GTT Bootstrap > Human Promotion Boundary",
-          "line_start": 541,
-          "line_end": 567
+          "line_start": 549,
+          "line_end": 575
         },
         {
           "heading": "Backlog",
           "level": 2,
           "anchor": "backlog",
           "path": "GTT Bootstrap > Backlog",
-          "line_start": 568,
-          "line_end": 611
+          "line_start": 576,
+          "line_end": 619
         },
         {
           "heading": "Governance and observation: the two planes",
           "level": 2,
           "anchor": "governance-and-observation-the-two-planes",
           "path": "GTT Bootstrap > Governance and observation: the two planes",
-          "line_start": 612,
-          "line_end": 677
+          "line_start": 620,
+          "line_end": 685
         },
         {
           "heading": "Where each thing lives: sources, design, backlog",
           "level": 2,
           "anchor": "where-each-thing-lives-sources-design-backlog",
           "path": "GTT Bootstrap > Where each thing lives: sources, design, backlog",
-          "line_start": 678,
-          "line_end": 702
+          "line_start": 686,
+          "line_end": 710
         },
         {
           "heading": "Continuity, review and Git",
           "level": 2,
           "anchor": "continuity-review-and-git",
           "path": "GTT Bootstrap > Continuity, review and Git",
-          "line_start": 703,
-          "line_end": 723
+          "line_start": 711,
+          "line_end": 731
         },
         {
           "heading": "Protected artifacts (GTTGuard)",
           "level": 2,
           "anchor": "protected-artifacts-gttguard",
           "path": "GTT Bootstrap > Protected artifacts (GTTGuard)",
-          "line_start": 724,
-          "line_end": 768
+          "line_start": 732,
+          "line_end": 776
         },
         {
           "heading": "Keeping the map honest",
           "level": 2,
           "anchor": "keeping-the-map-honest",
           "path": "GTT Bootstrap > Keeping the map honest",
-          "line_start": 769,
-          "line_end": 783
+          "line_start": 777,
+          "line_end": 791
         },
         {
           "heading": "Design principle",
           "level": 2,
           "anchor": "design-principle",
           "path": "GTT Bootstrap > Design principle",
-          "line_start": 784,
-          "line_end": 804
+          "line_start": 792,
+          "line_end": 812
         },
         {
           "heading": "Structure",
           "level": 2,
           "anchor": "structure",
           "path": "GTT Bootstrap > Structure",
-          "line_start": 805,
-          "line_end": 887
+          "line_start": 813,
+          "line_end": 895
         },
         {
           "heading": "Why some files stay at the root",
           "level": 3,
           "anchor": "why-some-files-stay-at-the-root",
           "path": "GTT Bootstrap > Structure > Why some files stay at the root",
-          "line_start": 874,
-          "line_end": 887
+          "line_start": 882,
+          "line_end": 895
         },
         {
           "heading": "Context layers",
           "level": 2,
           "anchor": "context-layers",
           "path": "GTT Bootstrap > Context layers",
-          "line_start": 888,
-          "line_end": 898
+          "line_start": 896,
+          "line_end": 906
         },
         {
           "heading": "Getting started",
           "level": 2,
           "anchor": "getting-started",
           "path": "GTT Bootstrap > Getting started",
-          "line_start": 899,
-          "line_end": 925
+          "line_start": 907,
+          "line_end": 933
         },
         {
           "heading": "Upgrading to the two-regime model",
           "level": 3,
           "anchor": "upgrading-to-the-two-regime-model",
           "path": "GTT Bootstrap > Getting started > Upgrading to the two-regime model",
-          "line_start": 912,
-          "line_end": 925
+          "line_start": 920,
+          "line_end": 933
         },
         {
           "heading": "Tool support",
           "level": 2,
           "anchor": "tool-support",
           "path": "GTT Bootstrap > Tool support",
-          "line_start": 926,
-          "line_end": 975
+          "line_start": 934,
+          "line_end": 983
         },
         {
           "heading": "Switching ADE later",
           "level": 3,
           "anchor": "switching-ade-later",
           "path": "GTT Bootstrap > Tool support > Switching ADE later",
-          "line_start": 941,
-          "line_end": 975
+          "line_start": 949,
+          "line_end": 983
         },
         {
           "heading": "What you maintain",
           "level": 2,
           "anchor": "what-you-maintain",
           "path": "GTT Bootstrap > What you maintain",
-          "line_start": 976,
-          "line_end": 986
+          "line_start": 984,
+          "line_end": 994
         },
         {
           "heading": "Requirements",
           "level": 2,
           "anchor": "requirements",
           "path": "GTT Bootstrap > Requirements",
-          "line_start": 987,
-          "line_end": 994
+          "line_start": 995,
+          "line_end": 1002
         },
         {
           "heading": "Evolution",
           "level": 2,
           "anchor": "evolution",
           "path": "GTT Bootstrap > Evolution",
-          "line_start": 995,
-          "line_end": 1006
+          "line_start": 1003,
+          "line_end": 1014
         },
         {
           "heading": "License",
           "level": 2,
           "anchor": "license",
           "path": "GTT Bootstrap > License",
-          "line_start": 1007,
-          "line_end": 1020
+          "line_start": 1015,
+          "line_end": 1028
         }
       ],
       "references": [
@@ -5093,7 +5141,7 @@
       "title": "GTT Bootstrap",
       "authority": "human-reference",
       "version": "v2.1",
-      "sha256": "3de7a960dbb34d5e9c788e7384f988baad01227e4ede8db49ea51625fec56678",
+      "sha256": "c5d1293bcf2ed721a9b43a1e43fdc3b252de38bbe662fefef7a1ab3518a1f6b8",
       "aliases": [],
       "sections": [
         {
@@ -5102,7 +5150,7 @@
           "anchor": "gtt-bootstrap",
           "path": "GTT Bootstrap",
           "line_start": 1,
-          "line_end": 1048
+          "line_end": 1056
         },
         {
           "heading": "Navegación rápida",
@@ -5166,215 +5214,215 @@
           "anchor": "empezar-sin-documento-de-diseño",
           "path": "GTT Bootstrap > Empezar sin documento de diseño",
           "line_start": 362,
-          "line_end": 386
+          "line_end": 394
         },
         {
           "heading": "Scaffolding obligatorio del workspace GTT",
           "level": 2,
           "anchor": "scaffolding-obligatorio-del-workspace-gtt",
           "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT",
-          "line_start": 387,
-          "line_end": 433
+          "line_start": 395,
+          "line_end": 441
         },
         {
           "heading": "Reglas del scaffolding",
           "level": 3,
           "anchor": "reglas-del-scaffolding",
           "path": "GTT Bootstrap > Scaffolding obligatorio del workspace GTT > Reglas del scaffolding",
-          "line_start": 420,
-          "line_end": 433
+          "line_start": 428,
+          "line_end": 441
         },
         {
           "heading": "Higiene del workspace",
           "level": 2,
           "anchor": "higiene-del-workspace",
           "path": "GTT Bootstrap > Higiene del workspace",
-          "line_start": 434,
-          "line_end": 478
+          "line_start": 442,
+          "line_end": 486
         },
         {
           "heading": "El problema",
           "level": 2,
           "anchor": "el-problema",
           "path": "GTT Bootstrap > El problema",
-          "line_start": 479,
-          "line_end": 490
+          "line_start": 487,
+          "line_end": 498
         },
         {
           "heading": "Los dos archivos que siempre tocarás",
           "level": 2,
           "anchor": "los-dos-archivos-que-siempre-tocarás",
           "path": "GTT Bootstrap > Los dos archivos que siempre tocarás",
-          "line_start": 491,
-          "line_end": 503
+          "line_start": 499,
+          "line_end": 511
         },
         {
           "heading": "El mapa",
           "level": 2,
           "anchor": "el-mapa",
           "path": "GTT Bootstrap > El mapa",
-          "line_start": 504,
-          "line_end": 525
+          "line_start": 512,
+          "line_end": 533
         },
         {
           "heading": "Cambiar algo",
           "level": 2,
           "anchor": "cambiar-algo",
           "path": "GTT Bootstrap > Cambiar algo",
-          "line_start": 526,
-          "line_end": 562
+          "line_start": 534,
+          "line_end": 570
         },
         {
           "heading": "Límite Humano de Promoción",
           "level": 2,
           "anchor": "límite-humano-de-promoción",
           "path": "GTT Bootstrap > Límite Humano de Promoción",
-          "line_start": 563,
-          "line_end": 589
+          "line_start": 571,
+          "line_end": 597
         },
         {
           "heading": "Backlog",
           "level": 2,
           "anchor": "backlog",
           "path": "GTT Bootstrap > Backlog",
-          "line_start": 590,
-          "line_end": 633
+          "line_start": 598,
+          "line_end": 641
         },
         {
           "heading": "Gobierno y observación: los dos planos",
           "level": 2,
           "anchor": "gobierno-y-observación-los-dos-planos",
           "path": "GTT Bootstrap > Gobierno y observación: los dos planos",
-          "line_start": 634,
-          "line_end": 703
+          "line_start": 642,
+          "line_end": 711
         },
         {
           "heading": "Dónde vive cada cosa: fuentes, diseño, backlog",
           "level": 2,
           "anchor": "dónde-vive-cada-cosa-fuentes-diseño-backlog",
           "path": "GTT Bootstrap > Dónde vive cada cosa: fuentes, diseño, backlog",
-          "line_start": 704,
-          "line_end": 728
+          "line_start": 712,
+          "line_end": 736
         },
         {
           "heading": "Continuidad, revisión y Git",
           "level": 2,
           "anchor": "continuidad-revisión-y-git",
           "path": "GTT Bootstrap > Continuidad, revisión y Git",
-          "line_start": 729,
-          "line_end": 749
+          "line_start": 737,
+          "line_end": 757
         },
         {
           "heading": "Artefactos protegidos (GTTGuard)",
           "level": 2,
           "anchor": "artefactos-protegidos-gttguard",
           "path": "GTT Bootstrap > Artefactos protegidos (GTTGuard)",
-          "line_start": 750,
-          "line_end": 796
+          "line_start": 758,
+          "line_end": 804
         },
         {
           "heading": "Mantener el mapa honesto",
           "level": 2,
           "anchor": "mantener-el-mapa-honesto",
           "path": "GTT Bootstrap > Mantener el mapa honesto",
-          "line_start": 797,
-          "line_end": 811
+          "line_start": 805,
+          "line_end": 819
         },
         {
           "heading": "Principio de diseño",
           "level": 2,
           "anchor": "principio-de-diseño",
           "path": "GTT Bootstrap > Principio de diseño",
-          "line_start": 812,
-          "line_end": 832
+          "line_start": 820,
+          "line_end": 840
         },
         {
           "heading": "Estructura",
           "level": 2,
           "anchor": "estructura",
           "path": "GTT Bootstrap > Estructura",
-          "line_start": 833,
-          "line_end": 915
+          "line_start": 841,
+          "line_end": 923
         },
         {
           "heading": "Por qué algunos archivos permanecen en la raíz",
           "level": 3,
           "anchor": "por-qué-algunos-archivos-permanecen-en-la-raíz",
           "path": "GTT Bootstrap > Estructura > Por qué algunos archivos permanecen en la raíz",
-          "line_start": 902,
-          "line_end": 915
+          "line_start": 910,
+          "line_end": 923
         },
         {
           "heading": "Capas de contexto",
           "level": 2,
           "anchor": "capas-de-contexto",
           "path": "GTT Bootstrap > Capas de contexto",
-          "line_start": 916,
-          "line_end": 926
+          "line_start": 924,
+          "line_end": 934
         },
         {
           "heading": "Primeros pasos",
           "level": 2,
           "anchor": "primeros-pasos",
           "path": "GTT Bootstrap > Primeros pasos",
-          "line_start": 927,
-          "line_end": 953
+          "line_start": 935,
+          "line_end": 961
         },
         {
           "heading": "Actualización al modelo de dos regímenes",
           "level": 3,
           "anchor": "actualización-al-modelo-de-dos-regímenes",
           "path": "GTT Bootstrap > Primeros pasos > Actualización al modelo de dos regímenes",
-          "line_start": 940,
-          "line_end": 953
+          "line_start": 948,
+          "line_end": 961
         },
         {
           "heading": "Compatibilidad con herramientas",
           "level": 2,
           "anchor": "compatibilidad-con-herramientas",
           "path": "GTT Bootstrap > Compatibilidad con herramientas",
-          "line_start": 954,
-          "line_end": 1003
+          "line_start": 962,
+          "line_end": 1011
         },
         {
           "heading": "Cambiar de ADE más adelante",
           "level": 3,
           "anchor": "cambiar-de-ade-más-adelante",
           "path": "GTT Bootstrap > Compatibilidad con herramientas > Cambiar de ADE más adelante",
-          "line_start": 969,
-          "line_end": 1003
+          "line_start": 977,
+          "line_end": 1011
         },
         {
           "heading": "Lo que mantienes",
           "level": 2,
           "anchor": "lo-que-mantienes",
           "path": "GTT Bootstrap > Lo que mantienes",
-          "line_start": 1004,
-          "line_end": 1014
+          "line_start": 1012,
+          "line_end": 1022
         },
         {
           "heading": "Requisitos",
           "level": 2,
           "anchor": "requisitos",
           "path": "GTT Bootstrap > Requisitos",
-          "line_start": 1015,
-          "line_end": 1022
+          "line_start": 1023,
+          "line_end": 1030
         },
         {
           "heading": "Evolución",
           "level": 2,
           "anchor": "evolución",
           "path": "GTT Bootstrap > Evolución",
-          "line_start": 1023,
-          "line_end": 1034
+          "line_start": 1031,
+          "line_end": 1042
         },
         {
           "heading": "Licencia",
           "level": 2,
           "anchor": "licencia",
           "path": "GTT Bootstrap > Licencia",
-          "line_start": 1035,
-          "line_end": 1048
+          "line_start": 1043,
+          "line_end": 1056
         }
       ],
       "references": [
@@ -6136,6 +6184,9 @@
     "13.4 architecture unknowns": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#134-architecture-unknowns"
     ],
+    "13.5 design principles": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#135-design-principles"
+    ],
     "14. technology": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#14-technology"
     ],
@@ -6153,6 +6204,9 @@
     ],
     "14.5 existing technology constraints": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#145-existing-technology-constraints"
+    ],
+    "14.6 where it runs": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#146-where-it-runs"
     ],
     "15. deployment and infrastructure": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#15-deployment-and-infrastructure"
@@ -6363,6 +6417,12 @@
     ],
     "4.4 desired outcome": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#44-desired-outcome"
+    ],
+    "4.5 vision": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#45-vision"
+    ],
+    "4.6 key terms": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#46-key-terms"
     ],
     "5. approve": [
       "GTT-USAGE#5-approve"
@@ -7031,6 +7091,9 @@
     "how a cli uses it": [
       "DOC-BOOTSTRAP-CONTRACT#how-a-cli-uses-it"
     ],
+    "how each turn looks": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#how-each-turn-looks"
+    ],
     "how gtt avoids interrupting you": [
       "DOC-METHOD-PLANS#how-gtt-avoids-interrupting-you"
     ],
@@ -7204,6 +7267,9 @@
     ],
     "migrating from gtt v1": [
       "DOC-DOCS#migrating-from-gtt-v1"
+    ],
+    "minimum floor": [
+      "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#minimum-floor"
     ],
     "mission": [
       "AGENTS#mission"

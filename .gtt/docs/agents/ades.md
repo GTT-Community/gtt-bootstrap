@@ -18,7 +18,7 @@ Codex → `AGENTS.md` alone, GitHub Copilot → `.github/instructions/gtt.instru
 Cursor → `.cursor/rules/gtt.mdc`, `.cursor/rules/gtt-implementation.mdc` and
 `.cursor/hooks.json`, OpenHands → `AGENTS.md` plus `.agents/skills/gtt/SKILL.md` and
 `.openhands/hooks.json`, Antigravity → `AGENTS.md` plus `.agents/rules/gtt.md`,
-`.agents/rules/gtt-implementation.md` and `.agents/hooks.json`. For Cursor, OpenHands and
+`.agents/rules/gtt-implementation.md`, `.agents/workflows/gtt.md` and `.agents/hooks.json`. For Cursor, OpenHands and
 Antigravity GTT owns exactly those files, never the rest of the host's `.cursor/`,
 `.agents/` or `.openhands/`; `.agents/` is shared between ADEs and with the host.
 The GTT Bootstrap source carries every adapter as a catalog; a target
@@ -79,7 +79,7 @@ one ADE-neutral engine, `.gtt/scripts/gtt_protect.py`, which applies the same ru
 Claude Code's hooks - governed paths, the freeze regime, promotion scripts, GTTGuard -
 answers in each ADE's own shape, fails open, and injects the session context at session
 start where the ADE has such an event (Antigravity has none; its rule tells the agent to
-run `.gtt/scripts/gtt-session-context.sh`). They are built from each ADE's documented contract and tested against it, but
+run `.gtt/scripts/gtt-session-context.sh` in its first answer, and `/gtt` does it on request). They are built from each ADE's documented contract and tested against it, but
 not verified inside the ADE: the registry states `realtime-hook-unverified`, and until
 one is proven there the CI gate is the only guaranteed layer for that ADE. The
 instruction binds on its own, whether or not the hook fires. Antigravity documents its

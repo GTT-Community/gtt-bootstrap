@@ -265,7 +265,7 @@ If a host project already contains:
 - `.github/instructions/gtt.instructions.md`
 - `.cursor/rules/gtt.mdc`, `.cursor/rules/gtt-implementation.mdc`, `.cursor/hooks.json`
 - `.agents/skills/gtt/SKILL.md`, `.openhands/hooks.json`
-- `.agents/rules/gtt.md`, `.agents/rules/gtt-implementation.md`, `.agents/hooks.json`
+- `.agents/rules/gtt.md`, `.agents/rules/gtt-implementation.md`, `.agents/hooks.json`, `.agents/workflows/gtt.md`
 
 inspect before changing.
 
@@ -409,6 +409,8 @@ In `.gtt/docs/agents/ades.md` → *Multi-ADE participation*.
 ## Bootstrap behavior
 
 In `.gtt/docs/agents/bootstrap.md` → *Bootstrap behavior*.
+
+Whatever a session's first message says: if `## Next action` in the session context (or `bash .gtt/scripts/gtt-project.sh elicitation --next-action`) names the Initial Design Questionnaire, your first answer starts or resumes it; so does `/gtt`. See *Initial Design Questionnaire* → *Start and resume*.
 
 ## Method Plans
 

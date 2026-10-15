@@ -1064,12 +1064,13 @@ backstop until the hook is proven.
 Google Antigravity is an ADE of its own in the registry (`antigravity`); it is
 not treated as Codex, although both read `AGENTS.md`. The portable core is its
 entry point — that is what the registry records as `entry`. The overlay adds
-three files:
+four files:
 
 | File | What it is |
 |---|---|
-| `.agents/rules/gtt.md` | workspace rule, `trigger: always_on`: read `AGENTS.md` in full, run the session service, the governed paths, the `@gtt` marker, which section of `AGENTS.md` governs which situation |
+| `.agents/rules/gtt.md` | workspace rule, `trigger: always_on`: read `AGENTS.md` in full, run the session service in the first answer and start or resume an open Initial Design Questionnaire, the governed paths, the `@gtt` marker, which section of `AGENTS.md` governs which situation |
 | `.agents/rules/gtt-implementation.md` | workspace rule, `trigger: glob` on `src/`, `lib/`, `tests/` |
+| `.agents/workflows/gtt.md` | workflow `/gtt`: run the session service and start or resume what GTT is waiting on - the Initial Design Questionnaire while it is open |
 | `.agents/hooks.json` | one named hook, `gtt-protect`, on `PreToolUse` for `run_command`, `write_to_file`, `replace_file_content` and `multi_replace_file_content`, running `.gtt/scripts/gtt_protect.py hook --format antigravity` |
 
 **What "supported" means here.** GTT installs, records, validates and maintains
@@ -1084,7 +1085,7 @@ the CI gate is the only guaranteed layer.
 | Not supported | context injected at session start, merging into an existing `.agents/hooks.json`, native Antigravity skills |
 
 **`.agents/` is shared.** OpenHands' skill lives there too, and so may the
-host's own rules, skills and workflows. GTT owns exactly its three files, never
+host's own rules, skills and workflows. GTT owns exactly its four files, never
 the directory: install, update and remove touch nothing else, and the two ADEs
 can participate together. Detection uses `.agents/rules/`, `.agents/hooks.json`,
 `.agents/workflows/` and the legacy `.agent/` — never `.agents/` itself or

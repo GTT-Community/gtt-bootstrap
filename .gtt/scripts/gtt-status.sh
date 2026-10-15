@@ -12,7 +12,9 @@
 # or a substitute for an ADR/decision record.
 #
 # The file opens with the review block (gtt-review.sh): the handoff between
-# sessions and the human's review are one surface, not two reports. It is only
+# sessions and the human's review are one surface, not two reports. Only an
+# open Initial Design Questionnaire in a project not yet frozen goes before it,
+# as a one-line `## Next action`. It is only
 # rewritten when something other than its `Generated` line changed, so a session
 # that changes nothing leaves the working tree alone.
 #
@@ -110,6 +112,14 @@ if [ -f ".gtt/scripts/gtt-contract.sh" ] && [ -f ".gtt/scripts/gtt-project.sh" ]
 $(bash .gtt/scripts/gtt-project.sh profile get 2>&1 || true)"
 fi
 
+# The next action GTT itself is waiting on: an Initial Design Questionnaire that is pending or in progress
+# in a project that is not frozen. Computed by gtt_project.py (elicitation); empty in every other case, and
+# then the section is not written at all.
+NEXT_ACTION=""
+if [ -f ".gtt/scripts/gtt-project.sh" ]; then
+  NEXT_ACTION="$(bash .gtt/scripts/gtt-project.sh elicitation --next-action 2>/dev/null || true)"
+fi
+
 # The review surface: what changed, what it touches, what the human must decide. One
 # block, computed from the repository, shared by the session handoff and the review.
 REVIEW="not available (.gtt/scripts/gtt-review.sh not found)"
@@ -147,6 +157,11 @@ CONTENT="$({
   echo "#"
   echo "# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   echo
+  if [ -n "$NEXT_ACTION" ]; then
+    echo "## Next action (computed - what GTT is waiting on; never a decision)"
+    echo "${NEXT_ACTION}"
+    echo
+  fi
   echo "## Review (computed from the repository - what to look at first; never a decision)"
   echo "${REVIEW}"
   echo

@@ -7,7 +7,39 @@
     "operation": "template.materialize",
     "reader": "the Primary ADE",
     "instructions": ".gtt/scaffold/templates/gtt-initial-design-questionnaire.md",
-    "read_first": "1. Operating Contract for the ADE"
+    "read_first": "1. Operating Contract for the ADE",
+    "next_action": "Open the project in the Primary ADE and write anything: its first answer starts the Initial Design Questionnaire, or resumes it where it stopped. /gtt starts it explicitly where the ADE supports it."
+  },
+  "start": {
+    "when": "on-first-turn",
+    "statement": "While the questionnaire is pending or in-progress and the project is not frozen, the Primary ADE starts or resumes the interview in its first answer of a session, whatever the user's first message says, and whenever the user asks for it explicitly (/gtt where the ADE supports it). It does not wait to be told where the questionnaire is.",
+    "applies_to": "every ADE: the instruction is in AGENTS.md -> Bootstrap behavior; the computed state reaches the session through gtt-domain/session.md (## Next action)",
+    "never": "an interruption of ordinary work the user asked for in that message: the ADE says in one line that the questionnaire is open and offers to resume it, then does what was asked"
+  },
+  "state": {
+    "computed_by": ".gtt/scripts/gtt-project.sh elicitation --json",
+    "values": [
+      "absent",
+      "pending",
+      "in-progress",
+      "complete"
+    ],
+    "absent": "no working copy",
+    "pending": "the working copy is as materialized: no section answered, no provenance tag added, no THINK Depth, no readiness",
+    "in-progress": "anything recorded, and not complete",
+    "complete": "readiness READY or READY_WITH_OPEN_ITEMS (section 23) with every minimum-floor line MET, and the human review recorded (section 24); a copy without the review record or the floor table is judged on what it has",
+    "next_action": "shown in gtt-domain/session.md only while the state is pending or in-progress and gtt-domain/.frozen does not exist",
+    "authority": "none: derived operational state, never a decision, never evidence"
+  },
+  "persistence": {
+    "where": "the working copy itself (handoff.template materialized at its declared location); nothing else holds progress",
+    "rules": [
+      "Write what each round established into the working copy before asking the next round.",
+      "On resume, read the working copy first and never ask again what it already answers; an answer is revisited only when new information creates a [CONFLICTO].",
+      "Never overwrite or reword an answer the human gave; a correction from the human is recorded next to it, with the date.",
+      "Never turn a [PROPUESTA] into an answer, a confirmed decision or a 'Human decision' entry; only the human's explicit confirmation in the conversation does, and it is recorded as theirs.",
+      "Record the human review (section 24) only when the human has said the summary reflects their understanding."
+    ]
   },
   "directives": [
     { "id": "inspect-existing-evidence", "text": "Inspect the project before asking anything that existing evidence answers.", "questionnaire": "1. Operating Contract for the ADE" },
@@ -19,7 +51,12 @@
     { "id": "preserve-provenance", "text": "Attribute what the project shows with [FUENTE: file:line]; preserve the human's wording for requirements.", "questionnaire": "3. Evidence and Attribution" },
     { "id": "ask-human-for-decisions", "text": "Ask for explicit human confirmation whenever an architectural decision is required; never fill 'Human decision' for the human.", "questionnaire": "22. Decisions Requiring Human Confirmation" },
     { "id": "do-not-invent-architecture", "text": "Never invent an architectural decision to complete a section.", "questionnaire": "28. Anti-Patterns" },
-    { "id": "identify-gtt-dialogue", "text": "Open every message of the interview with `@gtt · Initial Design Questionnaire`; the marker identifies the speaker and is never a decision.", "questionnaire": "1. Operating Contract for the ADE" }
+    { "id": "identify-gtt-dialogue", "text": "Open every message of the interview with `@gtt · Initial Design Questionnaire`; the marker identifies the speaker and is never a decision.", "questionnaire": "1. Operating Contract for the ADE" },
+    { "id": "one-question-per-turn", "text": "Ask one question per message (two only when they are about the same thing); never a list of questions, a whole section or a menu followed by more questions.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" },
+    { "id": "conversation-is-evidence", "text": "The human's own messages in the conversation are evidence: record what they already answer, say back what you understood, and never ask again for what they gave.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" },
+    { "id": "plain-language", "text": "Ask in plain words and in the human's language, about their project and not about GTT; technical questions only when they matter, as a short choice with 'I don't know yet' as a valid answer.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" },
+    { "id": "reach-the-floor", "text": "Reach the architecture and the stack before the interview ends: ask every line of the minimum floor at every depth, QUICK included; a readiness above NOT_READY requires every line MET by the human.", "questionnaire": "23. Minimum Viable Governed Design" },
+    { "id": "numbered-options", "text": "Offer numbered options for every question so the human can answer with a number: options from the evidence, the recommendation marked, \"I don't know yet\" and a last \"Other (write it)\"; writing is always allowed, never required.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" }
   ],
   "think_depth": {
     "statement": "THINK Depth is how deep the Think stage goes: how much the ADE assesses, explores and asks. It is never a level of governance. It changes how far THINK digs, never which rules THINK may skip.",
@@ -28,7 +65,7 @@
     "order": ["QUICK", "STANDARD", "DEEP"],
     "selection": {
       "decided_by": "the human",
-      "policy": "ask once when the assessment starts, showing the three levels; never inferred from the project, the Method Plan, the ADE or a previous project",
+      "policy": "ask once near the start, as one plain question offering the three levels; never inferred from the project, the Method Plan, the ADE or a previous project",
       "unselected": { "applies": "STANDARD", "state": "not selected", "note": "STANDARD is the behaviour that existed before depths; it applies as a fallback and is never reported as a choice" },
       "recorded_in": ["the Design Assessment working copy (THINK Depth section) when a design document exists", "the questionnaire working copy (THINK Depth section) when there is none", "the completion report (.gtt/docs/gtt-completion.md)"]
     },
@@ -77,6 +114,17 @@
   "minimum_viable_design": {
     "section": "23. Minimum Viable Governed Design",
     "readiness_values": ["READY", "READY_WITH_OPEN_ITEMS", "NOT_READY"],
-    "becomes": "source-material: reviewed by the human (Confirmation A), preserved verbatim as SOURCE-BRIEF.md; never governed architecture by being completed"
+    "becomes": "source-material: reviewed by the human (Confirmation A), preserved verbatim as SOURCE-BRIEF.md; never governed architecture by being completed",
+    "floor": {
+      "section": "Minimum floor",
+      "lines": [
+        "The problem and the scope are stated",
+        "The architectural style is stated",
+        "The technology stack is decided: language and runtime, framework, where it runs",
+        "The datastore is decided, or the design states that it needs none"
+      ],
+      "same_as": "the minimum floor of the Design Assessment",
+      "readiness": "READY and READY_WITH_OPEN_ITEMS require every line MET; a line is MET only when the human stated or confirmed it"
+    }
   }
 }

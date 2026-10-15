@@ -512,6 +512,29 @@ def check_contracts():
                     f"{directive['questionnaire']}")
         if headings and eli["minimum_viable_design"]["section"] not in headings:
             add("elicitation.minimum_viable_design.section does not exist in the questionnaire")
+        floor = eli["minimum_viable_design"].get("floor", {})
+        section23 = re.search(r"^# 23\. Minimum Viable Governed Design\n(.*?)(?=^# )", headings, re.M | re.S) if headings else None
+        if not floor.get("lines") or (headings and not (section23 and "## Minimum floor" in section23.group(1)
+                                                         and all(f"| {line} |" in section23.group(1) for line in floor["lines"]))):
+            add("elicitation.minimum_viable_design.floor: every floor line must be a row of `## Minimum floor` in the "
+                "questionnaire's section 23")
+        if headings and not re.search(r"^# 24\. Human Review\n(?:(?!^# ).*\n)*?Reviewed by:", headings, re.M):
+            add("the questionnaire's section 24 lacks the `Reviewed by:` record elicitation.state.complete depends on")
+    # start, state and persistence: the questionnaire starts by itself and resumes where it stopped
+    if not str(eli.get("handoff", {}).get("next_action") or "").strip():
+        add("elicitation.handoff.next_action is missing: the CLI shows it instead of a text of its own")
+    if eli.get("start", {}).get("when") != "on-first-turn" or "AGENTS.md" not in eli.get("start", {}).get("applies_to", ""):
+        add("elicitation.start must be `on-first-turn` and apply to every ADE through AGENTS.md")
+    state = eli.get("state", {})
+    if state.get("values") != ["absent", "pending", "in-progress", "complete"] or any(not state.get(v) for v in state.get("values", [])):
+        add("elicitation.state must define absent, pending, in-progress and complete, in that order, each with its meaning")
+    computed = str(state.get("computed_by") or "").split()
+    if not computed or not os.path.isfile(computed[0]) or state.get("authority", "").split(":")[0] != "none":
+        add("elicitation.state must name an existing script that computes it, and carry no authority")
+    rules = eli.get("persistence", {}).get("rules", [])
+    if not eli.get("persistence", {}).get("where") or not any("[PROPUESTA]" in r for r in rules) or not any("overwrite" in r for r in rules):
+        add("elicitation.persistence must say where progress lives, that a [PROPUESTA] never becomes an answer and that a "
+            "human answer is never overwritten")
     # THINK Depth: how deep THINK goes, never which rules it may skip
     depth = eli.get("think_depth", {})
     levels = depth.get("levels", [])

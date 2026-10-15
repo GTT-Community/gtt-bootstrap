@@ -192,7 +192,7 @@ Antigravity both read it, and so may the host's own tools:
 | --- | --- | --- |
 | Cursor | `.cursor/rules/gtt.mdc` (always applied), `.cursor/rules/gtt-implementation.mdc` (attached to `src/`, `lib/`, `tests/`) and `.cursor/hooks.json` | Cursor reads project rules from `.cursor/rules/*.mdc`, `AGENTS.md` natively, and project hooks from `.cursor/hooks.json` |
 | OpenHands | `.agents/skills/gtt/SKILL.md` and `.openhands/hooks.json` | OpenHands includes `AGENTS.md` in every conversation, loads repository skills from `.agents/skills/`, and hooks from `.openhands/hooks.json` |
-| Google Antigravity | `.agents/rules/gtt.md` (always on), `.agents/rules/gtt-implementation.md` (attached to `src/`, `lib/`, `tests/`) and `.agents/hooks.json` | Antigravity reads `AGENTS.md`, workspace rules from `.agents/rules/*.md`, and hooks from `.agents/hooks.json` |
+| Google Antigravity | `.agents/rules/gtt.md` (always on), `.agents/rules/gtt-implementation.md` (attached to `src/`, `lib/`, `tests/`), `.agents/workflows/gtt.md` (`/gtt`) and `.agents/hooks.json` | Antigravity reads `AGENTS.md`, workspace rules from `.agents/rules/*.md`, and hooks from `.agents/hooks.json` |
 
 The three hook files point at one shared engine, `.gtt/scripts/gtt_protect.py`,
 which applies the same rules as Claude Code's own hooks — governed paths, the
@@ -351,10 +351,18 @@ Primary ADE, not CLI logic and not governed architecture:
 2. The Primary ADE conducts an adaptive interview: it inspects the project first, asks you
    only what is missing, and fills the document in as you go. You are never expected to
    complete the whole form by yourself.
+   You do not need to know where it is or ask for it: open the project in the Primary ADE
+   and write anything — its first answer starts the interview, or resumes it where it
+   stopped in an earlier session, without asking again what is already answered. `/gtt`
+   starts it explicitly where the ADE has it. `bash .gtt/scripts/gtt-project.sh elicitation`
+   shows where it stands: `pending`, `in-progress` or `complete`.
 3. Unknowns stay `[VACÍO]` (better than an invented answer); disagreements stay `[CONFLICTO]`;
    the ADE's suggestions stay `[PROPUESTA]` until you decide. None of them is a confirmed
    decision.
-4. After your review, with Readiness `READY` or `READY_WITH_OPEN_ITEMS`, the completed
+4. The interview always reaches the architecture and the stack: it is not ready until the
+   problem and scope, the architectural style, the stack and the datastore are decided by you
+   (its *Minimum floor*, the same one a design document must meet).
+5. After your review (recorded in its section 24), with Readiness `READY` or `READY_WITH_OPEN_ITEMS`, the completed
    questionnaire is your source document (Confirmation A): it is preserved verbatim as
    `SOURCE-BRIEF.md`, and the governed context is derived from it through the normal
    bootstrap and Confirmation B. Completing the questionnaire never makes anything
