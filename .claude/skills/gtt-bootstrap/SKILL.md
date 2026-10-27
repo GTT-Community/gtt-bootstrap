@@ -1,6 +1,6 @@
 ---
 name: gtt-bootstrap
-description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), assesses an existing design in writing and strengthens it when it is poor - a decided technology stack is the minimum - resolves several design documents into one or keeps them as declared sources, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
+description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), assesses an existing design in writing and strengthens it when it is poor - a decided technology stack is the minimum - resolves several design documents into one or keeps them as declared sources, asks for the development method (Method Packs: chosen by the human, proposed by THINK only when asked, never defaulted) and cuts Epics and designs by it, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -134,6 +134,37 @@ Before step 1, establish the project's Method Plan. It is the human's choice.
 5. For the rest of the bootstrap, apply the selected plan's `semantics` (for example,
    Light may ask Confirmation A and B in one exchange; each still needs its own answer).
    No plan lets you skip a confirmation, write governed context unconfirmed, or freeze.
+
+### Development method (Method Governance)
+
+Right after the Method Plan, establish how the solution will be developed. It is a
+different question from the Method Plan (how much work GTT does without asking) and
+from the THINK Depth (how deep THINK digs); never derive one from another. The
+method is the template THINK reasons with when it cuts Epics and writes their
+designs; the freeze ratifies it as the **Method Lock** and it is verified afterwards.
+The Method Packs (`.gtt/methods/`) are the only source of each method's texts.
+
+1. Run `bash .gtt/scripts/gtt-method.sh get`. If the setup already answered (the CLI's
+   `gtt init`, or an earlier run), state the answer in one line and do not ask again.
+   If the project is frozen, do not ask at all: the ratified method changes only
+   through `gtt-propose-change` (form 6).
+2. Otherwise ask the two questions under `@gtt · Development method`, one per message,
+   with numbered options. Show each option exactly as
+   `bash .gtt/scripts/gtt-method.sh list --lang <es|en>` prints it - name, *Qué es* /
+   *What it is*, *Conviene si* / *Fits when* - never a paraphrase, and mark as
+   recommended only what it marks. Question 1 (how to organise the development)
+   allows a combination and offers "I am not sure, help me choose"; question 2 (how
+   to start) offers "straight to the main functionality".
+3. Record the answer: `bash .gtt/scripts/gtt-method.sh select --style <ids|help> --start
+   <id|direct|help>` (dry run), then `--apply`. It refuses a combination the packs
+   declare incompatible: say which pair and ask the human to change it. A question
+   left unanswered is `OPEN`.
+4. **Never apply the recommended option in silence**, and never infer the method from
+   the project, the stack, the ADE or a previous project. `help` decides nothing yet:
+   see *Help me choose* in step 2.
+
+The setup answer is not governed context. It reaches `architecture.md` as the Method
+Lock in step 4, with Confirmation B, and the freeze ratifies it.
 
 ## 1. Establish the regime
 
@@ -289,6 +320,26 @@ not a conversation.
 The assessment decides nothing and governs nothing. It is removed by `gtt-freeze.sh` with
 the other bootstrap drafts.
 
+### Help me choose: a development method that is still OPEN
+
+When `gtt-method.sh get` shows the method `OPEN` - the human asked for help, or left a
+question unanswered - THINK proposes; it never decides. Once the sources are read (the
+assessment above, or the questionnaire's sections 4 to 13):
+
+1. Read the packs (`bash .gtt/scripts/gtt-method.sh show <id>` for each candidate) and
+   compare their *Conviene si* and *Qué descarta* with what the sources establish.
+2. Propose one method - or one combination - under `@gtt · Development method` as a
+   `[PROPUESTA]`: the packs, the reason in two or three lines, the `[FUENTE: file:line]`
+   of the dossier each part of the reason rests on, and what the proposal discards. When
+   the sources do not say enough to propose, say so and ask; never fall back on the
+   recommended pack.
+3. **Do not cut Epics or write any Epic design until the human answers.** A confirmed
+   proposal is recorded with `gtt-method.sh select ... --apply`. If the human prefers to
+   leave it open, it stays `OPEN` - typed and visible in step 4 - and the designs follow
+   no method template.
+
+A `[PROPUESTA]` never reaches governed context: only the human's answer does.
+
 ### Git workflow: report what the project says, adopt nothing
 
 Run `bash .gtt/scripts/gtt-workflow.sh detect` once, while you read the sources. If the project's
@@ -372,7 +423,7 @@ one-line questions. Only ask about what the document actually left open.
 | File | Ask for |
 |---|---|
 | `solution-vision.md` | The problem, who it's for, what success looks like, what it deliberately will not become |
-| `architecture.md` | Architectural style, modules and boundaries, integration strategy, data ownership, deployment topology, known deviations |
+| `architecture.md` | Architectural style (and the development method: the Method Lock below), modules and boundaries, integration strategy, data ownership, deployment topology, known deviations |
 | `stack.md` | Language, runtime, framework, compute model, datastores, messaging, identity, secrets, IaC, CI/CD, observability, testing |
 | `constraints.md` | Cloud provider, compute model, IaC, runtime/language version, datastore, comms style, data residency, compliance, budget ceilings, explicit out-of-scope |
 | `principles.md` | Design principles that would actually cause a PR to be rejected, and the trade-off each one accepts |
@@ -393,6 +444,31 @@ Classify every empty decision as a gap in the `gtt-gaps` block of `stack.md` (se
 an authorisation). Where sources disagree write `[CONFLICTO: a vs b]`; never pick a winner silently.
 A `[PROPUESTA]` never goes into the six files. `.gtt/scripts/gtt-check-provenance.sh --pre-freeze`
 tells the Solution Designer what still blocks the freeze.
+
+**The Method Lock.** Map the development method (`gtt-method.sh get`) into the context, as
+`.gtt/methods/README.md` → *The Method Lock* defines it:
+
+- `architecture.md` → *Architectural style*: the method or combination in words, and why; the
+  `gtt-method` block (style, start, status, locked_by, verification); and, in *Modules and
+  boundaries*, the real folders the packs' roles map to (the slices and the shared kernel, the
+  domain and the adapters, the bounded contexts, the layers).
+- An ADR when a chosen pack says `requires_adr: true` (every architecture style does; a
+  decomposition strategy such as Walking Skeleton does not): draft it from
+  `gtt-domain/adr/ADR-TEMPLATE.md` with the next free id (`gtt-project.sh next-id --kind adr`) -
+  context, the decision, the packs not chosen as *Alternatives considered* with why they lost,
+  and what the packs' *Qué descarta* means as consequences. It is part of what Confirmation B
+  confirms; it names the lock's `locked_by`, and the map change log gets its row.
+- `stack.md`: the row `Development method` (the pack ids, and the ADR under Locked by), and in
+  section 5 every `dependency` rule of the chosen packs with this project's real paths and the
+  rule id in the *Rule* column. Never invent a path: a folder architecture.md does not declare
+  is a question.
+- **An OPEN method** is written as such, never left out and never guessed: `status: open`,
+  `locked_by: OPEN`, `gap: GAP-NNN`, an `OPEN` gap with the topic `Development method` and an
+  explicit scope in section 8, and `OPEN` under *Locked by* of the `Development method` row. It
+  does not block the freeze, and no pack's template or rule applies while it is open.
+
+`bash .gtt/scripts/gtt-method.sh check` reports what is missing (`--pre-freeze` is what the
+freeze runs).
 
 ## 5. Confirm before drafting
 
@@ -419,17 +495,33 @@ The accepted-decisions folder is writable in this same window: if
 - **Sources.** Register each one with `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply` (it copies the
   file to `docs/sources/<ID>/v1/` and records its hash) or `adopt <path> --id <ID> --apply` for one that stays
   where it is. The completed questionnaire is a source too: add it as `IDQ`. Never edit a source afterwards.
+- **The method cuts the Epics.** Before cutting Epics or writing a design, read every chosen
+  pack (`bash .gtt/scripts/gtt-method.sh show <id>`) and follow its *Efecto en el diseño*. With
+  Vertical Slice there are no horizontal Epics - no "data model", "API", "backend" or
+  "frontend" Epic: each Epic is a business result cut into end-to-end slices, the first one the
+  thinnest that crosses the whole stack. With Walking Skeleton the first Epic is the skeleton
+  and says `**Kind:** skeleton`. With DDD each Epic names its `**Bounded context:**`; combined
+  with Vertical Slice, DDD defines the Epics and Vertical Slice cuts them. The Epics you derive
+  stay `Proposed`: the cut is a proposal, the human approves each Epic. With the method `OPEN`,
+  or when none is declared, cut by the sources alone and say so.
 - **One design per Epic.** For every `Proposed` Epic in scope run
   `bash .gtt/scripts/gtt-design.sh scaffold EPIC-NNN --apply`, then fill
   `gtt-domain/context/design/EPIC-NNN.md`: list under *Source sections* every section of the sources that belongs
   to the Epic and carry its content over **in full** - data, rules (`R-n`), flows (`F-n`, with their error path),
   interfaces (`I-n`), examples (`E-n`) - a `[FUENTE: ID:§…]` on every line. Do not summarise and do not decide:
-  what the sources do not define is a `[VACÍO]`.
+  what the sources do not define is a `[VACÍO]`. When a method is declared, the scaffold has already put the
+  pack's *Plantilla de diseño por Epic* in section 1 (with Vertical Slice, one `### S-n` per slice: use case,
+  input / output, logic, data it touches, acceptance criterion, out of this slice); fill it from the sources with
+  the same marks (`[FUENTE]`, `[VACÍO]`, `[CONFLICTO]`; a `[PROPUESTA]` only while it is a draft) and point it at
+  the items of sections 2 to 6. A slice is design, not a Story: THINK does not turn slices into executable
+  Stories.
 - **Ask.** Turn the `[VACÍO]`s into questions under `@gtt · Design EPIC-NNN`: at most five a turn, grouped by
   Epic, with options where the source suggests them. Each answer is written in section 8 as `D-n`, with who and
   when, and closes its `[VACÍO]`.
 - **Check.** `bash .gtt/scripts/gtt-check-design.sh` must pass: eight sections, every listed source section
   cited, every rule and flow in an example. This is the same in every Method Plan and at every THINK Depth.
+  `bash .gtt/scripts/gtt-method.sh check` must hold too: no Epic cut by layer when the method forbids it, the
+  skeleton first, every slice with its fields. It reports; it never corrects the backlog or a design for you.
 - **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1`, a `Context:` of
   at most five lines each ending with its anchor, and `Done when:` naming an example of the design and its test
   file. A Story cites the design; it never cites a source and never decides.
@@ -445,7 +537,8 @@ the work against; it does not stop the code from changing.
 
 Report, then point out three things.
 
-**Report** (from step 0): the Method Plan the human selected (or `not selected`), detected ADEs,
+**Report** (from step 0): the Method Plan the human selected (or `not selected`), the development
+method (the packs and who decided, or `OPEN` with its gap), detected ADEs,
 participating ADEs, the Primary ADE, files
 installed, ADEs explicitly excluded, and whether native support exists for each
 participating ADE. Give this report in chat, and also append it to `.gtt/docs/gtt-completion.md`,

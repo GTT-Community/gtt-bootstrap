@@ -372,6 +372,62 @@
       "aliases": []
     },
     {
+      "id": "METHOD-DDD",
+      "type": "documentation",
+      "path": ".gtt/methods/ddd.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-EVENT-FIRST",
+      "type": "documentation",
+      "path": ".gtt/methods/event-first.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-HEXAGONAL",
+      "type": "documentation",
+      "path": ".gtt/methods/hexagonal.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-LAYERED",
+      "type": "documentation",
+      "path": ".gtt/methods/layered.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-README",
+      "type": "documentation",
+      "path": ".gtt/methods/README.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-VERTICAL-SLICE",
+      "type": "documentation",
+      "path": ".gtt/methods/vertical-slice.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "METHOD-WALKING-SKELETON",
+      "type": "documentation",
+      "path": ".gtt/methods/walking-skeleton.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "PROP-README",
       "type": "proposal",
       "path": "gtt-domain/proposals/README.md",

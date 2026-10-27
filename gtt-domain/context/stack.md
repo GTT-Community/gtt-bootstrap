@@ -31,11 +31,18 @@ rather than leaving a plausible guess in place.
 | CI/CD | | | |
 | Observability | | | |
 | Testing | | | |
+| Development method | | | |
 
 "Locked by" points at the ADR that made the decision. A row with no ADR is a
 decision nobody made on purpose — treat it as technical debt. An empty row is a
 decision not made yet: classify it in the gap register (section 8) as BLOCKING
 or OPEN.
+
+`Development method` is the visible face of the Method Lock (`architecture.md` →
+*Architectural style*): the Method Pack ids under Technology and the lock's
+`locked_by` under Locked by. An open method leaves Technology empty and writes
+`OPEN` under Locked by - never an empty cell - with its OPEN gap (topic
+`Development method`) in section 8.
 
 ---
 
@@ -166,9 +173,15 @@ watches. Record what actually pages someone.
 The boundaries the code must respect. This table is what makes drift
 detectable — without it, "Service A calls the database directly" is an opinion.
 
-| Module | May depend on | Must not depend on |
-|---|---|---|
-| | | |
+| Module | May depend on | Must not depend on | Rule |
+|---|---|---|---|
+| | | | |
+
+When the development method is ratified, every `dependency` rule of its Method
+Packs is written here with this project's real paths, as `architecture.md`
+declares them, and the rule id in *Rule* (for example `VS-1`). A rule of the
+project's own leaves *Rule* empty. `gtt-method.sh rules --json` is what a
+language adapter reads to verify them.
 
 ---
 

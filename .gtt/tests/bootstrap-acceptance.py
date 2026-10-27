@@ -2621,6 +2621,307 @@ def think_depth(project, tmp):
         check(rc == 1 and needle in out + err, f"{label} fails the contract check", (out + err)[-200:])
 
 
+METHOD_ARCH = """# architecture
+
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
+## Architectural style
+
+Vertical Slice, started with a Walking Skeleton: each feature lives in src/features, what slices share in src/shared.
+
+```gtt-method
+{lock}
+```
+
+## Modules and boundaries
+
+| Module | Responsibility | May depend on | Must not depend on |
+|---|---|---|---|
+| src/features/* | one slice each | src/shared | another slice |
+
+decided 1
+decided 2
+decided 3
+decided 4
+decided 5
+"""
+
+METHOD_STACK = """# stack
+
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+
+## 1. Stack at a glance
+
+| Layer | Technology | Version | Locked by |
+|---|---|---|---|
+| Language | Python | 3.12 | ADR-001 |
+| Development method | {tech} | 1 | {locked} |
+
+## 5. Dependency rules
+
+| Module | May depend on | Must not depend on | Rule |
+|---|---|---|---|
+{rules}
+
+## 6. Map change log
+
+| Date | ADR or CHANGE | What changed |
+|---|---|---|
+| 2026-10-26 | ADR-002 | Development method: Vertical Slice with a Walking Skeleton |
+
+## 8. Gap register
+
+```gtt-gaps
+{gaps}
+```
+
+decided 1
+decided 2
+decided 3
+"""
+
+VS_LOCK = "style: vertical-slice\nstart: walking-skeleton\nstatus: ratified\nlocked_by: ADR-002\nverification: partial"
+VS_RULES = ("| src/features/* | src/shared/** | src/features/* (another slice) | VS-1 |\n"
+            "| src/shared/** | - | src/features/** | VS-2 |")
+OPEN_LOCK = "style: OPEN\nstart: OPEN\nstatus: open\nlocked_by: OPEN\nverification: declared-only\ngap: GAP-001"
+OPEN_GAP = "OPEN | GAP-001 | Development method | scope: how the Epics are cut | affects: architecture.md, backlog.md"
+
+
+def method_backlog(second_title="Checkout", first_kind="skeleton"):
+    return ("# Project Backlog\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md\n\n"
+            "## Epics\n\n### EPIC-001 — Walking skeleton\n\n**Status:** Proposed\n**Goal:** one order end to end\n"
+            f"**Kind:** {first_kind}\n\n### EPIC-002 — {second_title}\n\n**Status:** Proposed\n**Goal:** customers pay\n**Kind:** slice\n")
+
+
+def method_project(project, tmp, name, lock=VS_LOCK, tech="vertical-slice, walking-skeleton", locked="ADR-002", rules=VS_RULES,
+                   gaps="", adr=True, backlog=None):
+    """A disposable, freezable project that declares a development method."""
+    p = fresh(project, tmp, name)
+    for doc in ("solution-vision", "principles", "constraints", "glossary"):
+        write(os.path.join(p, "gtt-domain", "context", doc + ".md"), f"# {doc}\n\n" + "".join(f"decided {i}\n" for i in range(8)))
+    write(os.path.join(p, "gtt-domain", "context", "architecture.md"), METHOD_ARCH.replace("{lock}", lock))
+    write(os.path.join(p, "gtt-domain", "context", "stack.md"),
+          METHOD_STACK.replace("{tech}", tech).replace("{locked}", locked).replace("{rules}", rules).replace("{gaps}", gaps))
+    if adr:
+        write(os.path.join(p, "gtt-domain", "adr", "ADR-002-development-method.md"),
+              "# ADR-002 — Development method: Vertical Slice\n\n- Status: Accepted\n- Date: 2026-10-26\n- Approved by: t\n\n## Decision\n\nVertical Slice.\n")
+    write(os.path.join(p, "gtt-domain", "backlog.md"), backlog if backlog is not None else method_backlog())
+    git(p, "init", "-q")
+    git(p, "config", "user.email", "t@example.org")
+    git(p, "config", "user.name", "t")
+    commit(p, "base")
+    return p
+
+
+def method_governance(project, tmp):
+    print("[method] the questionnaire's options and texts come from the Method Packs; nothing is applied by default")
+    p = fresh(project, tmp, "method-catalog")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "catalog")
+    check(rc == 0, "the shipped Method Packs are well formed", out + err)
+    rc, env, _ = op(p, "method.list", lang="es")
+    catalog = data(env) or {}
+    questions = {q["id"]: q for q in catalog.get("questions", [])}
+    dev, start = questions.get("development", {}), questions.get("start", {})
+    pack = open(os.path.join(p, ".gtt", "methods", "vertical-slice.md"), encoding="utf-8").read()
+    first_line = pack.split("## Qué es\n\n", 1)[1].split("\n", 1)[0].strip()
+    vs = next((o for o in dev.get("options", []) if o["id"] == "vertical-slice"), {})
+    check(rc == 0 and list(questions) == ["development", "start"] and dev.get("multiple") is True and start.get("multiple") is False,
+          "two questions, in order: how to organise the development (combinable), then how to start", str(catalog)[:300])
+    check(vs.get("recommended") is True and vs.get("what_it_is", "").startswith(first_line) and vs.get("fits_when")
+          and {o["id"] for o in dev.get("options", [])} == {"vertical-slice", "layered", "ddd", "hexagonal", "event-first"},
+          "the options of question 1 and their texts are the packs' own, the recommended one marked", str(vs)[:300])
+    check([e["id"] for e in dev.get("extra_options", [])] == ["help"] and [e["id"] for e in start.get("extra_options", [])] == ["direct"]
+          and [o["id"] for o in start.get("options", [])] == ["walking-skeleton"] and start["options"][0]["recommended"] is True,
+          "question 1 offers 'help me choose', question 2 'straight to the main functionality' and the Walking Skeleton (recommended)")
+    shutil.copy(os.path.join(p, ".gtt", "methods", "event-first.md"), os.path.join(p, ".gtt", "methods", "cell-based.md"))
+    cell = os.path.join(p, ".gtt", "methods", "cell-based.md")
+    text = open(cell, encoding="utf-8").read().replace("id: event-first", "id: cell-based").replace("name: Event-First", "name: Cell-Based")
+    write(cell, re.sub(r"EF-(\d)", r"CB-\1", text))
+    rc, env, _ = op(p, "method.list", lang="en")
+    names = [o["name"] for q in (data(env) or {}).get("questions", []) for o in q["options"]]
+    check(rc == 0 and "Cell-Based" in names and bash(p, ".gtt/scripts/gtt-method.sh", "catalog")[0] == 0,
+          "a new pack appears in the questionnaire without touching any code", str(names))
+    lay = os.path.join(p, ".gtt", "methods", "layered.md")
+    write(lay, open(lay, encoding="utf-8").read().replace("incompatible_with: [vertical-slice, hexagonal]", "incompatible_with: [hexagonal]"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "catalog")
+    check(rc == 1 and "not symmetric" in err, "an incompatibility declared on one side only fails the catalog check", out + err)
+
+    print("[method] the setup answer: combinations, incompatibilities, help me choose")
+    p = fresh(project, tmp, "method-select")
+    state = os.path.join(p, ".gtt", "development-method.json")
+    rc, env, _ = op(p, "method.select", style="ddd,vertical-slice", start="walking-skeleton")
+    check(rc == 0 and not os.path.exists(state), "recording the answer is a dry run without apply")
+    rc, env, _ = op(p, "method.select", style="ddd,vertical-slice", start="walking-skeleton", apply=True)
+    saved = read_json(state) if os.path.isfile(state) else {}
+    check(rc == 0 and saved.get("style") == ["ddd", "vertical-slice"] and saved.get("start") == "walking-skeleton",
+          "DDD with Vertical Slice is a valid combination and is recorded", str(env)[:300])
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "select", "--style", "vertical-slice,layered", "--apply")
+    check(rc == 1 and "incompatible" in err and read_json(state).get("style") == ["ddd", "vertical-slice"],
+          "an incompatible combination is refused and nothing is written", out + err)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "select", "--style", "help", "--start", "help", "--apply")
+    saved = read_json(state)
+    check(rc == 0 and saved["style"] == "OPEN" and saved["start"] == "OPEN" and "[PROPUESTA]" in out,
+          "'help me choose' decides nothing: the method stays OPEN for THINK to propose", out + err)
+    p2 = fresh(project, tmp, "method-none")
+    rc, env, _ = op(p2, "method.get")
+    got = data(env) or {}
+    check(rc == 0 and got.get("in_force", {}).get("status") == "not declared" and got["in_force"]["style"] == "OPEN"
+          and not os.path.exists(os.path.join(p2, ".gtt", "development-method.json")),
+          "without an explicit answer nothing is recorded and the method is OPEN - the recommended pack is never applied")
+
+    print("[method] THINK designs with the chosen method")
+    p = fresh(project, tmp, "method-design")
+    write(os.path.join(p, "gtt-domain", "backlog.md"), method_backlog())
+    bash(p, ".gtt/scripts/gtt-method.sh", "select", "--style", "vertical-slice", "--start", "walking-skeleton", "--apply")
+    rc1, out1, _ = bash(p, ".gtt/scripts/gtt-design.sh", "scaffold", "EPIC-001", "--apply")
+    rc2, out2, _ = bash(p, ".gtt/scripts/gtt-design.sh", "scaffold", "EPIC-002", "--apply")
+    d1 = open(os.path.join(p, "gtt-domain", "context", "design", "EPIC-001.md"), encoding="utf-8").read()
+    d2 = open(os.path.join(p, "gtt-domain", "context", "design", "EPIC-002.md"), encoding="utf-8").read()
+    check(rc1 == rc2 == 0 and "### S-1" in d2 and "**Caso de uso:**" in d2 and "**Fuera de este slice:**" in d2
+          and d2.index("**Source sections:**") < d2.index("### S-1") < d2.index("## 2. Data"),
+          "the scaffold puts the Vertical Slice template (one S-n per slice) into section 1 of each design", out2)
+    check("### Walking skeleton" in d1 and "### Walking skeleton" not in d2 and all(f"## {n}." in d2 for n in range(1, 9)),
+          "the Walking Skeleton template goes only to the first Epic, and the eight sections stay", out1)
+    write(os.path.join(p, "gtt-domain", "context", "design", "EPIC-002.md"), d2.replace("- **Datos que toca:**", "- **Data:**"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "check")
+    check(rc == 0 and "S-1 lacks `- **Datos que toca:**`" in out and "(draft)" in out,
+          "a slice without one of its fields is reported (a draft warns)", out + err)
+    p3 = fresh(project, tmp, "method-design-open")
+    write(os.path.join(p3, "gtt-domain", "backlog.md"), method_backlog())
+    bash(p3, ".gtt/scripts/gtt-method.sh", "select", "--style", "help", "--apply")
+    rc, out, _ = bash(p3, ".gtt/scripts/gtt-design.sh", "scaffold", "EPIC-002", "--apply")
+    d3 = open(os.path.join(p3, "gtt-domain", "context", "design", "EPIC-002.md"), encoding="utf-8").read()
+    check(rc == 0 and "### S-1" not in d3 and "OPEN" in out and "[PROPUESTA]" in out,
+          "with the method OPEN no template is applied, and THINK is told to propose first", out)
+
+    print("[method] the freeze ratifies the Method Lock, and refuses what contradicts it")
+    p = method_project(project, tmp, "method-ok")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 0, "a Vertical Slice + Walking Skeleton project with its lock, ADR, map rows and backlog freezes", (out + err)[-600:])
+    rc, env, _ = op(p, "method.rules")
+    rules = {r["id"]: r for r in (data(env) or {}).get("rules", [])}
+    check(rc == 0 and rules.get("VS-1", {}).get("materialized", [{}])[0].get("module") == "src/features/*"
+          and rules["VS-1"]["check"] == "dependency" and rules.get("VS-3", {}).get("check") == "audit",
+          "the neutral rules and their real paths are data for a language adapter", str(rules)[:300])
+    rc, out, err = bash(p, ".gtt/scripts/gtt-method.sh", "select", "--style", "ddd", "--apply")
+    check(rc == 1 and "change request" in err and not os.path.exists(os.path.join(p, ".gtt", "development-method.json")),
+          "after the freeze the method is not asked again: a change goes through a change request", out + err)
+    rc, env, _ = op(p, "method.get")
+    got = data(env) or {}
+    check(got.get("frozen") is True and got["lock"]["locked_by"] == "ADR-002" and got["in_force"]["status"] == "ratified",
+          "the method in force, its status and the ADR that locks it are readable", str(got)[:300])
+    ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
+    check(not [o for o, spec in ops.items() if o.startswith("method.") and spec["mutates"] and o != "method.select"],
+          "no operation changes a ratified method (select is the only writer, and it refuses after the freeze)")
+
+    p = method_project(project, tmp, "method-layer", backlog=method_backlog(second_title="API REST"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "EPIC-002" in err and "technical layer" in err and not os.path.exists(os.path.join(p, "gtt-domain", ".frozen")),
+          "the freeze fails when an Epic is cut by layer in a Vertical Slice project", (out + err)[-600:])
+    p = method_project(project, tmp, "method-noskel", backlog=method_backlog(first_kind="slice"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "EPIC-001" in err and "skeleton" in err, "the freeze fails when the first Epic is not the skeleton", (out + err)[-600:])
+    p = method_project(project, tmp, "method-noadr", adr=False)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "ADR-002 does not exist" in err, "the freeze fails when the ADR the method requires is missing", (out + err)[-600:])
+    p = method_project(project, tmp, "method-norule", rules="| src/features/* | src/shared/** | src/features/* | VS-1 |")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "VS-2" in err and "section 5" in err, "the freeze fails when a rule of the method is not in the map", (out + err)[-600:])
+    p = method_project(project, tmp, "method-incompat", lock=VS_LOCK.replace("style: vertical-slice", "style: vertical-slice, layered"),
+                       tech="vertical-slice, layered, walking-skeleton")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "incompatible" in err, "the freeze fails on an incompatible combination", (out + err)[-600:])
+    p = method_project(project, tmp, "method-level", lock=VS_LOCK.replace("verification: partial", "verification: verified"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "weakest" in err, "a lock that claims more verification than its packs have fails", (out + err)[-600:])
+
+    p = method_project(project, tmp, "method-open", lock=OPEN_LOCK, tech="", locked="OPEN", rules="| | | | |", gaps=OPEN_GAP, adr=False,
+                       backlog=method_backlog(second_title="API REST", first_kind="slice"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 0, "an OPEN method, typed by its gap and shown as OPEN in stack.md, does not block the freeze", (out + err)[-600:])
+    p = method_project(project, tmp, "method-open-hidden", lock=OPEN_LOCK, tech="", locked="", rules="| | | | |", gaps=OPEN_GAP, adr=False)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "never an empty cell" in err, "an OPEN method left empty under Locked by fails: it must be visible", (out + err)[-600:])
+    p = method_project(project, tmp, "method-open-untyped", lock=OPEN_LOCK, tech="", locked="OPEN", rules="| | | | |", gaps="", adr=False)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "GAP-001 is not an OPEN gap" in err, "an OPEN method without its gap fails: it must be typed", (out + err)[-600:])
+    p = method_project(project, tmp, "method-answered")
+    write(os.path.join(p, "gtt-domain", "context", "architecture.md"), METHOD_ARCH.replace("```gtt-method\n{lock}\n```\n", ""))
+    bash(p, ".gtt/scripts/gtt-method.sh", "select", "--style", "vertical-slice", "--start", "walking-skeleton", "--apply")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 1 and "no Method Lock" in err, "a method answered at setup that never reached the Method Lock fails the freeze", (out + err)[-600:])
+
+
+def change_flow(project, tmp):
+    print("[change] a request written by the human is processed by the agent, never applied by it")
+    p = fresh(project, tmp, "change-flow")
+    req = os.path.join(p, "gtt-domain", "change-request.md")
+    before = open(req, encoding="utf-8").read()
+    rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling")
+    check(rc == 4, "writing a change request is the human's act (confirmed_by_human)")
+    rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling", confirmed_by_human=True)
+    check(rc == 0 and open(req, encoding="utf-8").read() == before, "it is a dry run without apply")
+    rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling", priority="high", apply=True, confirmed_by_human=True)
+    state = data(op(p, "change.state")[1]) or {}
+    cid = state.get("id") or ""
+    check(rc == 0 and state.get("state") == "pending" and re.fullmatch(r"CR-\d{8}-\d{6}", cid) and state["fields"].get("Priority") == "high",
+          "the request is written with its id and is pending", str(state)[:300])
+    nxt = data(op(p, "session.next-action")[1]) or {}
+    check((nxt.get("next_action") or {}).get("kind") == "change-request" and cid in nxt["next_action"]["text"]
+          and "never apply" in nxt["next_action"]["text"], "the session's next action tells the agent to process it", str(nxt)[:300])
+    session = bash(p, ".gtt/scripts/gtt-status.sh")
+    check(cid in open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8").read(), "the next action reaches the session context")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-change.sh", "request", "--change", "Another", "--reason", "x", "--apply")
+    check(rc == 1 and "still pending" in err, "a pending request is never overwritten in silence", out + err)
+    write(os.path.join(p, "gtt-domain", "proposals", "PROPOSAL-redis.md"),
+          f"# PROPOSAL - Redis sessions\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md\n\nRequest: {cid}\n")
+    state = data(op(p, "change.state")[1]) or {}
+    check(state.get("state") == "processed" and not (data(op(p, "session.next-action")[1]) or {}).get("next_action"),
+          "a proposal citing the id answers it: no next action is left")
+    listed = {i["name"]: i for i in (data(op(p, "proposal.list")[1]) or {}).get("proposals", [])}
+    check(listed.get("PROPOSAL-redis.md", {}).get("request") == cid and listed["PROPOSAL-redis.md"]["kind"] == "proposal",
+          "the proposals are listed with their kind and the request they answer", str(listed)[:300])
+    rc, env, _ = op(p, "proposal.withdraw", proposal="PROPOSAL-redis.md", apply=True, confirmed_by_human=True)
+    archived = glob.glob(os.path.join(p, "gtt-domain", "proposals", "withdrawn", "*PROPOSAL-redis.md"))
+    check(rc == 0 and archived and not os.path.exists(os.path.join(p, "gtt-domain", "proposals", "PROPOSAL-redis.md"))
+          and "Withdrawn:" in open(archived[0], encoding="utf-8").read(), "a withdrawn proposal is archived, never deleted")
+
+    print("[change] one step back: the last promotion is undone, and a frozen one is re-frozen - never unfrozen")
+    def change_log(q):
+        shutil.rmtree(os.path.join(q, ".gtt", "local", "promote-backup"), ignore_errors=True)   # the maintainers' own, never shipped
+        with open(os.path.join(q, "gtt-domain", "context", "stack.md"), "a", encoding="utf-8") as handle:
+            handle.write("\n## 6. Map change log\n\n| Date | ADR or CHANGE | What changed |\n|---|---|---|\n| | | |\n")
+    p, rc, _ = frozen_project(project, tmp, "change-undo", before_freeze=change_log)
+    marker = os.path.join(p, "gtt-domain", ".frozen")
+    glossary = os.path.join(p, "gtt-domain", "context", "glossary.md")
+    original = open(glossary, encoding="utf-8").read()
+    write(os.path.join(p, "new-glossary.md"), original + "decided term\n")
+    bash(p, ".gtt/scripts/gtt-stage.sh", "term", "--reason", "a glossary term", "new-glossary.md=gtt-domain/context/glossary.md")
+    rc, env, _ = op(p, "promotion.apply", set="term", confirmed_by_human=True)
+    check(rc == 0 and open(glossary, encoding="utf-8").read() == original and "dry run" in env.get("stdout", ""),
+          "promoting through the contract is a dry run that shows the diff until the human confirms", env.get("stdout", "")[-300:])
+    rc, env, _ = op(p, "promotion.apply", set="term", apply=True, confirmed_by_human=True)
+    promoted_digest = open(marker, encoding="utf-8").read()
+    check("decided term" in open(glossary, encoding="utf-8").read() and "# earlier freezes" in promoted_digest,
+          "the confirmed promotion applies and records a new freeze", env.get("stdout", "")[-400:] + env.get("stderr", "")[-400:])
+    last = data(op(p, "promotion.last")[1]) or {}
+    check(last.get("undoable") is True and last["promotion"]["froze"] is True, "the last promotion can be undone", str(last)[:300])
+    rc, env, _ = op(p, "promotion.undo", apply=True, confirmed_by_human=True)
+    after = open(marker, encoding="utf-8").read()
+    check(rc == 0 and open(glossary, encoding="utf-8").read() == original and after != promoted_digest and after.count("|") > promoted_digest.count("|"),
+          "undo puts the file back and records a new freeze over the earlier state; the history keeps every baseline",
+          env.get("stdout", "")[-300:] + env.get("stderr", "")[-300:])
+    check(os.path.isfile(marker), "there is still no unfreeze: the project stays frozen")
+    write(os.path.join(p, "new-glossary.md"), original + "second\n")
+    bash(p, ".gtt/scripts/gtt-stage.sh", "term2", "--reason", "another term", "new-glossary.md=gtt-domain/context/glossary.md")
+    op(p, "promotion.apply", set="term2", apply=True, confirmed_by_human=True)
+    with open(glossary, "a", encoding="utf-8") as handle:
+        handle.write("edited later\n")
+    rc, env, _ = op(p, "promotion.undo", apply=True, confirmed_by_human=True)
+    check(rc == 1 and "changed after the promotion" in env.get("stderr", "") and "edited later" in open(glossary, encoding="utf-8").read(),
+          "a promotion whose files were edited afterwards is not undone: that would discard the edit", env.get("stderr", "")[-300:])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=".")
@@ -2630,7 +2931,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow):
             scenario(project, tmp)
     finally:
         if args.keep:

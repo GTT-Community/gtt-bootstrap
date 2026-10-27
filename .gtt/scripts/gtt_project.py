@@ -6,6 +6,7 @@ actual project (never from an agent's recollection, never authority):
 
   detect                     project detection: GTT state, layout, freeze, design-source candidates
   elicitation [--next-action] Initial Design Questionnaire state (absent|pending|in-progress|complete), read-only
+  next-action [--json]       what GTT is waiting on: an open questionnaire, then a change request to process
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
@@ -498,6 +499,36 @@ def cmd_elicitation(args):
     return 0
 
 
+def next_action():
+    """What GTT is waiting on, or None: an open Initial Design Questionnaire first, then a change request the
+    human asked to have processed. `text` is the agent's instruction; `human` is what the person does next.
+    Computed, never a decision."""
+    line = elicitation_state()["next_action"]
+    if line:
+        handoff = (read_json(os.path.join(CONTRACT, "elicitation.json")) or {}).get("handoff", {}).get("next_action")
+        return {"kind": "questionnaire", "text": line, "human": handoff or line}
+    try:
+        import gtt_change
+        line = gtt_change.next_action()
+        state = gtt_change.request_state() if line else None
+    except Exception:
+        line = None
+    if not line:
+        return None
+    return {"kind": "change-request", "text": line,
+            "human": f"Open the project in the Primary ADE and write anything: its first answer processes change request "
+                     f"{state['id']} into a proposal. Follow it with: gtt proposals"}
+
+
+def cmd_next_action(args):
+    found = next_action()
+    if args.json:
+        emit({"schema": 1, "kind": "gtt-next-action", "next_action": found, "authority": "none - what GTT is waiting on"})
+    elif found:
+        print(found["text"])
+    return 0
+
+
 def cmd_detect(args):
     engine, domain = os.path.isdir(".gtt"), os.path.isdir("gtt-domain")
     layout = None
@@ -618,6 +649,18 @@ def selected_summary():
             "policy": manifest["policy"] if manifest else "none"}
 
 
+def development_method():
+    """The development method in force (Method Governance): the Method Lock, else the setup answer, else OPEN."""
+    try:
+        import gtt_method
+        force = gtt_method.in_force()
+        lock = gtt_method.lock_view()
+        return dict(force, locked_by=lock["locked_by"], verification=lock["verification"],
+                    authority="the Method Lock in gtt-domain/context/architecture.md; the setup answer is never authority")
+    except Exception as exc:                          # status never fails because of one view
+        return {"error": str(exc)[:200]}
+
+
 def cmd_status(args):
     cur = current_profile()
     val = None
@@ -627,6 +670,7 @@ def cmd_status(args):
            "bootstrap": dict(release()["bootstrap"], scaffold_layout=gm.layout_version(gm.load())),
            "ade": ade_json("state"),
            "methodology": {"profile": cur["profile"], "source": cur["source"], "language": cur["language"]},
+           "development_method": development_method(),
            "sources": selected_summary(),
            "governance": governance(),
            "freeze": {"frozen": os.path.isfile(FROZEN), "since": frozen_since()},
@@ -847,6 +891,7 @@ def build_parser():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("detect"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_detect)
     p = sub.add_parser("think"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_think)
+    p = sub.add_parser("next-action"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_next_action)
     p = sub.add_parser("elicitation"); p.add_argument("--json", action="store_true"); p.add_argument("--next-action", action="store_true")
     p.set_defaults(func=cmd_elicitation)
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.add_argument("--with-validation", action="store_true"); p.set_defaults(func=cmd_status)

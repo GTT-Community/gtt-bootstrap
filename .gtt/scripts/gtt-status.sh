@@ -113,11 +113,11 @@ $(bash .gtt/scripts/gtt-project.sh profile get 2>&1 || true)"
 fi
 
 # The next action GTT itself is waiting on: an Initial Design Questionnaire that is pending or in progress
-# in a project that is not frozen. Computed by gtt_project.py (elicitation); empty in every other case, and
+# in a project that is not frozen, then a change request the human asked to have processed (gtt-change.sh). Computed by gtt_project.py (elicitation); empty in every other case, and
 # then the section is not written at all.
 NEXT_ACTION=""
 if [ -f ".gtt/scripts/gtt-project.sh" ]; then
-  NEXT_ACTION="$(bash .gtt/scripts/gtt-project.sh elicitation --next-action 2>/dev/null || true)"
+  NEXT_ACTION="$(bash .gtt/scripts/gtt-project.sh next-action 2>/dev/null || true)"
 fi
 
 # The review surface: what changed, what it touches, what the human must decide. One

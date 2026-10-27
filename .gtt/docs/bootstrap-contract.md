@@ -37,9 +37,9 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.6.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.7.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
-| 4 Capability registry | 15 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
+| 4 Capability registry | 18 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |
 | 5–7 Method Plans (profiles) | Light / Medium / Hard / Team, selected by the human and never inferred (unselected: Medium gates as a fallback, reported as not selected); operating policy, semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
 | 8, 9, 10 ADE registry, participation, Primary | `id, name, detect, install, validate, owned_paths, handoff, invoke, version`; detected / participating / primary / excluded; set, validate, change Primary preserving secondaries | manifest `overlays:` + `.gtt/ade.json` | `show ade-registry`, `ade.*` |
@@ -54,6 +54,8 @@ version, a missing schema declaration or a missing required capability is a refu
 | 21 Freeze | the existing freeze; human authority; **no unfreeze operation exists** and the contract check fails if one is declared | `gtt-freeze.sh` | `freeze` |
 | 22 GTTGuard | protection validation and registry sync | existing scripts | `guard.validate`, `guard.sync` |
 | 23 Index / reconcile / query | existing scripts, exposed as stable operations (not a second retrieval implementation) | existing scripts | `index`, `reconcile`, `query`, `query.governance` |
+| — Method Governance | the two setup questions (texts from the Method Packs), the setup answer, the Method Lock, its freeze check and the neutral rules for a language adapter; no operation changes a ratified method | `methods.json`, `.gtt/methods/`, state `.gtt/development-method.json` | `method.list`, `method.show`, `method.select`, `method.get`, `method.lock`, `method.check`, `method.rules`, `method.catalog` |
+| — Change flow | a change request with an id and its state, the session's next action, the proposals and staged sets, promote, withdraw, undo the last promotion (never an unfreeze) | `gtt-change.sh`, `gtt-promote.sh` | `change.request`, `change.state`, `session.next-action`, `proposal.list`, `proposal.show`, `proposal.withdraw`, `promotion.apply`, `promotion.last`, `promotion.undo` |
 | 29 Versioning | every consumed contract carries an integer version | `release.json` → `contracts` | `check` |
 | 30 Acceptance | tests that drive the contracts as a CLI would, on disposable copies | `.gtt/tests/bootstrap-acceptance.py` | `python .gtt/tests/bootstrap-acceptance.py` |
 
@@ -89,6 +91,35 @@ operations keep; they are the same thing. The plain-words rendering is [method-p
 - **Team** carries the Hard gates (the check fails if they differ) plus collaboration requirements — CI required, actor
   traceability, second-person review — which are semantics and operating policy, not gates. It is marked
   `maturity: baseline`: dedicated team plans are planned and will refine it.
+
+## Method Governance — declare, ratify, verify
+
+The development method is the human's answer to two questions; the Bootstrap defines the options and the CLI
+renders them. The formats are `.gtt/methods/README.md`.
+
+| Step | What the CLI does | Operation |
+|---|---|---|
+| `gtt init`, question 1 and 2 | render `questions[]` as returned - prompt, options (name, `what_it_is`, `fits_when`, `recommended`), `extra_options` - in the project's language; never a text of its own. A new pack is a new option with no CLI change | `method.list lang=es` |
+| record the answer | `style=<ids>` or `style=help`; `start=<id>`, `start=direct` or `start=help`; a dry run, then `apply=true`. Exit 1 refuses an incompatible pair (say it, ask again) or a frozen project | `method.select` |
+| non-interactive | `gtt init --dev-method <ids\|help> --start <id\|direct\|help>`; without them nothing is recorded: the method is `OPEN`. Never pass the recommended packs as a default | — |
+| a frozen project | do not ask again: say that the method changes through a change request | `method.get` (`frozen: true`) |
+| `gtt dev-method` | show the method in force, its status, the ADR that locks it and its verification level; `gtt dev-method list` shows the packs with their short text. Read-only (`gtt method` is the Method Plan) | `method.get`, `method.list` |
+| `gtt check` | read the Method Lock and the rules; for each `dependency` rule turn its materialized rows (`module`, `must_not_depend_on`) into the configuration of the language's own tool through an adapter; without an adapter report `declared-only`; a violation is a conflict (rule, source file, forbidden dependency), never a correction | `method.lock`, `method.rules`, `method.check` |
+
+`method.check` is the freeze gate as data; `gtt-freeze.sh` runs it with `--pre-freeze`. The Bootstrap implements no
+import analyser: verifying the code is the adapters' job.
+
+## The change flow — request, follow, promote, step back
+
+| CLI | What it does | Operation |
+|---|---|---|
+| `gtt change` | collect the change and its reason (flags or questions), show the dry run, ask the human, apply; then offer to open the Primary ADE - the session's next action tells it to process the request into a proposal citing its id | `change.request` (human authority), `change.state` |
+| `gtt proposals` | list the drafts, ADR drafts and staged sets with their kind, state and the request they answer; `show`, `withdraw` (archived, never deleted) | `proposal.list`, `proposal.show`, `proposal.withdraw` |
+| `gtt promote <set>` | the dry run prints the set and its diff; after the human confirms, apply it (a frozen project gets its new freeze) | `promotion.apply` (human authority) |
+| `gtt undo` | the last promotion only, and only while its files are as it left them; a promotion that froze is re-frozen over the earlier state | `promotion.last`, `promotion.undo` (human authority) |
+
+`session.next-action` is what the CLI shows as *Next*: an open questionnaire first, then a change request waiting
+to be processed. Nothing in this flow lets an agent decide: the agent drafts, the human requests, promotes and undoes.
 
 ## Developer experience — minimum friction, full governance
 

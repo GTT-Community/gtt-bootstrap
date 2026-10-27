@@ -230,3 +230,19 @@ report them from the governed artifacts themselves. A project that has adopted n
   a person's own preferences in `.gtt/local/preferences.md` (local, never committed). Both sit below governed
   context, are not Session Memory, never override a governed decision (the gate rejects one that tries), and no
   agent authors its own.
+
+## The change flow during development
+
+The human can drive a governed change from the CLI as well as by editing files; both reach the same
+artifacts, through `.gtt/scripts/gtt-change.sh` (operations `change.*`, `proposal.*`, `promotion.*`).
+
+- **Request.** `gtt change` writes `gtt-domain/change-request.md` with an `Id: CR-...`. While no proposal
+  cites that id, the session's `## Next action` tells every ADE to process it on the first turn:
+  `gtt-propose-change`, with `Request: CR-...` in the proposal. You draft; you never apply.
+- **Proposals.** `gtt proposals` lists the drafts, ADR drafts and staged promotion sets, with their state.
+  A draft the human withdraws is archived in `gtt-domain/proposals/withdrawn/`, never deleted; do not
+  revive it unless the human asks.
+- **Promotion.** `gtt promote <set>` is the human's act, exactly as `gtt-promote.sh`.
+- **One step back.** `gtt undo` puts back what the last promotion replaced, only while its files are as it
+  left them. If that promotion recorded a freeze, a new freeze records the earlier state: there is still
+  no unfreeze, and the history keeps every baseline. Anything older is a change request.

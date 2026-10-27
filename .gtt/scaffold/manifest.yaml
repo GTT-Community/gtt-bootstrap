@@ -58,8 +58,12 @@ engine:
   - { path: .gtt/contract/export-policy.json, kind: file, required: true, role: clean-export and clean ownership policy }
   - { path: .gtt/contract/recovery.json, kind: file, required: true, role: recovery snapshot schema and restore rules }
   - { path: .gtt/contract/elicitation.json, kind: file, required: true, role: guided ADE elicitation contract for the Initial Design Questionnaire }
+  - { path: .gtt/contract/methods.json, kind: file, required: true, role: Method Governance contract - the two setup questions (development method, how to start) and their extra options, the setup selection rules and the format of the Method Lock; the texts of each method live only in .gtt/methods/ }
+  - { path: .gtt/methods/, kind: dir, required: true, role: Method Packs - one file per development method (what it is, fits when, what it discards, its effect on the design, its Epic design template and its rules); the single source the questionnaire, THINK and the site read; checked by gtt-method.sh catalog }
+  - { path: .gtt/methods/README.md, kind: file, required: true, role: the Method Pack format and the Method Lock format - the reference the CLI points at }
   - { path: .gtt/tests/, kind: dir, required: true, role: Bootstrap acceptance tests - drive the contracts on disposable copies; never modify the project }
   - { path: .gtt/methodology.json, kind: file, required: false, state: true, role: per-project Method Plan selected by the human (light, medium, hard, team) and language; absent means not selected; written only by gtt-project.sh }
+  - { path: .gtt/development-method.json, kind: file, required: false, state: true, role: the setup answer to the development method questions (style, start; OPEN when unanswered or help was asked) - never governed authority, carried into the Method Lock with the human confirmation; written only by gtt-method.sh select and refused after the freeze }
   - { path: .gtt/selected-sources.json, kind: file, required: false, state: true, role: initial sources selected for the project - selection metadata only, never a governed authority; written only by gtt-project.sh }
   - { path: .gtt/ade.json, kind: file, required: false, state: true, role: per-project ADE state - participating, primary, excluded and the ledger of GTT-installed ADE files; written only by gtt-ade.sh, required in an installed project, absent in the catalog }
   - { path: .gtt/README.md, kind: file, required: false, role: project-facing README of the Engine (installed into host projects; absent in the catalog repository) }
@@ -98,6 +102,7 @@ domain:
   - { path: gtt-domain/working-agreements.md, kind: file, required: false, role: team working agreements - versioned and reviewed, below governed context, never authority and never session memory }
   - { path: gtt-domain/change-request.md, kind: file, required: true, role: front door for change intent }
   - { path: gtt-domain/workflow.md, kind: file, required: false, role: the Git policy of the project (block `gtt-workflow`) - commits, convention, branches and tags, review thresholds; human-owned, an ADE reads it and never edits it; absent means the defaults }
+  - { path: gtt-domain/proposals/withdrawn/, kind: dir, required: false, role: drafts the human withdrew (gtt-change.sh withdraw) - archived, never deleted, never promoted }
   - { path: gtt-domain/proposals/staged/, kind: dir, required: false, role: promotion sets prepared by gtt-stage.sh and applied by the human with gtt-promote.sh; removed when applied }
   - { path: gtt-domain/session.md, kind: file, required: false, derived: true, role: operational-only Session Memory - never authority or evidence; regenerated at every session start and not versioned in a project (gtt-domain/.gitignore) }
   - { path: gtt-domain/.gitignore, kind: file, required: true, role: keeps the derived session file out of version control }

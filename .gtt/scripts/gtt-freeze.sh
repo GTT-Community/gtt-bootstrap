@@ -83,6 +83,15 @@ if [ -f "$HERE/gtt-check-design.sh" ] && ! bash "$HERE/gtt-check-design.sh" --pr
   fail=1
 fi
 
+# Method Governance: the freeze ratifies the Method Lock. A declared method has a well-formed lock naming
+# existing packs, the ADR its packs require, no incompatible pair, its rules in the map and a backlog and
+# designs that follow it. An OPEN method does not block: it must be typed (a gap) and visible (stack.md).
+# Nothing is corrected: every failure names the file, the rule and what is missing.
+if [ -f "$HERE/gtt-method.sh" ] && ! bash "$HERE/gtt-method.sh" check --pre-freeze >&2; then
+  echo "gtt-freeze: the development method is not consistently declared (see above)" >&2
+  fail=1
+fi
+
 # The boundaries the freeze ratifies must be well formed, and a new baseline is not
 # drawn over a governance observation nobody has decided: accept, reject or defer it
 # first. (The governed state having moved is the very reason for a new freeze, so that

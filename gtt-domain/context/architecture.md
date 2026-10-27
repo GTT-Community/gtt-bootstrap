@@ -13,6 +13,21 @@ still be something an agent would act on.
 State the style explicitly. Ambiguity here is what produces silent paradigm
 drift.
 
+**Development method (Method Lock).** Say in words which method or combination
+of Method Packs (`.gtt/methods/`) the design follows, and why. Then record the same
+choice in the block below, which scripts read: `.gtt/methods/README.md` → *The Method
+Lock* has the format. `OPEN` is a valid value; an empty block declares no method.
+The freeze ratifies it; afterwards it changes only through a change request.
+
+```gtt-method
+# style: one or more Method Pack ids (question: development), comma separated - or OPEN
+# start: a Method Pack id (question: start), direct - or OPEN
+# status: ratified | open
+# locked_by: ADR-NNN when a chosen pack requires an ADR, otherwise none - OPEN while open
+# verification: the weakest verification level of the chosen packs
+# gap: GAP-NNN - only while open: the OPEN gap whose topic is Development method
+```
+
 ## Modules and boundaries
 
 | Module | Responsibility | May depend on | Must not depend on |

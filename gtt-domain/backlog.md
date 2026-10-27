@@ -46,6 +46,7 @@ disagree*, at the end).
 | `Goal` | The result this Epic delivers, in one or two sentences | You |
 | `Scope` | What is included | You |
 | `Out of Scope` | What is deliberately left out | You |
+| `Kind` | How the Epic is cut, as the development method asks: `skeleton` for the first Epic of a Walking Skeleton, `slice` for an end-to-end result; never `layer` when the method forbids it. Leave it out when no method is declared | You, or the assistant as a suggestion |
 | `Design` | The file with the full detail of this Epic: data, rules, flows, interfaces, examples | Written when you approve |
 | `Approved` | Who approved the Epic and when | Written when you approve — never by the assistant |
 
@@ -108,6 +109,7 @@ This file is yours to edit. Nothing in it is locked.
 **Goal:** <the outcome this Epic delivers, in one or two sentences>
 **Scope:** <what is included>
 **Out of Scope:** <what is deliberately excluded>
+**Kind:** <skeleton / slice - as the development method asks; delete the line if none is declared>
 **Design:** gtt-domain/context/design/EPIC-NNN.md
 **Approved:** <who> — <YYYY-MM-DD>
 

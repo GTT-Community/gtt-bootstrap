@@ -41,6 +41,20 @@ what the repository actually does.
 Every row in "Stack at a glance" with no ADR in its "Locked by" column is a
 finding: a decision that entered the system without passing through governance.
 
+## The development method
+
+If `architecture.md` carries a Method Lock (`bash .gtt/scripts/gtt-method.sh get`), run
+`bash .gtt/scripts/gtt-method.sh check` and `bash .gtt/scripts/gtt-method.sh rules`: what they
+compute - the lock, the map rows, the backlog cut, the designs' structure - is theirs, and the
+dependency rules are verified by a language adapter (the CLI's `gtt check`) where one exists.
+What is left for this audit is the judgment no script makes: the `audit:` rules of each chosen
+pack (`gtt-method.sh show <id>` → *Qué queda solo para audit*), such as whether the slices are
+really thin and the first crosses the whole stack, or whether a bounded context keeps one
+language. Report each as a finding, citing the rule id; a method marked `declared-only` (no
+adapter for the language) is a finding too - say plainly that nothing verified its rules in
+the code. A violation is a conflict for `gtt-drift-response`; never correct the code or the
+context to make it disappear.
+
 ## The boundaries sweep
 
 This is not a second, independent drift mechanism - it is the full sweep of

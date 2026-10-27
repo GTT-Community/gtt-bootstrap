@@ -180,6 +180,17 @@ if [ -f .gtt/scripts/gtt_design.py ]; then
   rm -f /tmp/gtt-validate-design.$$
 fi
 
+# Method Governance: the Method Packs are well formed, and a declared development method is consistent
+# with the map, the backlog and the designs (a frozen project fails; one being bootstrapped is warned).
+if [ -f .gtt/scripts/gtt_method.py ]; then
+  run_check "gtt-method.sh catalog (Method Packs)" bash .gtt/scripts/gtt-method.sh catalog
+  bash .gtt/scripts/gtt-method.sh check >/tmp/gtt-validate-method.$$ 2>&1
+  METHOD_RC=$?
+  report "gtt-method.sh check (development method)" "$METHOD_RC"
+  if [ "$METHOD_RC" -ne 0 ]; then cat /tmp/gtt-validate-method.$$; else grep -E '^WARN ' /tmp/gtt-validate-method.$$ || true; fi
+  rm -f /tmp/gtt-validate-method.$$
+fi
+
 # Continuity, review and Git: the workflow file is valid, the session state can be derived,
 # nothing in GTT writes Git history, every overlay carries the same Git rules as the contract,
 # and the GTT-AR rules are in the contract.

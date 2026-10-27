@@ -661,9 +661,26 @@ def cmd_design_scaffold(args):
         print("(dry run - nothing written; re-run with --apply)")
         return 0
     body = template[template.index("# EPIC-NNN"):] if "# EPIC-NNN" in template else template
-    write(target, body.replace("EPIC-NNN", args.epic).replace("<title>", title, 1))
+    body = body.replace("EPIC-NNN", args.epic).replace("<title>", title, 1)
+    # The development method shapes the design: each chosen Method Pack adds its structure inside section 1,
+    # after `Source sections`. The eight sections never change.
+    try:
+        import gtt_method
+        method_blocks, method_note = gtt_method.epic_templates(args.epic)
+    except Exception as error:                        # the design never depends on the method engine to exist
+        method_blocks, method_note = [], f"the Method Packs could not be read ({error}): no method template was added"
+    if method_blocks:
+        anchor = re.search(r"^\*\*Source sections:\*\*.*$", body, re.M)
+        insert = "\n\n" + "\n\n".join(text for _, text in method_blocks)
+        body = body[:anchor.end()] + insert + body[anchor.end():] if anchor else body + insert + "\n"
+    write(target, body)
     print(f"created {target}. List every source section of this Epic under `Source sections`, carry its content over in full")
     print("with a [FUENTE] on each line, write what the sources do not define as [VACÍO], and ask the human for those.")
+    if method_blocks:
+        print(f"Development method: section 1 follows the Method Pack template of {', '.join(pid for pid, _ in method_blocks)}"
+              " (.gtt/methods/) - fill it from the sources too.")
+    if method_note:
+        print(f"Development method: {method_note}")
     return 0
 
 

@@ -10,6 +10,12 @@ file; a source is opened only to verify a citation. What the sources do not defi
 `[VACÍO]`, never left out. Architecture is not decided here: that is an ADR. UI copy, cosmetic
 detail and how something is built are not here either: that is work.
 
+When a development method is declared (the Method Lock in `architecture.md`, or the setup answer
+before it), `gtt-design.sh scaffold` also inserts each chosen Method Pack's *Plantilla de diseño por
+Epic* into section 1, after `Source sections` - with Vertical Slice, one `### S-n` subsection per
+slice. The method adds structure inside section 1; it never changes the eight sections. With the
+method `OPEN` nothing is inserted.
+
 The eight sections always exist; one that does not apply says `N/A — <reason>`. Every R, F, I and E
 carries a `[FUENTE]` or points to a `D-n`. Ids are stable and never reused. Every rule and every
 flow appears in at least one example, and a flow includes its error path.

@@ -217,6 +217,8 @@ During initial bootstrap:
 12. Freeze only after explicit confirmation.
 
 Before step 4, have the human select the Method Plan (see *Method Plans*): ask, never infer.
+Right after it, have the human answer the development method (see *Development method*): two
+questions, the options of the Method Packs, never a default.
 
 When the questionnaire of step 2 already exists and is open, start or resume it in your
 first answer of the session, without being asked (*Initial Design Questionnaire* →
@@ -281,6 +283,46 @@ collaboration profile, never a quality level, and no plan turns governance off.
   (`gtt-project.sh profile set --profile <id>`, a dry run without `--apply`) and
   recreates nothing. In a frozen project a *less* strict plan is refused: it is a
   governed change. The order is light < medium < hard < team.
+
+## Development method
+
+**Method Governance**: the human chooses how the solution is developed, that choice guides how
+THINK designs, the freeze ratifies it in the governed context and it is verified afterwards -
+declare, ratify, verify. The catalog is `.gtt/methods/` (one Method Pack per method: what it is,
+fits when, what it discards, its effect on the design, its Epic design template, its rules);
+`.gtt/contract/methods.json` holds the two questions; `.gtt/methods/README.md` the formats.
+
+- **Declare.** Two questions: how to organise the development (packs with `question:
+  development`, combinable, plus "I am not sure, help me choose") and how to start (packs with
+  `question: start`, plus "straight to the main functionality"). The texts are the packs',
+  shown as `gtt-method.sh list` prints them; recommended packs are marked, never applied in
+  silence. The answer is recorded with `gtt-method.sh select` (`.gtt/development-method.json`):
+  a setup answer, never governed context. Unanswered is `OPEN`. A combination the packs declare
+  incompatible is refused.
+- **Help me choose decides nothing.** THINK reads the sources, proposes a method as a
+  `[PROPUESTA]` with its reason and the `[FUENTE]` it rests on, and designs nothing until the
+  human answers. Unconfirmed, the method stays `OPEN`.
+- **It guides THINK.** Epics are cut as the chosen packs say (*Efecto en el diseño*): with
+  Vertical Slice, no Epic is a technical layer and each is cut into end-to-end slices; with
+  Walking Skeleton the first Epic is the skeleton (`**Kind:** skeleton`). `gtt-design.sh
+  scaffold` puts the pack's Epic design template into section 1 of each design. The
+  provenance marks stay, and Stories stay as the backlog format says.
+- **Ratify.** The bootstrap writes the Method Lock (the `gtt-method` block under
+  *Architectural style* in `architecture.md`, with the reason in words), the
+  `Development method` row of `stack.md`, the packs' dependency rules in `stack.md` section 5
+  with the real paths, and - when a pack requires it (every architecture style) - the ADR that
+  locks it. The human confirms it with the rest of the context (Confirmation B) and the freeze
+  ratifies it. An `OPEN` method does not block the freeze: it is typed (an `OPEN` gap,
+  topic `Development method`) and visible (`OPEN` under *Locked by*).
+- **Verify.** `gtt-method.sh check` (run by `gtt-freeze.sh` with `--pre-freeze` and by
+  `gtt-validate.sh`) is deterministic: a well-formed lock naming existing packs, the required
+  ADR, no incompatible pair, the rules in the map, a backlog and designs that follow the
+  method. `gtt-method.sh rules --json` gives the neutral rules a language adapter verifies in
+  the code; without an adapter the method is `declared-only` for that project. A violation is
+  a conflict to report, never a silent correction of code or context.
+- **Change.** After the freeze the method changes only through a change request with an impact
+  analysis (`gtt-propose-change`, form 6). `select` is refused and the questionnaire is not
+  asked again.
 
 ## Design assessment
 
@@ -460,6 +502,9 @@ Native support:
 
 Method plan:
 - light / medium / hard / team - selected by the human / not selected
+
+Development method:
+- <pack ids> - decided by the human / proposed by THINK and confirmed / OPEN (GAP-NNN) - locked by: ADR-NNN / none / OPEN - verification: verified / partial / declared-only
 
 Backlog:
 - defined / not yet defined — reconciled: yes / no / not applicable

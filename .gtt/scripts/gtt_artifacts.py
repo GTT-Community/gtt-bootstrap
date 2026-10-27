@@ -164,6 +164,8 @@ def derive(path):
         return "CHANGE-REQUEST", "change-request"
     if path.startswith(".gtt/docs/"):
         return "DOC-" + slug_id(stem), "documentation"
+    if path.startswith(".gtt/methods/"):
+        return "METHOD-" + slug_id(stem), "documentation"
     if path.startswith(".gtt/"):
         return "GTT-" + slug_id(stem), "documentation"
     if "/skills/" in path and posixpath.basename(path) == "SKILL.md":

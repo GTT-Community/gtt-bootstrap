@@ -1,6 +1,6 @@
 ---
 name: gtt-propose-change
-description: Produce a GTT change proposal instead of applying a governance change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt-domain/context/ is wrong or outdated, when implementation code conflicts with the governed context, when an Epic must be added, removed or its goal or scope materially changed, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change an Epic, and whenever a permission denial points at gtt-domain/context/, gtt-domain/adr/, gtt-domain/change-request.md, or a GTTGuard-protected artifact. NOT for ordinary work - implementing, refactoring, testing, or writing and closing Stories needs no proposal and no approval.
+description: Produce a GTT change proposal instead of applying a governance change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt-domain/context/ is wrong or outdated, when implementation code conflicts with the governed context, when an Epic must be added, removed or its goal or scope materially changed, when the ratified development method (the Method Lock) must change, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change an Epic, and whenever a permission denial points at gtt-domain/context/, gtt-domain/adr/, gtt-domain/change-request.md, or a GTTGuard-protected artifact. NOT for ordinary work - implementing, refactoring, testing, or writing and closing Stories needs no proposal and no approval.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
@@ -42,6 +42,12 @@ straight from the Solution Designer's own document — both are valid input.
 Read a pasted excerpt for what it actually decides; do not ask them to
 compress it into the template's fields first.
 
+A request written with `gtt change` (or `gtt-change.sh request`) carries an `Id: CR-...` and a
+`Requested:` line: the human asked for it to be processed, and the session's `## Next action` says so.
+Process it in your first answer, whatever the first message says. Write `Request: CR-...` near the top
+of every proposal that answers it - that line is how GTT knows the request was processed
+(`gtt-change.sh state`). Processing is drafting; the decision stays the human's.
+
 Otherwise the request is whatever the user just described.
 
 ## Where the output goes
@@ -64,6 +70,14 @@ material change to its goal or scope - read `gtt-domain/backlog.md` first, and
 check whether it contradicts governed context or an accepted ADR before
 drafting (see *Precedence* in `AGENTS.md` → *Backlog*). Stories are not a change
 request at all: they are the working plan and are edited directly.
+
+If the request changes the development method - another Method Pack, a pack
+added to or dropped from the combination, a different start, or an `OPEN` method
+being decided after the freeze - use Form 6: it is an architecture change with a
+mandatory impact analysis, never a direct edit of the `gtt-method` block, and never
+a new run of the setup questionnaire. Read the Method Lock
+(`bash .gtt/scripts/gtt-method.sh get`) and both packs (`gtt-method.sh show <id>`)
+first.
 
 If the request is a change to a file, class, or method carrying a
 `@GTTGuard` marker — check `.gtt/protection/registry.yaml` — use Form 5
@@ -210,6 +224,47 @@ other protected artifact, and do not confuse this with the L0/L1 Human
 Promotion Boundary — that one still requires the Solution Designer to run a
 script themselves, this one does not.
 
+## 6. Development method change
+
+Use when the ratified development method must change: the Method Lock in
+`gtt-domain/context/architecture.md` (block `gtt-method`) names other packs, a
+pack is added to or dropped from the combination, the start strategy changes, or a
+method left `OPEN` at the freeze is now decided. The method was ratified with the
+design, so this is a governed change - an architecture change when a pack requires
+an ADR (`requires_adr: true`), and always with an impact analysis. `select` is
+refused after the freeze and `gtt init` does not ask again: this form is the only
+way.
+
+```text
+Proposed Development Method Change
+
+Current method: <the Method Lock as `gtt-method.sh get` prints it - style, start, locked_by, verification>
+Proposed method: <style, start - Method Pack ids>
+Reason:
+Incompatibilities: <pairs the packs declare incompatible, or "none" (gtt-method.sh select --style ... dry run says)>
+
+Impact analysis (all four are required):
+- Slices or modules reorganised: <which folders, Epics and Epic designs change shape, and how>
+- Rules of stack.md that change: <section 5 rows removed (ids), rows added (ids, with real paths)>
+- ADR replaced: <ADR-NNN that locks the current method -> the new ADR that supersedes it, or "none">
+- Backlog and designs: <Epics re-cut, `Kind` fields that change, designs whose section 1 changes template>
+
+Verification level: <current -> proposed (the weakest of the proposed packs)>
+Risk:
+Alternatives considered:
+
+Status: Requires Solution Designer approval
+```
+
+Never fill the impact analysis with "to be determined": a method change that
+cannot say what moves cannot be decided. Once approved, it is recorded with the
+`gtt-adr` skill like Forms 1-3: the promotion set carries the new ADR (superseding
+the old one), the new `gtt-method` block and the `Development method` row, the
+changed section 5 rules and the map change log row; the human promotes it and runs a
+new freeze, whose `gtt-method.sh check --pre-freeze` verifies the result. The
+re-cut of Epics and designs follows as specification changes (no ADR), and the
+code moves as ordinary work afterwards.
+
 ## Quality bar
 
 A proposal is only useful if it can be decided without a follow-up question.
@@ -225,7 +280,7 @@ A proposal is only useful if it can be decided without a follow-up question.
 State the file path you wrote and summarize the proposal in two or three lines
 in chat, so the decision can be made without opening the file. Then stop.
 
-Once an architecture, context, or conflict proposal (forms 1-3) is approved,
+Once an architecture, context, conflict or development method proposal (forms 1-3 and 6) is approved,
 the decision is recorded with the `gtt-adr` skill, which stages the ADR, the
 affected context files, and an executable promotion script together (the governed
 change is then completed by a new freeze, which the human runs) — the

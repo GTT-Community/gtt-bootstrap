@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Method Governance contract: how a development method is chosen at setup (declare), recorded as the Method Lock in the governed context (ratify at freeze) and checked afterwards (verify). Data only. The texts of each method (what it is, fits when) live ONLY in the Method Packs under packs_dir; the CLI and the site read them through the declared operations (method.list, method.show) and never write their own. Adding a pack adds an option to the questionnaire with no CLI change.",
+  "packs_dir": ".gtt/methods",
+  "pack_format": ".gtt/methods/README.md",
+  "kinds": ["architecture-style", "decomposition-strategy"],
+  "verification_levels": ["verified", "partial", "declared-only"],
+  "verification_order": "verified > partial > declared-only; a combination is as verified as its weakest pack",
+  "questions": [
+    {
+      "id": "development",
+      "order": 1,
+      "multiple": true,
+      "lock_key": "style",
+      "prompt": {
+        "es": "¿Cómo quieres organizar el desarrollo de tu solución?",
+        "en": "How do you want to organise the development of your solution?"
+      },
+      "options_from": "every pack whose frontmatter says `question: development`, marked (recommended) when `recommended: true`",
+      "combination": "several packs may be combined; a pair listed in either pack's `incompatible_with` is refused, a pair not listed in `compatible_with` is reported as not declared compatible",
+      "extra_options": [
+        {
+          "id": "help",
+          "records": "OPEN",
+          "label": { "es": "No estoy seguro, ayúdame a elegir", "en": "I am not sure, help me choose" },
+          "summary": {
+            "es": "No se elige nada ahora. Durante THINK el agente analiza tu fuente, te propone un método como [PROPUESTA] con su razón y tú confirmas. Sin tu confirmación el método queda OPEN.",
+            "en": "Nothing is chosen now. During THINK the agent reads your sources, proposes a method as a [PROPUESTA] with its reason, and you confirm. Without your confirmation the method stays OPEN."
+          }
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "order": 2,
+      "multiple": false,
+      "lock_key": "start",
+      "prompt": {
+        "es": "¿Cómo quieres empezar?",
+        "en": "How do you want to start?"
+      },
+      "options_from": "every pack whose frontmatter says `question: start`, marked (recommended) when `recommended: true`",
+      "extra_options": [
+        {
+          "id": "direct",
+          "records": "direct",
+          "label": { "es": "Directo a la funcionalidad principal", "en": "Straight to the main functionality" },
+          "summary": {
+            "es": "Sin un Epic de esqueleto previo: el primer Epic es la funcionalidad más importante.",
+            "en": "No skeleton Epic first: the first Epic is the most important functionality."
+          }
+        }
+      ]
+    }
+  ],
+  "selection": {
+    "policy": "ask",
+    "decided_by": "the human",
+    "default": "none - the recommended packs are shown as recommended, never applied in silence",
+    "unanswered": "OPEN",
+    "help": "`help` decides nothing: THINK proposes a method as [PROPUESTA] with its reason and the human confirms; unconfirmed, it stays OPEN",
+    "state": ".gtt/development-method.json",
+    "state_authority": "none - a setup answer; it becomes governed only as the Method Lock, ratified by the freeze",
+    "written_by": ".gtt/scripts/gtt-method.sh select",
+    "after_freeze": "refused - changing the ratified method is a change request with an impact analysis (gtt-propose-change), never a new questionnaire"
+  },
+  "lock": {
+    "file": "gtt-domain/context/architecture.md",
+    "section": "## Architectural style",
+    "block": "gtt-method",
+    "keys": {
+      "style": "one or more ids of packs with `question: development`, comma separated, or OPEN",
+      "start": "the id of a pack with `question: start`, `direct`, or OPEN",
+      "status": "ratified | open - open while style or start is OPEN",
+      "locked_by": "ADR-NNN when a chosen pack has `requires_adr: true`, otherwise none; OPEN while status is open",
+      "verification": "the weakest `verification` of the chosen packs",
+      "gap": "GAP-NNN - only while status is open: the OPEN gap of the gtt-gaps register whose topic is `Development method`"
+    },
+    "stack_row": "stack.md section 1 has the row `Development method`: the chosen ids under Technology and the lock's locked_by (OPEN while open) under Locked by",
+    "stack_rules": "every `dependency` rule of a chosen pack appears in stack.md section 5 (Dependency rules), with the project's real paths and the rule id in the Rule column",
+    "written_by": "the bootstrap, before the freeze, with the human's confirmation (Confirmation B); after the freeze only through gtt-domain/proposals/ and the human's promotion",
+    "checked_by": ".gtt/scripts/gtt-method.sh check (also run by gtt-freeze.sh and gtt-validate.sh)"
+  },
+  "verification": {
+    "freeze": "gtt-method.sh check --pre-freeze: the lock is well formed and names existing packs, the ADR a pack requires exists and is the lock's locked_by, no chosen pair is incompatible, the backlog and the Epic designs follow the chosen packs, an OPEN method is typed (gap) and visible (stack.md)",
+    "conformance": "gtt-method.sh rules --json gives the neutral dependency rules of the declared packs and their materialized rows in stack.md section 5; a language adapter (the CLI's gtt check) turns them into the configuration of that language's own tool. Without an adapter for the language, the method is declared-only for that project.",
+    "violation": "a conflict to report (rule, file, forbidden dependency) - never a silent correction of code or context"
+  }
+}

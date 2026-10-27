@@ -25,6 +25,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 - [Installation](installation.md) — detailed setup procedures
 - [Usage](usage.md) — the normal development loop
 - [Method Plans](method-plans.md) — Light, Medium, Hard, Team: what each one delegates, asks and requires
+- [Method Packs](../methods/README.md) — the development methods GTT governs (Vertical Slice, DDD, Hexagonal...), the pack format and the Method Lock
 - [Docs](./) — human reference, methodology
 - [Scripts](../scripts/) — CI gates and freeze
 - [AGENTS.md](../../AGENTS.md) — portable core rules (root)
@@ -213,9 +214,15 @@ source repository is the catalog, not an installed project.
 | `.gtt/scripts/gtt-check-design.sh` | Design gate, part of `gtt-validate.sh` and of the freeze: eight sections, every listed source section cited, every rule and flow in an example, nothing unbuilt when an Epic closes |
 | `.gtt/scripts/gtt-approve.sh` | Approves an Epic and its design together, after showing what is approved. Run by the human, never by an agent |
 | `.gtt/scripts/gtt_design.py` | The engine behind the four scripts above, and the citation check `gtt-check-provenance.sh` uses |
+| `.gtt/methods/<id>.md` | Method Packs: one development method each - what it is, fits when, what it discards, its effect on the design, its Epic design template and its neutral rules. The single source the questionnaire, THINK and the site read | the Bootstrap |
+| `.gtt/methods/README.md` | The Method Pack format and the Method Lock format (the `gtt-method` block of `architecture.md`, the `Development method` row of `stack.md`, the rules in its section 5) - the reference the CLI points at | the Bootstrap |
+| `.gtt/contract/methods.json` | Method Governance contract: the two setup questions and their extra options ("help me choose", "straight to the main functionality"), the selection rules, the lock format, what is verified where | the Bootstrap |
+| `.gtt/scripts/gtt-method.sh` / `.gtt/scripts/gtt_method.py` | Method Governance (operations `method.*`): `catalog` (the packs are well formed - part of `gtt-validate.sh`), `list` / `show` (the questionnaire's options, texts from the packs), `select` (the setup answer; dry run until `--apply`; refused after the freeze), `get`, `lock`, `check` (`--pre-freeze` is run by `gtt-freeze.sh`: lock, ADR, incompatibilities, map rows, backlog cut, design structure), `rules` (the neutral rules a language adapter verifies). Deterministic; reports, never corrects | the bootstrap, the freeze, the CLI |
+| `.gtt/development-method.json` | The setup answer to the two method questions (`OPEN` when unanswered or help was asked). State, never authority: it reaches governed context only as the Method Lock. Written only by `gtt-method.sh select` | `gtt-method.sh` |
 | `.gtt/scaffold/templates/gtt-design-epic.md` | Template of an Epic's solution design (eight sections); materialized per Epic by `gtt-design.sh scaffold` | the Bootstrap |
 | `gtt-domain/context/design/EPIC-NNN.md` | The solution design of one Epic: its complete specification, governed, approved with the Epic | you approve it |
 | `docs/sources/<ID>/v<N>/` | A registered source: immutable evidence, with its hash | `gtt-source.sh` |
+| `.gtt/scripts/gtt-change.sh` / `.gtt/scripts/gtt_change.py` | The change flow during development (operations `change.*`, `proposal.*`, `promotion.*`): `request` writes the change request with an id (the human's act) and the session's Next action tells the agent to process it; `state`; `proposals` / `show` list the drafts and staged sets with their state; `withdraw` archives one in `gtt-domain/proposals/withdrawn/`; `last` / `undo` put back the last promotion while its files are as it left them - a frozen one is re-frozen over the earlier state, never unfrozen | the human (through `gtt change`, `gtt proposals`, `gtt promote`, `gtt undo`) |
 | `.gtt/scripts/gtt-review.sh` | The review surface (operation `review`): what changed, what it touches, risks, what the human must decide, the last validation, the next step - at most 12 lines, read-only. `--files`, `--json`, `--gate` |
 | `.gtt/scripts/gtt-checkpoint.sh` | Refreshes `gtt-domain/session.md` when the work changed (operation `checkpoint`); never a commit; called by each ADE's end-of-turn hook |
 | `.gtt/scripts/gtt-workflow.sh` | Reads and checks `gtt-domain/workflow.md` (operation `workflow.get`); `detect` reports the conventions the project's documents mention and adopts none |

@@ -723,6 +723,43 @@ Use:
 
 when architecture is genuinely unknown.
 
+## 13.6 Development method
+
+Two questions, asked one at a time, with the options of the Method Packs. Show
+each option with the name, the *Qué es* and the *Conviene si* that
+`bash .gtt/scripts/gtt-method.sh list --lang <es|en>` prints - never a text of your
+own - and mark as recommended only the packs it marks. If the setup already
+answered them (`bash .gtt/scripts/gtt-method.sh get`), say what was answered and
+do not ask again.
+
+**Question 1:**
+
+> How do you want to organise the development of your solution? (Options may be
+> combined; the tool refuses a combination its packs declare incompatible.)
+
+**Question 2:**
+
+> How do you want to start?
+
+"I am not sure, help me choose" decides nothing: read what this questionnaire
+already established, propose one option as a `[PROPUESTA]` with its reason and
+the sections it rests on, and wait for the human. A proposal the human does not
+confirm leaves the method `OPEN`. Never apply the recommended option in silence.
+
+Record the answer with `bash .gtt/scripts/gtt-method.sh select --style <ids|help>
+--start <id|direct|help>` (dry run, then `--apply`), and here:
+
+``` text
+Style:
+Start:
+Reason:
+Decided by:
+```
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
 ------------------------------------------------------------------------
 
 # 14. Technology

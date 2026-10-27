@@ -104,6 +104,10 @@ The idea is simple:
 
 **Method Plan.** During bootstrap you are asked how much operational work to delegate to GTT — one choice among **Light**, **Medium**, **Hard** and **Team**. It is an operating profile, not a quality level; GTT derives the technical policies from it and never picks one for you. No plan turns governance off. What each plan does without asking, what it asks you, and what it requires is spelled out in [.gtt/docs/method-plans.md](.gtt/docs/method-plans.md).
 
+**Development method (Method Governance).** You are also asked how you want to develop the solution — **Vertical Slice** (recommended), **DDD**, **Hexagonal**, **Layered**, **Event-First**, which may be combined where their packs allow it — and how to start — **Walking Skeleton** (recommended) or straight to the main functionality. "I am not sure, help me choose" decides nothing: the agent proposes a method with its reason and you confirm; unconfirmed, it stays `OPEN`, and nothing is ever applied by default. The method guides how THINK cuts your Epics and writes their designs, the freeze ratifies it as the **Method Lock** in `architecture.md` (with the ADR that locks it and its dependency rules in `stack.md`), and `gtt-method.sh check` verifies it — at the freeze, in `gtt-validate.sh`, and in the code through a language adapter where one exists (otherwise the method is reported `declared-only`). After the freeze it changes only through a change request. The methods and their formats: [.gtt/methods/README.md](.gtt/methods/README.md).
+
+**Change during development.** A governed change can start from the CLI: `gtt change` records the request with an id and your ADE is told to process it into a proposal on its next turn; `gtt proposals` shows what it drafted, `gtt promote` applies a staged set, and `gtt undo` steps back the last promotion (a frozen one is re-frozen over the earlier state — there is still no unfreeze). Without the CLI: `bash .gtt/scripts/gtt-change.sh`.
+
 For the detailed procedures, see [.gtt/docs/installation.md](.gtt/docs/installation.md) and [.gtt/docs/usage.md](.gtt/docs/usage.md).
 
 ### 2. Manual installation
@@ -825,6 +829,7 @@ SOURCE-BRIEF.*                  # original design, preserved after bootstrap
 ├── index/                      # artifact identity (artifacts.json) + derived technical index
 ├── protection/                 # GTTGuard registry.yaml — derived, never hand-edited
 ├── session-adapters/           # per-ADE Session Memory declarations (data only)
+├── methods/                    # Method Packs - the development methods GTT governs, and the Method Lock format
 ├── docs/                       # GTT's own documentation
 │   ├── index.md                # map of every file — start here
 │   ├── installation.md         # detailed setup procedures (+ installation.es.md)

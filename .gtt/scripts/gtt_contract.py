@@ -32,7 +32,7 @@ import gtt_manifest as gm
 CONTRACT_DIR = ".gtt/contract"
 FILES = {"release": "release.json", "capabilities": "capabilities.json", "operations": "operations.json",
          "profiles": "profiles.json", "export-policy": "export-policy.json", "recovery": "recovery.json",
-         "elicitation": "elicitation.json"}
+         "elicitation": "elicitation.json", "methods": "methods.json"}
 ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 CONTROL = re.compile(r"[\x00-\x1f]")
 SHELL_META = re.compile(r"[;&|`$<>\n]")
@@ -191,6 +191,8 @@ def cmd_show(args):
         data = load("recovery")
     elif kind == "elicitation":
         data = load("elicitation")
+    elif kind == "methods":
+        data = load("methods")
     elif kind == "ade-registry":
         data = ade_registry()
     elif kind == "initial-design":
@@ -352,7 +354,7 @@ def check_contracts():
         if required not in release.get("contracts", {}):
             add(f"release.contracts.{required} missing (every externally consumed contract is versioned)")
     for name, doc in (("capabilities", caps), ("operations", ops), ("profiles", prof), ("export-policy", exp),
-                      ("recovery", rec), ("elicitation", eli)):
+                      ("recovery", rec), ("elicitation", eli), ("methods", data["methods"])):
         if doc.get("schema") != 1 or not isinstance(doc.get("contract_version"), int):
             add(f"{FILES[name]}: needs schema 1 and an integer contract_version")
     # operations

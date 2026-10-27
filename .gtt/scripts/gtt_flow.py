@@ -621,7 +621,13 @@ def cmd_promote(args):
     for entry in spec["files"]:
         diffs[entry["to"]], added, removed = diff_of(os.path.join(folder, entry["from"]), entry["to"])
         print(f"  {'new     ' if entry.get('sha_before') is None else 'replaces'} {entry['to']}  +{added} −{removed}")
-    while True:
+    if args.non_interactive and not args.confirmed:
+        for lines in diffs.values():
+            sys.stdout.writelines(lines)
+        print("(dry run - nothing written; the human confirms to apply it)")
+        return 0
+    answer = "apply" if args.confirmed else ""
+    while not args.confirmed:
         print("Type `apply` to apply, `d` to see the full diff, anything else to cancel: ", end="", flush=True)
         answer = sys.stdin.readline().strip()
         if answer != "d":
@@ -654,7 +660,8 @@ def cmd_promote(args):
     backup = os.path.join(BACKUPS, args.name)
     shutil.rmtree(backup, ignore_errors=True)
     os.makedirs(backup)
-    record = {"schema": 1, "name": args.name, "files": []}
+    record = {"schema": 1, "name": args.name, "at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "froze": False, "files": []}
     for number, entry in enumerate(spec["files"]):
         existed = os.path.isfile(entry["to"])
         if existed:
@@ -686,6 +693,12 @@ def cmd_promote(args):
             return 1
         print(("Specification change recorded as " + change_id + " in the map change log. " if change_id else "Architectural change, with its ADR. ")
               + "A new freeze was recorded with this confirmation.")
+    # What the promotion wrote, so that undoing it can tell a later edit apart (gtt-change.sh undo).
+    for entry in record["files"]:
+        entry["sha_after"] = sha256(entry["to"])
+    record["froze"] = frozen_change
+    with open(os.path.join(backup, "backup.json"), "w", encoding="utf-8") as handle:
+        json.dump(record, handle, indent=2)
     shutil.rmtree(folder, ignore_errors=True)
     if os.path.isdir(STAGED) and not os.listdir(STAGED):
         os.rmdir(STAGED)
@@ -806,7 +819,10 @@ def main(argv):
     p.add_argument("--gate", action="store_true"); p.set_defaults(func=cmd_review)
     p = sub.add_parser("state"); p.set_defaults(func=cmd_state)
     p = sub.add_parser("stage"); p.add_argument("name"); p.add_argument("--reason", required=True); p.add_argument("pairs", nargs="+"); p.set_defaults(func=cmd_stage)
-    p = sub.add_parser("promote"); p.add_argument("--undo", action="store_true"); p.add_argument("name"); p.set_defaults(func=cmd_promote)
+    p = sub.add_parser("promote"); p.add_argument("--undo", action="store_true"); p.add_argument("name")
+    p.add_argument("--confirmed", action="store_true", help="the human already confirmed through the CLI; no prompt")
+    p.add_argument("--non-interactive", action="store_true", help="show the set and its diff without asking; with --confirmed, apply it")
+    p.set_defaults(func=cmd_promote)
     p = sub.add_parser("check"); p.add_argument("which", choices=sorted(CHECKS)); p.set_defaults(func=cmd_check)
     p = sub.add_parser("record-validation"); p.add_argument("--exit", type=int, required=True); p.add_argument("--passed", type=int, default=0)
     p.add_argument("--skipped", type=int, default=0); p.add_argument("--failed", type=int, default=0); p.set_defaults(func=cmd_record_validation)

@@ -15,6 +15,7 @@ Use these skills instead of improvising the format:
 | Verify the governed context still matches the code | `gtt-audit` |
 | Ordinary work: implementing, refactoring, testing, writing and closing Stories | none - do it; nobody approves it (`AGENTS.md` → *The two planes*) |
 | An Epic must be added, removed, or its goal or scope materially changed | `gtt-propose-change` (form 4) |
+| The ratified development method (Method Lock) must change | `gtt-propose-change` (form 6) - never `gtt-method.sh select`, which is refused after the freeze |
 | Observation reported drift (`@gtt · Observation`, or the user asks whether a change contradicts the design) | `gtt-drift-response` |
 | Reconcile `gtt-domain/backlog.md` against defined Epics/Stories | `gtt-audit` |
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |

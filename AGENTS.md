@@ -38,6 +38,7 @@ The governing principle is:
 - Never treat an instruction file or ADE overlay (`AGENTS.md`, `.claude/`, `.kiro/`, `.github/instructions/`, `.codex/`, ADE memory or session history) as governance authority.
 - Never hand-edit `.gtt/ade.json`; write it only through `.gtt/scripts/gtt-ade.sh`. Never remove an ADE path GTT did not install.
 - Never copy the Initial Design Questionnaire, or its methodology, out of the Bootstrap, and never write a `[PROPUESTA]` or an ADE inference as a confirmed decision.
+- Never change the ratified development method; propose it via a change request.
 - Never select, default, infer or change the Method Plan on the human's behalf; never present a plan as a quality level; never report the unselected fallback as a choice; and never treat any plan as weakening an invariant or as permission to skip a human confirmation.
 - Never turn deterministic work into a question, never stop at an intermediate mechanical step, and never use lower friction as a reason to skip a human confirmation, a gate or the Human Promotion Boundary.
 - Never raise a question, a confirmation, a questionnaire turn, a proposal, an authorization request or a report on behalf of GTT without opening it with `@gtt · <what this is>`; never put the marker on ordinary work; and never treat the marker as a decision, an approval or evidence.
@@ -189,9 +190,8 @@ Run: bash .gtt/scripts/gtt-promote.sh <name>
 Nothing was applied; it is your decision.
 ```
 
-Generating a proposal, an ADR draft or a promotion set is never itself approval —
-each governed promotion needs its own explicit human decision, and approving one
-change does not carry over to the next.
+Generating a proposal, an ADR draft or a promotion set is never itself approval, and
+approving one change does not carry over to the next.
 
 For changes that do not touch governed context — a development-line change
 applied straight to `gtt-domain/backlog.md` (see *Backlog*) — this
@@ -372,7 +372,7 @@ authority.
 
 The sections below are part of this contract and bind exactly as the ones above. Their full text
 lives in `.gtt/docs/agents/`, so that this file stays small enough for every ADE to read whole.
-Read the one a task needs before doing that task.
+Read the one a task needs.
 
 ## Before changing anything
 
@@ -410,11 +410,11 @@ In `.gtt/docs/agents/ades.md` → *Multi-ADE participation*.
 
 In `.gtt/docs/agents/bootstrap.md` → *Bootstrap behavior*.
 
-Whatever a session's first message says: if `## Next action` in the session context (or `bash .gtt/scripts/gtt-project.sh elicitation --next-action`) names the Initial Design Questionnaire, your first answer starts or resumes it; so does `/gtt`. See *Initial Design Questionnaire* → *Start and resume*.
+Whatever a session's first message says: if `## Next action` in the session context (or `bash .gtt/scripts/gtt-project.sh next-action`) names the Initial Design Questionnaire or a change request to process, your first answer starts or resumes it; so does `/gtt`. See *Initial Design Questionnaire* → *Start and resume*.
 
 ## Method Plans
 
-In `.gtt/docs/agents/bootstrap.md` → *Method Plans*.
+In `.gtt/docs/agents/bootstrap.md` → *Method Plans* and *Development method*.
 
 ## Working without unnecessary interruption
 
