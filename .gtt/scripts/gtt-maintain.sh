@@ -2,7 +2,7 @@
 # GTT - maintain. The deterministic work that follows any operation, in one run
 # and with a brief report: GTTGuard registry sync, artifact index rebuild, and
 # gtt-validate.sh. Those three are derived state or read-only checks - automatic
-# in every Method Plan - so nothing here asks a question. It reuses the existing
+# in every Autonomy Profile - so nothing here asks a question. It reuses the existing
 # scripts; it reimplements none of them and makes no architectural judgment.
 #
 # One step depends on the selected plan (.gtt/contract/profiles.json ->

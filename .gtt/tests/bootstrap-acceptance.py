@@ -203,7 +203,15 @@ def profiles(project, tmp):
     check(rc == 5, "an unsupported profile is refused by the argument schema")
     rc, env, _ = op(p, "methodology.profile.set", profile="light")
     check(rc == 0 and read_json(os.path.join(p, ".gtt/methodology.json"))["profile"] == "hard", "without apply it is a dry run")
-    # the Bootstrap applies the semantics: gates differ by profile
+    # the Bootstrap applies the semantics: gates differ by profile. The minimum floor (language, runtime,
+    # primary datastore) is decided first: without it no profile freezes.
+    stack_path = os.path.join(p, "gtt-domain", "context", "stack.md")
+    with open(stack_path, encoding="utf-8") as handle:
+        stack_text = handle.read()
+    for layer, tech in (("Language", "TypeScript | 5 | ADR-001"), ("Runtime", "Node.js | 22 | ADR-001"),
+                        ("Datastore (primary)", "PostgreSQL | 16 | ADR-001")):
+        stack_text = stack_text.replace(f"| {layer} | | | |", f"| {layer} | {tech} |")
+    write(stack_path, stack_text)
     results = {}
     for choice in ("light", "medium", "team", "hard"):
         op(p, "methodology.profile.set", profile=choice, apply=True)
@@ -211,7 +219,7 @@ def profiles(project, tmp):
     check(results["light"] == 0 and results["medium"] == 0 and results["hard"] == 1 and results["team"] == 1,
           "Hard and Team refuse freeze where Light and Medium accept (warnings block, manifest required)", str(results))
     got = data(op(p, "methodology.profile.get")[1])
-    check(got["selected"] is True and got["plan"]["label"] == "Hard Method", "a selected plan is reported with its label and policy")
+    check(got["selected"] is True and got["plan"]["label"] == "Hard", "a selected plan is reported with its label and policy")
     op(p, "methodology.profile.set", profile="hard", apply=True)
     hard = bash(p, ".gtt/scripts/gtt-check-provenance.sh", "--pre-freeze")
     out = hard[1] + hard[2]
@@ -1108,7 +1116,7 @@ def protection_hooks(project, tmp):
     check("gtt-checkpoint.sh" in read_json(os.path.join(p, ".kiro/hooks/gtt-checkpoint.json"))["hooks"][0]["action"]["command"]
           and read_json(os.path.join(p, ".kiro/hooks/gtt-checkpoint.json"))["hooks"][0]["trigger"] == "Stop"
           and "gtt-checkpoint.sh" in read_json(os.path.join(p, ".github/hooks/gtt-protect.json"))["hooks"]["agentStop"][0]["bash"]
-          and "gtt-checkpoint.sh" in json.dumps(read_json(os.path.join(p, "gtt-domain/proposals/session-adapters/codex/.codex/hooks.json"))["hooks"]["Stop"]),
+          and "gtt-checkpoint.sh" in json.dumps(read_json(os.path.join(p, ".gtt/session-adapters/staged/codex/.codex/hooks.json"))["hooks"]["Stop"]),
           "Kiro, Copilot and the staged Codex adapter end a turn with the checkpoint too")
     silent = fresh(project, tmp, "hooks-session-broken")
     os.remove(os.path.join(silent, ".gtt", "scripts", "gtt_artifacts.py"))
@@ -1301,6 +1309,143 @@ def frozen_project(project, tmp, name, boundaries="", before_freeze=None):
     return p, rc, out + err
 
 
+def freeze_validates(project, tmp):
+    print("[freeze_validates] a freeze never leaves a project that fails `validate` (and so CI)")
+
+    def before(p):
+        rc, env, _ = op(p, "template.materialize", id="initial-design-questionnaire", apply=True)
+        check(rc == 0, "the questionnaire working copy is materialized", env.get("stderr", ""))
+        bash(p, ".gtt/scripts/gtt-index.sh")  # its identity is registered, as after `gtt init`
+        write(os.path.join(p, "gtt-domain", "adr", "ADR-002-hand-written.md"),
+              "# ADR-002 — Written by hand\n\n- Status: Accepted\n\n## Context\n\nx\n\n## Decision\n\ny\n")
+
+    p, rc, out = frozen_project(project, tmp, "freeze-validates", before_freeze=before)
+    check(rc == 0, "a hand-written context (no canonical reference line) and an unindexed ADR freeze", out)
+    check("added the canonical reference line" in out, "the freeze says which files it gave the canonical reference")
+    check(not os.path.exists(os.path.join(p, "gtt-domain", "proposals", "bootstrap")), "the questionnaire scaffolding is removed")
+    with open(os.path.join(p, "gtt-domain", "context", "stack.md"), encoding="utf-8") as handle:
+        check("GTT-CANONICAL-v3.0.md" in handle.read(), "the reference was added to the governed file")
+    for script in ("gtt-check-integrity.sh", "gtt-check-markdown.sh"):
+        rc, so, se = bash(p, f".gtt/scripts/{script}")
+        check(rc == 0, f"right after the freeze {script} passes", (so + se)[-600:])
+    rc, so, se = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 2, "a second freeze over the same state still does nothing", so + se)
+
+
+def design_next_action(project, tmp):
+    print("[design_next_action] every installed state has a next action: no design and no questionnaire included")
+    host = make_host(project, tmp, "next-action-host")
+    op(host, "ade.install", **{"from": project, "participating": "antigravity", "primary": "antigravity", "apply": True})
+    rc, out, _ = bash(host, ".gtt/scripts/gtt-project.sh", "next-action")
+    check(rc == 0 and "No governed design yet" in out and "initial-design-questionnaire" in out,
+          "a fresh project tells the agent to start the design (the human's documents, or the questionnaire)", out[:300])
+    write(os.path.join(host, "design.md"), "# Design\n")
+    rc, out, _ = bash(host, ".gtt/scripts/gtt-project.sh", "next-action")
+    check("design.md" in out, "with a design document at the root it names the candidate for the human to confirm", out[:300])
+    rc, out, _ = bash(host, ".gtt/scripts/gtt-session-context.sh")
+    check("No governed design yet" in out, "session start delivers it, as every adapter does")
+    rc, out, _ = bash(host, ".gtt/scripts/gtt-check-session-adapter.sh", "antigravity")
+    check(rc == 0 and "coverage=N3" in out, "Antigravity declares its instruction-based (N3) session adapter and it validates", out[-300:])
+    rc, out, _ = bash(project, ".gtt/scripts/gtt-project.sh", "next-action")
+    check(out.strip() == "", "the catalog itself waits on nothing")
+
+
+POM = ("<project><dependencies><dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId></dependency>"
+       "{extra}</dependencies></project>\n")
+CSPROJ = '<Project><ItemGroup><PackageReference Include="Npgsql" Version="8" />{extra}</ItemGroup></Project>\n'
+
+
+def out_of_design(project, tmp):
+    print("[out_of_design] an agent leaves the frozen design: GTT sees it from the design itself, and stops what must stop")
+    stack = ("# Stack\n\n## 1. Stack at a glance\n\n| Layer | Technology | Version | Locked by |\n|---|---|---|---|\n"
+             "| Language | TypeScript | 5 | ADR-001 |\n| Runtime | Node.js | 22 | ADR-001 |\n| Application framework | Fastify | 5 | ADR-001 |\n"
+             "| Datastore (primary) | PostgreSQL (pg driver) | 16 | ADR-001 |\n| Datastore (cache) | none | - | ADR-001 |\n"
+             "| Messaging / events | none | - | ADR-001 |\n\n## 5. Dependency rules\n\n"
+             "| Module | May depend on | Must not depend on | Rule |\n|---|---|---|---|\n"
+             "| src/slices/* | src/shared | src/slices/* | VS-1 |\n| src/shared | - | src/slices/* | VS-2 |\n\n"
+             "```gtt-boundaries\nB-001 | forbid | src/slices/** :: from .\\.\\./\\.\\./slices/ | BLOCKING | 5. Dependency rules (VS-1)\n```\n")
+
+    def before(p):
+        write(os.path.join(p, "gtt-domain", "context", "stack.md"), stack)
+        write(os.path.join(p, "package.json"), json.dumps({"dependencies": {"fastify": "5", "pg": "8"}}))
+        write(os.path.join(p, "src", "slices", "orders", "place.ts"), "import { db } from '../../shared/db';\n")
+        write(os.path.join(p, "src", "shared", "db.ts"), "export const db = {};\n")
+        write(os.path.join(p, "jvm", "pom.xml"), POM.format(extra=""))
+        write(os.path.join(p, "dotnet", "Api.csproj"), CSPROJ.format(extra=""))
+
+    p, rc, out = frozen_project(project, tmp, "out-of-design", before_freeze=before)
+    check(rc == 0, "a design with a stack, modules and a BLOCKING dependency rule freezes", out[-300:])
+
+    def observed():
+        bash(p, ".gtt/scripts/gtt-observe.sh", "observe")
+        return {i["rule"] + " " + i["artifact"]: i for i in read_json(os.path.join(p, "gtt-domain", "governance-backlog.json"))["items"]
+                if i["status"] == "open"}
+
+    write(os.path.join(p, "package.json"), json.dumps({"dependencies": {"fastify": "5", "pg": "8", "pg-promise": "11", "zod": "3",
+                                                                        "mongoose": "8", "express": "4"}}))
+    write(os.path.join(p, "src", "legacy", "server.ts"), "import express from 'express';\n")
+    write(os.path.join(p, "jvm", "pom.xml"), POM.format(extra="<dependency><groupId>org.mongodb</groupId><artifactId>mongodb-driver-sync</artifactId></dependency>"
+                                                       "<dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId></dependency>"))
+    write(os.path.join(p, "dotnet", "Api.csproj"), CSPROJ.format(extra='<PackageReference Include="StackExchange.Redis" Version="2" />'))
+    write(os.path.join(p, "src", "slices", "orders", "cancel.ts"), "import { db } from '../../shared/db';\n")
+    items = observed()
+    check(items.get("GTT-STACK package.json#mongoose", {}).get("level") == "GOVERNANCE",
+          "a datastore the governed stack does not declare is a design change (GOVERNANCE), with no rule written by hand", str(list(items))[:300])
+    check(items.get("GTT-STACK package.json#express", {}).get("level") == "GOVERNANCE", "so is a second application framework")
+    check(not any(k.startswith("GTT-STACK") and ("pg-promise" in k or "zod" in k) for k in items),
+          "a driver of the declared datastore, and an ordinary library, are ordinary work: no signal")
+    check(items.get("GTT-MODULES src/legacy/", {}).get("level") == "GOVERNANCE", "code outside every declared module is a design change")
+    check(items.get("GTT-STACK jvm/pom.xml#org.mongodb:mongodb-driver-sync", {}).get("level") == "GOVERNANCE"
+          and not any("guava" in k for k in items), "Maven: an undeclared datastore is seen, an ordinary library is not", str(list(items))[:300])
+    check(items.get("GTT-STACK dotnet/Api.csproj#StackExchange.Redis", {}).get("level") == "GOVERNANCE",
+          ".NET: a cache the stack declares as none is seen")
+    check(not any(k.startswith("GTT-MODULES src/slices") for k in items), "new code inside a declared module is ordinary work")
+
+    # A BLOCKING forbid rule is refused before the write, by content - not reported after it.
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=p)
+
+    def write_decided(tool, tool_input):
+        proc = subprocess.run([sys.executable, os.path.join(p, ".claude", "hooks", "protect-l0.py")], cwd=p, env=env,
+                              input=json.dumps({"tool_name": tool, "tool_input": tool_input}), capture_output=True, text=True,
+                              encoding="utf-8", errors="replace")
+        return proc.returncode == 2, proc.stdout
+    target = os.path.join(p, "src", "slices", "orders", "place.ts")
+    denied, text = write_decided("Edit", {"file_path": target, "old_string": "import { db }",
+                                          "new_string": "import { pay } from '../../slices/payments/pay';\nimport { db }"})
+    check(denied and "B-001" in text, "an edit that would import another slice is denied before it is written, with the rule named", text[:200])
+    check(not write_decided("Write", {"file_path": target, "content": "import { db } from '../../shared/db';\n"})[0],
+          "a write that respects the boundary is allowed")
+    rc, out_ = subprocess.run([sys.executable, os.path.join(".gtt", "scripts", "gtt_protect.py"), "hook", "--format", "cursor"], cwd=p,
+                              input=json.dumps({"hook_event_name": "preToolUse", "tool_name": "Write", "workspace_roots": [p],
+                                                "tool_input": {"file_path": target, "content": "import x from '../../slices/payments/pay'\n"}}),
+                              capture_output=True, text=True).returncode, ""
+    check(rc == 2, "the portable engine (Cursor) denies the same write")
+
+    # Bypasses of the governed context through the shell are writes too.
+    for command in ("python3 -c \"open('gtt-domain/context/stack.md','a').write('x')\"",
+                    "node -e \"require('fs').appendFileSync('gtt-domain/context/stack.md','x')\"",
+                    "git checkout HEAD~1 -- gtt-domain/context/stack.md", "git restore gtt-domain/context/stack.md"):
+        check(write_decided("Bash", {"command": command})[0], f"denied: {command}")
+    check(not write_decided("Bash", {"command": "python3 -c \"print(open('gtt-domain/context/stack.md').read())\""})[0],
+          "reading governed context through an interpreter is allowed")
+
+    # The frozen design written directly (outside the change flow) stops work until reverted or re-frozen.
+    with open(os.path.join(p, "gtt-domain", "context", "constraints.md"), "a", encoding="utf-8") as handle:
+        handle.write("\n- MongoDB is allowed.\n")
+    items = observed()
+    check(items.get("GTT-GOVERNED gtt-domain/context+adr", {}).get("level") == "BLOCKING",
+          "the governed state changed outside the change flow is BLOCKING")
+    rc, _, _ = bash(p, ".gtt/scripts/gtt-observe.sh", "check")
+    check(rc == 1, "and `check` (CI) fails on it")
+    for key, item in items.items():
+        if item["level"] == "GOVERNANCE":
+            bash(p, ".gtt/scripts/gtt-observe.sh", "accept", item["id"], "--by", "MG", "--apply")
+    commit(p, "drift")
+    rc, o, e = bash(p, ".gtt/scripts/gtt-freeze.sh")
+    check(rc == 0, "the human may still ratify it with a new freeze: the governed change never refuses its own freeze", (o + e)[-300:])
+    check(not any(k.startswith("GTT-GOVERNED") for k in observed()), "after the new freeze the governed state is the authority again")
+
+
 def git(cwd, *args):
     return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
@@ -1422,7 +1567,8 @@ def observation(project, tmp):
     with open(os.path.join(p, "gtt-domain", "context", "architecture.md"), "a", encoding="utf-8") as handle:
         handle.write("the event bus is now part of the design\n")
     rc, out = obs(p, "observe")
-    check(rc == 0 and "GTT-GOVERNED" in out and "new freeze" in out, "a change to the governed state itself is seen and calls for a new freeze, not an unfreeze", out[-300:])
+    check(rc == 1 and "GTT-GOVERNED" in out and "new freeze" in out and "STOP" in out,
+          "a change to the governed state outside the change flow stops work and calls for a revert or a new freeze, not an unfreeze", out[-300:])
     write(os.path.join(p, "api", "v2", "openapi.yaml"), "openapi: 3\n")
     rc, out, err = bash(p, ".gtt/scripts/gtt-freeze.sh")
     check(rc == 1 and "undecided observations" in err, "a new baseline is not drawn over a governance observation nobody decided", (out + err)[-300:])
@@ -1759,7 +1905,8 @@ def enforcement(project, tmp):
     for heading in ("Design assessment", "Multi-ADE participation", "Protected artifacts (GTTGuard)", "Working without unnecessary interruption"):
         body = "".join(open(os.path.join(order, path), encoding="utf-8").read() for path in pointed)
         check(f"## {heading}\n" in shipped and f"## {heading}\n" in body, f"`{heading}` keeps its heading in the contract and its full text in the detail")
-    write(contract_file, shipped + "\n" + ("padding line\n" * 400))
+    over = 24576 - len(shipped.encode("utf-8")) + 1024             # always past the cap, however small the contract
+    write(contract_file, shipped + "\n" + ("padding line\n" * (over // 13 + 1)))
     rc, out, err = bash(order, ".gtt/scripts/gtt-check-agents.sh")
     check(rc == 1 and "over the 24576-byte cap" in err, "a contract over the cap fails", (out + err)[-300:])
     check("FAIL               gtt-check-agents.sh" in bash(order, ".gtt/scripts/gtt-validate.sh")[1], "and that fails validation")
@@ -2528,7 +2675,7 @@ def think_depth(project, tmp):
           "the human selects the depth; unselected is a state and STANDARD (the previous behaviour) applies")
     check(spec["escalation"]["automatic"] is False and spec["escalation"]["decided_by"] == "the human" and spec["escalation"]["signals"],
           "escalation is proposed with evidence and decided by the human, never automatic")
-    check("Method Plan" in spec["not_a_method_plan"], "THINK Depth is declared independent of the Method Plan")
+    check("Autonomy Profile" in spec["not_a_method_plan"], "THINK Depth is declared independent of the Autonomy Profile")
 
     host = make_host(project, tmp, "think-host")
     write(os.path.join(host, "design.md"), "# design\n")
@@ -2931,7 +3078,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action):
             scenario(project, tmp)
     finally:
         if args.keep:

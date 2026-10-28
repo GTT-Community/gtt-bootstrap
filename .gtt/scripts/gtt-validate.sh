@@ -149,7 +149,7 @@ fi
 
 # Observation: the work against the frozen governed state. This fails only on what
 # the governed state itself says must stop - a boundary ratified as BLOCKING, an
-# observation the human rejected - and, under a Method Plan that says so, on a
+# observation the human rejected - and, under a Autonomy Profile that says so, on a
 # GOVERNANCE observation nobody has decided. Everything else is recorded, not failed.
 # Read-only here (--dry-run): validating never rewrites the governance backlog.
 if [ -f .gtt/scripts/gtt-observe.sh ]; then
@@ -170,7 +170,7 @@ if [ -f .gtt/scripts/gtt-check-agents.sh ]; then
 fi
 
 # Sources and designs: a registered source still matches its hash, and every Epic's design is
-# complete - the same in every Method Plan and at every THINK Depth.
+# complete - the same in every Autonomy Profile and at every THINK Depth.
 if [ -f .gtt/scripts/gtt_design.py ]; then
   run_check "gtt-source.sh verify (sources are immutable)" bash .gtt/scripts/gtt-source.sh verify
   bash .gtt/scripts/gtt-check-design.sh >/tmp/gtt-validate-design.$$ 2>&1

@@ -51,7 +51,7 @@ ADE state: not configured (no .gtt/ade.json - single-ADE legacy install or the c
 Adopt it with: bash .gtt/scripts/gtt-ade.sh adopt
 
 ## Evidence / Governance (derived state - never agent notes, never authority)
-method plan: not selected (medium gates apply until the human selects one) (provenance gate: advisory)
+autonomy profile: not selected (medium gates apply until the human selects one) (provenance gate: advisory)
 sources: 0 declared (provenance policy: none)
 gaps: OPEN 0, BLOCKING 0, RESOLVED 0
 unresolved conflicts in governed context: 0

@@ -1,8 +1,8 @@
-# GTT Bootstrap — Planes de Método
+# GTT Bootstrap — Perfiles de Autonomía
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
-Un **Plan de Método** responde a una sola pregunta: *¿cuánto del trabajo operativo
+Un **Perfil de Autonomía** responde a una sola pregunta: *¿cuánto del trabajo operativo
 delegas en GTT?* Eliges una intención — Light, Medium, Hard o Team — y GTT deriva de
 ella las políticas técnicas. Nunca se te pide configurar una por una la política de
 índice, de identidad o de validación.
@@ -59,18 +59,18 @@ El Bootstrap pregunta. No elige por ti, y no infiere el plan a partir del proyec
 del ADE ni de un proyecto anterior.
 
 ```text
-Select GTT Method Plan
+Select GTT Autonomy Profile
 
-[1] Light Method
+[1] Light profile
     Maximum safe automation and the fewest interruptions, for one developer or a governed prototype.
 
-[2] Medium Method
+[2] Medium profile
     Automation with confirmation of relevant changes, for an individual project or a small team.
 
-[3] Hard Method
+[3] Hard profile
     Explicit human authorization of every governed operation, for production and critical systems.
 
-[4] Team Method
+[4] Team profile
     Collaborative governance: the Hard gates plus CI, actor traceability and shared team policy.
 ```
 
@@ -85,7 +85,7 @@ preguntar.
 
 ## Los cuatro planes
 
-### Light Method
+### Light profile
 
 **Para:** un desarrollador individual, un proyecto personal, un prototipo gobernado,
 una POC o un spike — donde se busca la mínima carga operativa.
@@ -108,7 +108,7 @@ por ti.
 **Compuertas verificadas por máquina:** procedencia en modo consultivo; las
 advertencias no bloquean el freeze.
 
-### Medium Method
+### Medium profile
 
 **Para:** desarrollo normal — funcionalidades, integraciones, servicios internos — de
 una persona o un equipo pequeño que quiere automatización pero prefiere confirmar los
@@ -127,7 +127,7 @@ una release o tras un merge grande. Se recomienda CI.
 **Compuertas verificadas por máquina:** procedencia en modo consultivo; las
 advertencias no bloquean el freeze.
 
-### Hard Method
+### Hard profile
 
 **Para:** producción, sistemas críticos o sensibles en seguridad, arquitectura de alto
 impacto, trabajo regulado.
@@ -149,7 +149,7 @@ promoción. Se recomienda CI.
 fuentes obligatorio para congelar; cada gap OPEN debe llevar `affects`; las
 advertencias bloquean el freeze.
 
-### Team Method
+### Team profile
 
 **Para:** equipos y proyectos colaborativos — varias personas, o varios ADE,
 cambiando el mismo proyecto gobernado.
@@ -253,7 +253,7 @@ intermedio no es motivo para detenerse.
 **GTT avisa cuándo es GTT quien habla.** Todo mensaje que el método levanta en tu ADE
 — una pregunta, una confirmación o elección, el Cuestionario Inicial de Diseño, una
 propuesta, un hallazgo, un pedido de autorización, un reporte — abre con
-`@gtt · <qué es>`: `@gtt · Method Plan`, `@gtt · Initial Design Questionnaire`,
+`@gtt · <qué es>`: `@gtt · Autonomy Profile`, `@gtt · Initial Design Questionnaire`,
 `@gtt · Authorization required`. La conversación ordinaria del asistente no lleva
 marca, así siempre puedes distinguir el método del asistente. La marca dice quién
 habla; nunca es una decisión ni una aprobación.

@@ -31,6 +31,17 @@ fi
 
 FAIL=0
 SIZE="$(wc -c < "$FILE" | tr -d ' ')"
+# A host AGENTS.md GTT joined as a delimited block (Canon 3.0 §28): GTT's contract is the block and the cap
+# applies to it; the whole file must still fit what an ADE reads (Codex: 32 KiB).
+if grep -q '^<!-- gtt:begin' "$FILE"; then
+  TOTAL="$SIZE"
+  SIZE="$(awk '/^<!-- gtt:begin/{on=1; next} /^<!-- gtt:end -->/{on=0} on' "$FILE" | wc -c | tr -d ' ')"
+  if [ "$TOTAL" -gt 32768 ]; then
+    echo "gtt-check-agents: FAILED - $FILE is $TOTAL bytes with the host's own instructions: over the 32 KiB an ADE reads." >&2
+    echo "  Move part of the host's own text to a nested AGENTS.md or another document." >&2
+    FAIL=1
+  fi
+fi
 if [ "$SIZE" -gt "$MAX" ]; then
   echo "gtt-check-agents: FAILED - $FILE is $SIZE bytes, over the $MAX-byte cap." >&2
   echo "  An ADE that reads only the beginning of the file (Codex: 32 KiB, shared with nested files) loses the rest." >&2

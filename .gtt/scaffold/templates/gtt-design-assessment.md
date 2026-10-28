@@ -1,6 +1,6 @@
 # GTT Design Assessment
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 The Think stage starts here. Before a design document is used as the source of
 the governed context, the ADE reads it — every document, when there is more
@@ -28,7 +28,7 @@ decides what to do with it.
 ## THINK Depth
 
 How deep THINK goes for this design. The human selects it — ask once, showing
-the three levels; never infer it from the project, the Method Plan or the ADE.
+the three levels; never infer it from the project, the Autonomy Profile or the ADE.
 Left empty it is **not selected**, and `STANDARD` applies as a fallback.
 
 ```text
@@ -45,7 +45,7 @@ Date:
 | Stack (section 6.1) | options only for an undecided floor layer: one recommendation and its main trade-off | reasonable alternatives per undecided or unjustified layer, trade-offs, a recommendation | stack **and** architectural alternatives, trade-offs explicit (sections 6.1 and 6.3) |
 | Questionnaire (section 7) | reduced: only what the floor or a critical gap needs | adaptive: what was `THIN` or `MISSING` | deep and iterative: earlier answers revisited as later rounds change them |
 
-**THINK Depth is not a level of governance, and it is not the Method Plan**
+**THINK Depth is not a level of governance, and it is not the Autonomy Profile**
 (the two are independent and chosen separately). At every depth:
 section 4 is assessed line by line and a design below the floor is `POOR`;
 every option is a `[PROPUESTA]`; unknowns stay `[VACÍO]` and disagreements

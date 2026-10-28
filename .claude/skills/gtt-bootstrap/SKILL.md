@@ -3,14 +3,14 @@ name: gtt-bootstrap
 description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), assesses an existing design in writing and strengthens it when it is poor - a decided technology stack is the minimum - resolves several design documents into one or keeps them as declared sources, asks for the development method (Method Packs: chosen by the human, proposed by THINK only when asked, never defaulted) and cuts Epics and designs by it, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Bootstrap the governed context
 
 > **Speaking for GTT.** Every message this skill raises to the human — a
 > question, a confirmation, a proposal, a finding, a request for
 > authorization, a report — opens with `@gtt · <what this is>`
-> (e.g. `@gtt · Method Plan`). The marker says who is speaking; it is never a decision.
+> (e.g. `@gtt · Autonomy Profile`). The marker says who is speaking; it is never a decision.
 
 `gtt-domain/context/` ships as a template — angle-bracket placeholders and empty
 table rows, not real answers. This skill turns those placeholders into the
@@ -112,9 +112,9 @@ Once resolved, note the detected ADEs, the participating ADEs, the Primary, the 
 will install, and the ADEs this will exclude — this becomes part of the report after
 step 6. Then continue to step 1.
 
-### Method Plan
+### Autonomy Profile
 
-Before step 1, establish the project's Method Plan. It is the human's choice.
+Before step 1, establish the project's Autonomy Profile. It is the human's choice.
 
 1. Run `bash .gtt/scripts/gtt-project.sh profile get`. If it names a selected plan, state
    it and do not ask again. If it says `plan: not selected`, ask.
@@ -137,8 +137,8 @@ Before step 1, establish the project's Method Plan. It is the human's choice.
 
 ### Development method (Method Governance)
 
-Right after the Method Plan, establish how the solution will be developed. It is a
-different question from the Method Plan (how much work GTT does without asking) and
+Right after the Autonomy Profile, establish how the solution will be developed. It is a
+different question from the Autonomy Profile (how much work GTT does without asking) and
 from the THINK Depth (how deep THINK digs); never derive one from another. The
 method is the template THINK reasons with when it cuts Epics and writes their
 designs; the freeze ratifies it as the **Method Lock** and it is verified afterwards.
@@ -272,7 +272,7 @@ not a conversation.
    (complex, critical or uncertain systems: exhaustive assessment, architectural as well as
    stack alternatives, dependencies and risks, a deep iterative questionnaire). Record the
    answer in the *THINK Depth* block with who and when. Never infer it — not from the
-   project's size, not from the Method Plan (a different thing; the two are independent),
+   project's size, not from the Autonomy Profile (a different thing; the two are independent),
    not from a previous project. If the human does not choose, leave it empty: `STANDARD`
    applies as a fallback and you report it as *not selected*, never as a choice.
 
@@ -519,7 +519,7 @@ The accepted-decisions folder is writable in this same window: if
   Epic, with options where the source suggests them. Each answer is written in section 8 as `D-n`, with who and
   when, and closes its `[VACÍO]`.
 - **Check.** `bash .gtt/scripts/gtt-check-design.sh` must pass: eight sections, every listed source section
-  cited, every rule and flow in an example. This is the same in every Method Plan and at every THINK Depth.
+  cited, every rule and flow in an example. This is the same in every Autonomy Profile and at every THINK Depth.
   `bash .gtt/scripts/gtt-method.sh check` must hold too: no Epic cut by layer when the method forbids it, the
   skeleton first, every slice with its fields. It reports; it never corrects the backlog or a design for you.
 - **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1`, a `Context:` of
@@ -537,7 +537,7 @@ the work against; it does not stop the code from changing.
 
 Report, then point out three things.
 
-**Report** (from step 0): the Method Plan the human selected (or `not selected`), the development
+**Report** (from step 0): the Autonomy Profile the human selected (or `not selected`), the development
 method (the packs and who decided, or `OPEN` with its gap), detected ADEs,
 participating ADEs, the Primary ADE, files
 installed, ADEs explicitly excluded, and whether native support exists for each

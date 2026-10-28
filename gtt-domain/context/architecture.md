@@ -1,6 +1,6 @@
 # Architecture
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 The current architecture of this solution. Loaded on demand, not at session
 start — so it can be longer than `constraints.md`, but every section should

@@ -1,6 +1,6 @@
 # Proposals — staging area
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Agent-writable. This is the only governed place an agent may create files.
 

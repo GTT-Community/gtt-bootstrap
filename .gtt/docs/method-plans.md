@@ -1,8 +1,8 @@
-# GTT Bootstrap — Method Plans
+# GTT Bootstrap — Autonomy Profiles
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
-A **Method Plan** answers one question: *how much of the operational work do you
+A **Autonomy Profile** answers one question: *how much of the operational work do you
 delegate to GTT?* You choose an intention — Light, Medium, Hard or Team — and GTT
 derives the technical policies from it. You are never asked to configure an index
 policy, an identity policy or a validation policy one by one.
@@ -23,7 +23,7 @@ the disagreement is a defect to report.
   `QUICK`, `STANDARD` and `DEEP` — for how deep the design is assessed and explored
   during bootstrap. The depth is chosen separately, is never derived from the plan,
   and changes no gate. See *Assessing and strengthening an existing design* in
-  `readme-gtt.md`.
+  `.gtt/docs/guide.md`.
 
 ## What no plan changes
 
@@ -59,18 +59,18 @@ The Bootstrap asks. It does not choose for you, and it does not infer a plan fro
 the project, the ADE or a previous project.
 
 ```text
-Select GTT Method Plan
+Select GTT Autonomy Profile
 
-[1] Light Method
+[1] Light profile
     Maximum safe automation and the fewest interruptions, for one developer or a governed prototype.
 
-[2] Medium Method
+[2] Medium profile
     Automation with confirmation of relevant changes, for an individual project or a small team.
 
-[3] Hard Method
+[3] Hard profile
     Explicit human authorization of every governed operation, for production and critical systems.
 
-[4] Team Method
+[4] Team profile
     Collaborative governance: the Hard gates plus CI, actor traceability and shared team policy.
 ```
 
@@ -84,7 +84,7 @@ words, and the Bootstrap still has to ask.
 
 ## The four plans
 
-### Light Method
+### Light profile
 
 **For:** an individual developer, a personal project, a governed prototype, a POC or
 a spike — wherever the lowest operational load is wanted.
@@ -106,7 +106,7 @@ anything:**
 
 **Machine-enforced gates:** provenance advisory; warnings do not block freeze.
 
-### Medium Method
+### Medium profile
 
 **For:** normal development — features, integrations, internal services — by an
 individual or a small team that wants automation but prefers to confirm relevant
@@ -123,7 +123,7 @@ or after a large merge. CI is recommended.
 
 **Machine-enforced gates:** provenance advisory; warnings do not block freeze.
 
-### Hard Method
+### Hard profile
 
 **For:** production, critical or security-sensitive systems, high-consequence
 architecture, regulated work.
@@ -144,7 +144,7 @@ CI is recommended.
 **Machine-enforced gates:** provenance required; a source manifest required for
 freeze; every OPEN gap must carry `affects`; warnings block freeze.
 
-### Team Method
+### Team profile
 
 **For:** teams and collaborative projects — several people, or several ADEs,
 changing the same governed project.
@@ -244,7 +244,7 @@ continue correctly. Reaching an intermediate mechanical step is not a reason to 
 **GTT says when it is GTT speaking.** Every message the method raises in your ADE — a
 question, a confirmation or choice, the Initial Design Questionnaire, a proposal, a
 finding, a request for authorization, a report — opens with `@gtt · <what it is>`:
-`@gtt · Method Plan`, `@gtt · Initial Design Questionnaire`, `@gtt · Authorization
+`@gtt · Autonomy Profile`, `@gtt · Initial Design Questionnaire`, `@gtt · Authorization
 required`. The assistant's ordinary conversation carries no marker, so you can always
 tell the method from the assistant. The marker says who is speaking; it is never a
 decision or an approval.

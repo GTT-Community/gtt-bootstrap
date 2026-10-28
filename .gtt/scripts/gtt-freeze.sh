@@ -23,6 +23,21 @@ MARKER="gtt-domain/.frozen"
 CTX="gtt-domain/context"
 REQUIRED=(stack.md architecture.md solution-vision.md principles.md constraints.md glossary.md)
 HERE="$(cd "$(dirname "$0")" && pwd)"
+CANON_REF="> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
+CANON_RE='https://github\.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL(-v[0-9]+(\.[0-9]+)*)?\.md'
+
+# A frozen state must pass the same validation CI runs on it. Context written by hand often lacks the
+# canonical reference the markdown gate requires: add it (under the title) before the digest is taken,
+# and say so - the human sees every file it touched. Deterministic normalization, not content.
+added=()
+while IFS= read -r f; do
+  grep -qE "$CANON_RE" "$f" && continue
+  awk -v ref="$CANON_REF" 'NR==1 && /^# /{print; print ""; print ref; next} NR==1{print ref; print ""} {print}' "$f" > "$f.gtt-tmp" \
+    && mv "$f.gtt-tmp" "$f" && added+=("$f")
+done < <(find "$CTX" gtt-domain/adr -name '*.md' 2>/dev/null | sort)
+if [ "${#added[@]}" -gt 0 ]; then
+  echo "gtt-freeze: added the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
+fi
 
 DIGEST="$(bash "$HERE/gtt-observe.sh" digest)" || { echo "gtt-freeze: cannot compute the governed digest." >&2; exit 1; }
 
@@ -50,8 +65,13 @@ for f in "${REQUIRED[@]}"; do
     echo "gtt-freeze: $path has $lines non-empty lines - still effectively empty" >&2
     fail=1
   fi
-  if grep -qE 'TODO|PLACEHOLDER|REPLACE ME|<[a-z][^>]*>' "$path"; then
-    echo "gtt-freeze: $path still contains template placeholders" >&2
+  # `<...>` is a template placeholder, except as a path segment (src/slices/<slice>/ names a pattern).
+  # A `# ...` comment inside a fenced block (the format line of `gtt-boundaries`) is documentation, not content.
+  hits="$(awk '/^[[:space:]]*```/{fence=!fence; print NR":"$0; next} !(fence && /^[[:space:]]*#/){print NR":"$0}' "$path" \
+          | grep -E '^[0-9]+:.*(TODO|PLACEHOLDER|REPLACE ME|(^|[^/])<[a-z][^>]*>)' | head -5 || true)"
+  if [ -n "$hits" ]; then
+    echo "gtt-freeze: $path still contains template placeholders:" >&2
+    printf '%s\n' "$hits" | sed "s#^#  $path:#" >&2
     fail=1
   fi
 done
@@ -72,7 +92,7 @@ if [ -f "$HERE/gtt-check-provenance.sh" ]; then
 fi
 
 # Sources are immutable evidence, and an approved Epic is frozen with its design: complete,
-# approved, the same in every Method Plan. A freeze over a missing or draft design would
+# approved, the same in every Autonomy Profile. A freeze over a missing or draft design would
 # ratify an Epic nobody specified.
 if [ -f "$HERE/gtt-source.sh" ] && ! bash "$HERE/gtt-source.sh" verify >&2; then
   echo "gtt-freeze: a registered source was edited or removed (see above)" >&2
@@ -102,6 +122,20 @@ if ! bash "$HERE/gtt-observe.sh" boundaries >/dev/null; then
 fi
 if [ "$REFREEZE" -eq 1 ] && ! bash "$HERE/gtt-observe.sh" check --strict --for-freeze >&2; then
   echo "gtt-freeze: undecided observations remain in the governance backlog (see above)" >&2
+  fail=1
+fi
+
+# Artifact identity is derived state: register what was written since (a hand-written ADR, say), then
+# refuse what `gtt validate` would refuse, so a freeze never leaves a project that fails CI.
+bash "$HERE/gtt-index.sh" >/dev/null 2>&1 || true
+if [ -f "$HERE/gtt-check-integrity.sh" ] && ! out="$(bash "$HERE/gtt-check-integrity.sh" 2>&1)"; then
+  printf '%s\n' "$out" | grep -E 'FAIL' >&2
+  echo "gtt-freeze: artifact identity or references are broken (bash .gtt/scripts/gtt-check-integrity.sh)" >&2
+  fail=1
+fi
+if [ -f "$HERE/gtt-check-markdown.sh" ] && ! out="$(bash "$HERE/gtt-check-markdown.sh" 2>&1)"; then
+  printf '%s\n' "$out" | grep -E '^FAIL' | sed 's/$/  (missing the canonical reference line)/' >&2
+  echo "gtt-freeze: GTT Markdown files lack the canonical reference (bash .gtt/scripts/gtt-check-markdown.sh)" >&2
   fail=1
 fi
 
@@ -139,14 +173,33 @@ fi
 } > "$MARKER"
 
 if [ -d "gtt-domain/proposals/bootstrap" ]; then
+  # Retire the identity of what is removed (the questionnaire), so the artifact index does not report
+  # it as a file that went missing.
+  RETIRE=()
+  while IFS= read -r id; do
+    [ -n "$id" ] && RETIRE+=(--retire "$id")
+  done < <(bash "$HERE/gtt-run-python.sh" -c '
+import json, sys
+try:
+    entries = json.load(open(".gtt/index/artifacts.json", encoding="utf-8")).get("artifacts", [])
+except (OSError, ValueError):
+    sys.exit(0)
+for e in entries:
+    if e.get("path", "").startswith("gtt-domain/proposals/bootstrap/") and e.get("status", "active") == "active":
+        print(e["id"])
+' 2>/dev/null)
   rm -rf gtt-domain/proposals/bootstrap
+  if [ "${#RETIRE[@]}" -gt 0 ] && ! bash "$HERE/gtt-reconcile.sh" "${RETIRE[@]}" --apply >/dev/null 2>&1; then
+    echo "gtt-freeze: NOTE - could not retire the identity of the removed questionnaire; run bash .gtt/scripts/gtt-reconcile.sh"
+  fi
+  bash "$HERE/gtt-index.sh" >/dev/null 2>&1 || true
   echo "gtt-freeze: removed gtt-domain/proposals/bootstrap (superseded by ratified context)."
 fi
 
 if [ "$COMMIT" = "none" ]; then
   echo "gtt-freeze: NOTE - no Git commit to record as the baseline: path and dependency boundaries"
   echo "            cannot be observed until a freeze is taken on a committed repository."
-elif [ -n "$(git status --porcelain -- . ':!gtt-domain' 2>/dev/null)" ]; then
+elif [ -n "$(git status --porcelain -- . ':!gtt-domain' ':!.gtt/index' ':!.gtt/local' ':!.gtt/cli' 2>/dev/null)" ]; then
   echo "gtt-freeze: NOTE - there are uncommitted changes outside gtt-domain/. They will be observed"
   echo "            as changes since this freeze. Commit before freezing for a clean baseline."
 fi

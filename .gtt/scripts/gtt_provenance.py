@@ -80,12 +80,13 @@ def frozen():
     return os.path.isfile(FROZEN)
 
 
+FLOOR_ROWS = ("Language", "Runtime", "Datastore (primary)")
 DEFAULT_GATES = {"provenance_policy": "advisory", "warnings_block_freeze": False,
                  "sources_manifest_required_for_freeze": False, "open_gap_requires_affects": False}
 
 
 def profile_gates():
-    """(plan id, gates, selected) of the project's Method Plan. Without a selection in .gtt/methodology.json the
+    """(plan id, gates, selected) of the project's Autonomy Profile. Without a selection in .gtt/methodology.json the
     gates are those of `medium` (the behaviour before plans existed) and `selected` is False: a fallback, never a
     choice. What each plan MEANS is defined by the Bootstrap in .gtt/contract/profiles.json; this module only
     applies its machine-enforced gates."""
@@ -350,7 +351,12 @@ def run_checks(only=None, prefreeze=False):
         findings.add("FAIL", "gaps", STACK, f"{gid} is both RESOLVED and still OPEN/BLOCKING")
     classified = {g["topic"].lower() for g in gaps if g["kind"] in ("OPEN", "BLOCKING")}
     for layer, tech, _, number in stack_rows():
-        if not tech and layer.lower() not in classified:
+        if not tech and layer in FLOOR_ROWS:
+            # The minimum floor of a governable design (stack and datastore) is decided before any freeze,
+            # in every Autonomy Profile: a gap does not stand in for it. `none` is a decision.
+            findings.add("FAIL" if prefreeze else "WARN", "gaps", f"{STACK}:{number}",
+                         f"`{layer}` is part of the minimum floor and is empty: decide it before freezing (write `none` if there is none)")
+        elif not tech and layer.lower() not in classified:
             findings.add("WARN", "gaps", f"{STACK}:{number}",
                          f"`{layer}` is empty and not classified as an OPEN or BLOCKING gap")
 
@@ -431,8 +437,8 @@ def summary_lines(state):
     team = sum(1 for a in state["agreements"] if a["scope"] == "team")
     user = sum(1 for a in state["agreements"] if a["scope"] == "user")
     return [
-        (f"method plan: {state['profile']}" if state["plan_selected"]
-         else f"method plan: not selected ({state['profile']} gates apply until the human selects one)")
+        (f"autonomy profile: {state['profile']}" if state["plan_selected"]
+         else f"autonomy profile: not selected ({state['profile']} gates apply until the human selects one)")
         + f" (provenance gate: {state['gates']['provenance_policy']})",
         f"sources: {len(manifest['sources']) if manifest else 0} declared (provenance policy: {state['policy']})",
         f"gaps: OPEN {count('OPEN')}, BLOCKING {count('BLOCKING')}, RESOLVED {count('RESOLVED')}"

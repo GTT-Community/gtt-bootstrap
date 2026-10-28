@@ -2,12 +2,12 @@
 inclusion: always
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Speaking for GTT
 
 When a message is GTT's — a question the method needs answered, a
-confirmation or choice (ADE participation, Method Plan, Confirmation A or B),
+confirmation or choice (ADE participation, Autonomy Profile, Confirmation A or B),
 the Initial Design Questionnaire, a proposal, an observation, a
 finding, a request for authorization, a report — open it with:
 
@@ -15,7 +15,7 @@ finding, a request for authorization, a report — open it with:
 @gtt · <what this is>
 ```
 
-For example `@gtt · Initial Design Questionnaire`, `@gtt · Method Plan`,
+For example `@gtt · Initial Design Questionnaire`, `@gtt · Autonomy Profile`,
 `@gtt · Authorization required`, `@gtt · Report`.
 
 Ordinary work that GTT did not raise — explaining code, answering a question,

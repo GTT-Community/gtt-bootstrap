@@ -1,6 +1,6 @@
 # GTT Index
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Every file in this kit: what it is, who owns it, and when it enters an agent's
 context. If you read one file to orient yourself, read this one.
@@ -9,7 +9,7 @@ This is the canonical map of the GTT scaffold — the Engine (`.gtt/`, including
 documentation in `.gtt/docs/`), the governed domain (`gtt-domain/`), and the ADE overlay.
 
 Every path below is relative to the project root. See *Workspace hygiene* in
-`readme-gtt.md` for why the split is drawn where it is, and
+`.gtt/docs/guide.md` for why the split is drawn where it is, and
 `.gtt/scaffold/manifest.yaml` for its declarative definition.
 
 ---
@@ -24,7 +24,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 - [Proposals](../../gtt-domain/proposals/) — agent drafts awaiting review
 - [Installation](installation.md) — detailed setup procedures
 - [Usage](usage.md) — the normal development loop
-- [Method Plans](method-plans.md) — Light, Medium, Hard, Team: what each one delegates, asks and requires
+- [Autonomy Profiles](method-plans.md) — Light, Medium, Hard, Team: what each one delegates, asks and requires
 - [Method Packs](../methods/README.md) — the development methods GTT governs (Vertical Slice, DDD, Hexagonal...), the pack format and the Method Lock
 - [Docs](./) — human reference, methodology
 - [Scripts](../scripts/) — CI gates and freeze
@@ -48,7 +48,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 | Understand why GTT works this way | `.gtt/docs/docs.md` (Methodology) |
 | Set this up in my project | `readme-gtt.md` |
 | Run it on Kiro, Codex, Copilot, Cursor, OpenHands, or Antigravity | `.gtt/docs/docs.md` (Portability) |
-| See which adapter I get for my ADE | `.claude/skills/gtt-bootstrap/SKILL.md` (step 0) or `readme-gtt.md` → *ADE adapters* |
+| See which adapter I get for my ADE | `.claude/skills/gtt-bootstrap/SKILL.md` (step 0) or `.gtt/docs/guide.md` → *ADE adapters* |
 | Resume work / see current state, regardless of which ADE picks it up | `.gtt/scripts/gtt-status.sh` (regenerates `gtt-domain/session.md`) |
 | See what the work did against the frozen design | `bash .gtt/scripts/gtt-observe.sh backlog` |
 | Decide on an observation (yours, never an agent's) | `bash .gtt/scripts/gtt-observe.sh accept\|reject\|defer OBS-NNNN --by <you> --apply` |
@@ -172,7 +172,7 @@ source repository is the catalog, not an installed project.
 |---|---|
 | `gtt-domain/.frozen` | The regime marker and the governance baseline: when, by whom, the baseline commit, a digest of the governed state, and earlier freezes as history. Absent = pre-freeze, `gtt-domain/context/`/`gtt-domain/adr/` are agent-writable. Present = the design is the authority (the code stays free). Human-written only, via `gtt-freeze.sh`; versioned, not ignored |
 | `.gtt/scripts/gtt-freeze.sh` | Run by the Solution Designer to ratify: validates L0 has real content and well-formed boundaries, then writes `gtt-domain/.frozen` with the baseline. Run again after a promoted change it records a **new** baseline (refused while a `GOVERNANCE` observation is undecided); on an unchanged governed state it does nothing. There is no unfreeze |
-| `.gtt/scripts/gtt-observe.sh` / `.gtt/scripts/gtt_observe.py` | The observation engine (the Work plane): compares the project with the frozen governed state — Git, filesystem, dependency manifests, GTTGuard registry, freeze baseline — reads the `gtt-boundaries` block of `stack.md`, raises signals at `NOTICE` / `WARNING` / `GOVERNANCE` / `BLOCKING`, and keeps them, idempotently, in the governance backlog. `observe` is silent unless something is new; `check` fails only on `BLOCKING` or rejected observations (plus undecided `GOVERNANCE` where the Method Plan's gate says so); `accept` / `reject` / `defer` are the human's |
+| `.gtt/scripts/gtt-observe.sh` / `.gtt/scripts/gtt_observe.py` | The observation engine (the Work plane): compares the project with the frozen governed state — Git, filesystem, dependency manifests, GTTGuard registry, freeze baseline — reads the `gtt-boundaries` block of `stack.md`, raises signals at `NOTICE` / `WARNING` / `GOVERNANCE` / `BLOCKING`, and keeps them, idempotently, in the governance backlog. `observe` is silent unless something is new; `check` fails only on `BLOCKING` or rejected observations (plus undecided `GOVERNANCE` where the Autonomy Profile's gate says so); `accept` / `reject` / `defer` are the human's |
 | `gtt-domain/governance-backlog.json` | The governance backlog: every observation still open and the human decisions taken on them. Written only by `gtt-observe.sh`; a signal, never authority. Absent until something is observed |
 | `.gtt/scripts/gtt-git-hook.sh` | Installs (the human's choice) a Git pre-commit hook that runs `gtt-observe.sh check`: the first control every ADE shares (skippable with `--no-verify`, so CI stays the guaranteed layer). Never replaces a hook GTT did not write; `install --apply` and `remove --apply` are the human's |
 | `.claude/settings.json` | Denies writes to governance machinery unconditionally; registers all hooks below |
@@ -207,7 +207,7 @@ source repository is the catalog, not an installed project.
 | `gtt-domain/context/sources.md` *(optional, L0)* | Source manifest: declared sources with authority, precedence, version, status and the provenance policy |
 | `gtt-domain/working-agreements.md` *(optional)* / `.gtt/local/preferences.md` *(optional, local)* | Team working agreements / a person's own preferences: below governed context, never authority, never session memory |
 | `.gtt/scaffold/templates/gtt-sources-manifest.md`, `gtt-working-agreements.md` | Bootstrap-owned templates for the two files above, requested through `gtt-template.sh` |
-| `.gtt/scripts/gtt-contract.sh` / `.gtt/scripts/gtt_contract.py` | The CLI-facing Bootstrap 1.0 contract entry point: `release`, `negotiate` (COMPATIBLE or REFUSE, never modifies), `capabilities`, `operations`, `show`, `run <operation>` (declared operations only, typed arguments, no shell), `check`. See `.gtt/docs/bootstrap-contract.md` |
+| `.gtt/scripts/gtt-contract.sh` / `.gtt/scripts/gtt_contract.py` | The CLI-facing Bootstrap contract entry point (contract version 1): `release`, `negotiate` (COMPATIBLE or REFUSE, never modifies), `capabilities`, `operations`, `show`, `run <operation>` (declared operations only, typed arguments, no shell), `check`. See `.gtt/docs/bootstrap-contract.md` |
 | `.gtt/scripts/gtt-project.sh` / `.gtt/scripts/gtt_project.py` | Structured project contracts: `detect`, `think` (the THINK Depth recorded in the Design Assessment working copy; fails on a depth nobody decided or a verdict above `POOR` with the floor unmet — run by `gtt-validate.sh` while the copy exists), `status`, `session`, `validation`, `next-id` (next free ADR/Epic/Story id, never reusing a retired one), `interaction` (what the selected plan does without asking and what it asks for), `profile get/set`, `source select/list`, `export-policy`, `clean-plan`, `recovery snapshot/restore` (dry run until `--apply`; derived from the project, never authority) |
 | `.gtt/scripts/gtt-source.sh` | Design sources (operations `source.*`): `add` copies a file to `docs/sources/<ID>/v<N>/`, hashes and registers it; `adopt` registers one where it is; `verify` fails if a source was edited; `list`; `impact <ID>` shows the citations a new version affects. Dry run without `--apply` |
 | `.gtt/scripts/gtt-design.sh` | The design of each Epic (operations `design.*`): `scaffold EPIC-NNN` creates the draft, `check` proves it complete, `coverage` lists what no Story builds yet |
@@ -233,9 +233,9 @@ source repository is the catalog, not an installed project.
 | `gtt-domain/workflow.md` | The Git policy of the project: commits, convention, branches and tags, review thresholds. Human-owned; the ADE reads it and never edits it | you |
 | `.gtt/scripts/gtt-maintain.sh` | The deterministic work after any operation in one run: GTTGuard registry sync, index rebuild, `gtt-validate.sh`. Brief report by default, `--verbose` for the full output. Under Light it also reconciles unambiguous moves; under the other plans it stops with the command. Never touches governed context |
 | `.gtt/scripts/gtt-check-contract.sh` | Gate: the contracts are consistent, versioned and fail closed (no unfreeze operation, no shell in argv, implementations confined to `.gtt/scripts/`, invariants not relaxable) |
-| `.gtt/contract/*.json` | The Bootstrap 1.0 contracts as data: `release`, `capabilities`, `operations`, `profiles`, `export-policy`, `recovery`, `elicitation` |
-| `.gtt/methodology.json` / `.gtt/selected-sources.json` | Per-project state written only by `gtt-project.sh`: the Method Plan the human selected (absent = not selected) and language / initial sources selected (a selection is never an authority) |
-| `.gtt/tests/bootstrap-acceptance.py` | Bootstrap 1.0 acceptance tests: drives the contracts as a CLI would on disposable copies; never modifies the project |
+| `.gtt/contract/*.json` | The Bootstrap contracts as data (contract version 1): `release`, `capabilities`, `operations`, `profiles`, `export-policy`, `recovery`, `elicitation` |
+| `.gtt/methodology.json` / `.gtt/selected-sources.json` | Per-project state written only by `gtt-project.sh`: the Autonomy Profile the human selected (absent = not selected) and language / initial sources selected (a selection is never an authority) |
+| `.gtt/tests/bootstrap-acceptance.py` | Bootstrap acceptance tests: drives the contracts as a CLI would on disposable copies; never modifies the project |
 | `.gtt/scripts/gtt-status.sh` | Deterministic snapshot of current/governed/pending/proposed/observed/blocked/frozen state, derived from repository artifacts; runs `gtt-observe.sh observe` and regenerates `gtt-domain/session.md` |
 | `.gtt/scripts/gtt-validate.sh` | Runs every `gtt-check-*.sh` above in sequence and reports pass/fail/cannot-determine; validates every participating ADE against `.gtt/ade.json` when it exists; otherwise skips (not fails) the adapter check when this repo's own multi-adapter catalog state is detected |
 
@@ -245,11 +245,11 @@ source repository is the catalog, not an installed project.
 |---|---|
 | `.gtt/docs/index.md` | This file |
 | `readme-gtt.md` / `readme-gtt.es.md` | What GTT is, setup, tool support — the canonical entry point |
-| `.gtt/docs/bootstrap-contract.md` | The Bootstrap 1.0 contract for the CLI: what each contract is, where it lives, how it is invoked, honest limits |
+| `.gtt/docs/bootstrap-contract.md` | The Bootstrap contract for the CLI (contract version 1): what each contract is, where it lives, how it is invoked, honest limits |
 | `.gtt/docs/session-adapter-contract.md` | Draft contract every Session Memory ADE adapter must meet; GTT Core is ADE-agnostic, adapters are integration-specific |
 | `.gtt/docs/installation.md` / `.gtt/docs/installation.es.md` | Detailed installation procedures, manual and agent-assisted |
 | `.gtt/docs/usage.md` / `.gtt/docs/usage.es.md` | The normal development loop, change requests, freeze model |
-| `.gtt/docs/method-plans.md` / `.gtt/docs/method-plans.es.md` | The four Method Plans in plain words: what GTT does without asking, what the human is asked, what each plan requires, and where each rule is enforced |
+| `.gtt/docs/method-plans.md` / `.gtt/docs/method-plans.es.md` | The four Autonomy Profiles in plain words: what GTT does without asking, what the human is asked, what each plan requires, and where each rule is enforced |
 | `.gtt/docs/docs.md` | Governance model, layers, enforcement planes, Claude Code vs Kiro vs Codex vs Copilot, upgrading from GTT v1 |
 
 ---

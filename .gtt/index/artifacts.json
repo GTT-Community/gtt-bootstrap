@@ -220,6 +220,22 @@
       "aliases": []
     },
     {
+      "id": "DOC-GUIDE",
+      "type": "documentation",
+      "path": ".gtt/docs/guide.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-GUIDE-ES",
+      "type": "documentation",
+      "path": ".gtt/docs/guide.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-METHOD-PLANS",
       "type": "documentation",
       "path": ".gtt/docs/method-plans.md",
@@ -239,6 +255,14 @@
       "id": "DOC-OPERATIONS",
       "type": "documentation",
       "path": ".gtt/docs/agents/operations.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-RULES",
+      "type": "documentation",
+      "path": ".gtt/docs/agents/rules.md",
       "status": "active",
       "history": [],
       "aliases": []

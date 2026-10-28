@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "ade": "antigravity",
+  "display_name": "Google Antigravity",
+  "adapter_status": "installed",
+  "coverage": "N3",
+  "files": [
+    {
+      "role": "instruction",
+      "install_path": ".agents/rules/gtt.md"
+    },
+    {
+      "role": "instruction",
+      "install_path": ".agents/workflows/gtt.md"
+    }
+  ],
+  "registration": {
+    "file": ".agents/rules/gtt.md",
+    "event": "always_on",
+    "token": "gtt-session-context.sh"
+  },
+  "command": "bash .gtt/scripts/gtt-session-context.sh",
+  "output": "text",
+  "events": {
+    "startup": "unsupported",
+    "resume": "unsupported",
+    "clear": "unsupported",
+    "compact": "unsupported",
+    "fork": "unsupported"
+  },
+  "verification": {
+    "static": "checked by gtt-check-session-adapter.sh",
+    "runtime": "not-verified",
+    "notes": "INSTRUCTION-BASED (N3). Antigravity has no session-start event: an always-on workspace rule tells the agent to run the session service in its first answer, and /gtt runs it explicitly. Delivery depends on the agent obeying the rule; never observed in a real Antigravity session."
+  },
+  "ade_binary": "antigravity",
+  "limitations": [
+    "No session-start event: the next action reaches the agent only if it follows the always-on rule (or the user runs /gtt).",
+    "Whether the always-on rule is loaded in every Antigravity surface (IDE, CLI, desktop) was not observed.",
+    "Adapter files are governance machinery: a change goes through the Solution Designer."
+  ]
+}

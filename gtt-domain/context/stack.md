@@ -1,6 +1,6 @@
 # Stack & Architecture Map
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 > The single view of this solution. If it is not on this page, it is not part of
 > the architecture. Every approved architectural change updates this file in the
@@ -202,15 +202,17 @@ The implementation is free: once this design is frozen, the ADE works on its own
 nobody approves ordinary code changes. What stays under watch is the **boundary** of
 the design — the few places where a change in the code means the design itself may
 have changed. This block declares them, in a form a script can check. Observation
-(`.gtt/scripts/gtt-observe.sh`) reads it; without it, observation only knows the
-built-in boundaries (the governed context itself and `@GTTGuard` artifacts).
+(`.gtt/scripts/gtt-observe.sh`) reads it. Without a rule it still watches what this
+file already states: a datastore, framework, cache or broker section 1 does not name,
+code outside the modules of section 5, the governed context itself and `@GTTGuard`
+artifacts.
 
 One rule per line: `ID | kind | match | LEVEL | what it guards`.
 
 | Kind | `match` | A signal is raised when |
 |---|---|---|
 | `path` | a glob | a file matching it changed since the last freeze |
-| `dependency` | a manifest glob (`package.json`, `requirements*.txt`, `go.mod`, `pyproject.toml`, `Cargo.toml`) | the manifest gained a dependency it did not have at the last freeze |
+| `dependency` | a manifest glob (`package.json`, `requirements*.txt`, `go.mod`, `pyproject.toml`, `Cargo.toml`, `pom.xml`, `build.gradle(.kts)`, `*.csproj`) | the manifest gained a dependency it did not have at the last freeze |
 | `forbid` | `glob :: regex` | a file matching the glob contains the pattern |
 
 | Level | What happens |

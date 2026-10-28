@@ -3,7 +3,7 @@ name: gtt-retrieve
 description: Locate a concept, section, or artifact in the GTT/project Markdown through the technical index instead of scanning or loading whole documents, and reconcile artifacts that were moved or renamed. Use when the user asks where something is documented, which document is authoritative for a concept, what references or supersedes an artifact, or after files under .gtt/ or gtt-domain/ were moved/renamed/reorganized. Not for changing governed context — that goes through gtt-propose-change.
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Retrieve by identity, reconcile moves
 

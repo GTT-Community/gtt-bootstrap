@@ -3,7 +3,7 @@ name: gtt-drift-response
 description: Use when observation reports drift (an `@gtt · Observation` at WARNING or above, a GOVERNANCE or BLOCKING item in the governance backlog), when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Decides whether the governed design itself must change and, only then, produces a proposal under gtt-domain/proposals/ plus a promotion script the human runs. Never a reason to stop work that is not BLOCKING.
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # GTT drift response
 

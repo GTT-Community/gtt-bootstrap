@@ -1,6 +1,6 @@
 # Working inside a governed project
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Part of the agent contract. `AGENTS.md` points here, and what this file says binds exactly as if it
 were written there. A section named in *italics* that is not in this file is a section of
@@ -12,7 +12,7 @@ were written there. A section named in *italics* that is not in this file is a s
 
 Lower friction never means less governance. The policy is data -
 `.gtt/contract/profiles.json` -> `developer_experience` - and applies in every
-Method Plan; what is automatic, confirmed or proposed for each kind of operation is
+Autonomy Profile; what is automatic, confirmed or proposed for each kind of operation is
 the selected plan's own `plan.policy`.
 
 **Before asking the human anything**, check whether the answer already follows from
@@ -56,10 +56,10 @@ observation that is not blocking.
 **Say when it is GTT speaking.** Every message in which you speak on behalf of GTT
 opens with `@gtt · <what this is>`, so the human always knows it is the method and not
 the assistant's ordinary conversation: a question the method needs answered; a
-confirmation or a choice (ADE participation, Method Plan, Confirmation A, Confirmation
+confirmation or a choice (ADE participation, Autonomy Profile, Confirmation A, Confirmation
 B, an Epic's approval); an observation; the Initial Design Questionnaire, in every turn of the
 interview; a proposal, a finding, a conflict or a STOP; a request for authorization;
-a report. For example `@gtt · Method Plan`, `@gtt · Initial Design Questionnaire`,
+a report. For example `@gtt · Autonomy Profile`, `@gtt · Initial Design Questionnaire`,
 `@gtt · Authorization required`, `@gtt · Observation`, `@gtt · Report`. Ordinary work GTT did not raise -
 explaining code, answering a question, implementing a Story - carries no marker. The
 marker is data (`developer_experience.dialogue.marker`) and identifies who is
@@ -186,7 +186,7 @@ A Session Memory adapter is checked only for an ADE that participates: `adapter_
 describes the Bootstrap catalog, not the project, so the adapter of an ADE the human did
 not choose is skipped, never failed. Every ADE therefore validates on its own.
 It also runs `gtt-observe.sh check`, which fails only on what the governed state says must
-stop - a `BLOCKING` boundary, an observation the human rejected - and, where the Method Plan's
+stop - a `BLOCKING` boundary, an observation the human rejected - and, where the Autonomy Profile's
 gate says so, on a `GOVERNANCE` observation nobody decided. Drift that is not blocking never
 fails validation.
 `.gtt/scripts/gtt-status.sh` reports what is current, governed, pending,
@@ -246,3 +246,96 @@ artifacts, through `.gtt/scripts/gtt-change.sh` (operations `change.*`, `proposa
 - **One step back.** `gtt undo` puts back what the last promotion replaced, only while its files are as it
   left them. If that promotion recorded a freeze, a new freeze records the earlier state: there is still
   no unfreeze, and the history keeps every baseline. Anything older is a change request.
+
+## Observation
+
+During work GTT observes; it does not approve. `.gtt/scripts/gtt-observe.sh`
+compares the project with the frozen governed state - Git, the filesystem,
+dependency manifests, the GTTGuard registry, the freeze baseline: computed facts,
+never a model's opinion - and keeps every meaningful deviation in the governance
+backlog (`gtt-domain/governance-backlog.json`). The boundaries it watches are
+declared in the `gtt-boundaries` block of `gtt-domain/context/stack.md`, which the
+human ratifies at freeze.
+
+| Level | What it is | What you do |
+|---|---|---|
+| `NOTICE` | informational | nothing - it is recorded |
+| `WARNING` | meaningful drift | say it in one line and keep working |
+| `GOVERNANCE` | a boundary of the design was crossed | say it and keep working; if the design itself must change, draft the proposal |
+| `BLOCKING` | a state the governed design prohibits | stop the affected operation, fix it or tell the human; everything else continues |
+
+The levels are named, never numbered: L0 and L1 already mean the governed context
+and the ADRs.
+
+- **Continue unless blocking.** Only a `BLOCKING` observation, or one the human
+  explicitly rejected, interrupts work. An observation that is not blocking is
+  never a reason to stop, to ask for approval or to wait.
+- **Blocking is explicit.** Something stops only because the governed state says
+  so - a boundary declared `BLOCKING`, a rejected observation, a governed path, a
+  GTTGuard artifact - and the block names its rule. Never treat something as
+  blocking because it looks unusual.
+- **Run it; do not reason it.** Observe by running the script - after a meaningful
+  change, and it also runs whenever `gtt-status.sh` does - never by judging the
+  diff yourself. A fact a script can compute is not established by an agent's
+  opinion, and no agent supervises another agent as governance.
+- **Silent by default.** No signal, no message. Report an observation once, when
+  it is new.
+- **The decisions are the human's.** `gtt-observe.sh accept | reject | defer`,
+  `gtt-freeze.sh` and `gtt-git-hook.sh install | remove --apply` are run by the human,
+  never by an agent, and an agent never writes `gtt-domain/.frozen` or
+  `gtt-domain/governance-backlog.json` itself. Accepting an observation
+  ratifies nothing: if the governed design must change, that is still a change
+  request and a new freeze.
+- **A proposal is not an approval request.** Write one when something may need a
+  governance decision - never to ask permission for ordinary work.
+
+`.gtt/scripts/gtt-git-hook.sh install` (the human's choice) runs the same check
+before each commit: Git is the first control every ADE shares, whatever hooks an
+ADE has or lacks. It is not the guaranteed one - a local pre-commit hook is skipped
+with `git commit --no-verify`, which an agent never does while the hook is installed.
+The guaranteed layer is CI: `gtt-validate.sh` and `gtt-check-stack.sh` on the pull
+request, which also fail when the freeze marker was removed or its history rewritten.
+
+The architecture as data: `.gtt/contract/profiles.json` -> `two_planes`.
+
+## Backlog in detail
+
+**What keeps Stories honest is observation, not approval.** If the work behind a
+Story crosses a boundary of the frozen design - a new backbone technology, a
+changed contract - observation reports it whatever the Story said, and that is
+where governance enters (*The two planes*).
+
+**Work the human asks for directly needs no Epic first.** Do it, and record it
+under *General Development Work*, or as a Story if it is worth resuming. If
+defined Epics exist elsewhere (a requirements document, an issue tracker) but
+are missing from the backlog, report the gap. Never invent business Epics and
+present them as user-defined requirements: a proposed Epic stays `Proposed`
+until the human approves it.
+
+An Epic is `Completed` only when every one of its Stories is `Done` or
+`Cancelled`. `.gtt/scripts/gtt-check-backlog.sh` keeps the structure sound -
+unique ids, the status vocabulary, an Epic that is `Planned`, `In Progress` or
+`Completed` carries its `Goal` and its `Approved`, a `Completed` Epic has no
+open Story - and reports, without failing, a `Done` Story with no `Closed` and
+Stories being worked under an Epic that is still `Proposed`. It approves
+nothing; whether an Epic is real and current is a judgment for the `gtt-audit`
+skill.
+
+## Agent roles and the evidence boundary
+
+GTT distinguishes four responsibilities. No skill or script may collapse
+them into one:
+
+| Role | Does | Never does | This repo's mechanism |
+|---|---|---|---|
+| Grounding | Retrieves and exposes governed evidence faithfully | Decide architecture | `gtt-bootstrap`, `gtt-audit` reading `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/backlog.md` |
+| Reasoning | Analyzes evidence, drafts gtt-domain/proposals/ADRs | Authorize its own draft | `gtt-propose-change`, `gtt-adr`, `gtt-drift-response` |
+| Validation | Runs deterministic structural checks | Make an architectural judgment | `.gtt/scripts/gtt-check-*.sh`, `gtt-validate.sh` |
+| Observation | Computes what the work did against the frozen governed state and records it | Approve, decide or block without an explicit rule | `.gtt/scripts/gtt-observe.sh` |
+
+The chain is: Sources → Grounding → Evidence Dossier (governed context as
+read) → Reasoning → Proposal → Human Decision → Freeze. A reasoning step
+must never receive raw sources "for context" in a way that bypasses
+grounding — read `.gtt/docs/docs.md` → *Governance model* for the full
+rationale. Producing output, of any kind, never grants an agent decision
+authority.

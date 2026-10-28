@@ -1,6 +1,6 @@
 # Change Request
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 **This is the front door. To change anything governed — stack, architecture,
 principles, constraints, vision, product-level design intent, or an Epic in

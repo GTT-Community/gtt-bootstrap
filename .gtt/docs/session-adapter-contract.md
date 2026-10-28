@@ -1,6 +1,6 @@
 # GTT Session Memory — ADE Adapter Contract
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 **Status: Draft — not a decision.** A working specification. No ADR ratifies
 it and no Epic/Story in `gtt-domain/backlog.md` covers it yet. See *Governance*.
@@ -86,7 +86,7 @@ Core and the check contain no per-ADE code:
 | Field | Meaning |
 |---|---|
 | `ade`, `display_name` | Identifier and name |
-| `adapter_status` | `installed` (files at native paths) or `staged` (under `gtt-domain/proposals/`, awaiting promotion) |
+| `adapter_status` | `installed` (files at native paths) or `staged` (under `.gtt/session-adapters/staged/`, awaiting promotion) |
 | `coverage` | `N1` / `N2` / `N3` |
 | `files[]` | `{role, install_path, staged_path}` for each adapter file |
 | `registration` | `{file, event}` — the config file/event that runs the adapter |
@@ -133,5 +133,5 @@ Proposal → (Epic, if the scope changes) → ADR → Human decision → New fre
 ```
 
 Until then adapters other than the Claude Code one live **staged** under
-`gtt-domain/proposals/session-adapters/` and are promoted by a human running
-`gtt-domain/proposals/apply-session-adapters.sh`. Nothing here is ratified.
+`.gtt/session-adapters/staged/` (inside the engine, never among the project's proposals) and are tried by a
+human running `.gtt/scripts/gtt-adapter-promote.sh`. Nothing here is ratified.

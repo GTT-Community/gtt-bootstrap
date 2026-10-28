@@ -165,7 +165,7 @@ def check_files(m):
     if missing:
         item("FAIL", f"adapter files missing ({m['adapter_status']}): {', '.join(missing)}")
         return False
-    where = "native paths" if m["adapter_status"] == "installed" else "staged under gtt-domain/proposals/"
+    where = "native paths" if m["adapter_status"] == "installed" else "staged under .gtt/session-adapters/staged/"
     item("PASS", f"adapter files present ({len(m['files'])}, {where})")
     return True
 
@@ -175,6 +175,17 @@ def check_registration(m):
     cfg = next((f for f in m["files"] if f["install_path"] == reg["file"]), None)
     if cfg is None:
         item("FAIL", f"registration file {reg['file']} is not listed in files[]")
+        return
+    if m["coverage"] == "N3":
+        # Instruction-based: the "registration" is an always-loaded instruction file that names the service
+        # and declares how it is loaded (e.g. `trigger: always_on`). There is no hook configuration to parse.
+        text = read(effective(m, cfg))
+        if reg["token"] not in text or m["command"] not in text:
+            item("FAIL", f"{reg['file']} does not tell the agent to run '{m['command']}'")
+        elif reg["event"] not in text:
+            item("FAIL", f"{reg['file']} does not declare how it is loaded ('{reg['event']}')")
+        else:
+            item("PASS", f"instruction file {reg['file']} ({reg['event']}) tells the agent to run the service")
         return
     try:
         tree = json.loads(read(effective(m, cfg)))
@@ -205,7 +216,7 @@ def check_logic_and_silence(m):
         item("PASS", f"adapter references {SERVICE}")
 
     dup = []
-    for p in every:
+    for p in [effective(m, f) for f in m["files"] if f["role"] != "instruction"]:
         text = read(p)
         for pattern, why in DUPLICATED_LOGIC:
             if pattern == r"(?i)session\.md" and m["coverage"] == "N2":
@@ -300,7 +311,7 @@ def check_execution(m):
         problems = []
         if bad.returncode == 0:
             problems.append("exit 0 despite a broken service (failure swallowed)")
-        if bad.returncode == 2:
+        if bad.returncode == 2 and m["coverage"] != "N3":     # no hook runs it: the agent does, and reads stderr
             problems.append("exit 2 (blocks session start in some ADEs)")
         if not bad.stderr.strip():
             problems.append("nothing on stderr")

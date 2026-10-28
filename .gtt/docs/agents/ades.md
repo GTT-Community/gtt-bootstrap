@@ -1,6 +1,6 @@
 # ADE adapters and multi-ADE participation
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Part of the agent contract. `AGENTS.md` points here, and what this file says binds exactly as if it
 were written there. A section named in *italics* that is not in this file is a section of

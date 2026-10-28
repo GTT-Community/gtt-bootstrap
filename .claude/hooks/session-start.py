@@ -22,14 +22,9 @@ except ImportError:  # an Engine without the resolver: the PATH decides
     def bash_executable():
         return "bash"
 
-BANNER = (
-    "GTT SESSION MEMORY - operational-only.\n"
-    "NOT authority, NOT evidence, NOT a decision record, NOT a grounding source.\n"
-    "It only helps you resume work. Do not cite it as a basis for any decision; "
-    "gtt-domain/context/, gtt-domain/adr/ and gtt-domain/backlog.md always prevail over it. "
-    "Verify anything that matters against those.\n"
-    "----------------------------------------------------------------------\n"
-)
+# The service's own GTT-SESSION-CONTEXT header carries every non-authority marker; repeating them here
+# only spends the agent's context on every session.
+BANNER = ""
 
 
 def fail(message):

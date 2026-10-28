@@ -1,6 +1,6 @@
-# GTT Bootstrap 1.0 — the contract for the CLI
+# GTT Bootstrap — the contract for the CLI (contract version 1)
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 The Bootstrap owns **what GTT means and how GTT governs**. The CLI owns **how the Bootstrap is found, installed,
 selected, invoked, validated, updated, exported and recovered**. The two meet only at the contracts below:
@@ -9,7 +9,7 @@ branch names, never keeps its own ADE catalog, questionnaire, exclusion list or 
 runs an arbitrary shell string.
 
 ```text
-GTT Method -> GTT Bootstrap 1.0 -> versioned contracts / capabilities -> GTT CLI v1.0 -> ADE -> Human
+GTT Method -> GTT Bootstrap -> versioned contracts / capabilities -> GTT CLI -> ADE -> Human
 ```
 
 ## How a CLI uses it
@@ -37,11 +37,11 @@ version, a missing schema declaration or a missing required capability is a refu
 
 | Task section | Contract | Where | Invoked through |
 |---|---|---|---|
-| 2 Release identity | `bootstrap{id, version 1.7.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
+| 2 Release identity | `bootstrap{id, version 1.8.0, schema_version, channel}`, distinct from the scaffold layout version | `.gtt/contract/release.json`; scaffold version in `.gtt/scaffold/manifest.yaml` | `release` |
 | 3, 28 Compatibility | CLI min/max version, schema version, required CLI capabilities; a missing one refuses | `release.json` | `negotiate` |
 | 4 Capability registry | 18 capabilities, each with the operations that realise it | `capabilities.json` | `capabilities` |
 | 25, 26 Operation registry | logical op -> trusted implementation (under `.gtt/scripts/`), fixed argv, typed args, mutates?, human authority? | `operations.json` | `operations`, `run` |
-| 5–7 Method Plans (profiles) | Light / Medium / Hard / Team, selected by the human and never inferred (unselected: Medium gates as a fallback, reported as not selected); operating policy, semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
+| 5–7 Autonomy Profiles (profiles) | Light / Medium / Hard / Team, selected by the human and never inferred (unselected: Medium gates as a fallback, reported as not selected); operating policy, semantics, machine-enforced gates, non-relaxable invariants | `profiles.json`, state `.gtt/methodology.json` | `show profiles`, `methodology.profile.get/set` |
 | 8, 9, 10 ADE registry, participation, Primary | `id, name, detect, install, validate, owned_paths, handoff, invoke, version`; detected / participating / primary / excluded; set, validate, change Primary preserving secondaries | manifest `overlays:` + `.gtt/ade.json` | `show ade-registry`, `ade.*` |
 | 11, 12 Questionnaire | `scaffold.initial_design.questionnaire{template, output, version, contract_version}`; materialize | manifest `templates:` | `show initial-design`, `template.materialize` |
 | 13 Guided elicitation | nine directives, each tied to the questionnaire's own section | `elicitation.json` | `show elicitation` |
@@ -59,7 +59,7 @@ version, a missing schema declaration or a missing required capability is a refu
 | 29 Versioning | every consumed contract carries an integer version | `release.json` → `contracts` | `check` |
 | 30 Acceptance | tests that drive the contracts as a CLI would, on disposable copies | `.gtt/tests/bootstrap-acceptance.py` | `python .gtt/tests/bootstrap-acceptance.py` |
 
-## Method Plans (methodology profiles) — who decides what
+## Autonomy Profiles (methodology profiles) — who decides what
 
 The **human** selects the plan; the CLI records it (`methodology.profile.set profile=light|medium|hard|team
 [language=en|es]`); the Bootstrap defines the meaning. *Plan* is the human-facing word and *profile* the name the 1.0
@@ -103,7 +103,7 @@ renders them. The formats are `.gtt/methods/README.md`.
 | record the answer | `style=<ids>` or `style=help`; `start=<id>`, `start=direct` or `start=help`; a dry run, then `apply=true`. Exit 1 refuses an incompatible pair (say it, ask again) or a frozen project | `method.select` |
 | non-interactive | `gtt init --dev-method <ids\|help> --start <id\|direct\|help>`; without them nothing is recorded: the method is `OPEN`. Never pass the recommended packs as a default | — |
 | a frozen project | do not ask again: say that the method changes through a change request | `method.get` (`frozen: true`) |
-| `gtt dev-method` | show the method in force, its status, the ADR that locks it and its verification level; `gtt dev-method list` shows the packs with their short text. Read-only (`gtt method` is the Method Plan) | `method.get`, `method.list` |
+| `gtt dev-method` | show the method in force, its status, the ADR that locks it and its verification level; `gtt dev-method list` shows the packs with their short text. Read-only (`gtt autonomy` is the Autonomy Profile) | `method.get`, `method.list` |
 | `gtt check` | read the Method Lock and the rules; for each `dependency` rule turn its materialized rows (`module`, `must_not_depend_on`) into the configuration of the language's own tool through an adapter; without an adapter report `declared-only`; a violation is a conflict (rule, source file, forbidden dependency), never a correction | `method.lock`, `method.rules`, `method.check` |
 
 `method.check` is the freeze gate as data; `gtt-freeze.sh` runs it with `--pre-freeze`. The Bootstrap implements no

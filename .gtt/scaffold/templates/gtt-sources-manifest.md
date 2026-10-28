@@ -1,6 +1,6 @@
 # Source Manifest
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Declares the design sources a project treats as authorised, with an authority and an
 unambiguous precedence, so that which source wins is never decided by reading order,

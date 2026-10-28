@@ -1,6 +1,6 @@
 ---
 name: gtt
-description: Work inside a repository governed by GTT (Governance Throw Think). Use before changing architecture, the stack, governed context under gtt-domain/context/, an ADR, the backlog's Epics or Stories, or a GTTGuard-protected artifact; when bootstrapping GTT; when asked to process a change request; and before implementing a Story.
+description: Work inside a repository governed by GTT (Governance Through Thinking). Use before changing architecture, the stack, governed context under gtt-domain/context/, an ADR, the backlog's Epics or Stories, or a GTTGuard-protected artifact; when bootstrapping GTT; when asked to process a change request; and before implementing a Story.
 triggers:
   - gtt
   - gtt-domain
@@ -9,11 +9,11 @@ triggers:
   - ADR
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # GTT — OpenHands integration
 
-This repository is governed by **GTT (Governance Throw Think)**. The full agent
+This repository is governed by **GTT (Governance Through Thinking)**. The full agent
 contract is `AGENTS.md` at the repository root — OpenHands loads it into every
 conversation; this skill adds only what OpenHands needs beyond that. It is an
 integration surface, never a second copy of the methodology and never a source

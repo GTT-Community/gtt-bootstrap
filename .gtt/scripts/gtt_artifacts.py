@@ -129,6 +129,8 @@ def tracked_files():
     for base in (".gtt", "gtt-domain", ".claude", ".kiro", ".github/instructions"):
         for dirpath, dirnames, filenames in os.walk(base):
             dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__"))
+            if norm(dirpath) == ".gtt":
+                dirnames[:] = [d for d in dirnames if d != "local"]   # per-user state (backups, checkpoints): never kit
             for name in sorted(filenames):
                 if not name.lower().endswith(".md"):
                     continue

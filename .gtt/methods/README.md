@@ -1,6 +1,6 @@
 # Method Packs
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 The catalog of development methods GTT can govern - **Method Governance**: the human declares a method at
 setup, the freeze ratifies it as the **Method Lock**, and **Method Conformance** checks it afterwards.

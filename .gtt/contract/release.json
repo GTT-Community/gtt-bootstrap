@@ -3,7 +3,7 @@
   "notice": "Bootstrap release descriptor: the authoritative machine-readable identity, compatibility and contract versions of this GTT Bootstrap. Data only. The CLI reads it through .gtt/scripts/gtt-contract.sh; it never parses README text or branch names.",
   "bootstrap": {
     "id": "gtt-bootstrap",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "schema_version": 1,
     "channel": "stable"
   },
@@ -11,7 +11,7 @@
     "note": "scaffold_version is a different thing: the layout version, read from .gtt/scaffold/manifest.yaml (scaffold.version).",
     "manifest": ".gtt/scaffold/manifest.yaml"
   },
-  "canon": "GTT-CANONICAL-v2.1",
+  "canon": "GTT-CANONICAL-v3.0",
   "compatibility": {
     "cli": {
       "min_version": "1.0.0",

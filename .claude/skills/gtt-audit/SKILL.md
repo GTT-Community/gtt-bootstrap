@@ -3,7 +3,7 @@ name: gtt-audit
 description: Audit whether the governed context under gtt-domain/context/ still matches the actual codebase, and whether gtt-domain/backlog.md is reconciled with defined Epics. Use when the user asks to check context freshness, verify the docs are still accurate, review architectural drift, reconcile the backlog, or run a GTT audit — typically before a release, after a large merge, or when onboarding to an unfamiliar repo. The judgment counterpart of observation: the engine (gtt-observe.sh) computes what crossed a declared boundary; this audit judges what it means and what no boundary covers.
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Audit context freshness
 

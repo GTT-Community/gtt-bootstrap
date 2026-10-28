@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # GTT - PROMOTION SCRIPT (human execution required)
 #
-# Status: Draft - not a decision. Prepared by an agent; never run by one.
+# The maintainer's tool to try a staged adapter; never run by an agent.
 # Running it does NOT ratify anything: adopting an ADE adapter changes the
 # adapter matrix (AGENTS.md, gtt-check-adapter.sh, the gtt-bootstrap skill) and
 # needs Proposal -> (Epic, if the scope changes) -> ADR -> human decision -> new freeze. This only copies
@@ -16,11 +16,11 @@
 # copied and restores the declarations.
 #
 # Usage (from the project root):
-#   bash gtt-domain/proposals/apply-session-adapters.sh <codex|copilot|kiro>...
+#   bash .gtt/scripts/gtt-adapter-promote.sh <codex|copilot|kiro>...
 
 set -euo pipefail
 
-[ "$#" -ge 1 ] || { echo "usage: apply-session-adapters.sh <codex|copilot|kiro>..." >&2; exit 2; }
+[ "$#" -ge 1 ] || { echo "usage: gtt-adapter-promote.sh <codex|copilot|kiro>..." >&2; exit 2; }
 for ade in "$@"; do
   case "$ade" in codex|copilot|kiro) ;; *) echo "unknown adapter '$ade' (claude is already installed)" >&2; exit 2 ;; esac
   [ -f ".gtt/session-adapters/$ade.json" ] || { echo "run from the project root: .gtt/session-adapters/$ade.json not found" >&2; exit 2; }
@@ -28,7 +28,7 @@ for ade in "$@"; do
     || { echo "$ade is not staged (already installed?)" >&2; exit 2; }
 done
 
-STAGE_ROOT="gtt-domain/proposals/session-adapters"
+STAGE_ROOT=".gtt/session-adapters/staged"
 COPIED=()
 FLIPPED=()
 

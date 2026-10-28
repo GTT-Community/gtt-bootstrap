@@ -1,6 +1,6 @@
 # Working Agreements
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 How this team prefers to work. Versioned and reviewed like any other file, but **below governed
 context**: a working agreement never overrides a governed decision, an ADR or a constraint, and

@@ -56,7 +56,7 @@ ITEM = re.compile(r"^\s*[-*]\s+\*\*([RFIED])-(\d+)\*\*(.*)$")
 CITE = re.compile(r"\[FUENTE:\s*([^\]]+)\]")
 VACIO = re.compile(r"\[VAC[ÍI]O(?::\s*([^\]]*))?\]")
 PLACEHOLDER = re.compile(r"<[^<>\n]{2,}>")
-CANON = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md"
+CANON = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
 
 
 def read(path):

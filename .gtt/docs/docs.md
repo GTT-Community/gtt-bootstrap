@@ -1,6 +1,6 @@
 # GTT — Reference Docs
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 This document is for humans. It is deliberately outside the agent's context
 window: an agent does not need to understand GTT to comply with it, and every
@@ -286,9 +286,14 @@ B-004 | forbid     | src/domain/** :: import .*infrastructure  | BLOCKING   | De
 `path` fires when a matching file changed since the freeze; `dependency` when
 a manifest gained a dependency it did not have at the freeze (so "the ADE
 decided to bring in Kafka" surfaces as `package.json#kafkajs`, whatever the
-Story said); `forbid` when a matching file contains a pattern. Two boundaries
-are built in and need no rule: the governed context itself moving
-(`GTT-GOVERNED`) and a `@GTTGuard` artifact changing (`GTT-PROTECTED`).
+Story said); `forbid` when a matching file contains a pattern. Four boundaries
+are built in and need no rule, because the frozen design already states them: the
+governed context changed outside the change flow (`GTT-GOVERNED`, BLOCKING until
+reverted or re-frozen - a promotion re-freezes by itself), a `@GTTGuard` artifact
+changing (`GTT-PROTECTED`), a new backbone dependency - datastore, cache, framework,
+messaging - that *Stack at a glance* does not declare (`GTT-STACK`), and new code in
+the code root outside every module of section 5 (`GTT-MODULES`). A `forbid` rule
+declared BLOCKING is also refused before the write, by content, in hook-capable ADEs.
 Because the block lives in governed context, freezing it is what ratifies
 each rule - and that ratification is the only thing that lets observation
 stop anything.
@@ -363,7 +368,7 @@ human installs (`gtt-template.sh materialize ci-github-actions --apply`), never
 an agent. And the job is a **required status check** under branch protection:
 a failing job that is not required blocks no merge.
 
-Under a Method Plan whose gate `governance_observation_fails_check` is true
+Under a Autonomy Profile whose gate `governance_observation_fails_check` is true
 (Hard, Team) an undecided `GOVERNANCE` observation fails `check` as well;
 under the others only `BLOCKING` and rejected observations do.
 
@@ -781,7 +786,7 @@ exists to prevent:
 | Artifact identity, integrity & technical index (`.gtt/index/`) | IMPLEMENTED | Canon v2.1 capability; JSON manifest/index, `[[ID]]` reference syntax, and the reconcile heuristics are this repo's choices. The index is derived, never authoritative |
 | Working preferences (separate from session state) | IMPLEMENTED | Team file and local user file, both below governed context; `gtt-check-provenance.sh` rejects one that tries to override it. Not runtime-verified outside the rehearsal |
 | Provenance, OPEN/BLOCKING gaps, source manifest | IMPLEMENTED | One gate (`gtt-check-provenance.sh`), the gap register in `stack.md`, `gtt-domain/context/sources.md`; wired into `gtt-validate.sh`, `gtt-freeze.sh`, `gtt-status.sh` and `gtt-query.sh --governance`. Optional per project; rehearsed, not run on an installed project |
-| Bootstrap 1.0 CLI contracts (`.gtt/contract/`, `gtt-contract.sh`, `gtt-project.sh`) | IMPLEMENTED | Release identity, compatibility negotiation, capability and operation registries, Method Plans (methodology profiles), export policy, recovery, structured status/session/validation; see `.gtt/docs/bootstrap-contract.md`. Rehearsed on disposable copies by `.gtt/tests/bootstrap-acceptance.py`; not run against a real CLI, on Linux/macOS or on an installed project |
+| Bootstrap CLI contracts (contract version 1) (`.gtt/contract/`, `gtt-contract.sh`, `gtt-project.sh`) | IMPLEMENTED | Release identity, compatibility negotiation, capability and operation registries, Autonomy Profiles (methodology profiles), export policy, recovery, structured status/session/validation; see `.gtt/docs/bootstrap-contract.md`. Rehearsed on disposable copies by `.gtt/tests/bootstrap-acceptance.py`; not run against a real CLI, on Linux/macOS or on an installed project |
 | RAG/vector-backed grounding | NOT IMPLEMENTED | Not required by the Canon or this repo's directives; would need its own proposal if ever needed |
 
 ### Operational boundary

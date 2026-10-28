@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # GTT - Markdown canonical-reference gate.
 #
-# Every .md file in the GTT kit must contain, at the top, the exact
-# canonical reference:
-#
-#   https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+# Every .md file in the GTT kit must contain, at the top, a canonical
+# reference: the current generation (https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md),
+# an earlier generation (GTT-CANONICAL-v2.1.md - projects frozen before 3.0 keep it),
+# or the stable pointer (GTT-CANONICAL.md).
 #
 # Deterministic, read-only: reports every file checked and its result,
 # never modifies anything. Scope is exactly the GTT kit - the portable
@@ -25,7 +25,7 @@
 
 set -uo pipefail
 
-URL="https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md"
+URL_RE='https://github\.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL(-v[0-9]+(\.[0-9]+)*)?\.md'
 FAIL=0
 
 files=()
@@ -34,7 +34,7 @@ for f in AGENTS.md readme-gtt.md readme-gtt.es.md; do
 done
 while IFS= read -r f; do
   files+=("$f")
-done < <(find .gtt gtt-domain -name "*.md" ! -name session.md 2>/dev/null | sort)
+done < <(find .gtt gtt-domain -path .gtt/local -prune -o -name "*.md" ! -name session.md -print 2>/dev/null | sort)   # .gtt/local is per-user state, never kit
 while IFS= read -r f; do
   files+=("$f")
 done < <({ find .claude .kiro -name "*.md" 2>/dev/null; find .github/instructions -name "gtt*.md" 2>/dev/null; } | sort)
@@ -43,7 +43,7 @@ echo "GTT Markdown Check"
 echo
 
 for f in "${files[@]}"; do
-  if grep -qF "$URL" "$f" 2>/dev/null; then
+  if grep -qE "$URL_RE" "$f" 2>/dev/null; then
     echo "PASS  $f"
   else
     echo "FAIL  $f"

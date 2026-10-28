@@ -1,6 +1,6 @@
 # GTT Bootstrap — Installation Guide
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 This document contains the detailed installation procedures for GTT Bootstrap.
 
@@ -90,7 +90,7 @@ The resulting workspace must contain:
 
 The Engine lives in `.gtt/` (its documentation, including this file, in
 `.gtt/docs/`) and the governed domain in `gtt-domain/` — see *Workspace hygiene* in
-`readme-gtt.md`. Each artifact is generated directly where the scaffold
+`.gtt/docs/guide.md`. Each artifact is generated directly where the scaffold
 (`.gtt/scaffold/manifest.yaml`) places it, never elsewhere and moved afterward.
 Both directory names are namespaced, so they do not collide with a project's own `docs/`, `context/` or `adr/`:
 if the project already has a `.gtt/` or a `gtt-domain/`, stop and report the conflict instead of merging.

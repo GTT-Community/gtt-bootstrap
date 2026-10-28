@@ -4,7 +4,7 @@ description: GTT - implementation work (L3) stays aligned with governed context 
 globs: "src/**/*, lib/**/*, tests/**/*"
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Implementation work (L3)
 

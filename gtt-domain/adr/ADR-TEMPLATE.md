@@ -1,6 +1,6 @@
 # ADR-NNN — <Title>
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 - Status: <Proposed | Accepted | Superseded>
 - Date: YYYY-MM-DD

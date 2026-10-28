@@ -1,6 +1,6 @@
 # Solution design of an Epic (template)
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Owned by the GTT Bootstrap. `bash .gtt/scripts/gtt-design.sh scaffold EPIC-NNN --apply` materializes
 everything below the line into `gtt-domain/context/design/EPIC-NNN.md`. The design is the complete
@@ -24,7 +24,7 @@ flow appears in at least one example, and a flow includes its error path.
 
 # EPIC-NNN — <title> · Solution design
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 **Epic:** gtt-domain/backlog.md → EPIC-NNN · **Status:** Draft
 **Follows:** <architecture.md#section · ADR-NNN>

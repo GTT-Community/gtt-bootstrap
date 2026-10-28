@@ -1,6 +1,6 @@
 # Bootstrapping GTT into a project
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Part of the agent contract. `AGENTS.md` points here, and what this file says binds exactly as if it
 were written there. A section named in *italics* that is not in this file is a section of
@@ -216,7 +216,7 @@ During initial bootstrap:
 11. Ask the user to review.
 12. Freeze only after explicit confirmation.
 
-Before step 4, have the human select the Method Plan (see *Method Plans*): ask, never infer.
+Before step 4, have the human select the Autonomy Profile (see *Autonomy Profiles*): ask, never infer.
 Right after it, have the human answer the development method (see *Development method*): two
 questions, the options of the Method Packs, never a default.
 
@@ -234,7 +234,7 @@ After the six context files are populated, write the design of every `Proposed` 
 section of the sources that belongs to the Epic and carry its content over in full, a `[FUENTE]` on each line.
 What the sources do not define is a `[VACÍO]`: ask the human under `@gtt · Design EPIC-NNN`, at most five
 questions a turn, grouped by Epic, with options where the source suggests them; each answer goes to section 8 as
-`D-n` and closes its `[VACÍO]`. The design is complete in every Method Plan and at every THINK Depth: the depth
+`D-n` and closes its `[VACÍO]`. The design is complete in every Autonomy Profile and at every THINK Depth: the depth
 changes how much is analysed, never which sections exist. The human approves the Epic and its design together
 (`bash .gtt/scripts/gtt-approve.sh EPIC-NNN`); you never do.
 
@@ -250,9 +250,9 @@ direction the architecture forbids. Each rule points at the decision behind it, 
 confirms them with the rest of the context (Confirmation B), and `BLOCKING` is the exception,
 never the default: propose it only where the source itself prohibits something.
 
-## Method Plans
+## Autonomy Profiles
 
-A Method Plan is the human's answer to one question: how much operational work is
+A Autonomy Profile is the human's answer to one question: how much operational work is
 delegated to GTT. There are four - **Light**, **Medium**, **Hard**, **Team** - and
 `.gtt/contract/profiles.json` is the single definition of what each one means;
 `.gtt/docs/method-plans.md` renders it in plain words. A plan is an operating and
@@ -355,7 +355,7 @@ it and decides.
   and it is recorded with who and when - in the assessment, or in the questionnaire's own
   *THINK Depth* block when there is no design document; unselected is a state, `STANDARD`
   applies as a fallback and is never reported as a choice. **Depth is not governance and
-  is not the Method Plan** (the two are independent and chosen separately): it changes how
+  is not the Autonomy Profile** (the two are independent and chosen separately): it changes how
   far THINK digs, never which rule it may skip. At every depth the floor is assessed line
   by line, an area not assessed is written as such and never as `SOLID`, and the evidence
   boundary, the provenance tags, human decision and freeze are unchanged.

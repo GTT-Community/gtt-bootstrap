@@ -1,12 +1,12 @@
 {
   "schema": 1,
   "contract_version": 4,
-  "notice": "GTT Method Plans (methodology profiles). The human SELECTS a plan; the CLI records it (gtt-project.sh profile set); what Light, Medium, Hard and Team MEAN is defined here, by the Bootstrap, and nowhere else. A plan is an operating and collaboration profile - how much deterministic work the human delegates to GTT - never a quality level. Each rule says where it is enforced: `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane); `plan.policy` is declared here and executed by the CLI (the Bootstrap does not re-implement it). No plan weakens an invariant. Human-readable rendering: .gtt/docs/method-plans.md.",
+  "notice": "GTT Autonomy Profiles (methodology profiles). The human SELECTS a plan; the CLI records it (gtt-project.sh profile set); what Light, Medium, Hard and Team MEAN is defined here, by the Bootstrap, and nowhere else. A plan is an operating and collaboration profile - how much deterministic work the human delegates to GTT - never a quality level. Each rule says where it is enforced: `gates` are machine-enforced by the deterministic checks; `semantics` and `relaxes` are consumed by agents through the bootstrap skill and AGENTS.md (instruction plane); `plan.policy` is declared here and executed by the CLI (the Bootstrap does not re-implement it). No plan weakens an invariant. Human-readable rendering: .gtt/docs/method-plans.md.",
   "supported": [
-    { "id": "light", "label": "Light Method" },
-    { "id": "medium", "label": "Medium Method" },
-    { "id": "hard", "label": "Hard Method" },
-    { "id": "team", "label": "Team Method" }
+    { "id": "light", "label": "Light" },
+    { "id": "medium", "label": "Medium" },
+    { "id": "hard", "label": "Hard" },
+    { "id": "team", "label": "Team" }
   ],
   "default": "medium",
   "selection": {
@@ -54,7 +54,7 @@
     "details_on_demand": true,
     "decision_rule": {
       "statement": "Before asking the human anything, determine whether the answer already follows objectively from the sources below. If it does, act, validate the result and continue. If it does not, name the decision, explain it briefly and ask once.",
-      "resolve_from": ["governed context", "the selected Method Plan", "project policies and working agreements", "the actual state of the project", "deterministic validation rules"],
+      "resolve_from": ["governed context", "the selected Autonomy Profile", "project policies and working agreements", "the actual state of the project", "deterministic validation rules"],
       "never_ask": ["whether to find another id when one is occupied", "whether to update references the plan makes automatic", "whether to rebuild the index", "whether to validate", "whether to continue to the next planned task after a successful step", "for a policy the plan or a working agreement already defines"]
     },
     "automatic_operations": [
@@ -81,8 +81,8 @@
       "marker": "@gtt",
       "statement": "Every message in which an agent or a CLI speaks on behalf of GTT opens with the marker, followed by what the message is, so the human always knows that it is the method speaking and not the assistant's ordinary conversation.",
       "format": "@gtt · <what this is>",
-      "applies_to": ["a question the method needs answered", "a confirmation or a choice (ADE participation, Method Plan, Confirmation A, Confirmation B, an Epic's approval)", "an observation (a signal GTT derived from the project; work continues unless it says STOP)", "the Initial Design Questionnaire, in every turn of the interview", "a proposal, a finding, a conflict or a STOP", "a request for authorization, with its command", "a report"],
-      "examples": ["@gtt · Initial Design Questionnaire", "@gtt · Method Plan", "@gtt · Confirmation B", "@gtt · Observation", "@gtt · Authorization required", "@gtt · Report"],
+      "applies_to": ["a question the method needs answered", "a confirmation or a choice (ADE participation, Autonomy Profile, Confirmation A, Confirmation B, an Epic's approval)", "an observation (a signal GTT derived from the project; work continues unless it says STOP)", "the Initial Design Questionnaire, in every turn of the interview", "a proposal, a finding, a conflict or a STOP", "a request for authorization, with its command", "a report"],
+      "examples": ["@gtt · Initial Design Questionnaire", "@gtt · Autonomy Profile", "@gtt · Confirmation B", "@gtt · Observation", "@gtt · Authorization required", "@gtt · Report"],
       "not_for": "Ordinary work that GTT did not raise: explaining code, answering a question, implementing a Story.",
       "authority": "none. The marker identifies who is speaking; it never makes a message a decision, an approval or evidence."
     },
@@ -160,7 +160,7 @@
     { "id": "GTT-AR-09", "statement": "Nothing said in a conversation - this ADE's or another's - is project authority. An ADE's resume restores the conversation; the repository restores the project.", "enforcement": "instruction:precedence+test:the session state is not a grounding source", "relaxable": false },
     { "id": "GTT-AR-10", "same_as": "human-decision-authority", "enforcement": "hook+script+instruction", "relaxable": false },
     { "id": "sources-immutable", "statement": "A registered source is evidence and is never edited: it is copied, versioned and hashed, and a new version is added next to the old one.", "enforcement": "hook:docs/sources/+check:gtt-source.sh verify+script:gtt-freeze.sh", "relaxable": false },
-    { "id": "design-per-epic", "statement": "Every Epic has a complete design - its specification, carried over from the sources and cited - approved by the human together with the Epic. It is mandatory in every Method Plan and at every THINK Depth, which change how much is analysed and never what is written.", "enforcement": "check:gtt-check-design.sh+script:gtt-freeze.sh+script:gtt-approve.sh", "relaxable": false },
+    { "id": "design-per-epic", "statement": "Every Epic has a complete design - its specification, carried over from the sources and cited - approved by the human together with the Epic. It is mandatory in every Autonomy Profile and at every THINK Depth, which change how much is analysed and never what is written.", "enforcement": "check:gtt-check-design.sh+script:gtt-freeze.sh+script:gtt-approve.sh", "relaxable": false },
     { "id": "traceability", "statement": "A Story cites the design of its Epic and the design cites the source; every rule, flow and interface of a design is built by at least one Story before its Epic closes.", "enforcement": "check:gtt-check-backlog.sh+check:gtt-check-design.sh+gate:gtt-check-provenance.sh#tags", "relaxable": false },
     { "id": "governance-levels", "statement": "Three levels of control. Architecture changes only through an ADR; an ADR is for architecture only. Specification - each Epic's design - is governed lightly: staged, promoted by the human with one command and recorded as CHANGE in the map change log. Work - Stories, minor details, code - has no human control.", "enforcement": "script:gtt-promote.sh+instruction", "relaxable": false },
     { "id": "backlog-cites-never-decides", "statement": "The backlog cites the design and never decides: a Story names the parts of the design it builds and takes its examples as acceptance criteria; what the design lacks is a gap to ask about, never a decision written in a Story.", "enforcement": "check:gtt-check-backlog.sh+instruction", "relaxable": false }
@@ -168,7 +168,7 @@
   "profiles": {
     "light": {
       "plan": {
-        "label": "Light Method",
+        "label": "Light",
         "summary": "Maximum safe automation and the fewest interruptions, for one developer or a governed prototype.",
         "delegates": "Every deterministic operation and every relevant change that is safe. You are asked only for governed decisions and destructive operations.",
         "policy_enforcement": "cli",
@@ -201,7 +201,7 @@
     },
     "medium": {
       "plan": {
-        "label": "Medium Method",
+        "label": "Medium",
         "summary": "Automation with confirmation of relevant changes, for an individual project or a small team.",
         "delegates": "Every deterministic operation. You confirm relevant changes before they are applied, as well as governed decisions and destructive operations.",
         "policy_enforcement": "cli",
@@ -229,7 +229,7 @@
     },
     "hard": {
       "plan": {
-        "label": "Hard Method",
+        "label": "Hard",
         "summary": "Explicit human authorization of every governed operation, for production and critical systems.",
         "delegates": "Derived state only (index, validation). Ids and relevant changes are proposed and wait for your confirmation. Hard is explicit control, not manual work.",
         "policy_enforcement": "cli",
@@ -257,7 +257,7 @@
     },
     "team": {
       "plan": {
-        "label": "Team Method",
+        "label": "Team",
         "summary": "Collaborative governance: the Hard gates plus CI, actor traceability and shared team policy.",
         "delegates": "What the team declares in gtt-domain/working-agreements.md. Until the team declares it, ids and relevant changes are proposed and wait for confirmation, as in Hard.",
         "maturity": "baseline",

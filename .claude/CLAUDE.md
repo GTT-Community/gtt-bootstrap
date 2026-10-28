@@ -1,4 +1,4 @@
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 @../AGENTS.md
 
@@ -45,7 +45,7 @@ the Solution Designer to move it into place.
 When you speak on behalf of GTT — a question the method needs answered, a
 confirmation or choice, the Initial Design Questionnaire, a proposal, a
 finding, a request for authorization, a report — open the message with
-`@gtt · <what this is>` (for example `@gtt · Method Plan`,
+`@gtt · <what this is>` (for example `@gtt · Autonomy Profile`,
 `@gtt · Initial Design Questionnaire`, `@gtt · Report`). Ordinary work GTT
 did not raise carries no marker. The marker says who is speaking; it is
 never a decision, an approval or evidence. See `AGENTS.md` → *Working

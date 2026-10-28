@@ -3,11 +3,11 @@ trigger: always_on
 description: GTT governance - the agent contract, the governed paths and how to speak for the method
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # GTT — Antigravity integration
 
-This repository is governed by **GTT (Governance Throw Think)**. The full
+This repository is governed by **GTT (Governance Through Thinking)**. The full
 agent contract is `AGENTS.md` at the repository root. This rule adds only what
 Antigravity needs beyond that. It is an integration surface, never a second
 copy of the methodology and never a source of authority.
@@ -85,7 +85,7 @@ the human runs it.
 When a message is GTT's — a question the method needs answered, a confirmation
 or choice, the Initial Design Questionnaire, the Design Assessment, a
 proposal, a finding, a request for authorization, a report — open it with
-`@gtt · <what this is>` (`@gtt · Method Plan`, `@gtt · Report`). Ordinary work
+`@gtt · <what this is>` (`@gtt · Autonomy Profile`, `@gtt · Report`). Ordinary work
 carries no marker, and the marker is never a decision or an approval.
 
 ## Git and workflow

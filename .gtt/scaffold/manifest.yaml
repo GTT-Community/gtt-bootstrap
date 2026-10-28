@@ -1,6 +1,6 @@
 # GTT Canonical Scaffold - declarative definition.
 #
-# Canonical reference: https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+# Canonical reference: https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 #
 # DATA ONLY. No logic lives here and none may be added: the behaviour of each
 # component belongs to the Engine (.gtt/scripts/), never to this file. It states
@@ -29,7 +29,7 @@
 scaffold:
   id: gtt-canonical-scaffold
   version: 2                      # scaffold layout version - NOT the GTT version
-  canon: GTT-CANONICAL-v2.1
+  canon: GTT-CANONICAL-v3.0
 
 layers:
   engine: .gtt/                   # the GTT implementation and GTT's own documentation; holds no project-governed state
@@ -50,11 +50,11 @@ engine:
   - { path: .gtt/scaffold/ci/, kind: dir, required: true, role: Bootstrap-owned CI workflow templates - installing one is the human's act; see `templates` }
   - { path: .gtt/local/, kind: dir, required: false, state: true, role: local state GTT's own scripts keep - the last checkpoint, the last validation, the backups of a promotion; ignores itself, never committed, never written by an agent }
   - { path: .gtt/local/preferences.md, kind: file, required: false, state: true, role: user-level working preferences - local to one person, never committed, never authority; below governed context }
-  - { path: .gtt/contract/, kind: dir, required: true, role: Bootstrap 1.0 contracts consumed by the CLI - release identity, compatibility, capabilities, operations, Method Plans (methodology profiles), export policy, recovery, elicitation (data only) }
+  - { path: .gtt/contract/, kind: dir, required: true, role: Bootstrap 1.0 contracts consumed by the CLI - release identity, compatibility, capabilities, operations, Autonomy Profiles (methodology profiles), export policy, recovery, elicitation (data only) }
   - { path: .gtt/contract/release.json, kind: file, required: true, role: Bootstrap release identity (version, schema, channel), CLI compatibility and the version of every contract - distinct from scaffold.version }
   - { path: .gtt/contract/capabilities.json, kind: file, required: true, role: capability registry - what the Bootstrap offers, negotiable by a CLI }
   - { path: .gtt/contract/operations.json, kind: file, required: true, role: operation registry - logical operation to trusted implementation, typed arguments, no arbitrary shell }
-  - { path: .gtt/contract/profiles.json, kind: file, required: true, role: Method Plans Light, Medium, Hard, Team - developer-experience policy (minimum friction), operating policy, semantics, gates and the non-relaxable invariants; the single definition of what a plan means }
+  - { path: .gtt/contract/profiles.json, kind: file, required: true, role: Autonomy Profiles Light, Medium, Hard, Team - developer-experience policy (minimum friction), operating policy, semantics, gates and the non-relaxable invariants; the single definition of what a plan means }
   - { path: .gtt/contract/export-policy.json, kind: file, required: true, role: clean-export and clean ownership policy }
   - { path: .gtt/contract/recovery.json, kind: file, required: true, role: recovery snapshot schema and restore rules }
   - { path: .gtt/contract/elicitation.json, kind: file, required: true, role: guided ADE elicitation contract for the Initial Design Questionnaire }
@@ -62,7 +62,7 @@ engine:
   - { path: .gtt/methods/, kind: dir, required: true, role: Method Packs - one file per development method (what it is, fits when, what it discards, its effect on the design, its Epic design template and its rules); the single source the questionnaire, THINK and the site read; checked by gtt-method.sh catalog }
   - { path: .gtt/methods/README.md, kind: file, required: true, role: the Method Pack format and the Method Lock format - the reference the CLI points at }
   - { path: .gtt/tests/, kind: dir, required: true, role: Bootstrap acceptance tests - drive the contracts on disposable copies; never modify the project }
-  - { path: .gtt/methodology.json, kind: file, required: false, state: true, role: per-project Method Plan selected by the human (light, medium, hard, team) and language; absent means not selected; written only by gtt-project.sh }
+  - { path: .gtt/methodology.json, kind: file, required: false, state: true, role: per-project Autonomy Profile selected by the human (light, medium, hard, team) and language; absent means not selected; written only by gtt-project.sh }
   - { path: .gtt/development-method.json, kind: file, required: false, state: true, role: the setup answer to the development method questions (style, start; OPEN when unanswered or help was asked) - never governed authority, carried into the Method Lock with the human confirmation; written only by gtt-method.sh select and refused after the freeze }
   - { path: .gtt/selected-sources.json, kind: file, required: false, state: true, role: initial sources selected for the project - selection metadata only, never a governed authority; written only by gtt-project.sh }
   - { path: .gtt/ade.json, kind: file, required: false, state: true, role: per-project ADE state - participating, primary, excluded and the ledger of GTT-installed ADE files; written only by gtt-ade.sh, required in an installed project, absent in the catalog }
@@ -77,7 +77,7 @@ engine:
   - { path: .gtt/docs/installation.es.md, kind: file, required: true, role: Spanish mirror }
   - { path: .gtt/docs/usage.md, kind: file, required: true, role: the normal development loop }
   - { path: .gtt/docs/usage.es.md, kind: file, required: true, role: Spanish mirror }
-  - { path: .gtt/docs/method-plans.md, kind: file, required: true, role: Method Plans in plain words - what each plan delegates, asks, requires and enforces; rendering of contract/profiles.json }
+  - { path: .gtt/docs/method-plans.md, kind: file, required: true, role: Autonomy Profiles in plain words - what each plan delegates, asks, requires and enforces; rendering of contract/profiles.json }
   - { path: .gtt/docs/method-plans.es.md, kind: file, required: true, role: Spanish mirror }
   - { path: .gtt/docs/gtt-completion.md, kind: file, required: true, role: durable bootstrap completion record - append only }
   - { path: .gtt/docs/evidence.md, kind: file, required: true, role: technical claims classified by verification level }

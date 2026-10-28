@@ -1,6 +1,6 @@
 # Project Backlog
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 This file is the project's plan of work: **what is going to be built, in what
 order, and where it stands today.** It is written to be read by a person; you

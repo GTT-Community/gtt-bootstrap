@@ -1,5 +1,5 @@
 # GTT - CI gate (GitHub Actions). Canonical reference:
-# https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+# https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 #
 # A template the GTT Bootstrap owns. Installing it is the human's act:
 #
@@ -15,6 +15,14 @@
 # and for a write no hook can see. It needs the full history: with a shallow checkout
 # the base ref is not there, and a removed freeze marker cannot be told from a project
 # that was never frozen - gtt-check-stack.sh then exits 2 instead of passing.
+
+# Once GTT-Community/gtt-action is published, the same gate - plus file annotations on the
+# pull request and a job summary - is one step instead of the ones below:
+#
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#       - uses: GTT-Community/gtt-action@v1
 
 name: GTT governance
 

@@ -1,7 +1,7 @@
 # GTT Initial Design Questionnaire
 
 > **GTT Governance Canonical:**
-> https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 ## Purpose
 
@@ -99,7 +99,7 @@ The human remains the decision authority.
 How deep this interview goes. The human selects it — ask once, near the
 start, as one plain question offering the three levels (section 2 → *How each
 turn looks*, item 5); never infer it from the project, the
-Method Plan or the ADE. When a Design Assessment exists the depth is recorded
+Autonomy Profile or the ADE. When a Design Assessment exists the depth is recorded
 there and this block stays empty. Left empty everywhere, it is **not
 selected** and `STANDARD` applies as a fallback.
 

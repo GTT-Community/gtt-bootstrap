@@ -26,7 +26,7 @@ Levels (graduated enforcement). Only BLOCKING interrupts work:
   NOTICE      recorded, never announced
   WARNING     announced once, recorded; work continues
   GOVERNANCE  announced once, recorded; work continues; a decision is needed before the next
-              freeze (and before promotion where the selected Method Plan says so)
+              freeze (and before promotion where the selected Autonomy Profile says so)
   BLOCKING    announced every time; `check` fails; hook-capable ADEs deny the affected write
 
 A boundary blocks only because the governed state says so: a rule declared BLOCKING in
@@ -40,6 +40,11 @@ Boundary rule, one per line:   ID | kind | match | LEVEL | what it guards
   forbid      `glob :: regex` - a file matching the glob contains the pattern (current state)
 
 Legacy `gtt-drift-signals` lines (`glob -> what it guards`) are read as path rules at WARNING.
+
+Built in, with no rule, because the frozen design already states them: GTT-GOVERNED (the governed
+state changed outside the change flow: BLOCKING), GTT-PROTECTED (a @GTTGuard artifact changed),
+GTT-STACK (a backbone dependency the stack does not declare) and GTT-MODULES (code outside the
+declared modules).
 
 Exit 0 = nothing that must stop, 1 = a BLOCKING condition (or a failed check), 2 = cannot run.
 """
@@ -219,10 +224,18 @@ def dependencies(name, text):
             keys = ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")
             return {dep for key in keys for dep in (doc.get(key) or {})}
         if base.startswith("requirements") and base.endswith(".txt"):
-            return {re.split(r"[\s<>=!~;\[@]", line.strip(), 1)[0].lower() for line in text.splitlines()
+            return {re.split(r"[\s<>=!~;\[@]", line.strip(), maxsplit=1)[0].lower() for line in text.splitlines()
                     if line.strip() and not line.strip().startswith(("#", "-"))}
         if base == "go.mod":
             return set(re.findall(r"^\s*(?:require\s+)?([\w.-]+\.[\w.-]+/[^\s]+)\s+v[\w.+-]+", text, re.M))
+        if base == "pom.xml":
+            return {f"{g.strip()}:{a.strip()}" for g, a in re.findall(
+                r"<dependency>\s*(?:<!--.*?-->\s*)*<groupId>([^<]+)</groupId>\s*<artifactId>([^<]+)</artifactId>", text, re.S)}
+        if base in ("build.gradle", "build.gradle.kts"):
+            return {f"{g}:{a}" for g, a in re.findall(
+                r"\b(?:implementation|api|compile|runtimeOnly|compileOnly)\s*\(?\s*[\"']([^:\"'\s]+):([^:\"'\s]+)", text)}
+        if base.endswith(".csproj"):
+            return set(re.findall(r'<PackageReference\s+Include="([^"]+)"', text, re.I))
         if base in ("pyproject.toml", "cargo.toml"):
             import tomllib
             doc = tomllib.loads(text)
@@ -231,7 +244,7 @@ def dependencies(name, text):
             listed = list((doc.get("project") or {}).get("dependencies") or [])
             for group in ((doc.get("project") or {}).get("optional-dependencies") or {}).values():
                 listed += list(group)
-            return {re.split(r"[\s<>=!~;\[@]", dep.strip(), 1)[0].lower() for dep in listed}
+            return {re.split(r"[\s<>=!~;\[@]", dep.strip(), maxsplit=1)[0].lower() for dep in listed}
     except Exception:
         return None
     return None
@@ -281,15 +294,173 @@ def observe_rules(rules, base):
 
 
 def observe_governed(base):
-    """The governed state itself moved since the freeze: it needs a new freeze, never an unfreeze."""
+    """The governed state moved outside the change flow. A promotion re-freezes by itself (gtt-promote.sh),
+    so on the governed path the digest never differs from the freeze: when it does, someone wrote the
+    frozen design directly. That is BLOCKING until it is reverted or the human ratifies it with a new
+    freeze - the freeze itself is never refused for it (`check --for-freeze`)."""
     if not base.get("digest") or governed_digest() == base["digest"]:
         return []
     changed = changed_since(base.get("commit")) or []
     which = [p for p in changed if p.startswith(tuple(d + "/" for d in GOVERNED_DIRS))]
-    rule = {"id": "GTT-GOVERNED", "kind": "governed", "level": "GOVERNANCE",
-            "guards": "the frozen governed state (gtt-domain/.frozen); a governed change is completed by a new freeze"}
-    return [signal(rule, "gtt-domain/context+adr", "governed context or ADRs differ from the freeze baseline"
-                   + (": " + ", ".join(which[:6]) if which else ""), governed_digest()[:16])]
+    rule = {"id": "GTT-GOVERNED", "kind": "governed", "level": "BLOCKING",
+            "guards": "the frozen governed state (gtt-domain/.frozen): it changes only through the change flow, "
+                      "whose promotion records a new freeze"}
+    return [signal(rule, "gtt-domain/context+adr", "governed context or ADRs changed outside the change flow"
+                   + (": " + ", ".join(which[:6]) if which else "")
+                   + " - revert it, or the human ratifies it with a new freeze (gtt freeze)", governed_digest()[:16])]
+
+
+# Backbone technologies a dependency manifest can bring in, by the stack row that governs them. A new
+# dependency of one of these kinds is compared with the governed stack: one the stack does not name is a
+# design change (GOVERNANCE), whatever boundary rules the project wrote. Anything else is ordinary work.
+# name (or Go module prefix) -> (kind, tokens that, found in the stack row, mean "this is the declared one")
+BACKBONE = {
+    # datastores and their drivers
+    "pg": ("datastore", ("postgres", "pg")), "postgres": ("datastore", ("postgres",)), "pg-promise": ("datastore", ("postgres", "pg")),
+    "psycopg": ("datastore", ("postgres",)), "psycopg2": ("datastore", ("postgres",)), "psycopg2-binary": ("datastore", ("postgres",)),
+    "asyncpg": ("datastore", ("postgres",)), "github.com/jackc/pgx": ("datastore", ("postgres", "pgx")), "github.com/lib/pq": ("datastore", ("postgres",)),
+    "mysql": ("datastore", ("mysql", "mariadb")), "mysql2": ("datastore", ("mysql", "mariadb")), "mariadb": ("datastore", ("mariadb", "mysql")),
+    "pymysql": ("datastore", ("mysql", "mariadb")), "mysqlclient": ("datastore", ("mysql", "mariadb")),
+    "github.com/go-sql-driver/mysql": ("datastore", ("mysql", "mariadb")),
+    "mongodb": ("datastore", ("mongo",)), "mongoose": ("datastore", ("mongo",)), "pymongo": ("datastore", ("mongo",)), "motor": ("datastore", ("mongo",)),
+    "go.mongodb.org/mongo-driver": ("datastore", ("mongo",)),
+    "sqlite3": ("datastore", ("sqlite",)), "better-sqlite3": ("datastore", ("sqlite",)),
+    "cassandra-driver": ("datastore", ("cassandra",)), "@elastic/elasticsearch": ("datastore", ("elastic", "opensearch")),
+    "@aws-sdk/client-dynamodb": ("datastore", ("dynamo",)), "@google-cloud/firestore": ("datastore", ("firestore",)),
+    # caches
+    "redis": ("cache", ("redis", "valkey")), "ioredis": ("cache", ("redis", "valkey")), "github.com/redis/go-redis": ("cache", ("redis", "valkey")),
+    "memcached": ("cache", ("memcache",)), "pymemcache": ("cache", ("memcache",)),
+    # application frameworks
+    "express": ("framework", ("express",)), "koa": ("framework", ("koa",)), "fastify": ("framework", ("fastify",)),
+    "@nestjs/core": ("framework", ("nest",)), "@hapi/hapi": ("framework", ("hapi",)), "hapi": ("framework", ("hapi",)),
+    "django": ("framework", ("django",)), "flask": ("framework", ("flask",)), "fastapi": ("framework", ("fastapi",)),
+    "github.com/gin-gonic/gin": ("framework", ("gin",)), "github.com/labstack/echo": ("framework", ("echo",)),
+    "github.com/gofiber/fiber": ("framework", ("fiber",)),
+    # messaging
+    "kafkajs": ("messaging", ("kafka",)), "kafka-python": ("messaging", ("kafka",)), "confluent-kafka": ("messaging", ("kafka",)),
+    "github.com/segmentio/kafka-go": ("messaging", ("kafka",)), "amqplib": ("messaging", ("rabbit", "amqp")), "pika": ("messaging", ("rabbit", "amqp")),
+    "nats": ("messaging", ("nats",)), "bullmq": ("messaging", ("bull", "redis")), "celery": ("messaging", ("celery",)),
+    "@aws-sdk/client-sqs": ("messaging", ("sqs",)), "@google-cloud/pubsub": ("messaging", ("pubsub", "pub/sub")),
+    # JVM (Maven / Gradle coordinates; a key ending in ":" is a whole group)
+    "org.postgresql:postgresql": ("datastore", ("postgres",)), "com.mysql:mysql-connector-j": ("datastore", ("mysql", "mariadb")),
+    "mysql:mysql-connector-java": ("datastore", ("mysql", "mariadb")), "org.mariadb.jdbc:mariadb-java-client": ("datastore", ("mariadb", "mysql")),
+    "org.mongodb:": ("datastore", ("mongo",)), "org.springframework.boot:spring-boot-starter-data-mongodb": ("datastore", ("mongo",)),
+    "com.microsoft.sqlserver:mssql-jdbc": ("datastore", ("sql server", "sqlserver", "mssql")),
+    "org.springframework.boot:spring-boot-starter-data-redis": ("cache", ("redis", "valkey")), "redis.clients:jedis": ("cache", ("redis", "valkey")),
+    "io.lettuce:lettuce-core": ("cache", ("redis", "valkey")),
+    "org.springframework.boot:spring-boot-starter-web": ("framework", ("spring",)), "org.springframework.boot:spring-boot-starter-webflux": ("framework", ("spring",)),
+    "io.quarkus:": ("framework", ("quarkus",)), "io.micronaut:": ("framework", ("micronaut",)),
+    "org.apache.kafka:kafka-clients": ("messaging", ("kafka",)), "org.springframework.kafka:spring-kafka": ("messaging", ("kafka",)),
+    "com.rabbitmq:amqp-client": ("messaging", ("rabbit", "amqp")), "org.springframework.boot:spring-boot-starter-amqp": ("messaging", ("rabbit", "amqp")),
+    # .NET (NuGet package ids)
+    "Npgsql": ("datastore", ("postgres",)), "Npgsql.EntityFrameworkCore.PostgreSQL": ("datastore", ("postgres",)),
+    "MySqlConnector": ("datastore", ("mysql", "mariadb")), "MySql.Data": ("datastore", ("mysql", "mariadb")),
+    "MongoDB.Driver": ("datastore", ("mongo",)), "Microsoft.Data.SqlClient": ("datastore", ("sql server", "sqlserver", "mssql")),
+    "Microsoft.EntityFrameworkCore.SqlServer": ("datastore", ("sql server", "sqlserver", "mssql")),
+    "StackExchange.Redis": ("cache", ("redis", "valkey")), "Confluent.Kafka": ("messaging", ("kafka",)),
+    "RabbitMQ.Client": ("messaging", ("rabbit", "amqp")), "MassTransit": ("messaging", ("masstransit", "rabbit", "azure service bus")),
+}
+BACKBONE_ROWS = {"datastore": ("Datastore (primary)", "Datastore (cache)"), "cache": ("Datastore (cache)", "Datastore (primary)"),
+                 "framework": ("Application framework",), "messaging": ("Messaging / events",)}
+MANIFESTS = ("package.json", "go.mod", "pyproject.toml", "cargo.toml", "pom.xml", "build.gradle", "build.gradle.kts")
+CODE = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".go", ".java", ".kt", ".cs", ".rb", ".php", ".rs", ".scala", ".swift")
+
+
+def backbone(dep):
+    if dep in BACKBONE:
+        return BACKBONE[dep]
+    for name, spec in BACKBONE.items():
+        if "/" in name and "." in name.split("/")[0] and dep.startswith(name):
+            return spec                                     # Go module path, any major version suffix
+        if name.endswith(":") and dep.startswith(name):
+            return spec                                     # a whole Maven group
+    return None
+
+
+def stack_rows():
+    """{layer: technology} from the governed stack's *Stack at a glance* table."""
+    rows = {}
+    if os.path.isfile(STACK):
+        for line in read(STACK).splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if len(cells) >= 2 and line.lstrip().startswith("|"):
+                rows.setdefault(cells[0], cells[1])
+    return rows
+
+
+def observe_stack(base):
+    """A new backbone dependency the governed stack does not declare: the design changed in the code."""
+    changed = changed_since(base.get("commit"))
+    if changed is None:
+        return []
+    rows = stack_rows()
+    out = []
+    for path in changed:
+        name = os.path.basename(path).lower()
+        if own(path) or "node_modules/" in path or not os.path.isfile(path) or not (
+                name in MANIFESTS or name.endswith(".csproj") or (name.startswith("requirements") and name.endswith(".txt"))):
+            continue
+        now = dependencies(path, read(path))
+        before_text = git("show", f"{base['commit']}:{path}")
+        before = (dependencies(path, before_text) if before_text is not None else set()) or set()
+        for dep in sorted((now or set()) - before):
+            spec = backbone(dep)
+            if not spec:
+                continue
+            kind, tokens = spec
+            declared = [(layer, rows[layer]) for layer in BACKBONE_ROWS[kind] if rows.get(layer)]
+            if not declared:
+                continue                                    # the stack decides nothing here yet: nothing to compare
+            text = " ".join(tech for _, tech in declared).lower()
+            if any(token in text for token in tokens):
+                continue
+            rule = {"id": "GTT-STACK", "kind": "stack", "level": "GOVERNANCE",
+                    "guards": "stack.md 1. Stack at a glance - a backbone technology changes through a change request and its ADR"}
+            stated = "; ".join(f"{layer}: {tech}" for layer, tech in declared)
+            out.append(signal(rule, f"{path}#{dep}", f"new {kind} technology `{dep}` the governed stack does not declare ({stated})", "present"))
+    return out
+
+
+def declared_modules():
+    """Module paths declared in stack.md 5. Dependency rules (first column), as directory prefixes."""
+    if not os.path.isfile(STACK):
+        return []
+    prefixes, inside = [], False
+    for line in read(STACK).splitlines():
+        cells = [c.strip().strip("`") for c in line.strip().strip("|").split("|")]
+        if line.lstrip().startswith("|") and cells and cells[0] == "Module" and len(cells) > 1 and cells[1].startswith("May depend"):
+            inside = True
+            continue
+        if inside and not line.lstrip().startswith("|"):
+            inside = False
+        if inside and cells and "/" in cells[0] and not set(cells[0]) <= set("-: "):
+            stem = re.split(r"[*?\[{<]", cells[0], maxsplit=1)[0].rstrip("/")
+            if stem:
+                prefixes.append(stem + "/")
+    return prefixes
+
+
+def observe_modules(base):
+    """New code inside the code root that belongs to no module the governed design declares."""
+    modules = declared_modules()
+    changed = changed_since(base.get("commit")) if modules else None
+    if not modules or changed is None:
+        return []
+    roots = {m.split("/", 1)[0] + "/" for m in modules}
+    rule = {"id": "GTT-MODULES", "kind": "modules", "level": "GOVERNANCE",
+            "guards": "stack.md 5. Dependency rules - the modules of the governed design; a new module is a design change"}
+    out, seen = [], set()
+    for path in changed:
+        if own(path) or not path.endswith(CODE) or not path.startswith(tuple(roots)) or not os.path.isfile(path):
+            continue
+        if any(path.startswith(m) for m in modules):
+            continue
+        folder = path.rsplit("/", 1)[0] + "/"
+        if folder in seen:
+            continue
+        seen.add(folder)
+        out.append(signal(rule, folder, f"code outside every declared module ({', '.join(modules)}): {path}", "present"))
+    return out
 
 
 def observe_protected(base):
@@ -368,7 +539,7 @@ def collect():
         return [], ["not frozen yet: there is no governed state to observe against"], base
     rules, problems = boundaries()
     signals, notes = observe_rules(rules, base)
-    signals += observe_governed(base) + observe_protected(base) + observe_commits()
+    signals += observe_governed(base) + observe_stack(base) + observe_modules(base) + observe_protected(base) + observe_commits()
     seen, unique = set(), []
     for sig in signals:
         if sig["fingerprint"] not in seen:
@@ -438,7 +609,7 @@ def stops(item):
 
 
 def plan_gate():
-    """True when the selected Method Plan makes an undecided GOVERNANCE observation fail `check`."""
+    """True when the selected Autonomy Profile makes an undecided GOVERNANCE observation fail `check`."""
     try:
         spec = json.loads(read(".gtt/contract/profiles.json"))
         chosen = json.loads(read(".gtt/methodology.json")).get("profile") if os.path.isfile(".gtt/methodology.json") else None
@@ -471,7 +642,8 @@ def run(args, checking):
         save_ledger(ledger, before)
     stopping = [i for i in ledger["items"] if stops(i)]
     pending = [i for i in ledger["items"] if i["status"] == "open" and i["level"] == "GOVERNANCE"]
-    failing = list(stopping)
+    # The governed state having moved is the very reason for a new freeze: it never refuses one.
+    failing = [i for i in stopping if not (getattr(args, "for_freeze", False) and i["rule"] == "GTT-GOVERNED")]
     if checking and (args.strict or plan_gate()):
         failing += [i for i in pending if i not in failing and not (args.for_freeze and i["rule"] == "GTT-GOVERNED")]
     announce = [i for i in fresh if i["level"] != "NOTICE" and i not in stopping] + stopping
@@ -629,6 +801,27 @@ def blocking_path(path):
     for rule in boundaries()[0]:
         if rule["kind"] == "path" and rule["level"] == "BLOCKING" and match(path, rule["match"]):
             return rule["id"], rule["guards"]
+    return None
+
+
+def blocking_content(path, text):
+    """For a pre-write hook: (rule id, what it guards, the offending line) of a `forbid` boundary declared
+    BLOCKING that `text`, written to this project-relative path, would violate - or None."""
+    if not os.path.isfile(FROZEN) or own(path):
+        return None
+    for rule in boundaries()[0]:
+        if rule["kind"] != "forbid" or rule["level"] != "BLOCKING":
+            continue
+        glob, _, pattern = (part.strip() for part in rule["match"].partition("::"))
+        if not match(path, glob):
+            continue
+        try:
+            regex = re.compile(pattern)
+        except re.error:
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            if regex.search(line):
+                return rule["id"], rule["guards"], f"line {number}: {line.strip()[:120]}"
     return None
 
 

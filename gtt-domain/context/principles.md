@@ -1,6 +1,6 @@
 # Principles
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 Design principles in force. A principle earns its place only if it rules
 something out. If a principle would never cause you to reject a pull request,

@@ -12,7 +12,7 @@ actual project (never from an agent's recollection, never authority):
   validation                 gtt-validate.sh as one structured result
   interaction                what the selected plan does without asking and what it asks for (derived from its policy)
   next-id                    the next free id of a kind (adr|epic|story); deterministic, never reuses a retired id
-  profile get|set            Method Plan (light|medium|hard|team) and language; meaning lives in .gtt/contract/profiles.json
+  profile get|set            Autonomy Profile (light|medium|hard|team) and language; meaning lives in .gtt/contract/profiles.json
   source select|list         initial sources: a SELECTED source is never a governed authority
   export-policy              clean-export policy resolved against this project (ADE overlays from the ownership ledger)
   clean-plan                 what `clean` would remove; removes nothing
@@ -501,7 +501,8 @@ def cmd_elicitation(args):
 
 def next_action():
     """What GTT is waiting on, or None: an open Initial Design Questionnaire first, then a change request the
-    human asked to have processed. `text` is the agent's instruction; `human` is what the person does next.
+    human asked to have processed, then - in an installed project with no design yet - the design itself.
+    `text` is the agent's instruction; `human` is what the person does next.
     Computed, never a decision."""
     line = elicitation_state()["next_action"]
     if line:
@@ -514,6 +515,21 @@ def next_action():
     except Exception:
         line = None
     if not line:
+        # An installed project with no design yet and no questionnaire: the design is what GTT waits on. Every
+        # state has a next action, so an ADE that only reads it at session start still knows where to begin.
+        if os.path.isfile(".gtt/ade.json") and not os.path.isfile(FROZEN) and not glob.glob("SOURCE-BRIEF.*") \
+                and any(v != "no-placeholders" for v in context_state().values()):
+            candidates = design_candidates()
+            if candidates:
+                text = (f"No governed design yet. Design document candidates: {', '.join(candidates)}. Ask the human which one(s) "
+                        "are the design, then assess and map them (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
+            else:
+                text = ("No governed design yet and no design document. Ask the human for the design document(s) to use; if there "
+                        "is none, start the Initial Design Questionnaire: bash .gtt/scripts/gtt-template.sh materialize "
+                        "initial-design-questionnaire --apply (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
+            return {"kind": "design", "text": text,
+                    "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
+                             "from your document, or through the guided questionnaire."}
         return None
     return {"kind": "change-request", "text": line,
             "human": f"Open the project in the Primary ADE and write anything: its first answer processes change request "
@@ -601,6 +617,16 @@ def proposals():
         return []
 
 
+def observations():
+    """Open observations in the governance backlog, by level - what the work did against the frozen design.
+    Read from the backlog as the observation engine last wrote it; status runs the engine first."""
+    ledger = read_json("gtt-domain/governance-backlog.json") or {}
+    live = [i for i in ledger.get("items", []) if i.get("status") in ("open", "deferred", "rejected")]
+    out = {level.lower(): sum(1 for i in live if i.get("level") == level) for level in ("NOTICE", "WARNING", "GOVERNANCE", "BLOCKING")}
+    out["stopping"] = sum(1 for i in live if (i.get("level") == "BLOCKING" and i.get("status") == "open") or i.get("status") == "rejected")
+    return out
+
+
 def governance():
     findings, state = gp.run_checks()
     gaps = state["gaps"]
@@ -610,7 +636,7 @@ def governance():
             "proposals_in_governed_context": sum(1 for t in state["tags"] if t[2] == "PROPUESTA"),
             "provenance_policy": state["policy"], "provenance_findings": {"fail": len(findings.fails()),
                                                                              "warn": len(findings.items) - len(findings.fails())},
-            "pending_proposals": proposals(), "change_request": change_request_state(),
+            "pending_proposals": proposals(), "change_request": change_request_state(), "observations": observations(),
             "working_agreements": {"team": sum(1 for a in state["agreements"] if a["scope"] == "team"),
                                    "user": sum(1 for a in state["agreements"] if a["scope"] == "user")}}
 

@@ -60,12 +60,12 @@
   ],
   "think_depth": {
     "statement": "THINK Depth is how deep the Think stage goes: how much the ADE assesses, explores and asks. It is never a level of governance. It changes how far THINK digs, never which rules THINK may skip.",
-    "not_a_method_plan": "THINK Depth is independent of the Method Plan and shares no name with it. It is never derived from the plan, and it never changes a plan's gates.",
+    "not_a_method_plan": "THINK Depth is independent of the Autonomy Profile and shares no name with it. It is never derived from the plan, and it never changes a plan's gates.",
     "levels": ["QUICK", "STANDARD", "DEEP"],
     "order": ["QUICK", "STANDARD", "DEEP"],
     "selection": {
       "decided_by": "the human",
-      "policy": "ask once near the start, as one plain question offering the three levels; never inferred from the project, the Method Plan, the ADE or a previous project",
+      "policy": "ask once near the start, as one plain question offering the three levels; never inferred from the project, the Autonomy Profile, the ADE or a previous project",
       "unselected": { "applies": "STANDARD", "state": "not selected", "note": "STANDARD is the behaviour that existed before depths; it applies as a fallback and is never reported as a choice" },
       "recorded_in": ["the Design Assessment working copy (THINK Depth section) when a design document exists", "the questionnaire working copy (THINK Depth section) when there is none", "the completion report (.gtt/docs/gtt-completion.md)"]
     },

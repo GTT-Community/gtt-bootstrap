@@ -3,7 +3,7 @@ inclusion: fileMatch
 fileMatchPattern: 'infra/**/*'
 ---
 
-> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md
+> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
 
 # Infrastructure and deployment
 

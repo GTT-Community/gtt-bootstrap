@@ -251,6 +251,14 @@ APPROVAL = ("GTT governance (human-decision-authority): approving an Epic and it
             "Tell the human the command - bash .gtt/scripts/gtt-approve.sh EPIC-NNN - and continue with the work.")
 LOCAL_OWNED = ("GTT governance (deterministic-first): .gtt/local/checkpoint.json and .gtt/local/last-validation.json are "
                "written only by GTT's own scripts. Run gtt-checkpoint.sh or gtt-validate.sh; never edit their result.")
+SETUP_RECORDS = (".gtt/methodology.json", ".gtt/development-method.json", ".gtt/selected-sources.json")
+SETUP_OWNED = ("GTT governance (human-decision-authority): the autonomy profile, the development method and the selected "
+               "sources are the human's choices, recorded only through GTT's scripts or the CLI (gtt autonomy, gtt config). "
+               "Never write them directly; ask the human.")
+# An inline program (`python3 -c ...`, `node -e ...`) writes what it names when it calls something that writes.
+INTERPRETERS = {"python", "python3", "py", "node", "deno", "bun", "perl", "ruby", "php"}
+WRITE_HINT = re.compile(r"write|append|unlink|remove|rename|os\.replace|truncate|copy|shutil|rmtree|mkdir"
+                        r"|(?:,|mode=)\s*['\"](?:w|a|x|r\+)b?\+?['\"]")
 
 
 def normalize(path):
@@ -338,6 +346,8 @@ def protected_token(root, token, shell=False):
         return LEDGER_OWNED
     if low in LOCAL_STATE:
         return LOCAL_OWNED
+    if low in SETUP_RECORDS and installed(root):
+        return SETUP_OWNED
     if under(low, SOURCES_DIR) or (shell and low == "docs"):
         return SOURCES_OWNED
     if low == WORKFLOW_FILE and installed(root):
@@ -434,7 +444,12 @@ def operands(words):
     named += [w.split("=", 1)[1] for w in rest if w.startswith("--output=")]
     if head == "git":
         sub, args, _ = git_subcommand(words)
-        return [a for a in args if not a.startswith("-")] if sub in ("rm", "mv") else []
+        # checkout/restore write the paths they name: an old version of a governed file is a write to it
+        return [a for a in args if not a.startswith("-")] if sub in ("rm", "mv", "checkout", "restore") else []
+    if head in INTERPRETERS:
+        code = [rest[i + 1] for i, w in enumerate(rest[:-1]) if w in ("-c", "-e", "--eval", "-E", "-r")]
+        if code and WRITE_HINT.search(code[0]):
+            return re.findall(r"[^\s'\"(),;]+", code[0])
     if head == "xargs":
         return operands(plain) if plain and base(plain[0]) != "xargs" else []
     if head == "find":
@@ -534,7 +549,8 @@ def decide_units(root, command):
         # --- acts that are the human's
         if base(words[0]) == "gtt-freeze.sh" or (head in SHELLS and any(base(w) == "gtt-freeze.sh" for w in rest)):
             return HUMAN_ACT
-        if not syntax_only and (base(words[0]) == "gtt-promote.sh" or (head in SHELLS and any(base(w) == "gtt-promote.sh" for w in rest))):
+        promoters = ("gtt-promote.sh", "gtt-adapter-promote.sh")
+        if not syntax_only and (base(words[0]) in promoters or (head in SHELLS and any(base(w) in promoters for w in rest))):
             return PROMOTION
         if not syntax_only and (base(words[0]) == "gtt-approve.sh" or (head in SHELLS and any(base(w) == "gtt-approve.sh" for w in rest))):
             return APPROVAL
@@ -612,8 +628,58 @@ def core_boundary(root, rel):
             "human."), None
 
 
-def core_file(root, path):
-    """(reason, warning) for a file-tool write to `path`."""
+def resulting_text(root, path, tool_input):
+    """The text the file would hold after this file-tool write, or None when the tool's input does not
+    say (a delete, an unknown tool). Write tools carry it; edit tools are applied to the file on disk."""
+    if not isinstance(tool_input, dict):
+        return None
+    for key in ("content", "contents", "file_text", "CodeContent"):
+        if isinstance(tool_input.get(key), str):
+            return tool_input[key]
+    try:
+        with open(os.path.join(root, relative(normalize(path), root) or path), encoding="utf-8", errors="replace") as handle:
+            text = handle.read()
+    except OSError:
+        text = ""
+    edits = tool_input.get("edits") if isinstance(tool_input.get("edits"), list) else [tool_input]
+    applied = False
+    for edit in edits:
+        if not isinstance(edit, dict):
+            continue
+        old = edit.get("old_string", edit.get("old_str"))
+        new = edit.get("new_string", edit.get("new_str"))
+        if isinstance(new, str):
+            text = text.replace(old, new, -1 if edit.get("replace_all") else 1) if old else text + new
+            applied = True
+    return text if applied else None
+
+
+def core_content(root, rel, text):
+    """The reason a write must not leave `text` in `rel`: a `forbid` boundary the frozen design declares
+    BLOCKING (a slice importing another slice, say) is refused before the write, not reported after it."""
+    if not rel or text is None or not frozen(root):
+        return None
+    here = os.getcwd()
+    try:
+        scripts = os.path.join(root, ".gtt", "scripts")
+        if scripts not in sys.path:
+            sys.path.insert(0, scripts)
+        import gtt_observe
+        os.chdir(root)
+        hit = gtt_observe.blocking_content(rel, text)
+    except Exception:
+        return None
+    finally:
+        os.chdir(here)
+    if not hit:
+        return None
+    return (f"GTT boundary {hit[0]} (BLOCKING): this write would leave in {rel} what the frozen design forbids - "
+            f"{hit[2]} - it guards {hit[1]}. Change the code so it respects the boundary; if the design itself must "
+            "change, write a proposal under gtt-domain/proposals/ and tell the human.")
+
+
+def core_file(root, path, tool_input=None):
+    """(reason, warning) for a file-tool write to `path` (with the tool's input, when known)."""
     target = normalize(path)
     if MACHINERY.search(target):
         return GOVERNED, None
@@ -621,7 +687,10 @@ def core_file(root, path):
     if reason:
         return reason, None
     rel = relative(target, root)
-    return core_boundary(root, rel) if rel else (None, None)
+    reason, warning = core_boundary(root, rel) if rel else (None, None)
+    if reason or not rel:
+        return reason, warning
+    return core_content(root, rel, resulting_text(root, path, tool_input)), warning
 # <<< gtt-decision-core <<<
 
 
@@ -651,7 +720,7 @@ def main():
     if tool in ("Write", "Edit", "NotebookEdit"):
         target = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
         if target:
-            reason, warning = core_file(root, target)
+            reason, warning = core_file(root, target, tool_input)
     elif tool in ("Bash", "PowerShell"):
         reason = core_shell(root, tool_input.get("command", ""))
 

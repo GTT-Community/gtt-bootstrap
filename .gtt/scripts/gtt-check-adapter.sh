@@ -90,7 +90,7 @@ gtt-check-adapter: workspace does not match the '$ADE' single-ADE matrix.
 This is the matrix of a project with exactly one ADE. A project with several
 participating ADEs is validated against .gtt/ade.json instead (run this script
 with no argument); a project that predates it is migrated with
-'gtt-ade.sh adopt'. See 'ADE adapters' in readme-gtt.md or step 0 of the
+'gtt-ade.sh adopt'. See 'ADE adapters' in .gtt/docs/guide.md or step 0 of the
 gtt-bootstrap skill.
 MSG
   exit 1
