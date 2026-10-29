@@ -157,6 +157,10 @@ LEDGER_OWNED = ("GTT governance (human-decision-authority): gtt-domain/governanc
                 "`bash .gtt/scripts/gtt-observe.sh observe`; never edit it.")
 PROMOTION = ("GTT governance (Human Promotion Boundary): a promotion is run by the human, never by an agent. "
              "Tell the human the command and stop.")
+CLI_ACT = ("GTT governance (human-decision-authority): this command is the human's act - a freeze, a promotion "
+           "or its undo, a withdrawal, a change request, resetting the design, installing, updating or removing GTT "
+           "- and a --yes or --apply on it is the human's pre-authorisation, never an agent's. Prepare what it needs, give the human the exact command to run in their own terminal (in "
+           "Claude Code they can type it after `!` in the prompt), and continue with the work.")
 PATCH = ("GTT governance (Human Promotion Boundary): applying a patch staged under gtt-domain/proposals/ is the "
          "human's act. `git apply --check` and `--stat` stay available. Tell the human the command.")
 HUMAN_ACT = ("GTT governance (human-decision-authority): freezing, accepting, rejecting or deferring an observation, "
@@ -430,6 +434,61 @@ def git_subcommand(words):
     return "", [], settings
 
 
+# `gtt` CLI commands that are a human act; reading, checking and upkeep (status, validate, proposals
+# list/show, change show, check, sync, doctor...) stay the agent's.
+# Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
+CLI_HUMAN_ACTS = {("freeze",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
+                  ("proposals", "withdraw"), ("design", "reset")}
+CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply
+CLI_READS = {"show", "list", "check", "--help", "-h", "help"}
+CLI_NAME = re.compile(r"(gtt(\.exe)?|gtt-cli([@=].*)?)$")
+CLI_LAUNCHERS = {"npx", "pnpx", "bunx", "uvx", "pipx", "uv", "dlx", "run", "tool"}
+CLI_VALUE_FLAGS = {"-c", "--dir", "--log-level", "--from"}
+CLI_WRAPPERS = {"env", "sudo", "time", "nohup", "exec", "command"}
+
+
+def cli_act(words):
+    """The human act a unit runs through the `gtt` CLI (npx / uvx / pipx spellings too), or None."""
+    words = list(words)
+    while words and (base(words[0]) in CLI_WRAPPERS or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0])):
+        words = words[1:]
+    if not words:
+        return None
+    head = base(words[0])
+    if not CLI_NAME.match(head) and head not in CLI_LAUNCHERS:
+        return None
+    rest, named, i = [], CLI_NAME.match(head) is not None, 1
+    while i < len(words):
+        word, low = words[i], words[i].lower()
+        if low in CLI_VALUE_FLAGS:
+            i += 2
+            continue
+        if low.startswith("-"):
+            if low in ("--help", "-h"):
+                return None
+            i += 1
+            continue
+        if not named:
+            if CLI_NAME.match(base(word)):
+                named = True
+            elif base(word) not in CLI_LAUNCHERS:
+                return None
+            i += 1
+            continue
+        if CLI_NAME.match(base(word)) and not rest:          # `uvx --from gtt-cli gtt ...`
+            i += 1
+            continue
+        rest.append(low)
+        i += 1
+    if not named or not rest or rest[0] == "help":
+        return None
+    if (rest[0],) in CLI_HUMAN_ACTS and not (len(rest) > 1 and rest[1] in CLI_READS):
+        return " ".join(rest[:1])
+    if tuple(rest[:2]) in CLI_HUMAN_ACTS:
+        return " ".join(rest[:2])
+    return None
+
+
 def decide_units(root, command):
     """Why the shell command is an act an agent does not perform, or None. Reading is never one."""
     chain_reads_apply = False
@@ -481,6 +540,15 @@ def decide_units(root, command):
         if head == "patch" and staged and "--dry-run" not in rest:
             return PATCH
         # --- acts that are the human's
+        if cli_act(words):
+            return CLI_ACT
+        for index, word in enumerate(words):
+            if base(word) in ("gtt-change.sh", "gtt_change.py") and words[index + 1:index + 2] and \
+                    words[index + 1] in CHANGE_ACTS and "--apply" in words[index + 2:] and not syntax_only:
+                return CLI_ACT
+            if base(word) in ("gtt-ade.sh", "gtt_ade.py") and words[index + 1:index + 2] == ["record"] and \
+                    "--apply" in words[index + 2:] and not syntax_only:     # it would bless a changed hook
+                return CLI_ACT
         if base(words[0]) == "gtt-freeze.sh" or (head in SHELLS and any(base(w) == "gtt-freeze.sh" for w in rest)):
             return HUMAN_ACT
         promoters = ("gtt-promote.sh", "gtt-adapter-promote.sh")

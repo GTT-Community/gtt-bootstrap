@@ -1872,6 +1872,21 @@ ENFORCEMENT_CASES = [
     ("hooks", "pre", "shell", "rm .kiro/hooks/gtt-protect.json", "deny", "governed paths"),
     ("hooks", "pre", "shell", "echo {} > .github/hooks/gtt-protect.json", "deny", "governed paths"),
     ("hooks", "pre", "file", ".github/hooks/own-hook.json", "allow", None),
+    # The CLI's human acts: its --yes is the human's pre-authorisation, never an agent's
+    ("cli", "frozen", "shell", "gtt promote glossary --yes", "deny", "human-decision-authority"),
+    ("cli", "frozen", "shell", "gtt --json undo -y", "deny", "human-decision-authority"),
+    ("cli", "frozen", "shell", "npx -y @gtt-community/gtt-cli@1.8.0 proposals withdraw PROPOSAL-x.md --yes", "deny", "human-decision-authority"),
+    ("cli", "frozen", "shell", "uvx --from gtt-cli gtt freeze", "deny", "human-decision-authority"),
+    ("cli", "pre", "shell", 'cd /tmp && gtt change "Sessions in Redis" --reason "Scale out" --yes', "deny", "human-decision-authority"),
+    ("cli", "pre", "shell", "gtt clean --yes", "deny", "human-decision-authority"),
+    ("cli", "pre", "shell", "bash .gtt/scripts/gtt-change.sh request --change x --reason y --apply", "deny", "human-decision-authority"),
+    ("cli", "frozen", "shell", "bash .gtt/scripts/gtt-change.sh undo --apply", "deny", "human-decision-authority"),
+    ("cli", "frozen", "shell", "gtt status --json && gtt proposals show x && gtt change show --json && gtt validate", "allow", None),
+    ("cli", "frozen", "shell", "gtt promote --help", "allow", None),
+    ("cli", "pre", "shell", "gtt autonomy set hard --yes", "allow", None),      # recording the human's own choice
+    ("cli", "pre", "shell", "bash .gtt/scripts/gtt-change.sh request --change x --reason y", "allow", None),  # a dry run
+    ("cli", "pre", "shell", 'git commit -m "docs: how to gtt promote a set"', "allow", None),
+    ("cli", "installed", "shell", "bash .gtt/scripts/gtt-ade.sh record claude .claude/hooks/protect-l0.py --apply", "deny", "human-decision-authority"),
 ]
 
 
@@ -1963,6 +1978,89 @@ def enforcement(project, tmp):
         check(ok, f"{fix}: {regime:6} {kind:5} {expect:5} {shown!r}" + (f" - names `{names}`" if names else ""),
               f"claude={'deny' if c_denied else 'allow'} portable={'deny' if p_denied else 'allow'} "
               f"kiro={'deny' if k_denied else 'allow'} copilot={'deny' if g_denied else 'allow'} {c_text[:120]!r}")
+
+    print("[Claude Code] MCP tools and MultiEdit are judged like the file tools")
+    for tool, tool_input, expect in (
+            ("mcp__filesystem__write_file", {"path": "{root}/gtt-domain/context/stack.md", "content": "x"}, 2),
+            ("mcp__filesystem__move_file", {"source": "{root}/x.md", "destination": "{root}/AGENTS.md"}, 2),
+            ("MultiEdit", {"file_path": "{root}/gtt-domain/context/stack.md", "edits": [{"old_string": "a", "new_string": "b"}]}, 2),
+            ("mcp__filesystem__write_file", {"path": "{root}/src/app.py", "content": "x"}, 0),
+            ("mcp__filesystem__read_file", {"path": "{root}/gtt-domain/context/stack.md"}, 0)):
+        payload = json.dumps({"tool_name": tool, "tool_input": json.loads(json.dumps(tool_input).replace("{root}", frozen.replace("\\", "/")))})
+        proc = subprocess.run([sys.executable, os.path.join(frozen, ".claude", "hooks", "protect-l0.py")], cwd=frozen, input=payload,
+                              env=dict(os.environ, CLAUDE_PROJECT_DIR=frozen), capture_output=True, text=True, encoding="utf-8", errors="replace")
+        check(proc.returncode == expect and (expect == 0 or "governed paths" in proc.stderr),
+              f"{tool}: {'denied, the reason on stderr' if expect else 'allowed'}", proc.stdout + proc.stderr)
+    settings = read_json(os.path.join(frozen, ".claude", "settings.json"))
+    matchers = {entry["matcher"] for entries in settings["hooks"].values() for entry in entries if "matcher" in entry}
+    check("mcp__.*" in matchers and any("MultiEdit" in m for m in matchers), "settings.json sends MCP tools and MultiEdit to the hooks", str(matchers))
+
+    print("[Claude Code] the sentinel puts back the frozen design a shell command changed, whatever its spelling")
+    sentinel = os.path.join(frozen, ".claude", "hooks", "governed-sentinel.py")
+    cache = os.path.join(tmp, "sentinel-cache")
+    env = dict(os.environ, CLAUDE_PROJECT_DIR=frozen, XDG_CACHE_HOME=cache, LOCALAPPDATA=cache)
+
+    def sentinel_run(command):
+        event = json.dumps({"tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PostToolUse"})
+        subprocess.run([sys.executable, sentinel, "pre"], cwd=frozen, env=env, input=event, capture_output=True, text=True)
+        subprocess.run(["bash", "-c", command], cwd=frozen, capture_output=True, text=True)
+        proc = subprocess.run([sys.executable, sentinel, "post"], cwd=frozen, env=env, input=event, capture_output=True, text=True,
+                              encoding="utf-8", errors="replace")
+        return json.loads(proc.stdout) if proc.stdout.strip() else {}
+
+    stack = os.path.join(frozen, "gtt-domain", "context", "stack.md")
+    original = open(stack, encoding="utf-8").read()
+    for command in ("cd gtt-domain/context && echo agent > stack.md", "F=gtt-domain/context/stack.md; echo agent > $F",
+                    "echo agent > gtt-domain/cont*/stack.md", "echo agent > gtt-domain/adr/ADR-999-new.md"):
+        out = sentinel_run(command)
+        check(out.get("decision") == "block" and "sentinel" in out.get("reason", "") and "put back" in out.get("systemMessage", "")
+              and open(stack, encoding="utf-8").read() == original and not os.path.exists(os.path.join(frozen, "gtt-domain", "adr", "ADR-999-new.md")),
+              f"put back and told: {command}", str(out)[:300])
+    archived = glob.glob(os.path.join(frozen, "gtt-domain", "proposals", "withdrawn", "*-reverted*", "gtt-domain", "context", "stack.md"))
+    check(len(archived) == 3 and all(open(f, encoding="utf-8").read() == "agent\n" for f in archived),
+          "what each command wrote is archived, never lost - one folder each", str(archived))
+    check(sentinel_run("echo work > src.txt && cat gtt-domain/context/stack.md") == {}, "ordinary work is silence")
+    marker = os.path.join(frozen, "gtt-domain", ".frozen")
+    baseline = open(marker, encoding="utf-8").read()
+    out = sentinel_run("echo promoted >> gtt-domain/context/stack.md && echo new-baseline >> gtt-domain/.frozen")
+    check(out.get("decision") == "block" and open(stack, encoding="utf-8").read() == original
+          and open(marker, encoding="utf-8").read() == baseline and "stage it again" in out.get("reason", ""),
+          "a re-freeze from the agent's own command is no promotion: the design and the freeze are put back", str(out)[:300])
+    settings_file = os.path.join(frozen, ".claude", "settings.json")
+    shipped_settings = open(settings_file, encoding="utf-8").read()
+    for command in ("X=.claude/sett; echo '{}' > ${X}ings.json", "H=.claude/hoo; echo 'import sys' > ${H}ks/protect-l0.py",
+                    "W=.gtt/scri; echo 'exit 0' > ${W}pts/gtt-observe.sh"):
+        out = sentinel_run(command)
+        check(out.get("decision") == "block" and open(settings_file, encoding="utf-8").read() == shipped_settings
+              and "import sys\n" != open(os.path.join(frozen, ".claude", "hooks", "protect-l0.py"), encoding="utf-8").read(),
+              f"the protection itself is put back too: {command}", str(out)[:300])
+    check(subprocess.run([sys.executable, sentinel, "post"], cwd=frozen, env=env, input="not json", capture_output=True, text=True).returncode == 0,
+          "a broken input never blocks a session")
+
+    print("[validation] a protection hook changed or unregistered since install fails - your own settings do not")
+    v = make_host(project, tmp, "hook-integrity")
+    rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "claude", "--primary", "claude", "--apply")
+    check(rc == 0, "(setup) Claude Code installed with its ledger", out + err)
+    rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "validate")
+    check(rc == 0, "an intact install passes", out + err)
+    settings_path = os.path.join(v, ".claude", "settings.json")
+    shipped = read_json(settings_path)
+    mine = json.loads(json.dumps(shipped))
+    mine.setdefault("permissions", {}).setdefault("allow", []).append("Bash(npm test *)")
+    write(settings_path, json.dumps(mine, indent=2))
+    rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "validate")
+    check(rc == 0 and "modified since install: .claude/settings.json" in out, "the human's own settings are a warning, never a failure", out + err)
+    mine["hooks"]["PostToolUse"] = [e for e in mine["hooks"]["PostToolUse"] if "governed-sentinel" not in json.dumps(e)]
+    mine["hooks"].pop("PostToolUseFailure", None)
+    mine["hooks"]["PreToolUse"] = [e for e in mine["hooks"]["PreToolUse"] if "governed-sentinel" not in json.dumps(e)]
+    write(settings_path, json.dumps(mine, indent=2))
+    rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "validate")
+    check(rc == 1 and "governed-sentinel.py is installed but .claude/settings.json never runs it" in out, "removing GTT's hook command fails", out + err)
+    write(settings_path, json.dumps(shipped, indent=2))
+    write(os.path.join(v, ".claude", "hooks", "governed-sentinel.py"), "import sys\nsys.exit(0)\n")
+    rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "validate")
+    check(rc == 1 and "protection hook changed since install: .claude/hooks/governed-sentinel.py" in out and "git checkout --" in out,
+          "a changed protection hook fails, and says how to put it back", out + err)
 
     broken, rc, out = frozen_project(project, tmp, "enf-broken", RULES)
     place_claude_hook(project, broken)

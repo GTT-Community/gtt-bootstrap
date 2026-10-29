@@ -1,6 +1,6 @@
 ---
 name: gtt-bootstrap
-description: Detect candidate ADEs, install the GTT overlays of the ADEs the human chooses to participate (exactly one Primary), then populate gtt-domain/context/ for the first time in a new project. Use when the user says to set up GTT, bootstrap GTT, initialize GTT, or has just cloned GTT Bootstrap into a project and gtt-domain/context/ still holds template placeholders. Checks the project root for an existing solution document (offering the Bootstrap's Initial Design Questionnaire when there is none), assesses an existing design in writing and strengthens it when it is poor - a decided technology stack is the minimum - resolves several design documents into one or keeps them as declared sources, asks for the development method (Method Packs: chosen by the human, proposed by THINK only when asked, never defaulted) and cuts Epics and designs by it, confirms with the Solution Designer that it is finished rather than a draft, asks for whatever it does not answer, and drafts the six context files plus a permanent SOURCE-BRIEF at the project root for review before anything is written.
+description: Set up GTT in a project for the first time - detect candidate ADEs and install the overlays of the ones the human chooses (exactly one Primary), then populate gtt-domain/context/. Use when the user says to set up, bootstrap or initialize GTT, or when gtt-domain/context/ still holds template placeholders. Finds the design document at the project root (or offers the Initial Design Questionnaire), assesses it in writing and strengthens a poor one - a decided technology stack is the minimum - resolves several documents, asks for the development method (never defaulted) and cuts Epics by it, confirms the design is finished, asks for what is missing, and drafts the six context files plus SOURCE-BRIEF for review before writing anything. Not for a frozen project: use gtt-audit or gtt-propose-change.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
@@ -19,98 +19,13 @@ is written.
 
 ## 0. Detect candidate ADEs, let the human choose, and resolve the overlays
 
-Do this before touching the filesystem, and before step 1. Three separate
-questions: which ADEs look present (detection), which ones the human wants GTT
-to govern (participation), and which one is the Primary.
-
-GTT Bootstrap ships a portable core — `AGENTS.md` and `SOURCE-BRIEF.*` (if a
-source document exists) at the project root, plus the governed domain
-(`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`) and
-the Engine (`.gtt/`, including its documentation in `.gtt/docs/`, defined by
-`.gtt/scaffold/manifest.yaml`) — plus one adapter per
-supported ADE. The source repository carries every adapter — it is a
-catalog, not a package to install whole. A target project receives the
-portable core plus the overlay of every ADE the human chose to have
-participate, never the whole catalog. Workspace hygiene: the Engine and its
-documentation stay in `.gtt/`, and the governed domain in `gtt-domain/`;
-never mix them, and report (never merge) a collision with a `.gtt/` or
-`gtt-domain/` the project already has.
-
-What each ADE's adapter contains (a project with several participating ADEs
-has the union of their rows; the registry itself is the `overlays:` section of
-the manifest, read through `gtt-ade.sh list`):
-
-| Host ADE | Adapter | `.claude/` | `.kiro/` | `AGENTS.md` | `.github/instructions/gtt.instructions.md` |
-|---|---|---|---|---|---|
-| Claude Code | Claude | YES | NO | YES | NO |
-| Kiro | Kiro | NO | YES | YES | NO |
-| Codex | Portable/AGENTS | NO | NO | YES | NO |
-| GitHub Copilot | Copilot | NO | NO | YES | YES |
-| Other supported ADE | Explicit adapter only | only if mapped | only if mapped | per support | per support |
-| Unknown ADE | Portable/unknown | NO | NO | do not guess | NO |
-
-**Detection is not participation.** From the project root, run
-`bash <catalog>/.gtt/scripts/gtt-ade.sh detect --from <catalog>`. It lists every ADE in the
-registry with the signals it found (an overlay path, an ADE binary on the PATH). Those
-are *candidates* — nothing more: not installed, not authorized, not governed, not
-participating. Never detect from the underlying model: a Claude model is not Claude Code,
-a GPT model is not Codex, and an API alone is neither. The ADE executing this bootstrap
-is self-evident to that ADE and is a sensible suggestion — still only a suggestion.
-
-**Ask, do not assume.** Show the candidates (and the registry ADEs that were not
-detected: the human may want one that is not installed yet) in this shape:
-
-> Detected these possible ADEs.
->
-> - Claude Code (signals: `.claude/`, binary `claude`)
-> - Kiro (signals: `.kiro/`)
->
-> Which of them should participate in this project? GTT installs and governs each
-> one's integration. And which one is the Primary ADE — the principal environment of
-> your workflow? (The Primary ADE has no extra authority.)
-
-Silence is not an answer. Exactly one Primary, and it must be one of the participating
-ADEs. If the human names no ADE, or the only ADE has no row above and none has been
-explicitly mapped for it, install the portable core only, do not invent an adapter,
-and report plainly that no native adapter exists (it falls back to `AGENTS.md` where it
-can read that natively).
-
-**The Primary ADE holds no authority.** It identifies the principal environment of the
-workflow and nothing else. It does not outrank, approve or arbitrate for another ADE, and
-no ADE — the Primary included — ratifies anything: every ADE prepares, the human decides.
-Do not describe or behave as if there were an ADE hierarchy. `AGENTS.md`, `.claude/`,
-`.kiro/`, `.github/instructions/`, `.codex/` and any ADE's memory or session history are integration
-surfaces, never governance authority. Several ADEs may run at once (three terminals in one
-editor), which is why every participating ADE gets its overlay.
-
-**Install.** Once the portable core and the Engine are in place, with the choice made,
-dry-run first, show the plan (a CONFLICT means an overlay file already exists — it is never
-overwritten or merged; stop and report it), then apply:
-
-```bash
-bash <catalog>/.gtt/scripts/gtt-ade.sh install --from <catalog> --participating claude,codex --primary claude
-bash <catalog>/.gtt/scripts/gtt-ade.sh install --from <catalog> --participating claude,codex --primary claude --apply
-```
-
-That copies only the participating overlays, writes `.gtt/ade.json` (participating, Primary,
-the ADEs declined as excluded, and a ledger of the files it installed so a later clean removes
-exactly those and never the host project's own ADE configuration), and validates the result,
-rolling everything back on failure. Do not copy overlay files by hand and never hand-edit
-`.gtt/ade.json`. Only Claude Code has a real-time write block; say so for every other
-participating ADE (governed by instructions plus the CI gate, not hard-blocked).
-
-**Re-running bootstrap.** Read the state first (`gtt-ade.sh state`). If `.gtt/ade.json`
-exists: never drop a participating ADE, never re-add one recorded as excluded unless the
-human says so (`--reinclude <ade>`), never change the Primary unless the human says so
-(`gtt-ade.sh set-primary`). A project that predates `.gtt/ade.json` (an overlay present, no
-state) is migrated with `gtt-ade.sh adopt` (dry run first): it records the existing ADE as
-both Primary and participating only when exactly one overlay is present and intact; where
-several are present, ask the human and pass `--participating a,b --primary a`. Never infer
-an authorization the state does not show.
-
-Once resolved, note the detected ADEs, the participating ADEs, the Primary, the files this
-will install, and the ADEs this will exclude — this becomes part of the report after
-step 6. Then continue to step 1.
+Do this before touching the filesystem, and before step 1. **Read
+[references/ade-overlays.md](references/ade-overlays.md) and follow it.** In short:
+detection is not participation (`gtt-ade.sh detect` lists candidates only); ask which
+ADEs participate and which one is the Primary - exactly one, and it holds no authority;
+install with `gtt-ade.sh install`, dry run first, never by hand; on a re-run read
+`gtt-ade.sh state` and never drop, re-add or re-prime an ADE the human did not name.
+Note what was resolved for the report after step 6.
 
 ### Autonomy Profile
 
@@ -161,7 +76,7 @@ The Method Packs (`.gtt/methods/`) are the only source of each method's texts.
    left unanswered is `OPEN`.
 4. **Never apply the recommended option in silence**, and never infer the method from
    the project, the stack, the ADE or a previous project. `help` decides nothing yet:
-   see *Help me choose* in step 2.
+   see *Help me choose* in *The design intake* (step 2).
 
 The setup answer is not governed context. It reaches `architecture.md` as the Method
 Lock in step 4, with Confirmation B, and the freeze ratifies it.
@@ -223,7 +138,7 @@ agent it exists — a `.md`, `.txt`, Word, or PDF file sitting there is enough.
   source document?" — rather than assuming silently, then use it.
 - **No candidate at the root:** ask directly whether a document exists
   elsewhere — another path, an external doc, or paste it into chat. If there is
-  none at all, offer the Initial Design Questionnaire (below).
+  none at all, offer the Initial Design Questionnaire (*The design intake*, below).
 - **More than one candidate:** never guess between them, and never pick one by name, order or
   size. First ask whether all of them are design sources or only some. If only one is, use it.
   If several are, they must be resolved before design continues, and the Solution Designer
@@ -255,132 +170,20 @@ so the reasoning behind the context stays visible and traceable right at the
 project root, the one GTT artifact a human should never have to go looking
 for under `.gtt/`.
 
-### Assess the design (a design document exists)
+### The design intake
 
-A document existing is not the same as a design being good enough to govern. Before
-asking whether it is finished, read it — all of them, when there are several — and write
-down how good it is. This is the first act of the Think stage, and it produces a document,
-not a conversation.
+Once you know whether a design document exists, **read
+[references/design-intake.md](references/design-intake.md)** and follow the part that applies:
 
-1. Materialize the working copy: `bash .gtt/scripts/gtt-template.sh materialize design-assessment`
-   (dry run), then `--apply`. It creates `gtt-domain/proposals/bootstrap/design-assessment.md`.
-   Read its *Operating contract* and follow it.
-   **Establish the THINK Depth before rating anything.** Ask once, showing the three levels
-   as the template describes them — `QUICK` (simple or small designs: floor areas and
-   critical gaps, a reduced questionnaire), `STANDARD` (ordinary projects: the complete
-   assessment, stack alternatives with trade-offs, an adaptive questionnaire), `DEEP`
-   (complex, critical or uncertain systems: exhaustive assessment, architectural as well as
-   stack alternatives, dependencies and risks, a deep iterative questionnaire). Record the
-   answer in the *THINK Depth* block with who and when. Never infer it — not from the
-   project's size, not from the Autonomy Profile (a different thing; the two are independent),
-   not from a previous project. If the human does not choose, leave it empty: `STANDARD`
-   applies as a fallback and you report it as *not selected*, never as a choice.
+- *Assess the design* - a document exists: establish the THINK Depth, write the Design
+  Assessment (`SOLID` / `THIN` / `MISSING` per area, the minimum floor, the verdict) and
+  offer strengthening; a `POOR` design is never mapped as it is.
+- *Help me choose* - the development method is `OPEN`: propose one as a `[PROPUESTA]`, and
+  cut no Epic until the human answers.
+- *Git workflow* - run `gtt-workflow.sh detect` once; report, adopt nothing.
+- *The Initial Design Questionnaire* - no document, a `POOR` one, or strengthening chosen:
+  materialize it, never improvise an interview.
 
-   The depth changes how far you dig, never which rule you may skip. At `QUICK` the floor
-   is still assessed line by line, a design below it is still `POOR`, and an area you did
-   not assess is written `not assessed (QUICK)`, never `SOLID`.
-
-   **Escalation is a proposal.** If what you find justifies a deeper level — regulated
-   data, requirements that constrain the architecture, several integrations, documents
-   that disagree on a structural point, a floor line with no obvious way to meet it — add
-   a row to the *Escalation log* with the evidence, tell the human in one line, and keep
-   working at the current depth until they decide. Only an accepted row changes the depth.
-   `bash .gtt/scripts/gtt-project.sh think` reports the recorded depth and fails on a depth
-   nobody decided or a verdict above `POOR` with the floor unmet.
-2. Fill sections 1–5: the documents assessed; how several documents are resolved (the
-   Solution Designer's choice above); each area rated `SOLID`, `THIN` or `MISSING` with the
-   `[FUENTE: file:line]` that supports the rating; the minimum floor; the verdict. Rate what
-   the documents say, never what you assume the author meant.
-3. The floor is not negotiable: the problem and scope are stated, the architectural style is
-   stated, **the technology stack is decided** (language and runtime, framework, compute
-   model) and **the datastore is decided** or explicitly not needed. A design below the
-   floor is `POOR`, whatever else it gets right.
-4. Fill section 6, the strengthening plan. For every stack layer that is undecided, or
-   decided without a reason, give the options that fit **this** project — its requirements,
-   constraints, team and scale as the documents state them — with the trade-offs of each
-   and a recommendation that says what it optimises for and what it gives up. Each option
-   and each recommendation is a `[PROPUESTA]`. When the documents do not say enough to
-   recommend, say so and ask; never recommend a generic favourite, and never write a stack
-   choice as decided because you recommended it.
-5. Report the verdict in a few lines — verdict, what is thin or missing, what you recommend —
-   and ask the Solution Designer how to proceed:
-   - **`STRONG`** — offer strengthening; they may skip it.
-   - **`ADEQUATE`** — offer strengthening and recommend it for the areas listed.
-   - **`POOR`** — the design must be strengthened before it is used. Do not map it into the
-     six files as it is; say plainly that the floor is not met and which line fails.
-6. **Strengthening** is written, not talked about, and it reuses the one instrument the
-   Bootstrap has for this: materialize the Initial Design Questionnaire (below), carry into it
-   what the documents already establish — each statement with its `[FUENTE: file:line]` — and
-   conduct the interview only for the areas rated `THIN` or `MISSING`. The decisions the
-   Solution Designer takes on section 6 are recorded there as human decisions; an option
-   nobody decided stays a `[PROPUESTA]` and maps to nothing. The original documents are never
-   rewritten. The completed questionnaire is then the source document, exactly as when there
-   was no document at all.
-
-The assessment decides nothing and governs nothing. It is removed by `gtt-freeze.sh` with
-the other bootstrap drafts.
-
-### Help me choose: a development method that is still OPEN
-
-When `gtt-method.sh get` shows the method `OPEN` - the human asked for help, or left a
-question unanswered - THINK proposes; it never decides. Once the sources are read (the
-assessment above, or the questionnaire's sections 4 to 13):
-
-1. Read the packs (`bash .gtt/scripts/gtt-method.sh show <id>` for each candidate) and
-   compare their *Conviene si* and *Qué descarta* with what the sources establish.
-2. Propose one method - or one combination - under `@gtt · Development method` as a
-   `[PROPUESTA]`: the packs, the reason in two or three lines, the `[FUENTE: file:line]`
-   of the dossier each part of the reason rests on, and what the proposal discards. When
-   the sources do not say enough to propose, say so and ask; never fall back on the
-   recommended pack.
-3. **Do not cut Epics or write any Epic design until the human answers.** A confirmed
-   proposal is recorded with `gtt-method.sh select ... --apply`. If the human prefers to
-   leave it open, it stays `OPEN` - typed and visible in step 4 - and the designs follow
-   no method template.
-
-A `[PROPUESTA]` never reaches governed context: only the human's answer does.
-
-### Git workflow: report what the project says, adopt nothing
-
-Run `bash .gtt/scripts/gtt-workflow.sh detect` once, while you read the sources. If the project's
-documents mention a commit convention (Conventional Commits, commitlint, commitizen, a
-`.gitmessage`), it prints one `@gtt · Finding` line - give it to the human as it is. Never adopt
-it and never write `gtt-domain/workflow.md`: that file is the human's, and the finding already
-names the line they would add. Without it the defaults hold: you commit only when asked.
-
-### The Initial Design Questionnaire (no sufficient design document)
-
-If the human has no design document, or the assessment above found it `POOR`, or they chose
-to strengthen it, do not improvise an interview: offer the Bootstrap's Initial Design Questionnaire. It is owned
-by the Bootstrap (`.gtt/scaffold/templates/gtt-initial-design-questionnaire.md`, declared
-under `templates:` in the manifest); there is exactly one, and you never copy or
-paraphrase it anywhere else.
-
-1. Materialize the working copy: `bash .gtt/scripts/gtt-template.sh materialize initial-design-questionnaire`
-   (dry run), then `--apply`. It creates `gtt-domain/proposals/bootstrap/initial-design-questionnaire.md`,
-   never overwrites an existing one and registers it in the index. To resume an earlier
-   session, open the existing copy instead.
-2. Read the questionnaire's *Operating Contract* (section 1) and follow it: inspect the
-   project before asking, ask progressively — never the whole form at once — and populate
-   the document as the conversation goes. When there is no Design Assessment, establish the
-   THINK Depth here before the first question — ask once, record it in the questionnaire's
-   *THINK Depth* block, never infer it; with an assessment, the depth recorded there applies
-   and this block stays empty. Escalation is proposed in the questionnaire's own log.
-3. Keep provenance honest: `[FUENTE: archivo:línea]` for what the project shows, `[VACÍO]`
-   for what is not established, `[CONFLICTO]` when sources or answers disagree,
-   `[PROPUESTA]` for an option you suggest. A proposal is never a decision, an ADE
-   inference is never a human decision, and you never fill `Human decision` for the human.
-4. Stop when the human has reviewed the summary (section 24) and Readiness (section 23) is
-   `READY` or `READY_WITH_OPEN_ITEMS`, or when they decide to continue later. `NOT_READY`
-   is the same as an unfinished draft (step 3): stop.
-5. From then on the questionnaire is the source document: step 3's confirmation is about
-   it; step 4 maps it to the six files — a `[VACÍO]` becomes an empty cell, an unresolved
-   `[CONFLICTO]` is asked again, and a `[PROPUESTA]` becomes context only if a
-   `Human decision` records it; step 6 preserves the completed questionnaire verbatim as
-   `SOURCE-BRIEF.md`. The working copy under `gtt-domain/proposals/bootstrap/` is removed
-   by `gtt-freeze.sh` together with the other bootstrap drafts.
-
-The questionnaire never becomes governed architecture by being filled in.
 
 ## 3. Confirm the document is finished — or stop
 
@@ -401,7 +204,7 @@ decisions, not a draft you're still thinking through?
   If they prefer to finish it on their own, stop; they run this skill again
   once it is ready. Patching a draft with ad-hoc interview questions is not
   the same as the Solution Designer deciding it.
-- **No document exists at all:** run the Initial Design Questionnaire (above);
+- **No document exists at all:** run the Initial Design Questionnaire (*The design intake*);
   its review, with Readiness `READY` or `READY_WITH_OPEN_ITEMS`, is this step's
   confirmation, so continue to step 4 once that holds. The interview itself is how
   the design gets defined this time.
@@ -492,41 +295,11 @@ The accepted-decisions folder is writable in this same window: if
 
 ### Register the sources and write the design of each Epic
 
-- **Sources.** Register each one with `bash .gtt/scripts/gtt-source.sh add <file> --id <ID> --apply` (it copies the
-  file to `docs/sources/<ID>/v1/` and records its hash) or `adopt <path> --id <ID> --apply` for one that stays
-  where it is. The completed questionnaire is a source too: add it as `IDQ`. Never edit a source afterwards.
-- **The method cuts the Epics.** Before cutting Epics or writing a design, read every chosen
-  pack (`bash .gtt/scripts/gtt-method.sh show <id>`) and follow its *Efecto en el diseño*. With
-  Vertical Slice there are no horizontal Epics - no "data model", "API", "backend" or
-  "frontend" Epic: each Epic is a business result cut into end-to-end slices, the first one the
-  thinnest that crosses the whole stack. With Walking Skeleton the first Epic is the skeleton
-  and says `**Kind:** skeleton`. With DDD each Epic names its `**Bounded context:**`; combined
-  with Vertical Slice, DDD defines the Epics and Vertical Slice cuts them. The Epics you derive
-  stay `Proposed`: the cut is a proposal, the human approves each Epic. With the method `OPEN`,
-  or when none is declared, cut by the sources alone and say so.
-- **One design per Epic.** For every `Proposed` Epic in scope run
-  `bash .gtt/scripts/gtt-design.sh scaffold EPIC-NNN --apply`, then fill
-  `gtt-domain/context/design/EPIC-NNN.md`: list under *Source sections* every section of the sources that belongs
-  to the Epic and carry its content over **in full** - data, rules (`R-n`), flows (`F-n`, with their error path),
-  interfaces (`I-n`), examples (`E-n`) - a `[FUENTE: ID:§…]` on every line. Do not summarise and do not decide:
-  what the sources do not define is a `[VACÍO]`. When a method is declared, the scaffold has already put the
-  pack's *Plantilla de diseño por Epic* in section 1 (with Vertical Slice, one `### S-n` per slice: use case,
-  input / output, logic, data it touches, acceptance criterion, out of this slice); fill it from the sources with
-  the same marks (`[FUENTE]`, `[VACÍO]`, `[CONFLICTO]`; a `[PROPUESTA]` only while it is a draft) and point it at
-  the items of sections 2 to 6. A slice is design, not a Story: THINK does not turn slices into executable
-  Stories.
-- **Ask.** Turn the `[VACÍO]`s into questions under `@gtt · Design EPIC-NNN`: at most five a turn, grouped by
-  Epic, with options where the source suggests them. Each answer is written in section 8 as `D-n`, with who and
-  when, and closes its `[VACÍO]`.
-- **Check.** `bash .gtt/scripts/gtt-check-design.sh` must pass: eight sections, every listed source section
-  cited, every rule and flow in an example. This is the same in every Autonomy Profile and at every THINK Depth.
-  `bash .gtt/scripts/gtt-method.sh check` must hold too: no Epic cut by layer when the method forbids it, the
-  skeleton first, every slice with its fields. It reports; it never corrects the backlog or a design for you.
-- **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1`, a `Context:` of
-  at most five lines each ending with its anchor, and `Done when:` naming an example of the design and its test
-  file. A Story cites the design; it never cites a source and never decides.
-- **Approval is the human's.** Give the command - `bash .gtt/scripts/gtt-approve.sh EPIC-NNN` - and never write
-  `Approved` yourself.
+**Read [references/epic-designs.md](references/epic-designs.md) and follow it** before
+registering a source or cutting an Epic: sources go through `gtt-source.sh`, the chosen
+method packs cut the Epics (they stay `Proposed`), one design per Epic carried over in full
+and cited, `gtt-check-design.sh` and `gtt-method.sh check` must pass, and approval is the
+human's (`gtt-approve.sh`) - never write `Approved` yourself.
 
 Then stop, without touching the freeze marker. End with a note telling the
 Solution Designer to review and then run the freeze script to ratify. Freezing

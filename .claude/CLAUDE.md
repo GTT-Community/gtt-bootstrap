@@ -21,12 +21,24 @@ Use these skills instead of improvising the format:
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
 | A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
 
-`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/change-request.md`, and `SOURCE-BRIEF.*`
-are blocked at the permission layer and by a PreToolUse hook. A denial there
-is the system working as designed — write to `gtt-domain/proposals/` instead, and
+`gtt-domain/change-request.md` and `SOURCE-BRIEF.*` are always blocked, at the
+permission layer and by a PreToolUse hook; `gtt-domain/context/` and
+`gtt-domain/adr/` are writable before the freeze (the `gtt-bootstrap` skill
+writes them) and blocked by the hook once `gtt-domain/.frozen` exists. A denial
+there is the system working as designed — write to `gtt-domain/proposals/` instead, and
 never look for another way to reach a blocked path. `gtt-domain/backlog.md` is not
 blocked: Stories are your working plan and you edit them freely; only an Epic's
 goal and scope are the human's decision (see `AGENTS.md` → *Backlog*).
+
+A shell or MCP command that reaches the frozen design, the freeze or the
+protection itself anyway (through a `cd`, a variable, a script, a promotion run
+under another spelling) is caught by `governed-sentinel.py` after it runs: it is
+put back, what the command wrote is archived under
+`gtt-domain/proposals/withdrawn/`, and you are told. Take it as a denial.
+
+The `gtt` CLI's human acts (`promote`, `undo`, `freeze`, `change`, `proposals
+withdraw`, `clean`...) are denied to you too, `--yes` included: give the human
+the exact command; in Claude Code they can type it after `!` in the prompt.
 
 After a write, `detect-drift.py` runs the observation engine
 (`.gtt/scripts/gtt-observe.sh`). What it hands you is a signal, not an order to

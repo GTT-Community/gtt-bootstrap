@@ -48,7 +48,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 | Understand why GTT works this way | `.gtt/docs/docs.md` (Methodology) |
 | Set this up in my project | `readme-gtt.md` |
 | Run it on Kiro, Codex, Copilot, Cursor, OpenHands, or Antigravity | `.gtt/docs/docs.md` (Portability) |
-| See which adapter I get for my ADE | `.claude/skills/gtt-bootstrap/SKILL.md` (step 0) or `.gtt/docs/guide.md` → *ADE adapters* |
+| See which adapter I get for my ADE | `.claude/skills/gtt-bootstrap/references/ade-overlays.md` or `.gtt/docs/guide.md` → *ADE adapters* |
 | Resume work / see current state, regardless of which ADE picks it up | `.gtt/scripts/gtt-status.sh` (regenerates `gtt-domain/session.md`) |
 | See what the work did against the frozen design | `bash .gtt/scripts/gtt-observe.sh backlog` |
 | Decide on an observation (yours, never an agent's) | `bash .gtt/scripts/gtt-observe.sh accept\|reject\|defer OBS-NNNN --by <you> --apply` |
@@ -134,7 +134,7 @@ moves; reference an artifact as `[[ID]]`.
 ## Instructions — how agents behave
 
 A project has the adapter of every ADE its human chose to have participate, one of
-them Primary — see `.claude/skills/gtt-bootstrap/SKILL.md` (step 0) and `.gtt/ade.json`.
+them Primary — see `.claude/skills/gtt-bootstrap/references/ade-overlays.md` and `.gtt/ade.json`.
 The rows below marked *(Claude Code adapter)* or *(Kiro adapter)* are present in an
 installed project only for participating ADEs; all are shown here because this
 source repository is the catalog, not an installed project.
@@ -176,8 +176,9 @@ source repository is the catalog, not an installed project.
 | `gtt-domain/governance-backlog.json` | The governance backlog: every observation still open and the human decisions taken on them. Written only by `gtt-observe.sh`; a signal, never authority. Absent until something is observed |
 | `.gtt/scripts/gtt-git-hook.sh` | Installs (the human's choice) a Git pre-commit hook that runs `gtt-observe.sh check`: the first control every ADE shares (skippable with `--no-verify`, so CI stays the guaranteed layer). Never replaces a hook GTT did not write; `install --apply` and `remove --apply` are the human's |
 | `.claude/settings.json` | Denies writes to governance machinery unconditionally; registers all hooks below |
-| `.claude/hooks/protect-l0.py` | `PreToolUse`. Regime-aware: blocks `gtt-domain/context/`/`gtt-domain/adr/`/`gtt-domain/change-request.md`/`SOURCE-BRIEF.*` (the last two unconditionally) once frozen; blocks machinery paths always, via shell too. Exit 2 |
+| `.claude/hooks/protect-l0.py` | `PreToolUse` (file, shell and mutating MCP tools). Regime-aware: blocks `gtt-domain/context/`/`gtt-domain/adr/`/`gtt-domain/change-request.md`/`SOURCE-BRIEF.*` (the last two unconditionally) once frozen; blocks machinery paths always, via shell too, and the `gtt` CLI's human acts (`promote`, `undo`, `freeze`, `change`...). Exit 2, the reason on stderr |
 | `.claude/hooks/protect-guard.py` | `PreToolUse`. Blocks an autonomous edit to a `HUMAN_APPROVAL` entry in `.gtt/protection/registry.yaml` in real time — file-scope blocks the whole file, symbol-scope resolves the exact span live from disk and fails safe to whole-file if resolution is ambiguous. Exit 2 |
+| `.claude/hooks/governed-sentinel.py` | `PreToolUse` + `PostToolUse` on shell and MCP tools, governed regime only. Catches what a static reading of a command cannot (a `cd`, a variable, a glob, a script, a promotion under another spelling): if the frozen design, `gtt-domain/.frozen`, `.claude/settings.json`, `.claude/hooks/` or `.gtt/scripts/` changed during an agent's command, it puts them back, archives what the command wrote under `gtt-domain/proposals/withdrawn/`, and tells the agent and the human. The human's own promotions run in their terminal or after `!`, where no hook runs. Never blocks |
 | `.claude/hooks/detect-drift.py` | `PostToolUse`, governed regime only. Runs the observation engine after a write and hands whatever is new to the agent as context. Holds no logic of its own; never blocks |
 | `.claude/hooks/notify-change-request.py` | `UserPromptSubmit`. Advisory only: notices a filled-in, unprocessed `gtt-domain/change-request.md` and surfaces it in context — never analyzes or drafts. Deduplicated per session/content |
 | `.gtt/scaffold/ade/kiro-permissions.yaml` | Template of Kiro workspace permission rules, in Kiro's format. Kiro reads none from a repository: the human installs it per machine (`gtt-ade.sh` points at it) |

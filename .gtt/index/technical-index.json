@@ -430,6 +430,131 @@
       }
     },
     {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-ADE-OVERLAYS",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/ade-overlays.md",
+      "title": "Step 0 - Detect candidate ADEs, let the human choose, and resolve the overlays",
+      "authority": "instruction",
+      "version": "v3.0",
+      "sha256": "d90b41229ea007935d7892c239c63bb9fd8e57b71622b03b540e2b6189f0653a",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Step 0 - Detect candidate ADEs, let the human choose, and resolve the overlays",
+          "level": 1,
+          "anchor": "step-0---detect-candidate-ades-let-the-human-choose-and-resolve-the-overlays",
+          "path": "Step 0 - Detect candidate ADEs, let the human choose, and resolve the overlays",
+          "line_start": 1,
+          "line_end": 99
+        }
+      ],
+      "references": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "referenced_by": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/design-intake.md",
+      "title": "Step 2 - The design intake",
+      "authority": "instruction",
+      "version": "v3.0",
+      "sha256": "b6299af1d957a47a03dfc007214c1b0de3f6619f2c60c6de6497d92be30d7108",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Step 2 - The design intake",
+          "level": 1,
+          "anchor": "step-2---the-design-intake",
+          "path": "Step 2 - The design intake",
+          "line_start": 1,
+          "line_end": 135
+        },
+        {
+          "heading": "Assess the design (a design document exists)",
+          "level": 3,
+          "anchor": "assess-the-design-a-design-document-exists",
+          "path": "Step 2 - The design intake > Assess the design (a design document exists)",
+          "line_start": 9,
+          "line_end": 73
+        },
+        {
+          "heading": "Help me choose: a development method that is still OPEN",
+          "level": 3,
+          "anchor": "help-me-choose-a-development-method-that-is-still-open",
+          "path": "Step 2 - The design intake > Help me choose: a development method that is still OPEN",
+          "line_start": 74,
+          "line_end": 93
+        },
+        {
+          "heading": "Git workflow: report what the project says, adopt nothing",
+          "level": 3,
+          "anchor": "git-workflow-report-what-the-project-says-adopt-nothing",
+          "path": "Step 2 - The design intake > Git workflow: report what the project says, adopt nothing",
+          "line_start": 94,
+          "line_end": 101
+        },
+        {
+          "heading": "The Initial Design Questionnaire (no sufficient design document)",
+          "level": 3,
+          "anchor": "the-initial-design-questionnaire-no-sufficient-design-document",
+          "path": "Step 2 - The design intake > The Initial Design Questionnaire (no sufficient design document)",
+          "line_start": 102,
+          "line_end": 135
+        }
+      ],
+      "references": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "referenced_by": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-EPIC-DESIGNS",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/epic-designs.md",
+      "title": "Step 6 - Register the sources and write the design of each Epic",
+      "authority": "instruction",
+      "version": "v3.0",
+      "sha256": "7a1cc9725fc947114ba75e880bdd0e8bfa3f089a24cc96d9e5857816acba07f5",
+      "aliases": [],
+      "sections": [
+        {
+          "heading": "Step 6 - Register the sources and write the design of each Epic",
+          "level": 1,
+          "anchor": "step-6---register-the-sources-and-write-the-design-of-each-epic",
+          "path": "Step 6 - Register the sources and write the design of each Epic",
+          "line_start": 1,
+          "line_end": 44
+        }
+      ],
+      "references": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "referenced_by": [
+        "SKILL-GTT-BOOTSTRAP"
+      ],
+      "relationships": [],
+      "provenance": {
+        "history": [],
+        "referenced_by_proposals": []
+      }
+    },
+    {
       "id": "ART-GTT-DOMAIN-WORKFLOW",
       "type": "documentation",
       "path": "gtt-domain/workflow.md",
@@ -956,7 +1081,7 @@
       "title": null,
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "9fe048e3deadc4abc605f749c987398f347f5bfc555246538297fbb7c72b38d7",
+      "sha256": "63c0758411f78ebf9fc3b8bc0c8a0700d9bf47f5ccb88c4cb9070ba2938607a6",
       "aliases": [],
       "sections": [
         {
@@ -965,7 +1090,7 @@
           "anchor": "claude-code-specifics",
           "path": "Claude Code specifics",
           "line_start": 5,
-          "line_end": 57
+          "line_end": 69
         }
       ],
       "references": [],
@@ -1596,7 +1721,7 @@
       "title": "GTT Bootstrap — the contract for the CLI (contract version 1)",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "e5bc857fc987dbb65b97c1082fce15a4f7447fcd32fff5eabab21eb02810f818",
+      "sha256": "43a27871e8f4c21a5a9487ea0ce29edde0056e031dc10d7055c78aff44dc1b34",
       "aliases": [],
       "sections": [
         {
@@ -1697,7 +1822,7 @@
       "title": "GTT — Reference Docs",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "79c739952eb7dd5ddb5df83774683125aee58c25877d2912ff503694b3fe5119",
+      "sha256": "dc44ae34866a8683be4a32868260fa40bfe1e8162650ca5b7c901a98f6471692",
       "aliases": [],
       "sections": [
         {
@@ -2071,7 +2196,7 @@
       "title": "GTT Guide",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "23aef4cdc95ce811d49fb7c1f4feeeb87d73db4b103f73d31a6b5af98b7ba22c",
+      "sha256": "1e7fea463507fcfbb8ccfa87da777f9bace25f905b6236c3d1eaa089c1933de0",
       "aliases": [],
       "sections": [
         {
@@ -2080,7 +2205,7 @@
           "anchor": "gtt-guide",
           "path": "GTT Guide",
           "line_start": 1,
-          "line_end": 1032
+          "line_end": 1033
         },
         {
           "heading": "Quick navigation",
@@ -2272,87 +2397,87 @@
           "anchor": "structure",
           "path": "GTT Guide > Structure",
           "line_start": 817,
-          "line_end": 899
+          "line_end": 900
         },
         {
           "heading": "Why some files stay at the root",
           "level": 3,
           "anchor": "why-some-files-stay-at-the-root",
           "path": "GTT Guide > Structure > Why some files stay at the root",
-          "line_start": 886,
-          "line_end": 899
+          "line_start": 887,
+          "line_end": 900
         },
         {
           "heading": "Context layers",
           "level": 2,
           "anchor": "context-layers",
           "path": "GTT Guide > Context layers",
-          "line_start": 900,
-          "line_end": 910
+          "line_start": 901,
+          "line_end": 911
         },
         {
           "heading": "Getting started",
           "level": 2,
           "anchor": "getting-started",
           "path": "GTT Guide > Getting started",
-          "line_start": 911,
-          "line_end": 937
+          "line_start": 912,
+          "line_end": 938
         },
         {
           "heading": "Upgrading to the two-regime model",
           "level": 3,
           "anchor": "upgrading-to-the-two-regime-model",
           "path": "GTT Guide > Getting started > Upgrading to the two-regime model",
-          "line_start": 924,
-          "line_end": 937
+          "line_start": 925,
+          "line_end": 938
         },
         {
           "heading": "Tool support",
           "level": 2,
           "anchor": "tool-support",
           "path": "GTT Guide > Tool support",
-          "line_start": 938,
-          "line_end": 987
+          "line_start": 939,
+          "line_end": 988
         },
         {
           "heading": "Switching ADE later",
           "level": 3,
           "anchor": "switching-ade-later",
           "path": "GTT Guide > Tool support > Switching ADE later",
-          "line_start": 953,
-          "line_end": 987
+          "line_start": 954,
+          "line_end": 988
         },
         {
           "heading": "What you maintain",
           "level": 2,
           "anchor": "what-you-maintain",
           "path": "GTT Guide > What you maintain",
-          "line_start": 988,
-          "line_end": 998
+          "line_start": 989,
+          "line_end": 999
         },
         {
           "heading": "Requirements",
           "level": 2,
           "anchor": "requirements",
           "path": "GTT Guide > Requirements",
-          "line_start": 999,
-          "line_end": 1006
+          "line_start": 1000,
+          "line_end": 1007
         },
         {
           "heading": "Evolution",
           "level": 2,
           "anchor": "evolution",
           "path": "GTT Guide > Evolution",
-          "line_start": 1007,
-          "line_end": 1018
+          "line_start": 1008,
+          "line_end": 1019
         },
         {
           "heading": "License",
           "level": 2,
           "anchor": "license",
           "path": "GTT Guide > License",
-          "line_start": 1019,
-          "line_end": 1032
+          "line_start": 1020,
+          "line_end": 1033
         }
       ],
       "references": [
@@ -2382,7 +2507,7 @@
       "title": "Guía de GTT",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "6247b9d21115ca5da7301f0957b9ae6d3f1d036ef35a8f53d0476ebf47e95f2d",
+      "sha256": "233dafde2c5096820125f6cd009728681933389018bace22c7af4cfaea23cff3",
       "aliases": [],
       "sections": [
         {
@@ -2391,7 +2516,7 @@
           "anchor": "guía-de-gtt",
           "path": "Guía de GTT",
           "line_start": 1,
-          "line_end": 1059
+          "line_end": 1060
         },
         {
           "heading": "Navegación rápida",
@@ -2583,87 +2708,87 @@
           "anchor": "estructura",
           "path": "Guía de GTT > Estructura",
           "line_start": 844,
-          "line_end": 926
+          "line_end": 927
         },
         {
           "heading": "Por qué algunos archivos permanecen en la raíz",
           "level": 3,
           "anchor": "por-qué-algunos-archivos-permanecen-en-la-raíz",
           "path": "Guía de GTT > Estructura > Por qué algunos archivos permanecen en la raíz",
-          "line_start": 913,
-          "line_end": 926
+          "line_start": 914,
+          "line_end": 927
         },
         {
           "heading": "Capas de contexto",
           "level": 2,
           "anchor": "capas-de-contexto",
           "path": "Guía de GTT > Capas de contexto",
-          "line_start": 927,
-          "line_end": 937
+          "line_start": 928,
+          "line_end": 938
         },
         {
           "heading": "Primeros pasos",
           "level": 2,
           "anchor": "primeros-pasos",
           "path": "Guía de GTT > Primeros pasos",
-          "line_start": 938,
-          "line_end": 964
+          "line_start": 939,
+          "line_end": 965
         },
         {
           "heading": "Actualización al modelo de dos regímenes",
           "level": 3,
           "anchor": "actualización-al-modelo-de-dos-regímenes",
           "path": "Guía de GTT > Primeros pasos > Actualización al modelo de dos regímenes",
-          "line_start": 951,
-          "line_end": 964
+          "line_start": 952,
+          "line_end": 965
         },
         {
           "heading": "Compatibilidad con herramientas",
           "level": 2,
           "anchor": "compatibilidad-con-herramientas",
           "path": "Guía de GTT > Compatibilidad con herramientas",
-          "line_start": 965,
-          "line_end": 1014
+          "line_start": 966,
+          "line_end": 1015
         },
         {
           "heading": "Cambiar de ADE más adelante",
           "level": 3,
           "anchor": "cambiar-de-ade-más-adelante",
           "path": "Guía de GTT > Compatibilidad con herramientas > Cambiar de ADE más adelante",
-          "line_start": 980,
-          "line_end": 1014
+          "line_start": 981,
+          "line_end": 1015
         },
         {
           "heading": "Lo que mantienes",
           "level": 2,
           "anchor": "lo-que-mantienes",
           "path": "Guía de GTT > Lo que mantienes",
-          "line_start": 1015,
-          "line_end": 1025
+          "line_start": 1016,
+          "line_end": 1026
         },
         {
           "heading": "Requisitos",
           "level": 2,
           "anchor": "requisitos",
           "path": "Guía de GTT > Requisitos",
-          "line_start": 1026,
-          "line_end": 1033
+          "line_start": 1027,
+          "line_end": 1034
         },
         {
           "heading": "Evolución",
           "level": 2,
           "anchor": "evolución",
           "path": "Guía de GTT > Evolución",
-          "line_start": 1034,
-          "line_end": 1045
+          "line_start": 1035,
+          "line_end": 1046
         },
         {
           "heading": "Licencia",
           "level": 2,
           "anchor": "licencia",
           "path": "Guía de GTT > Licencia",
-          "line_start": 1046,
-          "line_end": 1059
+          "line_start": 1047,
+          "line_end": 1060
         }
       ],
       "references": [
@@ -4409,7 +4534,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "c4e14a9cea18fc77bb1dd3419843b246837e44aab43281510079d66018a12578",
+      "sha256": "5a581bb9bc9067d6f57e0a9f37c4bd0dfa9fd3ec4f4b548d143db5663c16e0ae",
       "aliases": [],
       "sections": [
         {
@@ -4418,7 +4543,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 282
+          "line_end": 283
         },
         {
           "heading": "Quick links",
@@ -4514,31 +4639,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 169,
-          "line_end": 241
+          "line_end": 242
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 242,
-          "line_end": 256
+          "line_start": 243,
+          "line_end": 257
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 257,
-          "line_end": 271
+          "line_start": 258,
+          "line_end": 272
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 272,
-          "line_end": 282
+          "line_start": 273,
+          "line_end": 283
         }
       ],
       "references": [
@@ -6585,7 +6710,7 @@
       "title": "GTT Bootstrap",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "e0524e19015237161a0a897fc145e3e5727b6084a17c424cf68216916b7f8a18",
+      "sha256": "c695e7fd467640ebe834b52756d2bb5810de29fec8420596f177b4053255651e",
       "aliases": [],
       "sections": [
         {
@@ -6594,7 +6719,7 @@
           "anchor": "gtt-bootstrap",
           "path": "GTT Bootstrap",
           "line_start": 1,
-          "line_end": 50
+          "line_end": 51
         },
         {
           "heading": "How it works",
@@ -6618,7 +6743,7 @@
           "anchor": "where-things-live",
           "path": "GTT Bootstrap > Where things live",
           "line_start": 37,
-          "line_end": 50
+          "line_end": 51
         }
       ],
       "references": [
@@ -6644,7 +6769,7 @@
       "title": "GTT Bootstrap",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "894925dfd8d7e7f0a600d1706e2c24715776c25f3f987d9b8f9e99986effe1b7",
+      "sha256": "ae3ca99908a7db6d8109c732fadb4055e5d57167953cf4286f211860e94cc564",
       "aliases": [],
       "sections": [
         {
@@ -6653,7 +6778,7 @@
           "anchor": "gtt-bootstrap",
           "path": "GTT Bootstrap",
           "line_start": 1,
-          "line_end": 51
+          "line_end": 52
         },
         {
           "heading": "Cómo funciona",
@@ -6677,7 +6802,7 @@
           "anchor": "dónde-está-cada-cosa",
           "path": "GTT Bootstrap > Dónde está cada cosa",
           "line_start": 38,
-          "line_end": 51
+          "line_end": 52
         }
       ],
       "references": [
@@ -6922,7 +7047,7 @@
       "title": "Bootstrap the governed context",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "25ff3d9007616ca19496cafb301917437b4be1698e2c9e0d0f07f33a89836541",
+      "sha256": "e1604e7cff23e97ba6f5fa3ead4553da4eb7c4915674c9af28f3df718b9f423f",
       "aliases": [],
       "sections": [
         {
@@ -6931,7 +7056,7 @@
           "anchor": "bootstrap-the-governed-context",
           "path": "Bootstrap the governed context",
           "line_start": 8,
-          "line_end": 587
+          "line_end": 360
         },
         {
           "heading": "0. Detect candidate ADEs, let the human choose, and resolve the overlays",
@@ -6939,123 +7064,107 @@
           "anchor": "0-detect-candidate-ades-let-the-human-choose-and-resolve-the-overlays",
           "path": "Bootstrap the governed context > 0. Detect candidate ADEs, let the human choose, and resolve the overlays",
           "line_start": 20,
-          "line_end": 168
+          "line_end": 83
         },
         {
           "heading": "Autonomy Profile",
           "level": 3,
           "anchor": "autonomy-profile",
           "path": "Bootstrap the governed context > 0. Detect candidate ADEs, let the human choose, and resolve the overlays > Autonomy Profile",
-          "line_start": 115,
-          "line_end": 137
+          "line_start": 30,
+          "line_end": 52
         },
         {
           "heading": "Development method (Method Governance)",
           "level": 3,
           "anchor": "development-method-method-governance",
           "path": "Bootstrap the governed context > 0. Detect candidate ADEs, let the human choose, and resolve the overlays > Development method (Method Governance)",
-          "line_start": 138,
-          "line_end": 168
+          "line_start": 53,
+          "line_end": 83
         },
         {
           "heading": "1. Establish the regime",
           "level": 2,
           "anchor": "1-establish-the-regime",
           "path": "Bootstrap the governed context > 1. Establish the regime",
-          "line_start": 169,
-          "line_end": 209
+          "line_start": 84,
+          "line_end": 124
         },
         {
           "heading": "2. Look for an existing solution document",
           "level": 2,
           "anchor": "2-look-for-an-existing-solution-document",
           "path": "Bootstrap the governed context > 2. Look for an existing solution document",
-          "line_start": 210,
-          "line_end": 384
+          "line_start": 125,
+          "line_end": 187
         },
         {
-          "heading": "Assess the design (a design document exists)",
+          "heading": "The design intake",
           "level": 3,
-          "anchor": "assess-the-design-a-design-document-exists",
-          "path": "Bootstrap the governed context > 2. Look for an existing solution document > Assess the design (a design document exists)",
-          "line_start": 258,
-          "line_end": 322
-        },
-        {
-          "heading": "Help me choose: a development method that is still OPEN",
-          "level": 3,
-          "anchor": "help-me-choose-a-development-method-that-is-still-open",
-          "path": "Bootstrap the governed context > 2. Look for an existing solution document > Help me choose: a development method that is still OPEN",
-          "line_start": 323,
-          "line_end": 342
-        },
-        {
-          "heading": "Git workflow: report what the project says, adopt nothing",
-          "level": 3,
-          "anchor": "git-workflow-report-what-the-project-says-adopt-nothing",
-          "path": "Bootstrap the governed context > 2. Look for an existing solution document > Git workflow: report what the project says, adopt nothing",
-          "line_start": 343,
-          "line_end": 350
-        },
-        {
-          "heading": "The Initial Design Questionnaire (no sufficient design document)",
-          "level": 3,
-          "anchor": "the-initial-design-questionnaire-no-sufficient-design-document",
-          "path": "Bootstrap the governed context > 2. Look for an existing solution document > The Initial Design Questionnaire (no sufficient design document)",
-          "line_start": 351,
-          "line_end": 384
+          "anchor": "the-design-intake",
+          "path": "Bootstrap the governed context > 2. Look for an existing solution document > The design intake",
+          "line_start": 173,
+          "line_end": 187
         },
         {
           "heading": "3. Confirm the document is finished — or stop",
           "level": 2,
           "anchor": "3-confirm-the-document-is-finished--or-stop",
           "path": "Bootstrap the governed context > 3. Confirm the document is finished — or stop",
-          "line_start": 385,
-          "line_end": 413
+          "line_start": 188,
+          "line_end": 216
         },
         {
           "heading": "4. Ask what is still missing",
           "level": 2,
           "anchor": "4-ask-what-is-still-missing",
           "path": "Bootstrap the governed context > 4. Ask what is still missing",
-          "line_start": 414,
-          "line_end": 472
+          "line_start": 217,
+          "line_end": 275
         },
         {
           "heading": "5. Confirm before drafting",
           "level": 2,
           "anchor": "5-confirm-before-drafting",
           "path": "Bootstrap the governed context > 5. Confirm before drafting",
-          "line_start": 473,
-          "line_end": 478
+          "line_start": 276,
+          "line_end": 281
         },
         {
           "heading": "6. Write the context, then stop",
           "level": 2,
           "anchor": "6-write-the-context-then-stop",
           "path": "Bootstrap the governed context > 6. Write the context, then stop",
-          "line_start": 479,
-          "line_end": 535
+          "line_start": 282,
+          "line_end": 308
         },
         {
           "heading": "Register the sources and write the design of each Epic",
           "level": 3,
           "anchor": "register-the-sources-and-write-the-design-of-each-epic",
           "path": "Bootstrap the governed context > 6. Write the context, then stop > Register the sources and write the design of each Epic",
-          "line_start": 493,
-          "line_end": 535
+          "line_start": 296,
+          "line_end": 308
         },
         {
           "heading": "After bootstrap",
           "level": 2,
           "anchor": "after-bootstrap",
           "path": "Bootstrap the governed context > After bootstrap",
-          "line_start": 536,
-          "line_end": 587
+          "line_start": 309,
+          "line_end": 360
         }
       ],
-      "references": [],
-      "referenced_by": [],
+      "references": [
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-ADE-OVERLAYS",
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE",
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-EPIC-DESIGNS"
+      ],
+      "referenced_by": [
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-ADE-OVERLAYS",
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE",
+        "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-EPIC-DESIGNS"
+      ],
       "relationships": [],
       "provenance": {
         "history": [],
@@ -7953,7 +8062,7 @@
       "DOC-DOCS#artifact-identity-and-the-technical-index"
     ],
     "assess the design (a design document exists)": [
-      "SKILL-GTT-BOOTSTRAP#assess-the-design-a-design-document-exists"
+      "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE#assess-the-design-a-design-document-exists"
     ],
     "assessing and strengthening an existing design": [
       "DOC-GUIDE#assessing-and-strengthening-an-existing-design"
@@ -8352,7 +8461,7 @@
       "COPILOT-COPILOT-INSTRUCTIONS#git-and-workflow"
     ],
     "git workflow: report what the project says, adopt nothing": [
-      "SKILL-GTT-BOOTSTRAP#git-workflow-report-what-the-project-says-adopt-nothing"
+      "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE#git-workflow-report-what-the-project-says-adopt-nothing"
     ],
     "github copilot": [
       "DOC-DOCS#github-copilot"
@@ -8454,7 +8563,7 @@
       "SKILL-GTT-DRIFT-RESPONSE#hard-rule"
     ],
     "help me choose: a development method that is still open": [
-      "SKILL-GTT-BOOTSTRAP#help-me-choose-a-development-method-that-is-still-open"
+      "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE#help-me-choose-a-development-method-that-is-still-open"
     ],
     "hexagonal (ports and adapters) · method pack": [
       "METHOD-HEXAGONAL#hexagonal-ports-and-adapters--method-pack"
@@ -9009,6 +9118,9 @@
     "step 1 — assess": [
       "SKILL-GTT-DRIFT-RESPONSE#step-1--assess"
     ],
+    "step 2 - the design intake": [
+      "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE#step-2---the-design-intake"
+    ],
     "step 2 — draft": [
       "SKILL-GTT-DRIFT-RESPONSE#step-2--draft"
     ],
@@ -9066,6 +9178,9 @@
     ],
     "the contract": [
       "DOC-SESSION-ADAPTER-CONTRACT#the-contract"
+    ],
+    "the design intake": [
+      "SKILL-GTT-BOOTSTRAP#the-design-intake"
     ],
     "the development method": [
       "SKILL-GTT-AUDIT#the-development-method"

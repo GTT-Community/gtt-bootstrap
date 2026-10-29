@@ -217,6 +217,24 @@ class Txn:
 
 # --------------------------------------------------------------- validation
 
+CLAUDE_SETTINGS = ".claude/settings.json"
+
+
+def unregistered_hooks(ade, files):
+    """The Claude Code hook scripts GTT installed that .claude/settings.json no longer runs. The human may
+    add anything to the settings; removing GTT's own hook commands switches the protection off."""
+    if ade != "claude" or not os.path.isfile(CLAUDE_SETTINGS):
+        return []
+    try:
+        with open(CLAUDE_SETTINGS, encoding="utf-8") as handle:
+            hooks = json.load(handle).get("hooks") or {}
+        commands = " ".join(item.get("command", "") for entries in hooks.values() for entry in entries
+                            for item in entry.get("hooks", []) if isinstance(item, dict))
+    except (OSError, ValueError, AttributeError, TypeError):
+        commands = ""
+    return [rel for rel in sorted(files) if rel.startswith(".claude/hooks/") and rel not in commands]
+
+
 def validate(reg, state):
     """[(level, ade|None, message)] with level PASS | WARN | FAIL."""
     out = []
@@ -266,8 +284,18 @@ def validate(reg, state):
             if not os.path.isfile(rel):
                 add("FAIL", ade, f"installed file missing: {rel}")
                 bad = True
+            elif sha(rel) != files[rel] and "/hooks/" in rel:
+                # an instruction file or a setting may be the human's own edit; a protection hook is not
+                add("FAIL", ade, f"protection hook changed since install: {rel} - the real-time protection may be "
+                                 f"off. Put it back with `git checkout -- {rel}` (or copy it from the Bootstrap release); a "
+                                 f"change you made on purpose is recorded with `gtt-ade.sh record {ade} {rel} --apply`")
+                bad = True
             elif sha(rel) != files[rel]:
                 add("WARN", ade, f"modified since install: {rel}")
+        for rel in unregistered_hooks(ade, files):
+            add("FAIL", ade, f"{rel} is installed but {CLAUDE_SETTINGS} never runs it - a protection hook was "
+                             f"unregistered. Your own settings may be added; GTT's hook commands must stay")
+            bad = True
         for rel in declared_install_paths(".", ade):
             if not os.path.isfile(rel):
                 add("FAIL", ade, f"declared session adapter file missing: {rel}")

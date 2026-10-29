@@ -45,6 +45,7 @@ con libertad dentro de ese diseño; GTT mantiene separadas las dos cosas.
 | `gtt-domain/proposals/` | Lo que propone el agente |
 | `AGENTS.md` | El contrato que lee todo agente (unido al tuyo si ya tenías uno) |
 | `.gtt/` | El motor: scripts, contratos, documentación |
+| `.claude/`, `.kiro/`, `.cursor/`, `.agents/`, `.openhands/`, `.github/instructions/` | La integración GTT de cada ADE participante, en la ruta que ese ADE lee (el punto es convención del ADE, no de GTT). Tú puedes editarla a mano; el agente no. Qué archivos: [Adaptadores de ADE](.gtt/docs/guide.es.md#adaptadores-de-ade) |
 
 Más: [la guía completa](.gtt/docs/guide.es.md) · [índice de documentación](.gtt/docs/index.md) ·
 [métodos de desarrollo](.gtt/methods/README.md) · [el canon de GTT](https://github.com/GTT-Community/gtt-method)

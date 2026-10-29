@@ -22,9 +22,10 @@ hook for a BLOCKING path boundary, `gtt-observe.sh check` in validation, CI and 
 Git pre-commit hook. Only runs once the project is frozen: before that there is no
 governed state to observe against.
 
-Shell mutations are not seen here (PostToolUse fires for the file tools only); the
+Shell mutations are not observed here (this hook fires for the file tools only); the
 engine sees them the next time it runs - at the next write, at session start through
-gtt-status.sh, in validation and at commit.
+gtt-status.sh, in validation and at commit. A shell or MCP command that changes the
+frozen design itself is put back at once by governed-sentinel.py.
 """
 
 import json
@@ -41,7 +42,7 @@ def main() -> int:
         event = json.load(sys.stdin)
     except Exception:
         return 0
-    if event.get("tool_name", "") not in ("Write", "Edit", "NotebookEdit"):
+    if event.get("tool_name", "") not in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
         return 0
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     if not os.path.exists(os.path.join(root, FROZEN_MARKER)) or not os.path.isfile(os.path.join(root, ENGINE)):

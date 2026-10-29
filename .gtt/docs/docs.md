@@ -856,7 +856,7 @@ Nothing in the Engine or the governed domain needs to change to move
 between tools. Only the ADE overlay does.
 A project installs the adapter of every ADE its human chose to have
 participate, with exactly one of them declared Primary — see the ADE adapter
-matrix in `README.md` and in `.claude/skills/gtt-bootstrap/SKILL.md` (step 0).
+matrix in `README.md` and in `.claude/skills/gtt-bootstrap/references/ade-overlays.md`.
 Detection is not participation: an ADE found on the machine or in the repository
 is a candidate until the human chooses it. The Primary ADE is a workflow
 identifier; it holds no authority over any governed artifact, and instruction

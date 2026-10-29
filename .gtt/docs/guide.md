@@ -268,7 +268,7 @@ say so. A project that predates `.gtt/ade.json` keeps working unchanged;
 only when that matches the actual state (where several overlays exist, it is never
 guessed).
 
-Full algorithm: `.claude/skills/gtt-bootstrap/SKILL.md` (step 0). Validate an
+Full algorithm: `.claude/skills/gtt-bootstrap/references/ade-overlays.md`. Validate an
 installed project with `.gtt/scripts/gtt-check-adapter.sh` (every participating ADE
 against `.gtt/ade.json`; a missing or inconsistent integration FAILS, a detected ADE
 that does not participate is a WARN). The single-ADE matrix above remains available
@@ -870,6 +870,7 @@ gtt-domain/                     # THE DOMAIN GOVERNED BY GTT-METHOD
 ├── settings.json
 ├── hooks/protect-l0.py
 ├── hooks/protect-guard.py      # GTTGuard real-time block
+├── hooks/governed-sentinel.py  # puts back the frozen design a command changed
 ├── rules/
 └── skills/
     ├── gtt-bootstrap

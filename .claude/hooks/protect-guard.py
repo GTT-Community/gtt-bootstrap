@@ -126,6 +126,35 @@ def blocked_reason(root, hits, tool, tool_input, target):
     return None
 
 
+# MCP tools (a filesystem server, say) write files too. A tool whose name says it changes something
+# is judged like a whole-file write to every path its input names; one that reads is never looked at.
+MCP_MUTATES = re.compile(r"write|edit|create|move|rename|delete|remove|^rm|put|append|patch|replace|mkdir|upload|"
+                         r"save|insert|copy|apply|truncate|overwrite|modify|update", re.I)
+MCP_PATH_KEY = re.compile(r"path|file|dest|target|source|^to$|^from$|uri|dir", re.I)
+
+
+def mcp_targets(tool, tool_input):
+    """The paths a mutating MCP tool names, or [] for a tool that only reads."""
+    if not tool.startswith("mcp__") or not MCP_MUTATES.search(tool.rsplit("__", 1)[-1]):
+        return []
+    found = []
+
+    def walk(value, key, depth):
+        if depth > 3:
+            return
+        if isinstance(value, str) and MCP_PATH_KEY.search(key):
+            found.append(value[7:] if value.startswith("file://") else value)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item, key, depth + 1)
+        elif isinstance(value, dict):
+            for k, v in value.items():
+                walk(v, str(k), depth + 1)
+
+    walk(tool_input, "", 0)
+    return found
+
+
 def main() -> int:
     try:
         event = json.load(sys.stdin)
@@ -141,7 +170,7 @@ def main() -> int:
     tool_input = event.get("tool_input") or {}
     target = ""
 
-    if tool in ("Write", "Edit", "NotebookEdit"):
+    if tool in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
         raw = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
         target = os.path.relpath(raw, root) if os.path.isabs(raw) else raw
         target = target.replace("\\", "/")
@@ -152,6 +181,12 @@ def main() -> int:
                 if e["artifact"] in command:
                     target = e["artifact"]
                     break
+    else:                                   # a mutating MCP tool: judged like a Write of each path it names
+        for raw in mcp_targets(tool, tool_input):
+            rel = (os.path.relpath(raw, root) if os.path.isabs(raw) else raw).replace("\\", "/")
+            if find_hits(entries, rel):
+                target, tool = rel, "Write"
+                break
 
     if not target:
         return 0
@@ -162,6 +197,11 @@ def main() -> int:
 
     reason = blocked_reason(root, hits, tool, tool_input, target)
     if reason:
+        try:  # with exit 2 Claude Code hands the agent stderr, not stdout; UTF-8 bytes never fail open
+            sys.stderr.buffer.write((reason + "\n").encode("utf-8", "replace"))
+            sys.stderr.flush()
+        except Exception:
+            pass
         print(
             json.dumps(
                 {

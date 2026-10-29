@@ -104,8 +104,9 @@ def request_block():
 def drafts_citing(request_id):
     out = []
     for path in sorted(glob.glob(os.path.join(PROPOSALS, "**", "*"), recursive=True)):
-        if os.path.isfile(path) and not path.startswith(WITHDRAWN) and request_id in (read(path) or ""):
-            out.append(path.replace("\\", "/"))
+        path = path.replace("\\", "/")  # Windows globs with backslashes
+        if os.path.isfile(path) and not path.startswith(WITHDRAWN + "/") and request_id in (read(path) or ""):
+            out.append(path)
     for path in sorted(glob.glob(os.path.join(ADR_DIR, "ADR-*.md"))):
         if request_id in (read(path) or ""):
             out.append(path.replace("\\", "/"))

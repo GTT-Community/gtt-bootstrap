@@ -286,7 +286,7 @@ nunca cambia el ADE Primario salvo que tú lo indiques. Un proyecto anterior a
 existente como Primario y participante — solo cuando eso coincide con el estado real
 (donde hay varios overlays, nunca se adivina).
 
-Algoritmo completo: `.claude/skills/gtt-bootstrap/SKILL.md` (paso 0). Valida un
+Algoritmo completo: `.claude/skills/gtt-bootstrap/references/ade-overlays.md`. Valida un
 proyecto instalado con `.gtt/scripts/gtt-check-adapter.sh` (cada ADE participante
 contra `.gtt/ade.json`; una integración ausente o inconsistente FALLA, un ADE
 detectado que no participa es una ADVERTENCIA). La matriz de un solo ADE anterior
@@ -897,6 +897,7 @@ gtt-domain/                     # EL DOMINIO GOBERNADO POR GTT-METHOD
 ├── settings.json
 ├── hooks/protect-l0.py
 ├── hooks/protect-guard.py      # bloqueo en tiempo real de GTTGuard
+├── hooks/governed-sentinel.py  # restaura el diseño congelado si un comando lo cambió
 ├── rules/
 └── skills/
     ├── gtt-bootstrap

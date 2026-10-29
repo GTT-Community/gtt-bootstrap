@@ -101,7 +101,8 @@ closed what an audit reproduced against this hook with real PreToolUse payloads:
   * a broken observation engine switched BLOCKING boundaries off without a word - it
     still never blocks a session, but now it says so.
 
-Exit 2 plus permissionDecision:deny blocks the call deterministically.
+Exit 2 blocks the call deterministically; the reason goes to stderr (what Claude Code shows
+the agent on exit 2) and to permissionDecision:deny on stdout.
 Any unexpected input exits 0 so a broken hook never blocks a session.
 """
 
@@ -223,6 +224,10 @@ LEDGER_OWNED = ("GTT governance (human-decision-authority): gtt-domain/governanc
                 "`bash .gtt/scripts/gtt-observe.sh observe`; never edit it.")
 PROMOTION = ("GTT governance (Human Promotion Boundary): a promotion is run by the human, never by an agent. "
              "Tell the human the command and stop.")
+CLI_ACT = ("GTT governance (human-decision-authority): this command is the human's act - a freeze, a promotion "
+           "or its undo, a withdrawal, a change request, resetting the design, installing, updating or removing GTT "
+           "- and a --yes or --apply on it is the human's pre-authorisation, never an agent's. Prepare what it needs, give the human the exact command to run in their own terminal (in "
+           "Claude Code they can type it after `!` in the prompt), and continue with the work.")
 PATCH = ("GTT governance (Human Promotion Boundary): applying a patch staged under gtt-domain/proposals/ is the "
          "human's act. `git apply --check` and `--stat` stay available. Tell the human the command.")
 HUMAN_ACT = ("GTT governance (human-decision-authority): freezing, accepting, rejecting or deferring an observation, "
@@ -496,6 +501,61 @@ def git_subcommand(words):
     return "", [], settings
 
 
+# `gtt` CLI commands that are a human act; reading, checking and upkeep (status, validate, proposals
+# list/show, change show, check, sync, doctor...) stay the agent's.
+# Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
+CLI_HUMAN_ACTS = {("freeze",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
+                  ("proposals", "withdraw"), ("design", "reset")}
+CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply
+CLI_READS = {"show", "list", "check", "--help", "-h", "help"}
+CLI_NAME = re.compile(r"(gtt(\.exe)?|gtt-cli([@=].*)?)$")
+CLI_LAUNCHERS = {"npx", "pnpx", "bunx", "uvx", "pipx", "uv", "dlx", "run", "tool"}
+CLI_VALUE_FLAGS = {"-c", "--dir", "--log-level", "--from"}
+CLI_WRAPPERS = {"env", "sudo", "time", "nohup", "exec", "command"}
+
+
+def cli_act(words):
+    """The human act a unit runs through the `gtt` CLI (npx / uvx / pipx spellings too), or None."""
+    words = list(words)
+    while words and (base(words[0]) in CLI_WRAPPERS or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0])):
+        words = words[1:]
+    if not words:
+        return None
+    head = base(words[0])
+    if not CLI_NAME.match(head) and head not in CLI_LAUNCHERS:
+        return None
+    rest, named, i = [], CLI_NAME.match(head) is not None, 1
+    while i < len(words):
+        word, low = words[i], words[i].lower()
+        if low in CLI_VALUE_FLAGS:
+            i += 2
+            continue
+        if low.startswith("-"):
+            if low in ("--help", "-h"):
+                return None
+            i += 1
+            continue
+        if not named:
+            if CLI_NAME.match(base(word)):
+                named = True
+            elif base(word) not in CLI_LAUNCHERS:
+                return None
+            i += 1
+            continue
+        if CLI_NAME.match(base(word)) and not rest:          # `uvx --from gtt-cli gtt ...`
+            i += 1
+            continue
+        rest.append(low)
+        i += 1
+    if not named or not rest or rest[0] == "help":
+        return None
+    if (rest[0],) in CLI_HUMAN_ACTS and not (len(rest) > 1 and rest[1] in CLI_READS):
+        return " ".join(rest[:1])
+    if tuple(rest[:2]) in CLI_HUMAN_ACTS:
+        return " ".join(rest[:2])
+    return None
+
+
 def decide_units(root, command):
     """Why the shell command is an act an agent does not perform, or None. Reading is never one."""
     chain_reads_apply = False
@@ -547,6 +607,15 @@ def decide_units(root, command):
         if head == "patch" and staged and "--dry-run" not in rest:
             return PATCH
         # --- acts that are the human's
+        if cli_act(words):
+            return CLI_ACT
+        for index, word in enumerate(words):
+            if base(word) in ("gtt-change.sh", "gtt_change.py") and words[index + 1:index + 2] and \
+                    words[index + 1] in CHANGE_ACTS and "--apply" in words[index + 2:] and not syntax_only:
+                return CLI_ACT
+            if base(word) in ("gtt-ade.sh", "gtt_ade.py") and words[index + 1:index + 2] == ["record"] and \
+                    "--apply" in words[index + 2:] and not syntax_only:     # it would bless a changed hook
+                return CLI_ACT
         if base(words[0]) == "gtt-freeze.sh" or (head in SHELLS and any(base(w) == "gtt-freeze.sh" for w in rest)):
             return HUMAN_ACT
         promoters = ("gtt-promote.sh", "gtt-adapter-promote.sh")
@@ -694,12 +763,49 @@ def core_file(root, path, tool_input=None):
 # <<< gtt-decision-core <<<
 
 
+# MCP tools (a filesystem server, say) write files too. A tool whose name says it changes something
+# is judged like a whole-file write to every path its input names; one that reads is never looked at.
+MCP_MUTATES = re.compile(r"write|edit|create|move|rename|delete|remove|^rm|put|append|patch|replace|mkdir|upload|"
+                         r"save|insert|copy|apply|truncate|overwrite|modify|update", re.I)
+MCP_PATH_KEY = re.compile(r"path|file|dest|target|source|^to$|^from$|uri|dir", re.I)
+
+
+def mcp_targets(tool, tool_input):
+    """The paths a mutating MCP tool names, or [] for a tool that only reads."""
+    if not tool.startswith("mcp__") or not MCP_MUTATES.search(tool.rsplit("__", 1)[-1]):
+        return []
+    found = []
+
+    def walk(value, key, depth):
+        if depth > 3:
+            return
+        if isinstance(value, str) and MCP_PATH_KEY.search(key):
+            found.append(value[7:] if value.startswith("file://") else value)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item, key, depth + 1)
+        elif isinstance(value, dict):
+            for k, v in value.items():
+                walk(v, str(k), depth + 1)
+
+    walk(tool_input, "", 0)
+    return found
+
+
 def project_root():
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     return normalize(os.path.abspath(root)).rstrip("/")
 
 
 def deny(reason):
+    # Exit 2 blocks, and with exit 2 Claude Code hands the agent stderr, not the JSON on stdout:
+    # the reason goes to both, so the denial always says why and what to do instead. Written as
+    # UTF-8 bytes: a console encoding that cannot hold it must never turn a denial into an allow.
+    try:
+        sys.stderr.buffer.write((reason + "\n").encode("utf-8", "replace"))
+        sys.stderr.flush()
+    except Exception:
+        pass
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
                                              "permissionDecision": "deny",
                                              "permissionDecisionReason": reason}}))
@@ -717,12 +823,17 @@ def main():
     root = project_root()
     reason = warning = None
 
-    if tool in ("Write", "Edit", "NotebookEdit"):
+    if tool in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
         target = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
         if target:
             reason, warning = core_file(root, target, tool_input)
     elif tool in ("Bash", "PowerShell"):
         reason = core_shell(root, tool_input.get("command", ""))
+    else:
+        for target in mcp_targets(tool, tool_input):
+            reason, warning = core_file(root, target)         # its content is unknown: a whole-file write
+            if reason:
+                break
 
     if reason:
         return deny(reason)

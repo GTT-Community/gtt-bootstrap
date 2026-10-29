@@ -26,6 +26,30 @@
       "aliases": []
     },
     {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-ADE-OVERLAYS",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/ade-overlays.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-DESIGN-INTAKE",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/design-intake.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "ART-CLAUDE-SKILLS-GTT-BOOTSTRAP-REFERENCES-EPIC-DESIGNS",
+      "type": "instruction",
+      "path": ".claude/skills/gtt-bootstrap/references/epic-designs.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-GTT-DOMAIN-WORKFLOW",
       "type": "documentation",
       "path": "gtt-domain/workflow.md",
