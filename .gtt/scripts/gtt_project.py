@@ -618,9 +618,20 @@ def proposals():
 
 
 def observations():
-    """Open observations in the governance backlog, by level - what the work did against the frozen design.
-    Read from the backlog as the observation engine last wrote it; status runs the engine first."""
-    ledger = read_json("gtt-domain/governance-backlog.json") or {}
+    """Open observations, by level - what the work did against the frozen design. Status observes now, in
+    memory (the backlog is written only by `observe`): a dependency an agent added through the shell, with
+    no file-tool hook to notice it, is counted the moment anyone asks."""
+    ledger = None
+    try:
+        import gtt_observe
+        if gtt_observe.baseline().get("frozen"):
+            signals, _, _ = gtt_observe.collect()
+            ledger = gtt_observe.load_ledger()
+            gtt_observe.correlate(ledger, signals)
+    except (Exception, SystemExit):
+        ledger = None
+    if ledger is None:
+        ledger = read_json("gtt-domain/governance-backlog.json") or {}
     live = [i for i in ledger.get("items", []) if i.get("status") in ("open", "deferred", "rejected")]
     out = {level.lower(): sum(1 for i in live if i.get("level") == level) for level in ("NOTICE", "WARNING", "GOVERNANCE", "BLOCKING")}
     out["stopping"] = sum(1 for i in live if (i.get("level") == "BLOCKING" and i.get("status") == "open") or i.get("status") == "rejected")

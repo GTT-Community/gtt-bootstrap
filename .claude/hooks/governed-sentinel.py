@@ -18,6 +18,12 @@ read the command. It looks at what the command did:
         the command wrote is kept under gtt-domain/proposals/withdrawn/ (archived,
         never lost), and the agent and the human are told.
 
+Git history is not a write. When the command moved HEAD (a pull of a promotion a teammate
+made, a checkout, a merge), a file that now holds exactly what the new HEAD holds, and
+whose content was already in a commit made before the command started, is accepted.
+Content first committed during the command itself - a write and a commit in one go - is
+not: it is put back like any other write.
+
 Watched: gtt-domain/context/, gtt-domain/adr/, gtt-domain/.frozen, .claude/settings.json,
 .claude/hooks/, .gtt/scripts/. Not watched, because they change legitimately while an
 agent works: .claude/settings.local.json (Claude Code records a permission the human
@@ -32,6 +38,7 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 import time
 
@@ -67,6 +74,49 @@ def shadow(root):
     return os.path.join(base, "gtt", "sentinel", hashlib.sha256(os.path.realpath(root).encode()).hexdigest()[:16])
 
 
+def git(root, *args):
+    try:
+        proc = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, timeout=10)
+        return proc.stdout if proc.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def head(root):
+    return (git(root, "rev-parse", "-q", "--verify", "HEAD") or "").strip() or None
+
+
+def blobs(root, commit, paths):
+    """{path: blob id} of the paths in one commit."""
+    out = git(root, "ls-tree", "-r", commit, "--", *paths) or ""
+    return {line.split("\t", 1)[1]: line.split()[2] for line in out.splitlines() if "\t" in line}
+
+
+def from_history(root, paths, old, new, since):
+    """The paths git brought: their working copy is what the new HEAD holds, and that content was already in
+    a commit made before the command started - a pull of a promotion someone made, a checkout of a branch,
+    a merge. Content first committed during the command itself (a write and a commit in one go) is not."""
+    differ = git(root, "diff", "--name-only", "HEAD", "--", *paths)
+    untracked = git(root, "ls-files", "--others", "--exclude-standard", "--", *paths)
+    if differ is None or untracked is None:
+        return set()
+    candidates = set(paths) - set(differ.split()) - set(untracked.split())
+    if not candidates:
+        return set()
+    target = blobs(root, new, sorted(candidates))
+    commits = [new] + (git(root, "rev-list", "--max-count=50", f"{old}..{new}") or "").split() if old else [new]
+    older = set()
+    for commit in dict.fromkeys(commits):
+        stamp = (git(root, "show", "-s", "--format=%ct", commit) or "").strip()
+        if stamp.isdigit() and int(stamp) < int(since):
+            older.add(commit)
+    accepted = set()
+    for commit in older:
+        held = blobs(root, commit, sorted(candidates))
+        accepted |= {rel for rel in candidates if held.get(rel) == target.get(rel)}
+    return accepted
+
+
 def load(where):
     try:
         with open(os.path.join(where, "state.json"), encoding="utf-8") as handle:
@@ -75,24 +125,26 @@ def load(where):
         return None
 
 
-def keep(root, where, now):
+def keep(root, where, now, commit):
     tree = os.path.join(where, "tree")
     shutil.rmtree(tree, ignore_errors=True)
     for rel in now:
         os.makedirs(os.path.dirname(os.path.join(tree, rel)), exist_ok=True)
         shutil.copy2(os.path.join(root, rel), os.path.join(tree, rel))
     with open(os.path.join(where, "state.json"), "w", encoding="utf-8") as handle:
-        json.dump(now, handle)
+        json.dump({"files": now, "head": commit}, handle)
 
 
 def pre(root):
     now = state(root)
     if FROZEN not in now:
         return
-    where = shadow(root)
-    if load(where) != now:
-        os.makedirs(where, exist_ok=True)
-        keep(root, where, now)
+    where, commit = shadow(root), head(root)
+    os.makedirs(where, exist_ok=True)
+    if load(where) != {"files": now, "head": commit}:
+        keep(root, where, now, commit)
+    with open(os.path.join(where, "call.json"), "w", encoding="utf-8") as handle:
+        json.dump({"head": commit, "at": time.time()}, handle)
 
 
 def restore(root, where, before, now):
@@ -122,13 +174,31 @@ def restore(root, where, before, now):
 
 def post(root, event):
     where = shadow(root)
-    before = load(where)
+    saved = load(where) or {}
+    before = saved.get("files")
     if not before or FROZEN not in before:
         return None
     now = state(root)
     if now == before:
         return None
+    commit = head(root)
+    try:
+        with open(os.path.join(where, "call.json"), encoding="utf-8") as handle:
+            call = json.load(handle)
+    except (OSError, ValueError):
+        call = {"head": saved.get("head"), "at": 0}
+    if commit and commit != call.get("head"):               # git moved HEAD: what it checked out is history, not a write
+        changed = sorted(rel for rel in set(before) | set(now) if before.get(rel) != now.get(rel))
+        for rel in from_history(root, changed, call.get("head"), commit, call.get("at", 0)):
+            if rel in now:
+                before[rel] = now[rel]
+            else:
+                before.pop(rel, None)
+        if now == before:
+            keep(root, where, now, commit)
+            return None
     changed, archive, missed = restore(root, where, before, now)
+    keep(root, where, state(root), commit)
     names = ", ".join(changed[:6]) + (f" and {len(changed) - 6} more" if len(changed) > 6 else "")
     agent = (f"GTT governance (sentinel): that command changed what only the human changes ({names}) - the frozen "
              f"design, the freeze or the protection itself. GTT put it back; what the command wrote is kept in "

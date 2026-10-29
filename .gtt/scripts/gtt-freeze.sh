@@ -121,7 +121,10 @@ if ! bash "$HERE/gtt-observe.sh" boundaries >/dev/null; then
   fail=1
 fi
 if [ "$REFREEZE" -eq 1 ] && ! bash "$HERE/gtt-observe.sh" check --strict --for-freeze >&2; then
-  echo "gtt-freeze: undecided observations remain in the governance backlog (see above)" >&2
+  echo "gtt-freeze: undecided observations remain in the governance backlog (see above). Decide each one, then try again:" >&2
+  echo "  bash .gtt/scripts/gtt-observe.sh accept OBS-NNNN --by <you> --apply   # it stands; this freeze ratifies it" >&2
+  echo "  bash .gtt/scripts/gtt-observe.sh reject OBS-NNNN --by <you> --apply   # it must be undone; it stops the work until it is" >&2
+  echo "  bash .gtt/scripts/gtt-observe.sh defer  OBS-NNNN --by <you> --apply   # later; it does not hold up this freeze" >&2
   fail=1
 fi
 
@@ -203,6 +206,11 @@ elif [ -n "$(git status --porcelain -- . ':!gtt-domain' ':!.gtt/index' ':!.gtt/l
   echo "gtt-freeze: NOTE - there are uncommitted changes outside gtt-domain/. They will be observed"
   echo "            as changes since this freeze. Commit before freezing for a clean baseline."
 fi
+
+# Observe once against the baseline just written: what was observed against the previous one (the
+# promoted files themselves, recorded as the governed state having moved) is folded away now, so the
+# backlog never shows a STOP for the change this freeze ratified.
+bash "$HERE/gtt-observe.sh" observe >/dev/null 2>&1 || true
 
 if [ "$REFREEZE" -eq 1 ]; then
   cat <<'MSG'

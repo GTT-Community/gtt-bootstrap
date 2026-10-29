@@ -685,9 +685,19 @@ def cmd_promote(args):
         print(f"gtt-promote: failed ({error}); every file was put back. Nothing was changed.", file=sys.stderr)
         return 1
     if frozen_change:
+        # The freeze observes, and it would record the promotion's own files as the governed state moved
+        # outside the change flow (BLOCKING). When the freeze fails, that record goes back with the files.
+        ledger = "gtt-domain/governance-backlog.json"
+        ledger_before = open(ledger, "rb").read() if os.path.isfile(ledger) else None
         freeze = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if freeze.returncode != 0:
             restore(args.name, quiet=True)
+            if ledger_before is None:
+                if os.path.isfile(ledger):
+                    os.remove(ledger)
+            else:
+                with open(ledger, "wb") as handle:
+                    handle.write(ledger_before)
             print((freeze.stdout + freeze.stderr).rstrip(), file=sys.stderr)
             print("gtt-promote: the new freeze failed, so nothing was promoted: every file was put back.", file=sys.stderr)
             return 1

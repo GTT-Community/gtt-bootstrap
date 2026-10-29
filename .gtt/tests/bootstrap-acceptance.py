@@ -22,6 +22,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 FAILS, COUNT = [], 0
 
@@ -2037,6 +2038,48 @@ def enforcement(project, tmp):
     check(subprocess.run([sys.executable, sentinel, "post"], cwd=frozen, env=env, input="not json", capture_output=True, text=True).returncode == 0,
           "a broken input never blocks a session")
 
+    print("[Claude Code] git history is not a write: a teammate's promotion arrives by pull; a commit made in the command does not")
+    def repo(path):
+        os.makedirs(os.path.join(path, "gtt-domain", "context"), exist_ok=True)
+        os.makedirs(os.path.join(path, ".claude", "hooks"), exist_ok=True)
+        write(os.path.join(path, "gtt-domain", "context", "stack.md"), "db: PostgreSQL\n")
+        write(os.path.join(path, "gtt-domain", ".frozen"), "frozen v1\n")
+        shutil.copy2(os.path.join(project, ".claude", "hooks", "governed-sentinel.py"), os.path.join(path, ".claude", "hooks"))
+        for args in (["init", "-q"], ["config", "user.email", "t@example.org"], ["config", "user.name", "t"], ["add", "-A"], ["commit", "-qm", "base"]):
+            git(path, *args)
+        return path
+    origin = repo(os.path.join(tmp, "sg-origin"))
+    subprocess.run(["git", "clone", "-q", "--bare", origin, os.path.join(tmp, "sg-remote.git")], check=True)
+    mate, mine = os.path.join(tmp, "sg-mate"), os.path.join(tmp, "sg-mine")
+    for clone in (mate, mine):
+        subprocess.run(["git", "clone", "-q", os.path.join(tmp, "sg-remote.git"), clone], check=True)
+        git(clone, "config", "user.email", "t@example.org"); git(clone, "config", "user.name", "t")
+    write(os.path.join(mate, "gtt-domain", "context", "stack.md"), "db: Redis\n")
+    write(os.path.join(mate, "gtt-domain", ".frozen"), "frozen v1\nfrozen v2\n")
+    git(mate, "commit", "-qam", "the human's promotion"); git(mate, "push", "-q")
+    time.sleep(1.2)                                          # the teammate's commit predates the agent's command
+    genv = dict(os.environ, CLAUDE_PROJECT_DIR=mine, XDG_CACHE_HOME=os.path.join(tmp, "sg-cache"), LOCALAPPDATA=os.path.join(tmp, "sg-cache"))
+
+    def agent(command):
+        event = json.dumps({"tool_name": "Bash", "tool_input": {"command": command}, "hook_event_name": "PostToolUse"})
+        hook = os.path.join(mine, ".claude", "hooks", "governed-sentinel.py")
+        subprocess.run([sys.executable, hook, "pre"], cwd=mine, env=genv, input=event, capture_output=True, text=True)
+        subprocess.run(["bash", "-c", command], cwd=mine, capture_output=True, text=True)
+        proc = subprocess.run([sys.executable, hook, "post"], cwd=mine, env=genv, input=event, capture_output=True, text=True)
+        return json.loads(proc.stdout) if proc.stdout.strip() else {}
+
+    mine_stack = os.path.join(mine, "gtt-domain", "context", "stack.md")
+    clean = lambda: git(mine, "status", "--short", "-uno", "--", "gtt-domain").stdout == ""
+    check(agent("git pull -q --no-rebase") == {} and open(mine_stack).read() == "db: Redis\n" and clean(),
+          "the agent pulls a promotion a teammate made: accepted, the tree matches the new HEAD")
+    check(agent("git checkout -q HEAD~1") == {} and open(mine_stack).read() == "db: PostgreSQL\n" and clean(),
+          "the agent checks out an older commit: accepted")
+    git(mine, "checkout", "-q", "-")
+    time.sleep(1.2)
+    out = agent("sed -i s/Redis/MongoDB/ gtt-domain/context/stack.md && git commit -qam sneaky")
+    check(out.get("decision") == "block" and open(mine_stack).read() == "db: Redis\n",
+          "a write committed in the same command is no history: put back", str(out)[:200])
+
     print("[validation] a protection hook changed or unregistered since install fails - your own settings do not")
     v = make_host(project, tmp, "hook-integrity")
     rc, out, err = bash(v, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "claude", "--primary", "claude", "--apply")
@@ -3165,6 +3208,37 @@ def change_flow(project, tmp):
     rc, env, _ = op(p, "promotion.undo", apply=True, confirmed_by_human=True)
     check(rc == 1 and "changed after the promotion" in env.get("stderr", "") and "edited later" in open(glossary, encoding="utf-8").read(),
           "a promotion whose files were edited afterwards is not undone: that would discard the edit", env.get("stderr", "")[-300:])
+
+    print("[change] a promotion that adds an ADR is undone too, and no freeze leaves a STOP behind for what it ratified")
+    q, rc, _ = frozen_project(project, tmp, "change-undo-adr", RULES, before_freeze=change_log)
+    ledger_path = os.path.join(q, "gtt-domain", "governance-backlog.json")
+    stops = lambda: [i["id"] for i in (read_json(ledger_path) or {}).get("items", []) if i.get("status") == "open" and i.get("level") == "BLOCKING"]
+    canon = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
+    write(os.path.join(q, "gtt-domain", "proposals", "ADR-DRAFT-cache.md"),
+          f"# ADR-002 — A session cache\n\n{canon}\n\n- Status: Accepted\n\n## Context\n\nx\n\n## Decision\n\ny\n")
+    q_glossary = os.path.join(q, "gtt-domain", "context", "glossary.md")
+    q_original = open(q_glossary, encoding="utf-8").read()
+    write(os.path.join(q, "gtt-domain", "proposals", "glossary-cache.md"), q_original + "cache: the session cache\n")
+    bash(q, ".gtt/scripts/gtt-index.sh")
+    bash(q, ".gtt/scripts/gtt-stage.sh", "cache", "--reason", "a session cache",
+         "gtt-domain/proposals/ADR-DRAFT-cache.md=gtt-domain/adr/ADR-002-cache.md", "gtt-domain/proposals/glossary-cache.md=gtt-domain/context/glossary.md")
+    rc, env, _ = op(q, "promotion.apply", set="cache", apply=True, confirmed_by_human=True)
+    adr = os.path.join(q, "gtt-domain", "adr", "ADR-002-cache.md")
+    check(rc == 0 and os.path.isfile(adr) and not stops(), "the ADR promotion applies, and the backlog holds no STOP for it",
+          env.get("stderr", "")[-400:] + str(stops()))
+    rc, env, _ = op(q, "promotion.undo", apply=True, confirmed_by_human=True)
+    check(rc == 0 and not os.path.exists(adr) and open(q_glossary, encoding="utf-8").read() == q_original and not stops()
+          and bash(q, ".gtt/scripts/gtt-check-integrity.sh")[0] == 0,
+          "undo removes the ADR and its identity, re-freezes, and leaves the project valid with no STOP",
+          env.get("stdout", "")[-300:] + env.get("stderr", "")[-600:])
+
+    print("[status] status observes now, in memory: what the shell did is counted, and the backlog is not written")
+    write(os.path.join(q, "infra", "main.tf"), "resource {}\n")
+    before = open(ledger_path, encoding="utf-8").read() if os.path.isfile(ledger_path) else None
+    rc, out, err = bash(q, ".gtt/scripts/gtt-project.sh", "status", "--json")
+    seen = json.loads(out)["governance"]["observations"] if rc == 0 else {}
+    after = open(ledger_path, encoding="utf-8").read() if os.path.isfile(ledger_path) else None
+    check(seen.get("warning", 0) >= 1 and before == after, "a new path under infra/ is counted by status without touching the backlog", str(seen) + err[-200:])
 
 
 def main():

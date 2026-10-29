@@ -406,20 +406,48 @@ def cmd_undo(args):
         return 0
     keep = {e["to"]: read(e["to"]) for e in last["files"] if os.path.isfile(e["to"])}
     import gtt_flow
+    from gtt_bash import bash_executable
+    # What a failed re-freeze must put back besides the files: the identity registry and the derived index
+    # (an artifact the promotion created leaves with it), the governance backlog the freeze observes into,
+    # and the promotion's own record, so the undo can be tried again.
+    derived = (".gtt/index/artifacts.json", ".gtt/index/technical-index.json", "gtt-domain/governance-backlog.json")
+    saved = {path: (open(path, "rb").read() if os.path.isfile(path) else None) for path in derived}
+    record = os.path.join(gtt_flow.BACKUPS, last["name"])
+    record_copy = os.path.join(".gtt", "local", "undo-in-progress")      # outside the backups: never listed as a promotion
+    shutil.rmtree(record_copy, ignore_errors=True)
+    shutil.copytree(record, record_copy)
     if gtt_flow.restore(last["name"], quiet=True) != 0:
+        shutil.rmtree(record_copy, ignore_errors=True)
         return 1
+    created = {e["to"] for e in last["files"] if not e["existed"]}
+    if created:
+        import gtt_artifacts
+        manifest = gtt_artifacts.load_manifest()
+        manifest["artifacts"] = [a for a in manifest.get("artifacts", []) if a.get("path") not in created]
+        gtt_artifacts.save_manifest(manifest)
+        subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-index.sh")], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
     if last.get("froze") and os.path.isfile(FROZEN):
-        from gtt_bash import bash_executable
         done = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True,
                               encoding="utf-8", errors="replace")
         if done.returncode not in (0, 2):
             for path, text in keep.items():
                 write(path, text)
+            for path, data in saved.items():
+                if data is None:
+                    if os.path.isfile(path):
+                        os.remove(path)
+                else:
+                    with open(path, "wb") as handle:
+                        handle.write(data)
+            shutil.rmtree(record, ignore_errors=True)
+            os.replace(record_copy, record)
             print((done.stdout + done.stderr).rstrip(), file=sys.stderr)
             print("gtt-change: the new freeze failed, so nothing was undone: the promoted files are back. "
                   "Going back is then a change request.", file=sys.stderr)
             return 1
         print("A new freeze recorded the earlier state; the promotion stays in the freeze history.")
+    shutil.rmtree(record_copy, ignore_errors=True)
     print(f"gtt-change: promotion {last['name']} undone - {len(last['files'])} file(s) as they were before it.")
     return 0
 
