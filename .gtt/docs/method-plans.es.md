@@ -295,7 +295,11 @@ compatibilidad con el contrato 1.0; *profile* y *plan* son lo mismo.
 
 **En un proyecto congelado**, pasar a un plan *menos* estricto se rechaza: es un
 cambio gobernado y sigue la vía normal (change request → propuesta → decisión
-humana). Pasar a uno más estricto está permitido. El orden es
+humana): `gtt-propose-change` (forma 7) escribe la propuesta, `gtt-adr` registra el
+cambio aprobado como un ADR con la línea `Autonomy Profile: <actual> -> <propuesto>`
+y la persona lo aplica con `profile set --profile <id> --adr ADR-NNN --apply` (CLI:
+`gtt autonomy set <id> --adr ADR-NNN`), y vuelve a congelar. Pasar a uno más estricto
+está permitido directamente. El orden es
 Light < Medium < Hard < Team.
 
 ## Lo que el Bootstrap deliberadamente no añade

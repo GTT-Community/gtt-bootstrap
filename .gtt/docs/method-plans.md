@@ -285,8 +285,12 @@ A CLI does the same through the declared operations `methodology.profile.get` an
 with the 1.0 contract; *profile* and *plan* are the same thing.
 
 **In a frozen project**, moving to a *less* strict plan is refused: it is a governed
-change and follows the normal path (change request → proposal → human decision).
-Moving to a stricter one is allowed. The order is Light < Medium < Hard < Team.
+change and follows the normal path (change request → proposal → human decision):
+`gtt-propose-change` (form 7) writes the proposal, `gtt-adr` records the approved
+change as an ADR containing `Autonomy Profile: <current> -> <proposed>`, and the human
+applies it with `profile set --profile <id> --adr ADR-NNN --apply` (CLI: `gtt autonomy
+set <id> --adr ADR-NNN`), then freezes again. Moving to a stricter one is allowed
+directly. The order is Light < Medium < Hard < Team.
 
 ## What the Bootstrap deliberately does not add
 

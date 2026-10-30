@@ -234,6 +234,22 @@ def profiles(project, tmp):
     rc, env, err = op(p, "methodology.profile.set", profile="hard", apply=True)
     check(env["exit_code"] == 1 and read_json(os.path.join(p, ".gtt/methodology.json"))["profile"] == "team",
           "a frozen project accepts a stricter plan (team) and then refuses to step back to hard")
+    # the governed way down: only an Accepted ADR that records exactly this change authorises it
+    state_file = os.path.join(p, ".gtt/methodology.json")
+    rc, env, err = op(p, "methodology.profile.set", profile="hard", adr="ADR-099", apply=True)
+    check(env["exit_code"] == 1 and "gtt-propose-change, form 7" in env["stderr"] and read_json(state_file)["profile"] == "team",
+          "a frozen project names the governed path and refuses when the ADR does not exist", env["stderr"][:200])
+    adr_path = os.path.join(p, "gtt-domain/adr/ADR-099-relax-plan.md")
+    write(adr_path, "# ADR-099 - Relax plan\n\n- Status: Proposed\n- Autonomy Profile: team -> hard\n")
+    rc, env, err = op(p, "methodology.profile.set", profile="hard", adr="ADR-099", apply=True)
+    check(env["exit_code"] == 1 and read_json(state_file)["profile"] == "team", "an ADR that is not Accepted does not authorise the change")
+    write(adr_path, "# ADR-099 - Relax plan\n\n- Status: Accepted\n- Autonomy Profile: team -> medium\n")
+    rc, env, err = op(p, "methodology.profile.set", profile="hard", adr="ADR-099", apply=True)
+    check(env["exit_code"] == 1 and read_json(state_file)["profile"] == "team", "an ADR recording another change does not authorise this one")
+    write(adr_path, "# ADR-099 - Relax plan\n\n- Status: Accepted\n- Autonomy Profile: team -> hard\n")
+    rc, env, err = op(p, "methodology.profile.set", profile="hard", adr="ADR-099", apply=True)
+    check(env["exit_code"] == 0 and read_json(state_file)["profile"] == "hard",
+          "an Accepted ADR that records exactly team -> hard authorises the less strict plan after the freeze", env.get("stderr", "")[:200])
     # the contracts themselves refuse to weaken an invariant
     bad = fresh(project, tmp, "prof-bad")
     spec = read_json(os.path.join(bad, ".gtt/contract/profiles.json"))

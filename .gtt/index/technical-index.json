@@ -1590,7 +1590,7 @@
       "title": "Bootstrapping GTT into a project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "954e78efa8195bbcc7caebaac9e4386fd55a94a99e1e2111990b424acbbf0365",
+      "sha256": "545045d7ff521a7b5e510733f6afd78bc4d6ab10a3e0b28efdd9ee11deea3326",
       "aliases": [],
       "sections": [
         {
@@ -1599,7 +1599,7 @@
           "anchor": "bootstrapping-gtt-into-a-project",
           "path": "Bootstrapping GTT into a project",
           "line_start": 1,
-          "line_end": 534
+          "line_end": 535
         },
         {
           "heading": "Before changing anything",
@@ -1639,71 +1639,71 @@
           "anchor": "autonomy-profiles",
           "path": "Bootstrapping GTT into a project > Autonomy Profiles",
           "line_start": 253,
-          "line_end": 286
+          "line_end": 287
         },
         {
           "heading": "Development method",
           "level": 2,
           "anchor": "development-method",
           "path": "Bootstrapping GTT into a project > Development method",
-          "line_start": 287,
-          "line_end": 326
+          "line_start": 288,
+          "line_end": 327
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "Bootstrapping GTT into a project > Design assessment",
-          "line_start": 327,
-          "line_end": 388
+          "line_start": 328,
+          "line_end": 389
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "Bootstrapping GTT into a project > Initial Design Questionnaire",
-          "line_start": 389,
-          "line_end": 440
+          "line_start": 390,
+          "line_end": 441
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "Bootstrapping GTT into a project > Two confirmations",
-          "line_start": 441,
-          "line_end": 454
+          "line_start": 442,
+          "line_end": 455
         },
         {
           "heading": "Confirmation A — source/design",
           "level": 3,
           "anchor": "confirmation-a--sourcedesign",
           "path": "Bootstrapping GTT into a project > Two confirmations > Confirmation A — source/design",
-          "line_start": 445,
-          "line_end": 448
+          "line_start": 446,
+          "line_end": 449
         },
         {
           "heading": "Confirmation B — governed context",
           "level": 3,
           "anchor": "confirmation-b--governed-context",
           "path": "Bootstrapping GTT into a project > Two confirmations > Confirmation B — governed context",
-          "line_start": 449,
-          "line_end": 454
+          "line_start": 450,
+          "line_end": 455
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "Bootstrapping GTT into a project > Source preservation",
-          "line_start": 455,
-          "line_end": 462
+          "line_start": 456,
+          "line_end": 463
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "Bootstrapping GTT into a project > Completion report",
-          "line_start": 463,
-          "line_end": 534
+          "line_start": 464,
+          "line_end": 535
         }
       ],
       "references": [],
@@ -2818,7 +2818,7 @@
       "title": "GTT Bootstrap — Autonomy Profiles",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "9f4f0049249cf6e367025e72217a65e76913ab632156f9c5cd140fe76ac75bb4",
+      "sha256": "889880bf3583752f52688f8ba773735759aa27277101a4d450f62f2687a4ded5",
       "aliases": [],
       "sections": [
         {
@@ -2827,7 +2827,7 @@
           "anchor": "gtt-bootstrap--autonomy-profiles",
           "path": "GTT Bootstrap — Autonomy Profiles",
           "line_start": 1,
-          "line_end": 298
+          "line_end": 302
         },
         {
           "heading": "What a plan is, and what it is not",
@@ -2931,15 +2931,15 @@
           "anchor": "selecting-and-changing-a-plan",
           "path": "GTT Bootstrap — Autonomy Profiles > Selecting and changing a plan",
           "line_start": 271,
-          "line_end": 290
+          "line_end": 294
         },
         {
           "heading": "What the Bootstrap deliberately does not add",
           "level": 2,
           "anchor": "what-the-bootstrap-deliberately-does-not-add",
           "path": "GTT Bootstrap — Autonomy Profiles > What the Bootstrap deliberately does not add",
-          "line_start": 291,
-          "line_end": 298
+          "line_start": 295,
+          "line_end": 302
         }
       ],
       "references": [],
@@ -2961,7 +2961,7 @@
       "title": "GTT Bootstrap — Perfiles de Autonomía",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "8938a6842649ee558df4365448779ecba436196b9f0e48f0b126f5cfcd39a86a",
+      "sha256": "53f6080182d86469af3bb53f592919d8684a5e0effe0bcbb0941f2d7059d0a8a",
       "aliases": [],
       "sections": [
         {
@@ -2970,7 +2970,7 @@
           "anchor": "gtt-bootstrap--perfiles-de-autonomía",
           "path": "GTT Bootstrap — Perfiles de Autonomía",
           "line_start": 1,
-          "line_end": 309
+          "line_end": 313
         },
         {
           "heading": "Qué es un plan y qué no es",
@@ -3074,15 +3074,15 @@
           "anchor": "seleccionar-y-cambiar-de-plan",
           "path": "GTT Bootstrap — Perfiles de Autonomía > Seleccionar y cambiar de plan",
           "line_start": 280,
-          "line_end": 300
+          "line_end": 304
         },
         {
           "heading": "Lo que el Bootstrap deliberadamente no añade",
           "level": 2,
           "anchor": "lo-que-el-bootstrap-deliberadamente-no-añade",
           "path": "GTT Bootstrap — Perfiles de Autonomía > Lo que el Bootstrap deliberadamente no añade",
-          "line_start": 301,
-          "line_end": 309
+          "line_start": 305,
+          "line_end": 313
         }
       ],
       "references": [],
@@ -6881,7 +6881,7 @@
       "title": "Draft an ADR and its promotion package",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "cf664b06264daa859c653f3885b6bae0751848e63e103a340f9dd22b7d2747c8",
+      "sha256": "f155a7c90f5cc4d86597353e59d3721452d387828cd31b978593abe753f11af9",
       "aliases": [],
       "sections": [
         {
@@ -6890,7 +6890,7 @@
           "anchor": "draft-an-adr-and-its-promotion-package",
           "path": "Draft an ADR and its promotion package",
           "line_start": 8,
-          "line_end": 148
+          "line_end": 151
         },
         {
           "heading": "First: does this change need an ADR?",
@@ -6898,55 +6898,55 @@
           "anchor": "first-does-this-change-need-an-adr",
           "path": "Draft an ADR and its promotion package > First: does this change need an ADR?",
           "line_start": 30,
-          "line_end": 43
+          "line_end": 46
         },
         {
           "heading": "Numbering",
           "level": 2,
           "anchor": "numbering",
           "path": "Draft an ADR and its promotion package > Numbering",
-          "line_start": 44,
-          "line_end": 50
+          "line_start": 47,
+          "line_end": 53
         },
         {
           "heading": "Template",
           "level": 2,
           "anchor": "template",
           "path": "Draft an ADR and its promotion package > Template",
-          "line_start": 51,
-          "line_end": 102
+          "line_start": 54,
+          "line_end": 105
         },
         {
           "heading": "After drafting",
           "level": 2,
           "anchor": "after-drafting",
           "path": "Draft an ADR and its promotion package > After drafting",
-          "line_start": 103,
-          "line_end": 108
+          "line_start": 106,
+          "line_end": 111
         },
         {
           "heading": "Stage the affected context files",
           "level": 2,
           "anchor": "stage-the-affected-context-files",
           "path": "Draft an ADR and its promotion package > Stage the affected context files",
-          "line_start": 109,
-          "line_end": 117
+          "line_start": 112,
+          "line_end": 120
         },
         {
           "heading": "Stage the promotion set",
           "level": 2,
           "anchor": "stage-the-promotion-set",
           "path": "Draft an ADR and its promotion package > Stage the promotion set",
-          "line_start": 118,
-          "line_end": 133
+          "line_start": 121,
+          "line_end": 136
         },
         {
           "heading": "Tell the user",
           "level": 2,
           "anchor": "tell-the-user",
           "path": "Draft an ADR and its promotion package > Tell the user",
-          "line_start": 134,
-          "line_end": 148
+          "line_start": 137,
+          "line_end": 151
         }
       ],
       "references": [],
@@ -7296,7 +7296,7 @@
       "title": "GTT change proposal",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "dd225b3d2ca165fa14da28597711b84e6111848ceba003ab2f024086ef1a5e69",
+      "sha256": "3104a9a85d5d13fde77ccc2d996d73a7e72d0d3ed4b4d82fb4a3170b1015af05",
       "aliases": [],
       "sections": [
         {
@@ -7305,7 +7305,7 @@
           "anchor": "gtt-change-proposal",
           "path": "GTT change proposal",
           "line_start": 8,
-          "line_end": 295
+          "line_end": 324
         },
         {
           "heading": "First: is this governance at all?",
@@ -7396,20 +7396,28 @@
           "line_end": 267
         },
         {
+          "heading": "7. Autonomy Profile change (frozen project)",
+          "level": 2,
+          "anchor": "7-autonomy-profile-change-frozen-project",
+          "path": "GTT change proposal > 7. Autonomy Profile change (frozen project)",
+          "line_start": 268,
+          "line_end": 296
+        },
+        {
           "heading": "Quality bar",
           "level": 2,
           "anchor": "quality-bar",
           "path": "GTT change proposal > Quality bar",
-          "line_start": 268,
-          "line_end": 277
+          "line_start": 297,
+          "line_end": 306
         },
         {
           "heading": "After writing",
           "level": 2,
           "anchor": "after-writing",
           "path": "GTT change proposal > After writing",
-          "line_start": 278,
-          "line_end": 295
+          "line_start": 307,
+          "line_end": 324
         }
       ],
       "references": [],
@@ -7906,6 +7914,9 @@
     ],
     "6.3 internal consumers": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#63-internal-consumers"
+    ],
+    "7. autonomy profile change (frozen project)": [
+      "SKILL-GTT-PROPOSE-CHANGE#7-autonomy-profile-change-frozen-project"
     ],
     "7. boundaries": [
       "CTX-STACK#7-boundaries"

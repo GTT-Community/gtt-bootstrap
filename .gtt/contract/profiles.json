@@ -21,7 +21,7 @@
     "change": "A plan can be selected or changed later without recreating the project: only .gtt/methodology.json is written; governed context, ADRs, proposals, backlog, index and history are untouched."
   },
   "strictness_order": ["light", "medium", "hard", "team"],
-  "after_freeze": "Selecting a LESS strict plan in a frozen project is refused: it is a governed change (change request -> proposal -> human decision). Selecting a stricter one is allowed.",
+  "after_freeze": "Selecting a LESS strict plan in a frozen project is refused: it is a governed change (change request -> proposal -> human decision) and is applied only with `--adr ADR-NNN`, an Accepted ADR that records `Autonomy Profile: <current> -> <proposed>`. Selecting a stricter one is allowed.",
   "definitions": {
     "deterministic_operation": "An operation whose result follows entirely from repository state and declared policy, with no judgment: allocating the next free id, rebuilding the index, regenerating the GTTGuard registry, running validation.",
     "relevant_change": "An automated operation that rewrites human-authored or ADE-facing files rather than derived ones: updating references across documents after a move, synchronising ADE context files.",

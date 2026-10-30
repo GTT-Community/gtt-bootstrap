@@ -155,6 +155,20 @@ def cmd_interaction(args):
     return 0
 
 
+ADR_PLAN_LINE = re.compile(r"^\s*[-*]?\s*Autonomy Profile:\s*(\w+)\s*(?:->|\u2192)\s*(\w+)\s*$", re.MULTILINE)
+
+
+def adr_authorises(adr_id, before, after):
+    """True when a human-promoted, Accepted ADR records exactly this plan change. gtt-domain/adr/ is write-protected to
+    agents, so such an ADR is the evidence that the governed change (proposal -> human decision) happened."""
+    for path in glob.glob(f"gtt-domain/adr/{adr_id}-*.md"):
+        text = open(path, encoding="utf-8").read()
+        if re.search(r"^\s*[-*]?\s*Status:\s*Accepted\b", text, re.MULTILINE | re.IGNORECASE):
+            if any((m.group(1), m.group(2)) == (before, after) for m in ADR_PLAN_LINE.finditer(text)):
+                return True
+    return False
+
+
 def cmd_profile(args):
     spec = profiles()
     order = spec["strictness_order"]
@@ -181,9 +195,14 @@ def cmd_profile(args):
     if args.profile:
         if args.profile not in order:
             die(f"unknown profile `{args.profile}` (supported: {', '.join(order)})")
-        if os.path.isfile(FROZEN) and order.index(args.profile) < order.index(cur["profile"]):
+        relaxes = order.index(args.profile) < order.index(cur["profile"])
+        if os.path.isfile(FROZEN) and relaxes and not (args.adr and adr_authorises(args.adr, cur["profile"], args.profile)):
+            why = (f"`{args.adr}` is not an Accepted ADR in gtt-domain/adr/ recording `Autonomy Profile: {cur['profile']} -> {args.profile}`. "
+                   if args.adr else "")
             print(f"REFUSED: the project is frozen; moving from `{cur['profile']}` to the less strict `{args.profile}` is a "
-                  "governed change (change request -> proposal -> human decision). Nothing was written.", file=sys.stderr)
+                  "governed change (change request -> proposal -> human decision). " + why +
+                  "Ask the agent for an Autonomy Profile change proposal (gtt-propose-change, form 7); once the ADR is promoted, run: "
+                  f"gtt-project.sh profile set --profile {args.profile} --adr ADR-NNN --apply. Nothing was written.", file=sys.stderr)
             return 1
         new["profile"] = args.profile
     if args.language:
@@ -938,7 +957,7 @@ def build_parser():
     p = sub.add_parser("next-id"); p.add_argument("--kind", required=True, choices=sorted(ID_KINDS)); p.add_argument("--requested")
     p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_next_id)
     p = sub.add_parser("profile"); p.add_argument("action", choices=["get", "set"]); p.add_argument("--json", action="store_true")
-    p.add_argument("--profile"); p.add_argument("--language"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_profile)
+    p.add_argument("--profile"); p.add_argument("--language"); p.add_argument("--adr"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_profile)
     p = sub.add_parser("source"); p.add_argument("action", choices=["select", "list"]); p.add_argument("--json", action="store_true")
     p.add_argument("--path"); p.add_argument("--type"); p.add_argument("--version"); p.add_argument("--by"); p.add_argument("--apply", action="store_true")
     p.set_defaults(func=cmd_source)

@@ -281,7 +281,8 @@ collaboration profile, never a quality level, and no plan turns governance off.
   planned. Promise nothing beyond what the contract states.
 - **Changing it later** writes only `.gtt/methodology.json`
   (`gtt-project.sh profile set --profile <id>`, a dry run without `--apply`) and
-  recreates nothing. In a frozen project a *less* strict plan is refused: it is a
+  recreates nothing. In a frozen project a *less* strict plan is refused unless an Accepted ADR records it
+  (`gtt-propose-change` form 7, then `profile set --adr ADR-NNN`): it is a
   governed change. The order is light < medium < hard < team.
 
 ## Development method

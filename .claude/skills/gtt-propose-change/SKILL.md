@@ -265,6 +265,35 @@ new freeze, whose `gtt-method.sh check --pre-freeze` verifies the result. The
 re-cut of Epics and designs follows as specification changes (no ADR), and the
 code moves as ordinary work afterwards.
 
+## 7. Autonomy Profile change (frozen project)
+
+Use when the human wants a *less* strict Autonomy Profile after the freeze (Hard -> Medium, Medium -> Light, and so on) because
+the method feels like too much, or a *stricter* one is wanted but you were asked to record it formally. Stricter changes
+need no proposal: `gtt autonomy set <plan>` is allowed. A less strict plan is refused after the freeze, so this form is the
+only way. Never recommend the change yourself: you write this proposal only when the human asked for the change.
+
+Read `bash .gtt/scripts/gtt-contract.sh show profiles`, the `relaxes` and `semantics` of both plans, so the impact is the
+contract's words, not yours.
+
+```text
+Proposed Autonomy Profile Change
+
+Current plan: <id>
+Proposed plan: <id>
+Reason: <what the human finds heavy, in their words>
+Controls that relax: <the `relaxes` of the proposed plan and every `semantics` entry that differs, as the contract states them>
+Unchanged in every plan: human decision authority, governed decisions confirmed, destructive operations confirmed, freeze
+Risk: <what the project loses in oversight and how it would be noticed>
+Alternatives considered: <staying, or a single stricter-but-lighter step>
+
+Status: Requires Solution Designer approval
+```
+
+Once approved, record it with the `gtt-adr` skill: the ADR must contain the exact line `Autonomy Profile: <current> -> <proposed>`
+and `Status: Accepted`. The human promotes it, then applies it with
+`bash .gtt/scripts/gtt-project.sh profile set --profile <proposed> --adr ADR-NNN --apply` (or
+`gtt autonomy set <proposed> --adr ADR-NNN`), and runs a new freeze. The agent never runs that command.
+
 ## Quality bar
 
 A proposal is only useful if it can be decided without a follow-up question.
@@ -280,7 +309,7 @@ A proposal is only useful if it can be decided without a follow-up question.
 State the file path you wrote and summarize the proposal in two or three lines
 in chat, so the decision can be made without opening the file. Then stop.
 
-Once an architecture, context, conflict or development method proposal (forms 1-3 and 6) is approved,
+Once an architecture, context, conflict or development method proposal (forms 1-3, 6 and 7) is approved,
 the decision is recorded with the `gtt-adr` skill, which stages the ADR, the
 affected context files, and an executable promotion script together (the governed
 change is then completed by a new freeze, which the human runs) — the

@@ -41,6 +41,9 @@ An ADR is for architecture only. Apply the rule before drafting anything - it is
 
 You may still propose an ADR for a specification change that had real alternatives; the human chooses.
 
+An Autonomy Profile change (form 7 of `gtt-propose-change`) is recorded with an ADR that carries the exact line
+`Autonomy Profile: <current> -> <proposed>`; `profile set --adr` verifies it.
+
 ## Numbering
 
 Take the number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - deterministic, and it never
