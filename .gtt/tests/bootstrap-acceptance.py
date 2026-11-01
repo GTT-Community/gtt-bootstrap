@@ -491,7 +491,7 @@ def elicitation_start(project, tmp):
           and "Never ask for a name, a purpose or a problem the human has" in template and "no \"THINK Depth\"" in template,
           "the interview is a conversation: one question per message, what the human said is evidence, plain words")
     check(all(h in template for h in ("## 4.5 Vision", "## 4.6 Key terms", "## 13.5 Design principles", "## 14.6 Where it runs", "## Minimum floor"))
-          and "reach-the-floor" in {d["id"] for d in eli["directives"]} and len(eli["minimum_viable_design"]["floor"]["lines"]) == 4
+          and "reach-the-floor" in {d["id"] for d in eli["directives"]} and len(eli["minimum_viable_design"]["floor"]["lines"]) == 5
           and "QUICK included" in template,
           "the questionnaire covers the vision, the key terms and the principles, and reaches architecture and stack at every depth")
     check("numbered-options" in {d["id"] for d in eli["directives"]} and "**Answer with a number.**" in template and "Other (write it)" in template
@@ -549,12 +549,12 @@ def elicitation_start(project, tmp):
     edit(readiness("READY"))
     st = state()
     body = session(host)
-    check(st["state"] == "in-progress" and st["readiness"] == "READY" and st["floor"] == {"lines": 4, "met": 0} and any("floor" in f for f in st["findings"])
+    check(st["state"] == "in-progress" and st["readiness"] == "READY" and st["floor"] == {"lines": 5, "met": 0} and any("floor" in f for f in st["findings"])
           and "the floor is not met" in body and "architecture and stack still to decide" in body,
           "READY below the floor -> still in-progress: the architecture and the stack are not decided yet", str(st)[:300])
 
     def floor_met(text, keep_one=False):
-        rows = re.findall(r"^\| (?:The problem|The architectural|The technology|The datastore)[^\n]*\| \| \|$", text, re.M)
+        rows = re.findall(r"^\| (?:The problem|The architectural|The technology|The datastore|Who builds)[^\n]*\| \| \|$", text, re.M)
         for i, row in enumerate(rows):
             if not (keep_one and i == 1):
                 text = text.replace(row, row[:-len("| | |")] + "| MET | 13, 14 |", 1)
@@ -564,7 +564,7 @@ def elicitation_start(project, tmp):
     edit(floor_met)
     st = state()
     body = session(host)
-    check(st["state"] == "in-progress" and st["floor"] == {"lines": 4, "met": 4} and st["human_review"] == "pending" and "awaiting the human's review" in body,
+    check(st["state"] == "in-progress" and st["floor"] == {"lines": 5, "met": 5} and st["human_review"] == "pending" and "awaiting the human's review" in body,
           "the floor met but the human review not recorded -> still in-progress, waiting for the review")
     edit(lambda t: t.replace("Reviewed by:\n", "Reviewed by: MG\n", 1))
     st = state()
@@ -1147,9 +1147,9 @@ def protection_hooks(project, tmp):
           and ".agents/hooks.json" in reg["antigravity"]["owned_paths"] and listing.count("realtime-hook-unverified") == 5,
           "the registry states every such hook as shipped but unverified - no ADE is credited with a guarantee it has not proven")
     check(reg["kiro"]["enforcement"] == "realtime-hook-unverified" and reg["copilot"]["enforcement"] == "realtime-hook-unverified"
-          and reg["copilot"]["owned_paths"] == [".github/instructions/gtt.instructions.md", ".github/hooks/gtt-protect.json"]
-          and reg["codex"]["enforcement"] == "ci-gate",
-          "Kiro and Copilot leave `ci-gate` for a hook that is shipped and unverified; Copilot owns two files under .github/ and nothing else there")
+          and reg["copilot"]["owned_paths"] == [".github/instructions/gtt.instructions.md", ".github/hooks/gtt-protect.json", ".github/skills/gtt-delivery/SKILL.md"]
+          and reg["codex"]["enforcement"] == "ci-gate" and reg["codex"]["owned_paths"] == [".agents/skills/gtt-delivery/SKILL.md"],
+          "Kiro and Copilot leave `ci-gate` for a hook that is shipped and unverified; Copilot owns its instructions, its hook and the delivery skill under .github/ and nothing else there; Codex owns only the skill")
 
 
 def registry_safety(project, tmp):
@@ -2713,11 +2713,15 @@ def design_sources(project, tmp):
             ("a reference to a part of the design that does not exist fails", good.replace("#R-1, #E-1", "#R-9, #E-1"), "#R-9, which is not in that design"),
             ("a reference to a design that does not exist fails", good.replace("design/EPIC-001#R-1", "design/EPIC-077#R-1"), "EPIC-077.md does not exist"),
             ("a reference to an ADR that does not exist fails", good.replace("#E-1\n", "#E-1 · ADR-777\n"), "ADR-777, which does not exist"),
-            ("a Context line without its design anchor fails", good.replace("(#R-1)", ""), "does not end with its design anchor"),
+            ("an Implements that points at a missing anchor still fails", good.replace("#R-1, #E-1", "#R-1, #E-9"), "#E-9"),
             ("`Done when` without an example of the design fails", good.replace("E-1 passes", "it works"), "names no example of the design"),
-            ("`Done when` without a test file fails", good.replace(" · tests/test_orders.py", ""), "names no test file")):
+            ("`Done when` without executable evidence fails", good.replace(" · tests/test_orders.py", ""), "names no executable evidence")):
         rc, out = stories(broken)
         check(rc == 1 and expect in out, label, out[-300:])
+    rc, out = stories(good.replace("(#R-1)", ""))
+    check(rc == 0 and "WARN" in out and "does not end with its design anchor" in out, "a Context line without its anchor only warns: the check polices links, not wording", out[-300:])
+    rc, out = stories(good.replace(" · tests/test_orders.py", " · run: python3 tools/audit.py"))
+    check(rc == 0, "`run: <command>` is executable evidence: a content Story needs no test file", out[-300:])
     rc, out = stories(good.replace("In Progress", "Planned").replace("- **Implements:** design/EPIC-001#R-1, #E-1\n", ""))
     check(rc == 0 and "WARN" in out and "has no `Implements:`" in out, "a Story that is only planned and has no `Implements:` yet warns and fails nothing", out[-300:])
     stories(good)
@@ -2867,7 +2871,7 @@ def think_depth(project, tmp):
           "no depth selected: STANDARD applies as a fallback and is reported as not selected")
     for depth in ("QUICK", "STANDARD", "DEEP"):
         rc, s = state(depth, "ADEQUATE")
-        check(rc == 0 and s["selected"] == depth and s["applies"] == depth and s["floor"] == {"met": 5, "not_met": 0, "unassessed": 0},
+        check(rc == 0 and s["selected"] == depth and s["applies"] == depth and s["floor"] == {"met": 6, "not_met": 0, "unassessed": 0},
               f"{depth}: a selected depth is recorded; a design that meets the floor may be ADEQUATE", str(s)[:200])
         rc, s = state(depth, "ADEQUATE", unmet=1)
         check(rc == 1 and any("below the floor" in f for f in s["findings"]), f"{depth}: below the floor the verdict is POOR - the depth never lifts it", str(s)[:300])
@@ -3257,6 +3261,197 @@ def change_flow(project, tmp):
     check(seen.get("warning", 0) >= 1 and before == after, "a new path under infra/ is counted by status without touching the backlog", str(seen) + err[-200:])
 
 
+def delivery_planning(project, tmp):
+    print("[delivery] who builds, the plan against the time, the freeze rules, the log and the signals")
+    p = fresh(project, tmp, "dlv")
+    backlog = os.path.join(p, "gtt-domain", "backlog.md")
+    D = ".gtt/scripts/gtt-delivery.sh"
+
+    def run(*args, now="2026-10-31T10:00:00Z"):
+        proc = subprocess.run(["bash", D, *args], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              env=dict(os.environ, GTT_NOW=now))
+        return proc.returncode, proc.stdout + proc.stderr
+
+    def profile(name):
+        save_json(os.path.join(p, ".gtt", "methodology.json"), {"schema": 1, "profile": name, "language": "en"})
+
+    def epics(body):
+        write(backlog, "# Project Backlog\n\n" + body)
+
+    epic = "### EPIC-{n}\n**Status:** Planned\n**Goal:** g\n**Approved:** ana - 2026-10-30\n{fields}\n\n"
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 0 and "no delivery planning declared" in out, "a project that never declared delivery planning is not obstructed", out[-200:])
+
+    rc, out = run("select", "--who", "robots")
+    check(rc == 1 and not os.path.exists(os.path.join(p, ".gtt", "delivery.json")), "an unknown answer is refused and nothing is written", out[-200:])
+    rc, out = run("select", "--who", "solo-multi", "--lanes", "3", "--horizon", "days", "--by", "ana")
+    check(rc == 0 and "dry run" in out and not os.path.exists(os.path.join(p, ".gtt", "delivery.json")), "select is a dry run without --apply", out[-200:])
+    rc, out = run("select", "--who", "solo-multi", "--lanes", "3", "--horizon", "days", "--by", "ana", "--apply")
+    state = read_json(os.path.join(p, ".gtt", "delivery.json"))
+    check(rc == 0 and state["who"] == "solo-multi" and state["lanes"] == 3 and state["deadline"] == "2026-11-03" and state["priority"] == "OPEN",
+          "the answers are recorded, the deadline is computed and an unanswered question stays OPEN", str(state))
+    check(run("select", "--horizon", "month", "--apply")[0] == 0, "delivery answers can change at any time (operation, not architecture)")
+    run("select", "--horizon", "days", "--apply")
+
+    epics(epic.format(n="001", fields="**Estimate:** 14h + 2 decisions\n**Lane:** a\n**Touches:** src/auth\n**Build:** integrate (ADR-099)") +
+          epic.format(n="002", fields="**Estimate:** 6h\n**Lane:** b\n**Touches:** src/auth/session\n**Budget:** ok"))
+    profile("light")
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 0 and "WARN" in out and "over the 8h cap" in out, "criterion 3, Light: an Epic of 14 h over a cap of 8 h only warns", out[-300:])
+    profile("medium")
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 1 and "EPIC-001 is 14h" in out, "criterion 3, Medium: the freeze fails until Budget holds a decision", out[-300:])
+    check("ADR-099" in out and "does not exist" in out, "criterion 5: Build integrate (ADR-099) without the ADR fails", out[-300:])
+    check(rc == 1 and "WARN" in out and "src/auth/session" in out, "Medium only warns about fronts that touch the same path", out[-400:])
+    profile("hard")
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 1 and "FAIL" in out and "EPIC-001 and EPIC-002" in out and "src/auth/session" in out,
+          "criterion 4, Hard: fronts with crossed Touches fail, naming both Epics and the path", out[-400:])
+    ok = epic.format(n="001", fields="**Estimate:** 14h\n**Lane:** a\n**Touches:** src/auth\n**Budget:** over - accepted: auth is core - ana - 2026-10-31") + \
+        epic.format(n="002", fields="**Estimate:** 6h\n**Lane:** b\n**Touches:** src/billing\n**Depends on:** EPIC-001")
+    epics(ok)
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 0, "a decision in Budget, separate Touches and no purchase pass even in Hard", out[-300:])
+    write(os.path.join(p, "gtt-domain", "context", "notes.md"), "see [FUENTE: https://example.com/pricing, consultado 2026-06-01]\n")
+    profile("medium")
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 0 and "WARN" in out and "verify it again" in out, "criterion 6, Medium: an external source over 90 days old warns", out[-300:])
+    profile("hard")
+    rc, out = run("check", "--pre-freeze")
+    check(rc == 1 and "verify it again" in out, "criterion 6, Hard: the same source fails", out[-300:])
+    os.remove(os.path.join(p, "gtt-domain", "context", "notes.md"))
+    freeze = open(os.path.join(p, ".gtt", "scripts", "gtt-freeze.sh"), encoding="utf-8").read()
+    validate = open(os.path.join(p, ".gtt", "scripts", "gtt-validate.sh"), encoding="utf-8").read()
+    check("gtt-delivery.sh\" check --pre-freeze" in freeze and "gtt-delivery.sh check" in validate, "the freeze and the validation run the delivery check")
+
+    profile("medium")
+    story = ("### EPIC-001\n**Status:** In Progress\n**Goal:** g\n**Approved:** ana - 2026-10-30\n**Estimate:** 3h\n**Lane:** a\n\n"
+             "##### STORY-001 - one\n- **Status:** {a}\n- **Estimate:** 1h\n\n##### STORY-002 - two\n- **Status:** {b}\n- **Estimate:** 1h\n"
+             "- **Owner:** human\n\n##### STORY-003 - three\n- **Status:** {c}\n- **Estimate:** 1h\n")
+    epics(story.format(a="Planned", b="Planned", c="Planned"))
+    log = os.path.join(p, "gtt-domain", "delivery-log.jsonl")
+    hook = lambda tool, path, now: subprocess.run([sys.executable, os.path.join(p, ".claude", "hooks", "delivery-log.py")], cwd=p, input=json.dumps(
+        {"tool_name": tool, "tool_input": {"file_path": path}}), capture_output=True, text=True, env=dict(os.environ, GTT_NOW=now)).returncode
+    check(hook("Write", "gtt-domain/backlog.md", "2026-10-31T08:00:00Z") == 0, "the PostToolUse hook runs and never fails the tool")
+    before = len(open(log, encoding="utf-8").read().splitlines())
+    check(hook("Write", "src/app.py", "2026-10-31T08:30:00Z") == 0 and len(open(log, encoding="utf-8").read().splitlines()) == before,
+          "a write to another file records nothing")
+    epics(story.format(a="In Progress", b="Planned", c="Planned"))
+    hook("Edit", "gtt-domain/backlog.md", "2026-10-31T09:00:00Z")
+    epics(story.format(a="Done", b="Planned", c="Planned"))
+    hook("Edit", "gtt-domain/backlog.md", "2026-10-31T09:30:00Z")
+    lines = [json.loads(l) for l in open(log, encoding="utf-8").read().splitlines()]
+    mine = [l for l in lines if l["id"] == "STORY-001"]
+    check([l["to"] for l in mine] == ["Planned", "In Progress", "Done"] and mine[1]["t"] == "2026-10-31T09:00:00Z" and mine[2]["t"] == "2026-10-31T09:30:00Z",
+          "criterion 7: In Progress and then Done leave two timed lines without the agent intervening", str(mine))
+    rc, out = run("log")
+    check(rc == 0 and len(open(log, encoding="utf-8").read().splitlines()) == len(lines), "running the log again adds nothing")
+
+    rc, out = run("report", "--json", now="2026-10-31T09:45:00Z")
+    rep = json.loads(out)
+    check(rep["uncalibrated"] is True and rep["calibration"]["measured"] == 1, "criterion 9: fewer than 3 Stories measured says uncalibrated: true", out[:300])
+    check(rep["epics"][0]["percent"] == 33 and rep["epics"][0]["real_h"] == 0.5, "criterion 9: percent per Epic and real hours come from the log", str(rep["epics"]))
+    epics(story.format(a="Done", b="Planned", c="In Progress"))
+    hook("Edit", "gtt-domain/backlog.md", "2026-10-31T10:00:00Z")
+    rep = json.loads(run("report", "--json", now="2026-10-31T12:30:00Z")[1])
+    over = [s for s in rep["signals"] if s["rule"] == "DLV-STORY-OVER"]
+    check(len(over) == 1 and over[0]["artifact"] == "STORY-003", "criterion 8: a Story of 1 h In Progress for 2.5 h raises DLV-STORY-OVER", str(rep["signals"]))
+    observe = lambda now: subprocess.run([sys.executable, "-c", "import sys,json;sys.path.insert(0,'.gtt/scripts');import gtt_observe;"
+                                          "print(json.dumps([s['fingerprint'] for s in gtt_observe.observe_delivery({}) if s['rule']=='DLV-STORY-OVER']))"],
+                                          cwd=p, capture_output=True, text=True, env=dict(os.environ, GTT_NOW=now)).stdout.strip()
+    check(observe("2026-10-31T12:30:00Z") == observe("2026-10-31T14:00:00Z") != "[]", "the signal keeps one identity over time, so the ledger records it once")
+    waits = json.loads(run("report", "--json", now="2026-11-02T10:00:00Z")[1])["signals"]
+    check(any(s["rule"] == "DLV-HUMAN-WAIT" and s["artifact"] == "STORY-002" for s in waits), "an action for the human waiting more than 24 h raises DLV-HUMAN-WAIT")
+
+    rc, out = run("plan", "--lanes", "--json")
+    lanes = json.loads(out)["lanes"]
+    before_tree = tree_hash(p)
+    epics(epic.format(n="001", fields="**Estimate:** 4h\n**Lane:** a\n**Touches:** src/a") + epic.format(n="002", fields="**Estimate:** 4h\n**Lane:** b\n**Touches:** src/b") +
+          epic.format(n="003", fields="**Estimate:** 4h\n**Lane:** c\n**Touches:** src/c"))
+    before_tree = tree_hash(p)
+    rc, out = run("plan", "--lanes")
+    check(rc == 0 and out.count("git worktree add") == 3 and tree_hash(p) == before_tree, "criterion 10: three fronts print three summaries and worktree commands, creating nothing", out[-300:])
+    session = bash(p, ".gtt/scripts/gtt-status.sh")[1]
+    check("## Delivery" in session and "forecast:" in session, "criterion 11: session.md has the Delivery section", session[-400:])
+
+    p2 = fresh(project, tmp, "dlv2")
+    write(os.path.join(p2, "gtt-domain", "backlog.md"), open(backlog, encoding="utf-8").read())
+    p3 = fresh(project, tmp, "dlv3")
+    write(os.path.join(p3, "gtt-domain", "context", "design", "EPIC-900.md"), "# EPIC-900\n\n- **R-1** rule\n- **E-3** example\n")
+    write(os.path.join(p3, "gtt-domain", "backlog.md"), "# Project Backlog\n\n### EPIC-900 - Docs\n**Status:** Planned\n**Goal:** g\n**Approved:** ana - 2026-10-30\n"
+          "**Design:** gtt-domain/context/design/EPIC-900.md\n\n##### STORY-901 - content\n- **Status:** In Progress\n- **Implements:** design/EPIC-900#R-1\n"
+          "- **Context:** a line without any anchor\n- **Done when:** E-3 \u00b7 run: python3 tools/audit.py\n")
+    rc, out, err = bash(p3, ".gtt/scripts/gtt-check-backlog.sh")
+    check(rc == 0 and "Context" in out + err and "WARN" in out + err, "criterion 12: `run: <command>` is evidence and a Context line without an anchor only warns", (out + err)[-300:])
+    write(os.path.join(p3, "gtt-domain", "backlog.md"), open(os.path.join(p3, "gtt-domain", "backlog.md"), encoding="utf-8").read().replace("#R-1", "#R-9"))
+    check(bash(p3, ".gtt/scripts/gtt-check-backlog.sh")[0] == 1, "an Implements pointing at an anchor that does not exist still fails")
+
+    write(os.path.join(p, ".gtt", "ade.json"), "{}\n")      # an installed project: the setup records are protected
+    for target in (".gtt/delivery.json", "gtt-domain/delivery-log.jsonl", ".gtt/local/delivery-snapshot.json"):
+        denied, text, _ = claude_decides(p, "file", os.path.join(p, target))
+        check(denied, f"criterion 14: the agent cannot write {target}", text[:200])
+    denied, text, _ = claude_decides(p, "command", "echo '{}' > gtt-domain/delivery-log.jsonl")
+    check(denied, "criterion 14: nor redirect into the log from a shell", text[:200])
+
+
+def skills_for_ades(project, tmp):
+    print("[skills] the delivery skill reaches Codex, Copilot and Kiro from one source")
+    try:
+        import yaml
+    except ImportError:
+        yaml = None
+    source = open(os.path.join(project, ".gtt", "scaffold", "skills", "gtt-delivery", "SKILL.md"), encoding="utf-8").read()
+    where = {"claude": ".claude/skills/gtt-delivery/SKILL.md", "codex": ".agents/skills/gtt-delivery/SKILL.md", "copilot": ".github/skills/gtt-delivery/SKILL.md", "kiro": ".kiro/steering/gtt-delivery.md"}
+    check(bash(project, ".gtt/scripts/gtt-skills.sh", "check")[0] == 0, "the catalog's mirrors say what the source says")
+
+    def front(text):
+        found = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+        return yaml.safe_load(found.group(1)) if (found and yaml) else ({"name": "gtt-delivery", "description": "x"} if found else None)
+
+    for ade, rel in where.items():
+        h = make_host(project, tmp, f"skill-{ade}")
+        rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", ade, "--primary", ade, "--apply")
+        path = os.path.join(h, rel)
+        text = open(path, encoding="utf-8").read() if os.path.isfile(path) else ""
+        check(rc == 0 and text != "", f"{ade}: installing the ADE puts the skill at {rel}", out + err)
+        meta = front(text)
+        check(meta is not None and meta.get("name") == "gtt-delivery" and len(str(meta.get("description", ""))) > 40,
+              f"{ade}: its front matter is valid YAML with a name and a description", text[:200])
+        if ade == "kiro":
+            check(meta.get("inclusion") == "auto", "kiro: the steering file is included by description (inclusion: auto)")
+        else:
+            check(text == source and os.path.basename(os.path.dirname(path)) == meta["name"], f"{ade}: an Agent Skills file identical to the source, in a directory named as the skill")
+        check("gtt-delivery.sh" in text and "decides a Budget" in text, f"{ade}: it carries the procedure (the scripts to run, the human decides)")
+        rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "validate")
+        check(rc == 0, f"{ade}: the integration validates with the skill installed", out + err)
+        owned = json.loads(bash(h, ".gtt/scripts/gtt-ade.sh", "owned", "--json")[1])["surfaces"]
+        check(any(r["path"] == rel and r["status"] == "unmodified" for r in owned), f"{ade}: the skill is recorded as GTT-installed, so clean can remove it and nothing else", str(owned)[:200])
+        check(bash(h, ".gtt/scripts/gtt-skills.sh", "check")[0] == 0, f"{ade}: the mirror check passes in the installed project")
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write("\nan edit by hand\n")
+        rc, out, err = bash(h, ".gtt/scripts/gtt-skills.sh", "check")
+        check(rc == 1 and "differs from" in err, f"{ade}: a hand-edited mirror is detected as drift", err)
+        os.remove(path)
+        check(bash(h, ".gtt/scripts/gtt-skills.sh", "check")[0] == 1, f"{ade}: a deleted mirror is detected")
+        check(bash(h, ".gtt/scripts/gtt-skills.sh", "sync", "--apply")[0] == 0 and bash(h, ".gtt/scripts/gtt-skills.sh", "check")[0] == 0, f"{ade}: sync restores it from the source")
+
+    h = make_host(project, tmp, "skill-conflict")
+    write(os.path.join(h, ".agents", "skills", "gtt-delivery", "SKILL.md"), "the host's own skill\n")
+    rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "codex", "--primary", "codex", "--apply")
+    check(rc == 1 and "CONFLICT" in out and open(os.path.join(h, ".agents", "skills", "gtt-delivery", "SKILL.md"), encoding="utf-8").read() == "the host's own skill\n",
+          "a skill of the host with the same name is a conflict: never overwritten", out + err)
+    a = make_host(project, tmp, "skill-adopt")
+    for rel in (".agents", ".github", ".kiro", ".claude"):
+        shutil.rmtree(os.path.join(a, rel), ignore_errors=True)
+    rc, out, err = bash(a, ".gtt/scripts/gtt-ade.sh", "adopt")
+    check(rc == 0 and "codex" in out, "a project that only has AGENTS.md is still adopted as a Codex project", out + err)
+    bad = make_host(project, tmp, "skill-yaml")
+    src = os.path.join(bad, ".gtt", "scaffold", "skills", "gtt-delivery", "SKILL.md")
+    write(src, open(src, encoding="utf-8").read().replace("Proposes only and never decides", "Proposes only: never decides", 1))
+    rc, out, err = bash(bad, ".gtt/scripts/gtt-skills.sh", "check")
+    check(rc == 1 and "YAML" in err, "a description that would break the YAML front matter is refused", err)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=".")
@@ -3266,7 +3461,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades):
             scenario(project, tmp)
     finally:
         if args.keep:

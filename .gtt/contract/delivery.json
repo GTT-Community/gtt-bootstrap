@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Delivery Planning contract: who builds, with how many parallel fronts and for when (declare), how long the plan will take and whether it fits (plan), and how the real work compares (measure). Data only. The CLI and the site read the questions through the declared operations (delivery.questions) and never write their own texts. Everything here is computed from files by .gtt/scripts/gtt-delivery.sh: the agent explains and proposes, it never decides.",
+  "questions": [
+    {
+      "id": "D1", "order": 1, "key": "who", "asked_by": "init",
+      "prompt": { "es": "¿Quién va a construir esto?", "en": "Who is going to build this?" },
+      "options": [
+        { "id": "solo", "label": { "es": "Yo, con un agente", "en": "Me, with one agent" } },
+        { "id": "solo-multi", "label": { "es": "Yo, con varios agentes en paralelo", "en": "Me, with several agents in parallel" } },
+        { "id": "team", "label": { "es": "Un equipo de personas, cada una con su agente", "en": "A team of people, each with their own agent" } },
+        { "id": "OPEN", "label": { "es": "Aún no sé", "en": "I do not know yet" } }
+      ]
+    },
+    {
+      "id": "D2", "order": 2, "key": "lanes", "asked_by": "init", "only_if": { "who": ["solo-multi", "team"] },
+      "prompt": { "es": "¿Cuántos frentes en paralelo puedes sostener?", "en": "How many parallel fronts can you sustain?" },
+      "note": {
+        "es": "Depende de los límites de uso de tu plan del agente. Si es un equipo, se piden los nombres, que serán los dueños de cada frente.",
+        "en": "It depends on the usage limits of your agent plan. For a team, the names are asked: they own the fronts."
+      },
+      "options": [
+        { "id": "2", "label": { "es": "Dos", "en": "Two" } },
+        { "id": "3", "recommended": true, "label": { "es": "Tres", "en": "Three" } },
+        { "id": "4", "label": { "es": "Cuatro o más", "en": "Four or more" } },
+        { "id": "propose", "label": { "es": "No sé: GTT propone según el diseño", "en": "I do not know: GTT proposes from the design" } }
+      ]
+    },
+    {
+      "id": "D3", "order": 3, "key": "horizon", "asked_by": "init",
+      "prompt": { "es": "¿Para cuándo necesitas una primera versión usable?", "en": "When do you need a first usable version?" },
+      "options": [
+        { "id": "days", "days": 3, "label": { "es": "En días", "en": "In days" } },
+        { "id": "weeks", "days": 14, "label": { "es": "En 1–2 semanas", "en": "In 1-2 weeks" } },
+        { "id": "month", "days": 30, "label": { "es": "En un mes o más", "en": "In a month or more" } },
+        { "id": "none", "label": { "es": "Sin fecha", "en": "No date" } }
+      ]
+    },
+    {
+      "id": "D4", "order": 4, "key": "priority", "asked_by": "questionnaire",
+      "prompt": { "es": "¿Qué priorizas?", "en": "What do you prioritise?" },
+      "options": [
+        { "id": "speed", "label": { "es": "Llegar rápido: recortar y usar servicios existentes", "en": "Arrive fast: cut scope and use existing services" } },
+        { "id": "balance", "label": { "es": "Equilibrio", "en": "Balance" } },
+        { "id": "own", "label": { "es": "Construir todo propio", "en": "Build everything in-house" } }
+      ]
+    },
+    {
+      "id": "D5", "order": 5, "key": "third_party", "asked_by": "questionnaire",
+      "prompt": {
+        "es": "¿Puedes usar servicios de terceros para lo genérico (login, cobros, correo, archivos)?",
+        "en": "Can you use third-party services for the generic parts (login, payments, email, files)?"
+      },
+      "note": {
+        "es": "Las restricciones también llegan a constraints.md como [PROPUESTA].",
+        "en": "Restrictions also reach constraints.md as a [PROPUESTA]."
+      },
+      "options": [
+        { "id": "yes", "label": { "es": "Sí", "en": "Yes" } },
+        { "id": "oss", "label": { "es": "Solo open source o self-hosted", "en": "Only open source or self-hosted" } },
+        { "id": "restricted", "label": { "es": "Con restricciones (cuáles)", "en": "With restrictions (which)" } },
+        { "id": "OPEN", "label": { "es": "Aún no sé", "en": "I do not know yet" } }
+      ]
+    },
+    {
+      "id": "D6", "order": 6, "key": "epic_cap_h", "asked_by": "questionnaire",
+      "prompt": {
+        "es": "GTT te avisará cuando un Epic pase de un día completo de agente (8 h). ¿Te sirve ese tope?",
+        "en": "GTT will warn you when an Epic goes over one full agent day (8 h). Does that cap work for you?"
+      },
+      "options": [
+        { "id": "8", "label": { "es": "Sí", "en": "Yes" } },
+        { "id": "other", "label": { "es": "Otro valor (horas)", "en": "Another value (hours)" } }
+      ]
+    }
+  ],
+  "selection": {
+    "policy": "ask",
+    "decided_by": "the human",
+    "unanswered": "OPEN - nothing is invented; a missing answer is shown as OPEN",
+    "state": ".gtt/delivery.json",
+    "state_authority": "none - an operating answer, not architecture; it can change at any time (gtt delivery set) because it governs how the work is organised, not what is built",
+    "written_by": ".gtt/scripts/gtt-delivery.sh select (dry run unless --apply)"
+  },
+  "thresholds": {
+    "epic_cap_h": 8,
+    "story_over_ratio": 1.5,
+    "human_wait_h": 24,
+    "source_max_age_days": 90,
+    "hours_per_day": 8,
+    "calibration_min_stories": 3
+  },
+  "fields": {
+    "epic": ["Estimate", "Depends on", "Lane", "Owner", "Touches", "Build", "Budget"],
+    "story": ["Estimate", "Owner"],
+    "estimate_format": "`<n>h` agent hours, optionally `+ <n> decisions` human decision points; never weeks of a person",
+    "budget_values": "ok | over - accepted: <reason> - <who> - <YYYY-MM-DD> | over - split | over - cut | over - integrate",
+    "build_values": "own | integrate (ADR-NNN)"
+  },
+  "signals": {
+    "DLV-STORY-OVER": "a Story In Progress for more than story_over_ratio x its estimate",
+    "DLV-EPIC-BUDGET": "an Epic over its cap with no decision in Budget",
+    "DLV-FORECAST": "the forecast finish is after the deadline",
+    "DLV-HUMAN-WAIT": "a human action (Owner: human) open for more than human_wait_h",
+    "DLV-LANE-CROSS": "Epics of different fronts declare overlapping Touches",
+    "DLV-NO-VALUE": "no Epic of Kind slice or skeleton, with a development method declared",
+    "DLV-UNCALIBRATED": "fewer Stories measured than calibration_min_stories"
+  },
+  "levels_owned_by": ".gtt/contract/profiles.json (profiles.<id>.delivery) - each Autonomy Profile defines what a signal means for it",
+  "verification": {
+    "freeze": "gtt-delivery.sh check --pre-freeze: every Planned Epic has an Estimate; an Epic over its cap carries the decision in Budget; with more than one front every Epic has Lane and Touches and no two fronts overlap; every `Build: integrate (ADR-NNN)` names an ADR that exists; every external [FUENTE: ..., consultado AAAA-MM-DD] is younger than source_max_age_days",
+    "silent_when": "no .gtt/delivery.json and no Epic with a delivery field: a project that never declared delivery planning is never obstructed"
+  },
+  "boundary": "GTT plans and watches the fronts. It does not launch, create or orchestrate agents: that belongs to the ADE. `lanes` only prints summaries and the `git worktree add` commands to copy."
+}

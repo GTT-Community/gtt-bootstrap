@@ -1,0 +1,861 @@
+#!/usr/bin/env python3
+"""GTT - Delivery Planning (engine): how long the plan takes, with how many hands, and whether it fits.
+
+    .gtt/contract/delivery.json     the six questions, the thresholds and the verification rules (data)
+    .gtt/delivery.json              the setup answer (state, never authority) - written only by `select`
+    gtt-domain/backlog.md           Epic fields Estimate, Depends on, Lane, Owner, Touches, Build, Budget;
+                                    Story fields Estimate, Owner
+    gtt-domain/delivery-log.jsonl   append-only record of every Story/Epic status change, written only by `log`
+    .gtt/local/delivery-snapshot.json  the statuses `log` saw last (local, never versioned)
+
+  gtt_delivery.py questions [--lang L] [--json]    the six questions, texts from the contract
+  gtt_delivery.py select [--who W] [--lanes N] [--horizon H] [--priority P] [--third-party T] [--restrictions TEXT]
+                         [--epic-cap HOURS] [--team NAMES] [--by NAME] [--apply]
+                                                    record the setup answer (dry run without --apply); allowed at any time
+  gtt_delivery.py get [--json]                     the setup answer and the thresholds in force
+  gtt_delivery.py plan [--lanes] [--json]          the plan per front, the longest chain, the forecast, the levers
+  gtt_delivery.py report [--epic EPIC-NNN] [--json] percent, real against estimated, calibration, forecast, open DLV signals
+  gtt_delivery.py check [--pre-freeze] [--json]    the freeze rules; the severity of each comes from the Autonomy Profile
+  gtt_delivery.py log                              record the status changes of the backlog since the last run
+  gtt_delivery.py summary                          the `## Delivery` block of gtt-domain/session.md
+
+Everything is computed from files, never judged and never spent on tokens. Nothing here launches an agent:
+GTT plans and watches the fronts; the ADE (or the people) do the work. `select` is a dry run without --apply.
+Exit 0 = ok (warnings allowed), 1 = violation or refused, 2 = cannot run.
+"""
+
+import argparse
+import datetime
+import glob
+import hashlib
+import json
+import math
+import os
+import re
+import statistics
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+sys.dont_write_bytecode = True
+
+CONTRACT = ".gtt/contract/delivery.json"
+PROFILES = ".gtt/contract/profiles.json"
+STATE = ".gtt/delivery.json"
+LOG = "gtt-domain/delivery-log.jsonl"
+SNAPSHOT = ".gtt/local/delivery-snapshot.json"
+BACKLOG = "gtt-domain/backlog.md"
+METHOD_STATE = ".gtt/development-method.json"
+METHODOLOGY = ".gtt/methodology.json"
+AGREEMENTS = "gtt-domain/working-agreements.md"
+ADE_STATE = ".gtt/ade.json"
+OPEN = "OPEN"
+DONE = ("Done", "Cancelled")
+CLOSED_EPIC = ("Completed", "Cancelled")
+FIELDS = ("Estimate", "Depends on", "Lane", "Owner", "Touches", "Build", "Budget")
+WHO = ("solo", "solo-multi", "team", OPEN)
+HORIZONS = ("days", "weeks", "month", "none", OPEN)
+PRIORITY = ("speed", "balance", "own", OPEN)
+THIRD = ("yes", "oss", "restricted", OPEN)
+HOURS = re.compile(r"(\d+(?:[.,]\d+)?)\s*h\b", re.I)
+DECISIONS = re.compile(r"(\d+)\s*(?:decisions?|decisiones|decisión|pd)\b", re.I)
+EPIC_ID = re.compile(r"\bEPIC-\d+\b")
+BUDGET_ACCEPTED = re.compile(r"^over\s*[-—–]+\s*accepted:\s*\S.*[-—–]\s*\S.*[-—–]\s*\d{4}-\d{2}-\d{2}\s*$", re.I)
+BUDGET_LEVER = re.compile(r"^over\s*[-—–]+\s*(split|cut|integrate)\b", re.I)
+BUILD_INTEGRATE = re.compile(r"^integrate\s*\(\s*(ADR-\d{3,})\s*\)\s*$", re.I)
+SOURCE = re.compile(r"\[FUENTE:\s*([^\]]*?)\s*,?\s*(?:consultado|consulted|accessed)\s+(\d{4}-\d{2}-\d{2})\s*\]", re.I)
+
+
+# ------------------------------------------------------------------------------------------ basics
+
+def read(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            return handle.read().replace("\r\n", "\n")
+    except OSError:
+        return None
+
+
+def read_json(path):
+    text = read(path)
+    if text is None:
+        return None
+    try:
+        return json.loads(text)
+    except ValueError:
+        return None
+
+
+def emit(obj):
+    print(json.dumps(obj, indent=2, sort_keys=True, ensure_ascii=False))
+
+
+def die(message, code=2):
+    print(f"gtt-delivery: {message}", file=sys.stderr)
+    sys.exit(code)
+
+
+def stamp():
+    return os.environ.get("GTT_NOW") or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def moment():
+    text = stamp()
+    try:
+        return datetime.datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+    except ValueError:
+        die(f"GTT_NOW is not an UTC timestamp (YYYY-MM-DDTHH:MM:SSZ): {text}")
+
+
+def parse_time(text):
+    try:
+        return datetime.datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+    except (ValueError, TypeError):
+        return None
+
+
+def contract():
+    data = read_json(CONTRACT)
+    if data is None:
+        die(f"{CONTRACT} is missing or not valid JSON")
+    return data
+
+
+def thresholds():
+    base = dict(contract()["thresholds"])
+    state = read_json(STATE) or {}
+    if isinstance(state.get("epic_cap_h"), (int, float)) and state["epic_cap_h"] > 0:
+        base["epic_cap_h"] = state["epic_cap_h"]
+    return base
+
+
+def profile_name():
+    chosen = (read_json(METHODOLOGY) or {}).get("profile")
+    spec = read_json(PROFILES) or {}
+    return chosen if chosen in (spec.get("profiles") or {}) else spec.get("default", "medium")
+
+
+def profile_delivery():
+    spec = (read_json(PROFILES) or {}).get("profiles", {}).get(profile_name(), {})
+    return spec.get("delivery") or {"signals": {}, "freeze": {}}
+
+
+def hours_of(text):
+    found = HOURS.search(text or "")
+    return float(found.group(1).replace(",", ".")) if found else None
+
+
+def decisions_of(text):
+    found = DECISIONS.search(text or "")
+    return int(found.group(1)) if found else 0
+
+
+def split_list(text):
+    return [part.strip().strip("`") for part in re.split(r"[,;]", text or "") if part.strip().strip("`")]
+
+
+def blank(text):
+    return (text or "").strip(" -—–.").lower() in ("", "tbd", "todo", "pending", "pendiente", "none", "n/a") \
+        or bool(re.fullmatch(r"<[^<>]*>", (text or "").strip()))
+
+
+def normal_path(path):
+    return path.strip().strip("`").replace("\\", "/").strip("/").lower()
+
+
+def overlaps(a, b):
+    a, b = normal_path(a), normal_path(b)
+    return bool(a) and bool(b) and (a == b or a.startswith(b + "/") or b.startswith(a + "/"))
+
+
+def fmt_h(value):
+    return f"{value:g}h"
+
+
+# --------------------------------------------------------------------------------------- the backlog
+
+def backlog():
+    """(stories, epics) with the delivery view of each. Story: id, epic, status, estimate_h, owner. Epic: id, status,
+    lane, depends, touches, build, budget, estimate_h, decisions, line. None when there is no backlog."""
+    if not os.path.isfile(BACKLOG):
+        return None
+    import gtt_backlog
+    stories, epics = gtt_backlog.parse(BACKLOG)
+    out_stories, out_epics = [], []
+    for story in stories:
+        f = story["fields"]
+        out_stories.append({"id": story["id"], "epic": story["epic"], "line": story["line"],
+                            "status": gtt_backlog.normal(story["status"]), "estimate_h": hours_of(f.get("Estimate", "")),
+                            "owner": (f.get("Owner", "agent").strip().lower() or "agent"), "done_when": f.get("Done when", "")})
+    for epic in epics:
+        f = epic["fields"]
+        out_epics.append({"id": epic["id"], "line": epic["line"], "status": gtt_backlog.normal(epic.get("status", "")),
+                          "kind": f.get("Kind", "").strip().strip("`").lower(),
+                          "lane": f.get("Lane", "").strip().strip("`"), "owner": f.get("Owner", "").strip(),
+                          "depends": EPIC_ID.findall(f.get("Depends on", "")), "touches": split_list(f.get("Touches", "")),
+                          "build": f.get("Build", "").strip(), "budget": f.get("Budget", "").strip(),
+                          "estimate_text": f.get("Estimate", ""), "estimate_h": hours_of(f.get("Estimate", "")),
+                          "decisions": decisions_of(f.get("Estimate", "")),
+                          "declared": [k for k in FIELDS if not blank(f.get(k, ""))]})
+    return out_stories, out_epics
+
+
+def live(epics):
+    return [e for e in epics if e["status"] not in CLOSED_EPIC]
+
+
+def epic_hours(epic, stories):
+    """The Epic's estimate: its own, else the sum of its Stories', else None."""
+    if epic["estimate_h"] is not None:
+        return epic["estimate_h"]
+    own = [s["estimate_h"] for s in stories if s["epic"] == epic["id"] and s["status"] != "Cancelled"]
+    return sum(h for h in own if h is not None) if any(h is not None for h in own) else None
+
+
+def progress(epic, stories):
+    """(fraction done 0..1, how it was computed). By the Stories' estimates when all have one, else by count."""
+    if epic["status"] == "Completed":
+        return 1.0, "status"
+    own = [s for s in stories if s["epic"] == epic["id"] and s["status"] != "Cancelled"]
+    if not own:
+        return 0.0, "no stories"
+    if all(s["estimate_h"] for s in own):
+        total = sum(s["estimate_h"] for s in own)
+        return sum(s["estimate_h"] for s in own if s["status"] == "Done") / total, "estimate"
+    return sum(1 for s in own if s["status"] == "Done") / len(own), "stories"
+
+
+def remaining_h(epic, stories):
+    hours = epic_hours(epic, stories)
+    if hours is None:
+        return 0.0
+    return hours * (1.0 - progress(epic, stories)[0])
+
+
+# ----------------------------------------------------------------------------------------------- the log
+
+def read_log():
+    out = []
+    for line in (read(LOG) or "").splitlines():
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            continue
+    return out
+
+
+def actor():
+    if os.environ.get("GTT_ACTOR"):
+        return os.environ["GTT_ACTOR"]
+    primary = (read_json(ADE_STATE) or {}).get("primary")
+    return f"ade:{primary}" if primary else "unknown"
+
+
+def cmd_log(args):
+    """Compare the backlog with the statuses seen last and append one line per change. No arguments on purpose:
+    what is recorded is what the backlog says, so the log cannot be told a different story."""
+    loaded = backlog()
+    if loaded is None:
+        return 0
+    stories, epics = loaded
+    lane_of = {e["id"]: e["lane"] for e in epics}
+    previous = (read_json(SNAPSHOT) or {})
+    seen = {"story": previous.get("story") or {}, "epic": previous.get("epic") or {}}
+    now, who, lines = stamp(), actor(), []
+    current = {"story": {s["id"]: s["status"] for s in stories}, "epic": {e["id"]: e["status"] for e in epics}}
+    parent = {s["id"]: s["epic"] for s in stories}
+    for kind in ("story", "epic"):
+        for ident, status in current[kind].items():
+            before = seen[kind].get(ident)
+            if before == status:
+                continue
+            owner = parent.get(ident) if kind == "story" else ident
+            lines.append({"t": now, "kind": kind, "id": ident, "epic": owner, "lane": lane_of.get(owner, ""),
+                          "from": before, "to": status, "actor": who})
+    if lines:
+        os.makedirs(os.path.dirname(LOG), exist_ok=True)
+        with open(LOG, "a", encoding="utf-8", newline="\n") as handle:
+            for entry in lines:
+                handle.write(json.dumps(entry, sort_keys=True, ensure_ascii=False) + "\n")
+    if lines or not os.path.isfile(SNAPSHOT):
+        os.makedirs(os.path.dirname(SNAPSHOT), exist_ok=True)
+        with open(SNAPSHOT, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(current, sort_keys=True) + "\n")
+    if lines:
+        print(f"gtt-delivery: logged {len(lines)} status change(s) in {LOG}")
+    return 0
+
+
+def timeline():
+    """{story id: {first_seen, started, closed, status}} from the log. `started` is the last move to In Progress,
+    `closed` the last move to Done after it."""
+    out = {}
+    for entry in read_log():
+        if entry.get("kind") != "story":
+            continue
+        t, row = parse_time(entry.get("t")), out.setdefault(entry["id"], {"first_seen": None, "started": None, "closed": None, "status": None})
+        if t is None:
+            continue
+        row["first_seen"] = row["first_seen"] or t
+        row["status"] = entry.get("to")
+        if entry.get("to") == "In Progress":
+            row["started"], row["closed"] = t, None
+        elif entry.get("to") == "Done":
+            row["closed"] = t
+    return out
+
+
+def measured(stories, times):
+    """[(story id, real hours, estimated hours)] of the Done Stories that have both a start and an estimate."""
+    out = []
+    for s in stories:
+        row = times.get(s["id"])
+        if s["status"] == "Done" and row and row["started"] and row["closed"] and s["estimate_h"]:
+            real = max((row["closed"] - row["started"]).total_seconds() / 3600.0, 0.0)
+            out.append((s["id"], real, s["estimate_h"]))
+    return out
+
+
+def calibration(stories, times):
+    rows = measured(stories, times)
+    need = thresholds()["calibration_min_stories"]
+    ratio = statistics.median(r / e for _, r, e in rows) if rows else None
+    return {"measured": len(rows), "needed": need, "uncalibrated": len(rows) < need,
+            "ratio": round(ratio, 2) if ratio is not None else None}
+
+
+# ------------------------------------------------------------------------------------------- the plan
+
+def schedule(epics, stories, ratio):
+    """Finish time (agent hours from now) of every live Epic: its front works one Epic at a time in backlog order,
+    and an Epic starts after the Epics it depends on. Returns (finish, chain, cycles)."""
+    todo = {e["id"]: e for e in live(epics)}
+    finish, lane_free, cycles, visiting = {}, {}, [], set()
+    order = [e["id"] for e in live(epics)]
+    lane_of = lambda e: e["lane"] or "main"
+
+    def run(ident):
+        if ident in finish:
+            return finish[ident]
+        epic = todo[ident]
+        if ident in visiting:
+            cycles.append(ident)
+            return 0.0
+        visiting.add(ident)
+        ready = max([run(d) for d in epic["depends"] if d in todo] + [0.0])
+        start = max(ready, lane_free.get(lane_of(epic), 0.0))
+        finish[ident] = start + remaining_h(epic, stories) * ratio
+        lane_free[lane_of(epic)] = finish[ident]
+        visiting.discard(ident)
+        return finish[ident]
+
+    for ident in order:
+        run(ident)
+    chain, tail = [], max(finish, key=finish.get) if finish else None
+    while tail:
+        chain.append(tail)
+        epic = todo[tail]
+        before = [d for d in epic["depends"] if d in finish]
+        same_lane = [i for i in order[:order.index(tail)] if lane_of(todo[i]) == lane_of(epic) and i in finish]
+        pool = before + same_lane[-1:]
+        tail = max(pool, key=lambda i: finish[i]) if pool else None
+        if tail in chain:
+            break
+    return finish, list(reversed(chain)), sorted(set(cycles))
+
+
+def deadline():
+    state = read_json(STATE) or {}
+    text = state.get("deadline")
+    try:
+        return datetime.date.fromisoformat(text) if text else None
+    except ValueError:
+        return None
+
+
+def build_plan():
+    loaded = backlog()
+    if loaded is None:
+        return None
+    stories, epics = loaded
+    times = timeline()
+    cal = calibration(stories, times)
+    ratio = cal["ratio"] if not cal["uncalibrated"] and cal["ratio"] else 1.0
+    finish, chain, cycles = schedule(epics, stories, ratio)
+    th = thresholds()
+    total_h = max(finish.values()) if finish else 0.0
+    days = math.ceil(total_h / th["hours_per_day"]) if total_h else 0
+    today = moment().date()
+    eta = today + datetime.timedelta(days=days)
+    limit = deadline()
+    lanes = {}
+    for epic in live(epics):
+        lanes.setdefault(epic["lane"] or "main", []).append(epic["id"])
+    unestimated = [e["id"] for e in live(epics) if e["status"] in ("Planned", "In Progress") and epic_hours(e, stories) is None]
+    over = [e["id"] for e in live(epics) if (epic_hours(e, stories) or 0) > th["epic_cap_h"]]
+    fits = None if limit is None or not finish else eta <= limit
+    levers = []
+    if fits is False:
+        late_h = (eta - limit).days * th["hours_per_day"]
+        for epic in sorted(live(epics), key=lambda e: -(remaining_h(e, stories))):
+            if remaining_h(epic, stories) > 0 and len(levers) < 3:
+                levers.append({"epic": epic["id"], "saves_h": round(remaining_h(epic, stories) * ratio, 1),
+                               "lever": "integrate (buy) | cut | split into parallel fronts", "on_critical_chain": epic["id"] in chain})
+        late = {"late_days": (eta - limit).days, "late_h_about": late_h}
+    else:
+        late = None
+    return {"schema": 1, "kind": "gtt-delivery-plan", "profile": profile_name(), "calibration": cal,
+            "lanes": lanes, "chain": chain, "chain_hours": round(total_h, 1), "days": days, "eta": eta.isoformat() if finish else None,
+            "deadline": limit.isoformat() if limit else None, "fits": fits, "late": late, "levers": levers,
+            "unestimated": unestimated, "over_cap": over, "cycles": cycles,
+            "waiting_on_you": human_waits(stories, times)}
+
+
+def human_waits(stories, times):
+    out, now = [], moment()
+    for s in stories:
+        if s["owner"] == "human" and s["status"] not in DONE:
+            seen = (times.get(s["id"]) or {}).get("first_seen")
+            hours = (now - seen).total_seconds() / 3600.0 if seen else 0.0
+            out.append({"story": s["id"], "epic": s["epic"], "waiting_h": round(hours, 1)})
+    return out
+
+
+def cmd_plan(args):
+    plan = build_plan()
+    if plan is None:
+        print("gtt-delivery: no gtt-domain/backlog.md yet - nothing to plan", file=sys.stderr)
+        return 1
+    if args.lanes:
+        return print_lanes(plan, args.json)
+    if args.json:
+        emit(plan)
+        return 0
+    cal = plan["calibration"]
+    print(f"Delivery plan - profile {plan['profile']}, " + ("UNCALIBRATED (fewer than %d Stories measured; estimates taken as given)" % cal["needed"]
+          if cal["uncalibrated"] else f"calibrated on {cal['measured']} Stories (real/estimated x{cal['ratio']})"))
+    for lane, ids in plan["lanes"].items():
+        print(f"  front {lane}: " + " -> ".join(ids))
+    if plan["chain"]:
+        print(f"  longest chain: {' -> '.join(plan['chain'])} = {plan['chain_hours']:g} agent h (~{plan['days']} working day(s), "
+              f"estimated finish {plan['eta']})")
+    if plan["deadline"]:
+        print(f"  deadline {plan['deadline']}: " + ("fits" if plan["fits"] else f"DOES NOT FIT - {plan['late']['late_days']} day(s) late"))
+        for lever in plan["levers"]:
+            print(f"    lever: {lever['epic']} ({lever['saves_h']:g} h)" + (" [critical chain]" if lever["on_critical_chain"] else "")
+                  + f" - {lever['lever']}")
+    else:
+        print("  no deadline declared (gtt delivery set --horizon ...)")
+    if plan["unestimated"]:
+        print(f"  without Estimate: {', '.join(plan['unestimated'])}")
+    if plan["over_cap"]:
+        print(f"  over the {thresholds()['epic_cap_h']:g} h cap: {', '.join(plan['over_cap'])}")
+    if plan["cycles"]:
+        print(f"  dependency cycle through: {', '.join(plan['cycles'])}")
+    for wait in plan["waiting_on_you"]:
+        print(f"  waiting on you: {wait['story']} ({wait['waiting_h']:g} h)")
+    print("  every lever is a [PROPUESTA]: you decide (Budget, Build, Lane); GTT never does.")
+    return 0
+
+
+def lane_data():
+    loaded = backlog()
+    if loaded is None:
+        return None
+    stories, epics = loaded
+    lanes = {}
+    for epic in live(epics):
+        row = lanes.setdefault(epic["lane"] or "main", {"owners": set(), "epics": [], "touches": [], "depends_on": set(), "done_when": []})
+        row["epics"].append(epic["id"])
+        if epic["owner"]:
+            row["owners"].add(epic["owner"])
+        row["touches"] += [t for t in epic["touches"] if t not in row["touches"]]
+        row["depends_on"] |= {d for d in epic["depends"]}
+        for s in stories:
+            if s["epic"] == epic["id"] and s["status"] not in DONE and not blank(s["done_when"]):
+                row["done_when"].append(f"{s['id']}: {s['done_when'][:120]}")
+    for row in lanes.values():
+        row["owners"] = sorted(row["owners"])
+        row["depends_on"] = sorted(row["depends_on"] - set(row["epics"]))
+    return lanes
+
+
+def print_lanes(plan, as_json):
+    lanes = lane_data() or {}
+    project = os.path.basename(os.getcwd())
+    out = []
+    for name, row in lanes.items():
+        slug = re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-") or "main"
+        out.append(dict(row, lane=name, worktree=f"git worktree add ../{project}-{slug} -b gtt/{slug}"))
+    if as_json:
+        emit({"schema": 1, "kind": "gtt-delivery-lanes", "lanes": out})
+        return 0
+    if not out:
+        print("gtt-delivery: no live Epic - nothing to split into fronts")
+        return 0
+    for row in out:
+        print(f"front {row['lane']}" + (f" - owner {', '.join(row['owners'])}" if row["owners"] else ""))
+        print(f"  Epics:   {', '.join(row['epics'])}")
+        print(f"  may touch: {', '.join(row['touches']) or '(no Touches declared)'}")
+        print(f"  depends on (through an interface): {', '.join(row['depends_on']) or 'nothing outside the front'}")
+        for item in row["done_when"][:5]:
+            print(f"  done when: {item}")
+        print(f"  {row['worktree']}")
+    print("GTT creates no agent, no session and no worktree: copy the commands you want. Work inside your front's Touches; "
+          "if you need another front's paths, report it.")
+    return 0
+
+
+# ---------------------------------------------------------------------------------------------- report
+
+def cmd_report(args):
+    loaded = backlog()
+    if loaded is None:
+        print("gtt-delivery: no gtt-domain/backlog.md yet - nothing to report", file=sys.stderr)
+        return 1
+    stories, epics = loaded
+    times, now = timeline(), moment()
+    rows = []
+    for epic in epics:
+        if args.epic and epic["id"] != args.epic:
+            continue
+        own = [s for s in stories if s["epic"] == epic["id"]]
+        fraction, how = progress(epic, stories)
+        real = 0.0
+        for s in own:
+            row = times.get(s["id"])
+            if row and row["started"]:
+                end = row["closed"] if s["status"] == "Done" and row["closed"] else (now if s["status"] == "In Progress" else None)
+                if end:
+                    real += max((end - row["started"]).total_seconds() / 3600.0, 0.0)
+        rows.append({"epic": epic["id"], "status": epic["status"], "lane": epic["lane"] or "main", "estimate_h": epic_hours(epic, stories),
+                     "percent": round(fraction * 100), "percent_by": how, "stories": len(own),
+                     "stories_done": sum(1 for s in own if s["status"] == "Done"), "real_h": round(real, 1)})
+    if args.epic and not rows:
+        print(f"gtt-delivery: {args.epic} is not in the backlog", file=sys.stderr)
+        return 1
+    plan = build_plan()
+    cal = plan["calibration"]
+    open_signals = [s for s in signals()]
+    data = {"schema": 1, "kind": "gtt-delivery-report", "uncalibrated": cal["uncalibrated"], "calibration": cal,
+            "epics": rows, "forecast": {"chain": plan["chain"], "hours": plan["chain_hours"], "eta": plan["eta"], "deadline": plan["deadline"],
+                                        "fits": plan["fits"]},
+            "planned_h": round(sum(r["estimate_h"] or 0 for r in rows), 1), "real_h": round(sum(r["real_h"] for r in rows), 1),
+            "signals": [{"rule": s["rule"], "artifact": s["artifact"], "detail": s["detail"]} for s in open_signals]}
+    if args.json:
+        emit(data)
+        return 0
+    print("Delivery report - " + ("UNCALIBRATED (%d of %d Stories measured)" % (cal["measured"], cal["needed"]) if cal["uncalibrated"]
+                                  else f"calibrated, real/estimated x{cal['ratio']} over {cal['measured']} Stories"))
+    for r in rows:
+        est = fmt_h(r["estimate_h"]) if r["estimate_h"] is not None else "no estimate"
+        print(f"  {r['epic']:10} {r['status']:12} {r['percent']:3}% (by {r['percent_by']})  {r['stories_done']}/{r['stories']} Stories  "
+              f"est {est}, real {fmt_h(r['real_h'])}  front {r['lane']}")
+    f = data["forecast"]
+    if f["eta"]:
+        print(f"  forecast: {f['hours']:g} agent h on the longest chain, finish {f['eta']}" + (f" (deadline {f['deadline']}: {'fits' if f['fits'] else 'DOES NOT FIT'})" if f["deadline"] else ""))
+    for s in open_signals:
+        print(f"  {s['rule']} {s['artifact']}: {s['detail']}")
+    return 0
+
+
+# --------------------------------------------------------------------------------------------- signals
+
+def lane_cross_level(level):
+    if profile_name() == "team" and level == "GOVERNANCE":
+        if re.search(r"(?mi)^\s*lane-cross:\s*blocking\b", read(AGREEMENTS) or ""):
+            return "BLOCKING"
+    return level
+
+
+def conflicts(epics):
+    """[(epic a, epic b, path)]: Epics of different fronts whose Touches overlap, unless one depends on the other."""
+    out, items = [], live(epics)
+    for i, a in enumerate(items):
+        for b in items[i + 1:]:
+            if (a["lane"] or "main") == (b["lane"] or "main") or b["id"] in a["depends"] or a["id"] in b["depends"]:
+                continue
+            for pa in a["touches"]:
+                hit = next((pb for pb in b["touches"] if overlaps(pa, pb)), None)
+                if hit:
+                    out.append((a["id"], b["id"], pa if len(normal_path(pa)) >= len(normal_path(hit)) else hit))
+                    break
+    return out
+
+
+def budget_decided(epic):
+    text = epic["budget"].strip().strip("`")
+    return bool(BUDGET_ACCEPTED.match(text) or BUDGET_LEVER.match(text))
+
+
+def has_method():
+    state = read_json(METHOD_STATE) or {}
+    return bool(state) and state.get("style") not in (None, OPEN, [OPEN], [])
+
+
+def signals():
+    """Every open DLV condition as {rule, level, artifact, detail, state}; levels come from the Autonomy Profile."""
+    loaded = backlog()
+    if loaded is None or not active(loaded[1]):
+        return []
+    stories, epics = loaded
+    th, levels, times, now = thresholds(), profile_delivery()["signals"], timeline(), moment()
+    out = []
+
+    def add(rule, artifact, detail, state="open"):
+        level = levels.get(rule)
+        if level:
+            out.append({"rule": rule, "level": lane_cross_level(level) if rule == "DLV-LANE-CROSS" else level,
+                        "artifact": artifact, "detail": detail, "state": state})
+
+    for s in stories:
+        row = times.get(s["id"])
+        if s["status"] == "In Progress" and s["estimate_h"] and row and row["started"]:
+            spent = (now - row["started"]).total_seconds() / 3600.0
+            if spent > th["story_over_ratio"] * s["estimate_h"]:
+                add("DLV-STORY-OVER", s["id"], f"In Progress for {spent:.1f} h against an estimate of {fmt_h(s['estimate_h'])} "
+                    f"(more than {th['story_over_ratio']:g}x): is it bigger than thought, or stuck?")
+    for epic in live(epics):
+        hours = epic_hours(epic, stories)
+        if hours is not None and hours > th["epic_cap_h"] and not budget_decided(epic):
+            add("DLV-EPIC-BUDGET", epic["id"], f"{fmt_h(hours)} against a cap of {fmt_h(th['epic_cap_h'])} and no decision in Budget "
+                "(accept it, split it, cut it or integrate)")
+    plan = build_plan()
+    if plan["fits"] is False:
+        add("DLV-FORECAST", "delivery-plan", f"forecast finish {plan['eta']} is {plan['late']['late_days']} day(s) after the deadline "
+            f"{plan['deadline']}" + (" (uncalibrated)" if plan["calibration"]["uncalibrated"] else ""), state=plan["deadline"])
+    for wait in plan["waiting_on_you"]:
+        if wait["waiting_h"] > th["human_wait_h"]:
+            add("DLV-HUMAN-WAIT", wait["story"], f"an action for you has waited {wait['waiting_h']:.0f} h (more than {th['human_wait_h']:g} h)")
+    for a, b, path in conflicts(epics):
+        add("DLV-LANE-CROSS", f"{a}+{b}", f"{a} and {b} are on different fronts and both touch `{path}`: declare an interface between them (Depends on) or move one")
+    if has_method() and live(epics) and not any(e["kind"] in ("slice", "skeleton") for e in live(epics)):
+        add("DLV-NO-VALUE", "backlog", "a development method is declared but no live Epic is `Kind: slice` or `skeleton`: no end-to-end flow delivers value")
+    cal = calibration(stories, times)
+    if cal["uncalibrated"] and stories:
+        add("DLV-UNCALIBRATED", "delivery-plan", f"{cal['measured']} of {cal['needed']} Stories measured: forecasts are estimates taken as given")
+    return out
+
+
+# ------------------------------------------------------------------------------------------------ check
+
+def active(epics=None):
+    """True when delivery planning was declared. A project that never did is never obstructed."""
+    if os.path.isfile(STATE):
+        return True
+    if epics is None:
+        loaded = backlog()
+        epics = loaded[1] if loaded else []
+    return any(e["declared"] for e in epics)
+
+
+def source_findings(limit_days):
+    found, today = [], moment().date()
+    for path in sorted(glob.glob("gtt-domain/**/*.md", recursive=True)):
+        for number, line in enumerate((read(path) or "").splitlines(), 1):
+            for url, when in SOURCE.findall(line):
+                try:
+                    age = (today - datetime.date.fromisoformat(when)).days
+                except ValueError:
+                    continue
+                if age > limit_days:
+                    found.append((f"{path}:{number}", f"external source `{url[:60]}` was consulted {when} ({age} days ago, limit {limit_days}): verify it again before the freeze"))
+    return found
+
+
+def check_all():
+    """[(level, where, message)] - level is FAIL or WARN according to the Autonomy Profile."""
+    loaded = backlog()
+    if loaded is None or not active(loaded[1]):
+        return [], False
+    stories, epics = loaded
+    th, freeze, found = thresholds(), profile_delivery()["freeze"], []
+
+    def add(kind, where, message):
+        found.append(("FAIL" if freeze.get(kind, "warn") == "fail" else "WARN", where, message))
+
+    items = live(epics)
+    multi = len({e["lane"] or "main" for e in items}) > 1
+    for epic in items:
+        where = f"{BACKLOG}:{epic['line']}"
+        hours = epic_hours(epic, stories)
+        if epic["status"] in ("Planned", "In Progress") and hours is None:
+            add("estimate", where, f"{epic['id']} is {epic['status']} without an `Estimate:` (agent hours, e.g. `6h + 2 decisions`)")
+        if hours is not None and hours > th["epic_cap_h"] and not budget_decided(epic):
+            add("budget", where, f"{epic['id']} is {fmt_h(hours)}, over the {fmt_h(th['epic_cap_h'])} cap, and `Budget:` holds no decision "
+                f"(`over - accepted: <reason> - <who> - <YYYY-MM-DD>`, or `over - split | cut | integrate`)")
+        if multi and (not epic["lane"] or not epic["touches"]):
+            add("lanes", where, f"{epic['id']} needs `Lane:` and `Touches:` because the plan has more than one front")
+        build = BUILD_INTEGRATE.match(epic["build"].strip().strip("`"))
+        if epic["build"].lower().startswith("integrate"):
+            if not build:
+                add("build", where, f"{epic['id']} `Build:` must read `integrate (ADR-NNN)`")
+            elif not glob.glob(f"gtt-domain/adr/{build.group(1)}*.md") and not glob.glob(f"gtt-domain/proposals/*{build.group(1)}*"):
+                add("build", where, f"{epic['id']} integrates a service under {build.group(1)}, which does not exist: buying is an architecture decision (needs an ADR)")
+    if multi:
+        for a, b, path in conflicts(epics):
+            add("lanes", BACKLOG, f"{a} and {b} are on different fronts and both touch `{path}`: declare the interface (Depends on) or move one")
+    for where, message in source_findings(th["source_max_age_days"]):
+        add("source", where, message)
+    return found, True
+
+
+def cmd_check(args):
+    found, declared = check_all()
+    failed = any(level == "FAIL" for level, _, _ in found)
+    if args.json:
+        emit({"schema": 1, "kind": "gtt-delivery-check", "result": "fail" if failed else "pass", "pre_freeze": args.pre_freeze,
+              "declared": declared, "profile": profile_name(), "findings": [{"level": l, "where": w, "message": m} for l, w, m in found]})
+        return 1 if failed else 0
+    for level, where, message in found:
+        print(f"{level}  {where}: {message}", file=sys.stderr if level == "FAIL" else sys.stdout)
+    if not failed:
+        print("gtt-delivery: OK - " + ("delivery plan checked." if declared else "no delivery planning declared."))
+    return 1 if failed else 0
+
+
+# ------------------------------------------------------------------------------- questions and answers
+
+def cmd_questions(args):
+    spec, lang = contract(), args.lang or "en"
+    rows = []
+    for q in spec["questions"]:
+        rows.append({"id": q["id"], "key": q["key"], "asked_by": q["asked_by"], "only_if": q.get("only_if"),
+                     "prompt": q["prompt"][lang], "note": (q.get("note") or {}).get(lang),
+                     "options": [{"id": o["id"], "label": o["label"][lang], "recommended": bool(o.get("recommended")), "days": o.get("days")}
+                                 for o in q["options"]]})
+    if args.json:
+        emit({"schema": 1, "kind": "gtt-delivery-questions", "questions": rows, "thresholds": spec["thresholds"]})
+        return 0
+    for q in rows:
+        print(f"{q['id']} {q['prompt']}")
+        for number, o in enumerate(q["options"], 1):
+            print(f"  {number}. {o['label']}" + (" (recommended)" if o["recommended"] else ""))
+    return 0
+
+
+def current_state():
+    return read_json(STATE)
+
+
+def cmd_select(args):
+    spec, previous = contract(), current_state() or {}
+    data = dict(previous)
+    checks = (("who", args.who, WHO), ("horizon", args.horizon, HORIZONS), ("priority", args.priority, PRIORITY),
+              ("third_party", args.third_party, THIRD))
+    if all(v is None for _, v, _ in checks) and args.lanes is None and args.epic_cap is None and args.team is None \
+            and args.restrictions is None:
+        die("give at least one of --who, --lanes, --horizon, --priority, --third-party, --restrictions, --epic-cap, --team")
+    for key, value, allowed in checks:
+        if value is not None:
+            if value not in allowed:
+                print(f"gtt-delivery: REFUSED - --{key.replace('_', '-')} must be one of {', '.join(allowed)}. Nothing was written.", file=sys.stderr)
+                return 1
+            data[key] = value
+    if args.lanes is not None:
+        if args.lanes != "propose" and not (args.lanes.isdigit() and 1 <= int(args.lanes) <= 12):
+            print("gtt-delivery: REFUSED - --lanes must be a number from 1 to 12 or `propose`. Nothing was written.", file=sys.stderr)
+            return 1
+        data["lanes"] = args.lanes if args.lanes == "propose" else int(args.lanes)
+    if args.epic_cap is not None:
+        if args.epic_cap <= 0:
+            print("gtt-delivery: REFUSED - --epic-cap must be a positive number of hours. Nothing was written.", file=sys.stderr)
+            return 1
+        data["epic_cap_h"] = args.epic_cap
+    if args.team is not None:
+        data["team"] = [n.strip() for n in args.team.split(",") if n.strip()]
+    if args.restrictions is not None:
+        data["restrictions"] = args.restrictions.strip()
+    if args.horizon is not None:
+        days = next((o.get("days") for q in spec["questions"] if q["key"] == "horizon" for o in q["options"] if o["id"] == args.horizon), None)
+        data["deadline"] = (moment().date() + datetime.timedelta(days=days)).isoformat() if days else None
+        data["horizon_set_at"] = moment().date().isoformat()
+    for key, default in (("who", OPEN), ("horizon", OPEN), ("priority", OPEN), ("third_party", OPEN), ("lanes", OPEN)):
+        data.setdefault(key, default)
+    if data.get("who") == "solo":
+        data["lanes"] = 1
+    if data.get("who") == "team" and not data.get("team"):
+        print("gtt-delivery: NOTE - a team needs the names of its members (--team ana,luis): they own the fronts.")
+    shown = ", ".join(f"{k} {data[k]}" for k in ("who", "lanes", "horizon", "priority", "third_party") if k in data)
+    print(f"delivery (setup answer): {shown}" + (f"; deadline {data['deadline']}" if data.get("deadline") else "")
+          + (f"; Epic cap {data['epic_cap_h']:g} h" if data.get("epic_cap_h") else ""))
+    if OPEN in (data.get("who"), data.get("horizon")):
+        print("  OPEN: nothing is invented. The plan shows it as OPEN and the agent asks again at the next natural moment.")
+    print("  an operating answer, never architecture: it can change at any time with `gtt delivery set`.")
+    if not args.apply:
+        print("(dry run - nothing written; re-run with --apply)")
+        return 0
+    data.update({"schema": 1, "answered_by": args.by or previous.get("answered_by") or "unspecified", "answered_at": stamp(),
+                 "authority": "none - an operating answer, never architecture"})
+    os.makedirs(os.path.dirname(STATE), exist_ok=True)
+    with open(STATE, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
+    print(f"gtt-delivery: written {STATE}")
+    return 0
+
+
+def cmd_get(args):
+    state, th = current_state(), thresholds()
+    out = {"schema": 1, "kind": "gtt-delivery-state", "declared": state is not None, "state": state, "thresholds": th,
+           "profile": profile_name(), "levels": profile_delivery()}
+    if args.json:
+        emit(out)
+        return 0
+    if state is None:
+        print("delivery: not declared yet (gtt delivery set ...)")
+        return 0
+    print(f"delivery: who {state.get('who', OPEN)}, fronts {state.get('lanes', OPEN)}, horizon {state.get('horizon', OPEN)}"
+          + (f" (deadline {state['deadline']})" if state.get("deadline") else "") + f", Epic cap {th['epic_cap_h']:g} h")
+    return 0
+
+
+def cmd_summary(args):
+    """The `## Delivery` block of session.md. Stable between runs: no clock readings finer than a day."""
+    state, loaded = current_state(), backlog()
+    if state is None and not (loaded and active(loaded[1])):
+        print("not declared (no .gtt/delivery.json; gtt delivery set ...)")
+        return 0
+    if loaded is None:
+        print("declared; no backlog yet")
+        return 0
+    stories, epics = loaded
+    plan = build_plan()
+    state = state or {}
+    print(f"who {state.get('who', OPEN)}; fronts {state.get('lanes', OPEN)}; "
+          + (f"deadline {plan['deadline']}" if plan["deadline"] else f"horizon {state.get('horizon', OPEN)}")
+          + ("; UNCALIBRATED" if plan["calibration"]["uncalibrated"] else f"; calibrated x{plan['calibration']['ratio']}"))
+    if plan["eta"] and plan["chain"]:
+        print(f"forecast: {plan['chain_hours']:g} agent h on the longest chain ({' -> '.join(plan['chain'])}), finish {plan['eta']}"
+              + ("" if plan["fits"] is None else ", fits the deadline" if plan["fits"] else f", DOES NOT FIT ({plan['late']['late_days']} day(s) late)"))
+    for epic in live(epics):
+        fraction, _ = progress(epic, stories)
+        print(f"- {epic['id']} [{epic['lane'] or 'main'}] {round(fraction * 100)}%" + (f" est {fmt_h(epic_hours(epic, stories))}" if epic_hours(epic, stories) is not None else " no estimate"))
+    for wait in plan["waiting_on_you"]:
+        print(f"waiting on you: {wait['story']}")
+    open_signals = signals()
+    if open_signals:
+        print("signals: " + "; ".join(f"{s['rule']} {s['artifact']}" for s in open_signals if s["rule"] != "DLV-UNCALIBRATED") or "none")
+    return 0
+
+
+def main(argv):
+    if not os.path.isdir(".gtt"):
+        die("run from the project root (no .gtt/ directory here)")
+    parser = argparse.ArgumentParser(prog="gtt_delivery.py")
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("questions"); p.add_argument("--lang", choices=("es", "en")); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_questions)
+    p = sub.add_parser("select"); p.add_argument("--who"); p.add_argument("--lanes"); p.add_argument("--horizon"); p.add_argument("--priority")
+    p.add_argument("--third-party", dest="third_party"); p.add_argument("--restrictions"); p.add_argument("--epic-cap", dest="epic_cap", type=float)
+    p.add_argument("--team"); p.add_argument("--by"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_select)
+    p = sub.add_parser("get"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_get)
+    p = sub.add_parser("plan"); p.add_argument("--lanes", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_plan)
+    p = sub.add_parser("report"); p.add_argument("--epic"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_report)
+    p = sub.add_parser("check"); p.add_argument("--pre-freeze", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_check)
+    p = sub.add_parser("log"); p.set_defaults(func=cmd_log)
+    p = sub.add_parser("summary"); p.set_defaults(func=cmd_summary)
+    args = parser.parse_args(argv[1:])
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

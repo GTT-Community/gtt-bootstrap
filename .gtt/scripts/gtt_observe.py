@@ -488,6 +488,18 @@ def observe_protected(base):
     return out
 
 
+def observe_delivery(base):
+    """Delivery Planning signals (DLV-*): time, budget, fronts. Computed by gtt_delivery.py; the level of each comes
+    from the Autonomy Profile (profiles.json), the thresholds from the delivery contract."""
+    try:
+        import gtt_delivery
+        found = gtt_delivery.signals()
+    except Exception:
+        return []
+    return [signal({"id": s["rule"], "kind": "delivery", "level": s["level"],
+                    "guards": "the delivery plan (.gtt/contract/delivery.json)"}, s["artifact"], s["detail"], s["state"]) for s in found]
+
+
 def observe_commits():
     """With `convention: conventional` in gtt-domain/workflow.md: one NOTICE for each commit subject since
     the merge base with the default branch that is not a Conventional Commit. It informs and never blocks."""
@@ -539,7 +551,7 @@ def collect():
         return [], ["not frozen yet: there is no governed state to observe against"], base
     rules, problems = boundaries()
     signals, notes = observe_rules(rules, base)
-    signals += observe_governed(base) + observe_stack(base) + observe_modules(base) + observe_protected(base) + observe_commits()
+    signals += observe_governed(base) + observe_stack(base) + observe_modules(base) + observe_protected(base) + observe_delivery(base) + observe_commits()
     seen, unique = set(), []
     for sig in signals:
         if sig["fingerprint"] not in seen:

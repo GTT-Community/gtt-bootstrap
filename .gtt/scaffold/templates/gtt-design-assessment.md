@@ -120,6 +120,7 @@ A design cannot be governed below this floor. Each line is `MET` or `NOT MET`.
 | **The technology stack is decided: language and runtime, framework, compute model** (Technology stack is `SOLID`) |  |
 | **The datastore is decided, or the design states that it needs none** (Data is not `MISSING`) |  |
 | The architectural style is stated (Architecture is not `MISSING`) |  |
+| Who builds, with how many fronts and in what time frame is known (it may be "no date"): `gtt-delivery.sh get` |  |
 
 ## 5. Verdict
 
@@ -194,6 +195,49 @@ The original documents are never rewritten. After the human's review
 ```text
 Human decision (strengthen / use as it is):
 ```
+
+## 9. Delivery Assessment
+
+How long this design takes to build and with how many hands. A working artifact: it governs nothing, and every
+figure, purchase, cut and front is a `[PROPUESTA]` until the human confirms it. Estimate in agent hours plus human
+decision points, never weeks of a person. Fill it with the `gtt-delivery` skill; the plan itself is computed by
+`bash .gtt/scripts/gtt-delivery.sh plan`.
+
+| Depth | Tables |
+|---|---|
+| `QUICK` | 1, 2 (only the signals) and 5 |
+| `STANDARD` | 1 to 5 |
+| `DEEP` | 1 to 5, plus alternatives and risks per option |
+
+**9.1 Estimate per Epic**
+
+| Epic | Stories foreseen | Agent hours | Human decision points | Over the cap? |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
+**9.2 Buy or build**
+
+| Capability | Epic | Cost to build (Stories, hours) | Integration option `[FUENTE: url, consultado AAAA-MM-DD]` | Integration hours | Recurring cost | Lock-in | Clash with `constraints.md` | Proposal |
+|---|---|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |  | `[PROPUESTA]` |
+
+An external source expires after 90 days and is verified again before the freeze. Without a source the option stays a `[PROPUESTA]`.
+
+**9.3 Fronts**
+
+| Front | Owner (agent or person) | Epics | Touches | Depends on (interface I-n) |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
+**9.4 Vertical slice**
+
+First flow that delivers value, and the Epics or Stories left outside it. Alert if the plan has no business flow.
+
+**9.5 Your pending decisions**
+
+| Decision | What it blocks | Recommended option |
+|---|---|---|
+|  |  |  |
 
 ## 8. Status
 

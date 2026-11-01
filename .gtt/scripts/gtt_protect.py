@@ -91,7 +91,8 @@ REGIME_DIRS = ("gtt-domain/context", "gtt-domain/adr")
 PROPOSALS_DIR = "gtt-domain/proposals"
 GIT_HOOK = ".git/hooks/pre-commit"
 WORKFLOW_FILE = "gtt-domain/workflow.md"
-LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json")
+LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json", ".gtt/local/delivery-snapshot.json",
+               "gtt-domain/delivery-log.jsonl")
 SOURCES_DIR = "docs/sources"
 BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--contains", "--merged",
                   "--no-merged", "--points-at"}
@@ -188,8 +189,9 @@ SOURCE_FROZEN = ("GTT governance (human-decision-authority): after the freeze, r
 APPROVAL = ("GTT governance (human-decision-authority): approving an Epic and its design is the human's decision. "
             "Tell the human the command - bash .gtt/scripts/gtt-approve.sh EPIC-NNN - and continue with the work.")
 LOCAL_OWNED = ("GTT governance (deterministic-first): .gtt/local/checkpoint.json and .gtt/local/last-validation.json are "
-               "written only by GTT's own scripts. Run gtt-checkpoint.sh or gtt-validate.sh; never edit their result.")
-SETUP_RECORDS = (".gtt/methodology.json", ".gtt/development-method.json", ".gtt/selected-sources.json")
+               "written only by GTT's own scripts (also .gtt/local/delivery-snapshot.json and gtt-domain/delivery-log.jsonl, written by "
+               "gtt-delivery.sh log). Run gtt-checkpoint.sh, gtt-validate.sh or gtt-delivery.sh log; never edit their result.")
+SETUP_RECORDS = (".gtt/methodology.json", ".gtt/development-method.json", ".gtt/selected-sources.json", ".gtt/delivery.json")
 SETUP_OWNED = ("GTT governance (human-decision-authority): the autonomy profile, the development method and the selected "
                "sources are the human's choices, recorded only through GTT's scripts or the CLI (gtt autonomy, gtt config). "
                "Never write them directly; ask the human.")

@@ -321,6 +321,16 @@ Stories being worked under an Epic that is still `Proposed`. It approves
 nothing; whether an Epic is real and current is a judgment for the `gtt-audit`
 skill.
 
+## Delivery planning
+
+GTT plans and watches delivery time; it does not launch agents. In `.gtt/docs/delivery.md`.
+
+- Estimate in agent hours plus human decision points; never in weeks of a person.
+- While fewer than 3 Stories are measured, the plan is uncalibrated: say it.
+- An Epic over its cap is proposed (split, integrate, cut or accept), never decided: `Budget`, `Owner` and `.gtt/delivery.json` are the human's.
+- Work only inside the `Touches` of your front; if you need another front's paths, report it.
+- Run `.gtt/scripts/gtt-delivery.sh` for the plan, the forecast and the report; never estimate by judgment what it computes. `gtt-domain/delivery-log.jsonl` is written only by `gtt-delivery.sh log`.
+
 ## Agent roles and the evidence boundary
 
 GTT distinguishes four responsibilities. No skill or script may collapse

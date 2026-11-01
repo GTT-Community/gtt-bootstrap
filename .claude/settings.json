@@ -71,6 +71,10 @@
           {
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/detect-drift.py"
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/delivery-log.py"
           }
         ]
       },

@@ -127,6 +127,14 @@ if [ -f ".gtt/scripts/gtt-review.sh" ]; then
   REVIEW="$(bash .gtt/scripts/gtt-review.sh 2>&1 || true)"
 fi
 
+# Delivery: the plan against the declared time, the progress per Epic, what waits on the human. Records the
+# status changes of the backlog first (the fallback for ADEs without hooks), then computes - all deterministic.
+DELIVERY_STATE="not available (.gtt/scripts/gtt-delivery.sh not found)"
+if [ -f ".gtt/scripts/gtt-delivery.sh" ]; then
+  if [ "$CHECK" -eq 0 ]; then bash .gtt/scripts/gtt-delivery.sh log >/dev/null 2>&1 || true; fi
+  DELIVERY_STATE="$(bash .gtt/scripts/gtt-delivery.sh summary 2>&1 || true)"
+fi
+
 # Artifact identity/index state and repository resume hints. Both are derived
 # from the repository (manifest, index, git) - never from ADE memory.
 PY=""
@@ -179,6 +187,9 @@ CONTENT="$({
   echo
   echo "## Observation (the work against the frozen governed state - signals, never decisions)"
   echo "${OBSERVATION}"
+  echo
+  echo "## Delivery (the plan against the declared time - computed, never a decision)"
+  echo "${DELIVERY_STATE}"
   echo
   echo "## Pending proposals (gtt-domain/proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi

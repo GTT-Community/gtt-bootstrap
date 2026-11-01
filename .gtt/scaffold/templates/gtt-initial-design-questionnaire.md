@@ -89,6 +89,10 @@ When this questionnaire is used, the Primary ADE MUST:
     question comes from GTT and not from the ADE's ordinary conversation.
     The marker identifies who is speaking; it never makes an answer a
     decision.
+17. Ask section 4.7 (Delivery) in the first round, right after 4.2: who
+    builds, with how many parallel fronts and for when. It is one of the
+    first things the plan depends on, and it is never skipped (it is a
+    floor line).
 
 The ADE is an **elicitation and documentation assistant**.
 
@@ -280,6 +284,38 @@ The ADE must not use a proposal marker to disguise a decision.
 **Question:**
 
 > What are you trying to build, and why does it need to exist?
+
+**Answer:**
+
+<!-- ADE populates this section -->
+
+## 4.7 Delivery
+
+Asked in the first round, right after 4.2. Six questions, one per message, with
+numbered options; "I do not know yet" is a valid answer and nothing is invented.
+The texts are the contract's, never your own:
+`bash .gtt/scripts/gtt-delivery.sh questions --lang <es|en>`.
+
+D1-D3 (who builds, how many parallel fronts, for when) may already be answered by
+the setup (`bash .gtt/scripts/gtt-delivery.sh get`): say what was answered and do
+not ask again. Ask D4-D6 (priority, third-party services, the cap per Epic), and
+D1-D3 only if they are `OPEN`.
+
+Record the answers with `bash .gtt/scripts/gtt-delivery.sh select --who <id>
+--lanes <n|propose> --horizon <id> --priority <id> --third-party <id>
+--epic-cap <hours> --by <name>` (dry run, then `--apply`). The restrictions of D5
+also reach `constraints.md` as a `[PROPUESTA]`; they become a constraint only when
+the human confirms it. Never decide for the human, and never infer a deadline.
+
+``` text
+Who builds (D1):
+Fronts (D2):
+Horizon (D3):
+Priority (D4):
+Third-party services (D5):
+Epic cap in hours (D6):
+Decided by:
+```
 
 **Answer:**
 
@@ -1158,6 +1194,7 @@ is a `[PROPUESTA]` and leaves the line `NOT MET`.
 | The architectural style is stated | | |
 | The technology stack is decided: language and runtime, framework, where it runs | | |
 | The datastore is decided, or the design states that it needs none | | |
+| Who builds, with how many fronts and in what time frame is known (it may be "no date") | | |
 
 `READY` and `READY_WITH_OPEN_ITEMS` require every floor line `MET`. Below the
 floor the readiness is `NOT_READY`, whatever else is answered.

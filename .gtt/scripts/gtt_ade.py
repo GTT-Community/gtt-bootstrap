@@ -535,7 +535,7 @@ def present_overlays(reg):
     have = [a for a, e in sorted(reg.items()) if e["owned"] and any(os.path.exists(p) for p in e["owned"])]
     if have:
         return have
-    bare = [a for a, e in sorted(reg.items()) if not e["owned"] and os.path.exists(e["entry"])]
+    bare = [a for a, e in sorted(reg.items()) if (not e["owned"] or e.get("core_entry")) and os.path.exists(e["entry"])]
     return bare if len(bare) == 1 else []
 
 

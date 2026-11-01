@@ -43,6 +43,7 @@
   },
   "directives": [
     { "id": "inspect-existing-evidence", "text": "Inspect the project before asking anything that existing evidence answers.", "questionnaire": "1. Operating Contract for the ADE" },
+    { "id": "ask-delivery-early", "text": "Ask Delivery (section 4.7: who builds, how many parallel fronts, for when) in the first round, right after 4.2; confirm what the setup already answered (gtt-delivery.sh get) and never skip it.", "questionnaire": "4.7 Delivery" },
     { "id": "ask-progressively", "text": "Ask progressively, never the whole form at once.", "questionnaire": "2. Important Rule: Do Not Interrogate the User With the Whole Form" },
     { "id": "avoid-redundant-questions", "text": "Do not ask what the project already establishes.", "questionnaire": "1. Operating Contract for the ADE" },
     { "id": "identify-missing-information", "text": "Keep unknowns visible as [VACÍO]; keep a list of relevant unknowns.", "questionnaire": "19. Unknowns" },
@@ -121,7 +122,8 @@
         "The problem and the scope are stated",
         "The architectural style is stated",
         "The technology stack is decided: language and runtime, framework, where it runs",
-        "The datastore is decided, or the design states that it needs none"
+        "The datastore is decided, or the design states that it needs none",
+        "Who builds, with how many fronts and in what time frame is known (it may be \"no date\")"
       ],
       "same_as": "the minimum floor of the Design Assessment",
       "readiness": "READY and READY_WITH_OPEN_ITEMS require every line MET; a line is MET only when the human stated or confirmed it"

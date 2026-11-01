@@ -191,6 +191,20 @@ if [ -f .gtt/scripts/gtt_method.py ]; then
   rm -f /tmp/gtt-validate-method.$$
 fi
 
+# Skill mirrors: the Codex, Copilot and Kiro copies of a skill say what the Claude Code source says.
+if [ -f .gtt/scripts/gtt_skills.py ]; then
+  run_check "gtt-skills.sh check (skill mirrors)" bash .gtt/scripts/gtt-skills.sh check
+fi
+
+# Delivery Planning: the declared plan is consistent (silent for a project that never declared one).
+if [ -f .gtt/scripts/gtt_delivery.py ]; then
+  bash .gtt/scripts/gtt-delivery.sh check >/tmp/gtt-validate-delivery.$$ 2>&1
+  DELIVERY_RC=$?
+  report "gtt-delivery.sh check (delivery plan)" "$DELIVERY_RC"
+  if [ "$DELIVERY_RC" -ne 0 ]; then cat /tmp/gtt-validate-delivery.$$; else grep -E '^WARN ' /tmp/gtt-validate-delivery.$$ || true; fi
+  rm -f /tmp/gtt-validate-delivery.$$
+fi
+
 # Continuity, review and Git: the workflow file is valid, the session state can be derived,
 # nothing in GTT writes Git history, every overlay carries the same Git rules as the contract,
 # and the GTT-AR rules are in the contract.

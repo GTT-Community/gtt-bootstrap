@@ -49,6 +49,13 @@ disagree*, at the end).
 | `Kind` | How the Epic is cut, as the development method asks: `skeleton` for the first Epic of a Walking Skeleton, `slice` for an end-to-end result; never `layer` when the method forbids it. Leave it out when no method is declared | You, or the assistant as a suggestion |
 | `Design` | The file with the full detail of this Epic: data, rules, flows, interfaces, examples | Written when you approve |
 | `Approved` | Who approved the Epic and when | Written when you approve — never by the assistant |
+| `Estimate` | Agent hours plus human decision points, e.g. `6h + 2 decisions`; never weeks of a person | The assistant proposes, approved with the Epic |
+| `Depends on` | The Epics that must be done first | Same |
+| `Lane` | The parallel front that builds it | Same |
+| `Owner` | The person who owns the front (Team profile) | You |
+| `Touches` | The paths or modules it may change; two fronts never share them unless one depends on the other | Same as `Estimate` |
+| `Build` | `own`, or `integrate (ADR-NNN)` when a service is bought instead of built (needs that ADR) | Same |
+| `Budget` | `ok`, `over - accepted: <reason> - <who> - <date>`, or `over - split \| cut \| integrate` | You decide; the assistant only proposes |
 
 ### What a Story says
 
@@ -56,8 +63,10 @@ disagree*, at the end).
 |---|---|
 | `Status` | Where the Story stands (table below) |
 | `Implements` | Which parts of the Epic's design this Story builds |
-| `Context` | Five lines at most: what one needs to know to build it, taken from the design |
-| `Done when` | The example from the design that must work, and the test that proves it |
+| `Context` | Optional. Up to five lines taken from the design, each ending with its anchor; the design is the source, so leave it out when the pointer in `Implements` is enough |
+| `Done when` | The example from the design that must work, and the executable evidence: a test file, or `run: <command>` for work without tests (content, an audit, a measurement) |
+| `Estimate` | Agent hours, e.g. `1.5h`. Optional |
+| `Owner` | `agent` (default) or `human` for an action only you can do |
 | `Closed` | Once finished: the date, the commit or pull request, and the tests that passed |
 
 ### Statuses
@@ -119,8 +128,8 @@ This file is yours to edit. Nothing in it is locked.
 
 - **Status:** Planned
 - **Implements:** design/EPIC-NNN#R-2, #F-1, #E-1 · ADR-NNN
-- **Context:** <5 lines at most, distilled from the design; each line ends with its design anchor (#R-2)>
-- **Done when:** E-1 passes (Given … when … then …) · <test file>
+- **Context:** <optional; 5 lines at most, distilled from the design; each ends with its design anchor (#R-2)>
+- **Done when:** E-1 passes (Given … when … then …) · <test file> or run: <command>
 - **Closed:** <YYYY-MM-DD> — <commit or PR> — <tests passed>
 
 ---
@@ -165,8 +174,8 @@ A Story points at that design and never decides anything itself:
 
 - `Implements` names the parts it builds, by their ids in the design
   (`design/EPIC-NNN#R-2, #F-1`: rule 2, flow 1).
-- `Context` distils at most five lines, each ending with the id it comes from.
-- `Done when` names an example of the design (`E-1`) and the test that proves it.
+- `Context` is optional; if present it distils at most five lines, each ending with the id it comes from (only a warning otherwise).
+- `Done when` names an example of the design (`E-1`) and the executable evidence: a test file or `run: <command>`.
 
 A Story never cites a source document directly, and a design decision is
 never written in this file. What the design does not define is a gap

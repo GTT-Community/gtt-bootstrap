@@ -310,6 +310,10 @@ Whatever a session's first message says: if `## Next action` in the session cont
 
 In `.gtt/docs/agents/bootstrap.md` → *Autonomy Profiles* and *Development method*.
 
+## Delivery planning
+
+In `.gtt/docs/agents/operations.md` → *Delivery planning*.
+
 ## Working without unnecessary interruption
 
 In `.gtt/docs/agents/operations.md` → *Working without unnecessary interruption*.

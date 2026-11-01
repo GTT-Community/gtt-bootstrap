@@ -16,6 +16,8 @@ What fails (structure that tooling and people rely on, never a judgment):
 
   * an Epic that is Planned, In Progress or Completed without its Goal or its `Approved`
   * an Epic marked Completed while one of its Stories is neither Done nor Cancelled
+  * a Story that implements anchors that do not exist, or that is being worked without executable evidence in
+    `Done when` (a test file, or `run: <command>` for content and other work without tests)
 
 What is only reported, and never stops anything:
 
@@ -158,6 +160,7 @@ DESIGN_DIR = "gtt-domain/context/design"
 DESIGN_REF = re.compile(r"(?:design/(EPIC-\d+))?#([RFIED]-\d+)")
 ANCHOR_END = re.compile(r"#[RFIED]-\d+\)?[.;,]?\s*$")
 TEST_PATH = re.compile(r"[\w./-]*(?:tests?|specs?|__tests__|e2e)/[\w./-]+|[\w/-]+[._](?:test|spec)\.\w+|\b[\w/-]+\.(?:py|ts|tsx|js|jsx|java|cs|go|rb|kt|rs|php|feature)\b")
+RUN_EVIDENCE = re.compile(r"(?i)\brun:\s*\S+")
 SCENARIO = re.compile(r"(?i)\b(given|dado)\b.*\b(when|cuando)\b.*\b(then|entonces)\b")
 
 
@@ -244,20 +247,22 @@ def check_trace(path, stories, epics):
         problems = [f"{e} is not an example of the design" for e in examples if e not in anchors]
         if not examples and not (SCENARIO.search(done) and re.search(r"#[RFIED]-\d+", done)):
             problems.append("it names no example of the design (E-n), nor a Given/When/Then with its anchor")
-        if not TEST_PATH.search(done):
-            problems.append("it names no test file")
+        if not (TEST_PATH.search(done) or RUN_EVIDENCE.search(done)):
+            problems.append("it names no executable evidence (a test file, or `run: <command>`)")
         for problem in problems:
             message = f"{story['id']} `Done when:` - {problem} ({where})"
             if normal(story["status"]) in ACTIVE:
                 fail(message)
             else:
                 print(f"gtt-check-backlog: WARN - {message}")
+        # `Context:` is optional and never fails: it copies the design, and two sources of truth is drift.
         lines = context_lines(path, story)
         if len(lines) > 5:
-            fail(f"{story['id']} `Context:` has {len(lines)} lines - distil at most five from the design ({where})")
+            print(f"gtt-check-backlog: WARN - {story['id']} `Context:` has {len(lines)} lines - the design is the source; "
+                  f"distil at most five or drop it ({where})")
         for line in lines:
             if not ANCHOR_END.search(line):
-                fail(f"{story['id']} `Context:` line does not end with its design anchor (#R-2): {line[:60]} ({where})")
+                print(f"gtt-check-backlog: WARN - {story['id']} `Context:` line does not end with its design anchor (#R-2): {line[:60]} ({where})")
     return failed
 
 

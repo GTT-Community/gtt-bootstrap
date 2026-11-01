@@ -58,6 +58,14 @@
       "aliases": []
     },
     {
+      "id": "ART-KIRO-STEERING-GTT-DELIVERY",
+      "type": "instruction",
+      "path": ".kiro/steering/gtt-delivery.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-KIRO-STEERING-GTT-DIALOGUE",
       "type": "instruction",
       "path": ".kiro/steering/gtt-dialogue.md",
@@ -236,6 +244,22 @@
       "aliases": []
     },
     {
+      "id": "DOC-DELIVERY",
+      "type": "documentation",
+      "path": ".gtt/docs/delivery.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "DOC-DELIVERY-ES",
+      "type": "documentation",
+      "path": ".gtt/docs/delivery.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "DOC-DOCS",
       "type": "documentation",
       "path": ".gtt/docs/docs.md",
@@ -375,6 +399,14 @@
       "id": "GTT-INSTALLATION-ES",
       "type": "documentation",
       "path": ".gtt/docs/installation.es.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "GTT-SKILL",
+      "type": "documentation",
+      "path": ".gtt/scaffold/skills/gtt-delivery/SKILL.md",
       "status": "active",
       "history": [],
       "aliases": []
@@ -535,6 +567,14 @@
       "id": "SKILL-GTT-BOOTSTRAP",
       "type": "skill",
       "path": ".claude/skills/gtt-bootstrap/SKILL.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
+      "id": "SKILL-GTT-DELIVERY",
+      "type": "skill",
+      "path": ".claude/skills/gtt-delivery/SKILL.md",
       "status": "active",
       "history": [],
       "aliases": []

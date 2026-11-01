@@ -112,6 +112,14 @@ if [ -f "$HERE/gtt-method.sh" ] && ! bash "$HERE/gtt-method.sh" check --pre-free
   fail=1
 fi
 
+# Delivery Planning: the plan fits what was declared. Estimates, the Epics over their cap with a decision, the
+# fronts that do not overlap, the services bought under an ADR and fresh external sources. How strict each rule
+# is comes from the Autonomy Profile. A project that never declared delivery planning is not obstructed.
+if [ -f "$HERE/gtt-delivery.sh" ] && ! bash "$HERE/gtt-delivery.sh" check --pre-freeze >&2; then
+  echo "gtt-freeze: the delivery plan is not consistent (see above)" >&2
+  fail=1
+fi
+
 # The boundaries the freeze ratifies must be well formed, and a new baseline is not
 # drawn over a governance observation nobody has decided: accept, reject or defer it
 # first. (The governed state having moved is the very reason for a new freeze, so that
