@@ -229,6 +229,9 @@ source repository is the catalog, not an installed project.
 | `.gtt/scripts/gtt-workflow.sh` | Reads and checks `gtt-domain/workflow.md` (operation `workflow.get`); `detect` reports the conventions the project's documents mention and adopts none |
 | `.gtt/scripts/gtt-stage.sh` | Prepares a promotion set under `gtt-domain/proposals/staged/<name>/`; applies nothing |
 | `.gtt/scripts/gtt-promote.sh` | Applies a staged promotion set: shows the diff, asks for `apply`, all or nothing, prints its undo. Run by the human, never by an agent |
+| `.gtt/scripts/gtt-run.sh` / `.gtt/scripts/gtt_run.py` | Simple execution (operations `run.*`): `new` a plan, `generate` the sealed script, `check` the review (RUN-01 to RUN-09), `list` what is pending, `execute` (the human's act, `gtt run <n>`: asks once, logs, archives) |
+| `.gtt/contract/run.json` | The simple-execution contract: plan grammar, rules RUN-01 to RUN-09, hand-over message (es/en), locations, retention and threshold. Data only |
+| `gtt-domain/run/` | Plans (`RUN-NNN-<slug>.md`), the sealed scripts generated from them, `log.jsonl` and `done/` (the last 20). The agent writes plans; only GTT writes the rest |
 | `.gtt/scripts/gtt_flow.py` | The engine behind the five scripts above and the static checks `gtt-validate.sh` runs on them |
 | `.gtt/scripts/gtt_session_hook.py` | Session Memory adapter for ADEs whose session-start hook answers in JSON (Cursor, OpenHands); only wraps what `gtt-session-context.sh` produces |
 | `gtt-domain/workflow.md` | The Git policy of the project: commits, convention, branches and tags, review thresholds. Human-owned; the ADE reads it and never edits it | you |

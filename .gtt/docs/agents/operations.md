@@ -78,7 +78,7 @@ Detail is never withheld: give it when asked, or point to it (`gtt-review.sh --f
 ```text
 @gtt · Authorization required
 Changes: AGENTS.md, .claude/settings.json - <one-line reason>
-Run: bash .gtt/scripts/gtt-promote.sh <name>
+Run: gtt promote <name>
 Nothing was applied; it is your decision.
 ```
 
@@ -330,6 +330,16 @@ GTT plans and watches delivery time; it does not launch agents. In `.gtt/docs/de
 - An Epic over its cap is proposed (split, integrate, cut or accept), never decided: `Budget`, `Owner` and `.gtt/delivery.json` are the human's.
 - Work only inside the `Touches` of your front; if you need another front's paths, report it.
 - Run `.gtt/scripts/gtt-delivery.sh` for the plan, the forecast and the report; never estimate by judgment what it computes. `gtt-domain/delivery-log.jsonl` is written only by `gtt-delivery.sh log`.
+
+## Simple execution
+
+When the human has to execute something, give them one line saying what it does and one command, never a sequence to assemble.
+
+- **Threshold.** A governed act (promote, freeze, approve) keeps its own command: `gtt promote <set>`. Anything that changes state, or takes two or more commands, is a run plan. A single read-only command may be given inline.
+- **The plan.** `bash .gtt/scripts/gtt-run.sh new <slug> --apply` creates `gtt-domain/run/RUN-NNN-<slug>.md`. Fill in *What it does*, *Why*, *Changes* (`none | environment | data | code`) and the `gtt-run` block (`check:`, `step: <title> | <command>`, `next:`). You write the plan, never the script.
+- **The script.** `bash .gtt/scripts/gtt-run.sh generate RUN-NNN --apply` makes the script from a fixed template, seals it with the plan's sha256 and reviews it (RUN-01 to RUN-09: no writes to governed paths, no Git history unless `commits: allowed`, no `rm -rf` outside temporary folders, no download piped into a shell; `sudo` and network are warnings). If the review fails, fix the plan and generate again; do not hand it over.
+- **The hand-over.** Say exactly the message `generate` prints (`@gtt · To run`, what it does, `gtt run <n>`). `gtt run` lists what is pending.
+- **Never** edit a generated script, run `gtt run <n>` or `gtt-run.sh execute` (the hook denies it), or write `gtt-domain/run/done/` or `log.jsonl`. A hand-edited script is refused (RUN-05). The human's run is logged and, when it succeeds, archived in `gtt-domain/run/done/` (the last 20 are kept).
 
 ## Agent roles and the evidence boundary
 

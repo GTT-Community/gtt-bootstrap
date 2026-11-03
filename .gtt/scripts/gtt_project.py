@@ -11,7 +11,7 @@ actual project (never from an agent's recollection, never authority):
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
   interaction                what the selected plan does without asking and what it asks for (derived from its policy)
-  next-id                    the next free id of a kind (adr|epic|story); deterministic, never reuses a retired id
+  next-id                    the next free id of a kind (adr|epic|story|run); deterministic, never reuses a retired id
   profile get|set            Autonomy Profile (light|medium|hard|team) and language; meaning lives in .gtt/contract/profiles.json
   source select|list         initial sources: a SELECTED source is never a governed authority
   export-policy              clean-export policy resolved against this project (ADE overlays from the ownership ledger)
@@ -223,7 +223,7 @@ def cmd_profile(args):
 
 # -------------------------------------------------------------------- next id
 
-ID_KINDS = {"adr": "ADR", "epic": "EPIC", "story": "STORY"}
+ID_KINDS = {"adr": "ADR", "epic": "EPIC", "story": "STORY", "run": "RUN"}
 
 
 def occupied_ids(prefix):

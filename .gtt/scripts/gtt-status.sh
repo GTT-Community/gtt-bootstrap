@@ -135,6 +135,15 @@ if [ -f ".gtt/scripts/gtt-delivery.sh" ]; then
   DELIVERY_STATE="$(bash .gtt/scripts/gtt-delivery.sh summary 2>&1 || true)"
 fi
 
+# Simple execution: what the human has to run (plans in gtt-domain/run/), one line each.
+RUN_HEADING="To run"
+if grep -q '"language"[[:space:]]*:[[:space:]]*"es"' .gtt/methodology.json 2>/dev/null; then RUN_HEADING="Para ejecutar"; fi
+RUN_STATE="none"
+if [ -f ".gtt/scripts/gtt-run.sh" ] && [ -f ".gtt/contract/run.json" ]; then
+  RUN_STATE="$(bash .gtt/scripts/gtt-run.sh list 2>/dev/null || true)"
+  if [ -z "$RUN_STATE" ] || [ "$RUN_STATE" = "No pending runs." ]; then RUN_STATE="none"; fi
+fi
+
 # Artifact identity/index state and repository resume hints. Both are derived
 # from the repository (manifest, index, git) - never from ADE memory.
 PY=""
@@ -190,6 +199,9 @@ CONTENT="$({
   echo
   echo "## Delivery (the plan against the declared time - computed, never a decision)"
   echo "${DELIVERY_STATE}"
+  echo
+  echo "## ${RUN_HEADING} (gtt-domain/run/ - things only the human runs, with gtt run <n>)"
+  echo "${RUN_STATE}"
   echo
   echo "## Pending proposals (gtt-domain/proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi

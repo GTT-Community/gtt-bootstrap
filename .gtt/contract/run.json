@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "notice": "Simple execution contract: how GTT hands the human something to run as one line and one command. Data only. The engine (.gtt/scripts/gtt_run.py) and the CLI (gtt run) read it; neither carries these texts or numbers of its own.",
+  "locations": {
+    "directory": "gtt-domain/run",
+    "done": "gtt-domain/run/done",
+    "log": "gtt-domain/run/log.jsonl",
+    "plan": "RUN-NNN-<slug>.md",
+    "script": "RUN-NNN-<slug>.sh"
+  },
+  "retention": { "done": 20 },
+  "generator": 1,
+  "threshold": "When the human must execute something: a governed act is one promotion command; anything that changes state or takes two or more commands is a run plan in gtt-domain/run/ (gtt-run.sh new, then generate), handed over as `gtt run <n>`; a single read-only command may be given inline. Never write the script yourself, never run it, and never ask the human to assemble a sequence.",
+  "plan": {
+    "fields": [
+      { "key": "what", "labels": ["What it does", "Qué hace"], "required": true },
+      { "key": "why", "labels": ["Why", "Por qué"], "required": true },
+      { "key": "changes", "labels": ["Changes", "Cambia"], "required": true, "values": ["none", "environment", "data", "code"] }
+    ],
+    "block": "gtt-run",
+    "lines": {
+      "check": "a tool that must exist before starting: `check: <command>`; the command must exit 0",
+      "step": "`step: <title> | <command>`; one command per step, announced and stopped on its first failure",
+      "next": "`next: <text>`; said when the last step ends"
+    },
+    "governed_acts": "A step may call a governed act (`gtt promote <set>`, `gtt freeze`); it keeps its own diff and confirmation."
+  },
+  "rules": [
+    { "id": "RUN-01", "level": "fail", "statement": "a step does not write, redirect to, copy over, move or delete anything under gtt-domain/context/, gtt-domain/adr/, .gtt/ or a path in .gtt/protection/registry.yaml" },
+    { "id": "RUN-02", "level": "fail", "statement": "a step does not run a Git command that writes history, unless gtt-domain/workflow.md declares `commits: allowed`" },
+    { "id": "RUN-03", "level": "fail", "statement": "`rm -rf` only inside the project's temporary folders (tmp, temp, .tmp, .cache, build, dist, node_modules, target) or the system temporary directory" },
+    { "id": "RUN-04", "level": "fail", "statement": "no `curl` or `wget` piped into a shell" },
+    { "id": "RUN-05", "level": "fail", "statement": "the script is exactly what the generator makes from the plan (the seal); a hand-edited or missing script is refused" },
+    { "id": "RUN-06", "level": "fail", "statement": "the plan states What it does, Why and Changes (none | environment | data | code) and has at least one step" },
+    { "id": "RUN-07", "level": "warn", "statement": "`sudo` is used" },
+    { "id": "RUN-08", "level": "warn", "statement": "a step needs the network" },
+    { "id": "RUN-09", "level": "warn", "statement": "whatever shellcheck reports, when it is installed" }
+  ],
+  "message": {
+    "en": { "heading": "@gtt · To run", "none": "(read-only; changes nothing)", "changes": { "environment": "changes your environment; does not touch the code", "data": "changes data", "code": "changes the code" } },
+    "es": { "heading": "@gtt · Para ejecutar", "none": "(solo consulta; no cambia nada)", "changes": { "environment": "cambia tu entorno; no toca el código", "data": "cambia datos", "code": "cambia el código" } },
+    "template": "{heading}\n{what} {effect}\ngtt run {n}"
+  },
+  "promotion_message": "gtt promote <set>"
+}

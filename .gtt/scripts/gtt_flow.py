@@ -348,7 +348,7 @@ def review_facts():
                            "command": f"bash .gtt/scripts/gtt-observe.sh accept|reject|defer {item['id']} --by <you> --apply"})
     for name in sorted(os.listdir(STAGED)) if os.path.isdir(STAGED) else []:
         if os.path.isfile(os.path.join(STAGED, name, "promote.json")):
-            decide.append({"id": name, "level": "PROMOTION", "what": f"promotion {name}", "command": f"bash .gtt/scripts/gtt-promote.sh {name}"})
+            decide.append({"id": name, "level": "PROMOTION", "what": f"promotion {name}", "command": f"gtt promote {name}"})
     for path in sorted(glob.glob(os.path.join(PROPOSALS, "PROPOSAL-*.md"))):
         decide.append({"id": os.path.basename(path)[:-3], "level": "PROPOSAL", "what": f"proposal {os.path.basename(path)[:-3]}", "command": f"read {path}"})
     request = read(CHANGE_REQUEST)
@@ -501,7 +501,7 @@ def cmd_stage(args):
         json.dump({"schema": 1, "name": args.name, "reason": args.reason.strip().splitlines()[0], "files": files}, handle, indent=2)
         handle.write("\n")
     print(f"gtt-stage: {len(files)} file(s) staged in {folder}/. Nothing was applied.")
-    print(f"The human applies it with: bash .gtt/scripts/gtt-promote.sh {args.name}")
+    print(f"The human applies it with: gtt promote {args.name}")
     return 0
 
 

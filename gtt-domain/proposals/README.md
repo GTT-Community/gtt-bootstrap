@@ -11,7 +11,7 @@ artifact without ever touching `gtt-domain/context/` or `gtt-domain/adr/`.
 ## Flow
 
 ```
-gtt-domain/change-request.md  →  gtt-domain/proposals/  →  you review, then `bash .gtt/scripts/gtt-promote.sh <name>`  →  gtt-domain/adr/ + gtt-domain/context/  →  new freeze
+gtt-domain/change-request.md  →  gtt-domain/proposals/  →  you review, then `gtt promote <name>`  →  gtt-domain/adr/ + gtt-domain/context/  →  new freeze
                                                 or a direct edit (an approved Epic)     or gtt-domain/backlog.md
    you write intent         agent drafts             the Human Promotion Boundary
    (always writable)        (agent writable)
@@ -22,7 +22,7 @@ or a `gtt-drift-response` track), once you approve the proposal the agent
 stages a full **promotion package** here: the ADR draft, the full text of
 every affected `gtt-domain/context/` file, staged as one promotion set under
 `staged/ADR-NNN-<slug>/`. Review it, then apply it yourself with
-`bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>`: it shows the diff, asks for
+`gtt promote ADR-NNN-<slug>`: it shows the diff, asks for
 `apply`, applies everything or nothing and prints its undo. The agent never runs
 it and never writes an application script by hand — see `AGENTS.md` → *Human
 Promotion Boundary*.
@@ -46,7 +46,7 @@ repository, and protected like the rest of the instruction plane in an installed
 | State | Meaning |
 |---|---|
 | `PROPOSAL-<slug>.md` | awaiting your review |
-| `ADR-DRAFT-<slug>.md` + any `context-<file>.md` drafts, then `staged/ADR-NNN-<slug>/` | an approved change's promotion package — review it, then run `bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>` |
+| `ADR-DRAFT-<slug>.md` + any `context-<file>.md` drafts, then `staged/ADR-NNN-<slug>/` | an approved change's promotion package — review it, then run `gtt promote ADR-NNN-<slug>` |
 | `staged/<name>/` | a promotion set: `promote.json` (the reason, each file and where it goes) and the staged copies. Removed when it is applied |
 | `bootstrap/` | the `gtt-bootstrap` skill's one-time draft of all six `gtt-domain/context/` files, plus `SOURCE-BRIEF.*` if a source document existed — the one case where a batch of files lands here instead of a single proposal |
 | deleted | rejected, or promoted — the script's own output tells you it is safe to delete its staged files once it has applied them |

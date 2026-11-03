@@ -128,7 +128,7 @@ After staging, tell the user exactly this, and nothing more:
 ```text
 @gtt · Authorization required
 Changes: AGENTS.md, .claude/settings.json - <one-line reason>
-Run: bash .gtt/scripts/gtt-promote.sh <name>
+Run: gtt promote <name>
 Nothing was applied; it is your decision.
 ```
 
@@ -313,6 +313,12 @@ In `.gtt/docs/agents/bootstrap.md` → *Autonomy Profiles* and *Development meth
 ## Delivery planning
 
 In `.gtt/docs/agents/operations.md` → *Delivery planning*.
+
+## Simple execution
+
+When the human must execute something: a governed act is one promotion command; anything that changes state or takes two or more commands is a run plan in `gtt-domain/run/` (`gtt-run.sh new`, then `generate`), handed over as `gtt run <n>`; a single read-only command may be given inline. Never write the script yourself, never run it, and never ask the human to assemble a sequence.
+
+In `.gtt/docs/agents/operations.md` → *Simple execution*.
 
 ## Working without unnecessary interruption
 

@@ -141,7 +141,7 @@ Exactly this, and nothing more:
 ```text
 @gtt · Authorization required
 Changes: gtt-domain/adr/ADR-NNN-<slug>.md, gtt-domain/context/stack.md - <one-line reason>
-Run: bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
+Run: gtt promote ADR-NNN-<slug>
 Nothing was applied; it is your decision.
 ```
 

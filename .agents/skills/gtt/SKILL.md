@@ -47,6 +47,7 @@ Never freeze (`gtt-freeze.sh`) and never accept, reject or defer an observation
 Never run a promotion (`bash .gtt/scripts/gtt-promote.sh <name>`), and never write an application script by hand. Prepare the set (`gtt-stage.sh`)
 and stop; the human runs it. A governed decision is never taken in an
 unattended run: when one is needed, stop and report.
+Never run a run script (`gtt run <n>`, `gtt-run.sh execute`). When the human must execute something that changes state or takes two or more commands, write a run plan (`gtt-run.sh new`, then `generate`) and hand over the `gtt run <n>` message it prints; never write the script yourself.
 
 ## Which procedure
 

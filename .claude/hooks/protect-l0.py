@@ -159,7 +159,7 @@ PROPOSALS_DIR = "gtt-domain/proposals"
 GIT_HOOK = ".git/hooks/pre-commit"
 WORKFLOW_FILE = "gtt-domain/workflow.md"
 LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json", ".gtt/local/delivery-snapshot.json",
-               "gtt-domain/delivery-log.jsonl")
+               "gtt-domain/delivery-log.jsonl", "gtt-domain/run/log.jsonl")
 SOURCES_DIR = "docs/sources"
 BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--contains", "--merged",
                   "--no-merged", "--points-at"}
@@ -258,6 +258,12 @@ APPROVAL = ("GTT governance (human-decision-authority): approving an Epic and it
 LOCAL_OWNED = ("GTT governance (deterministic-first): .gtt/local/checkpoint.json and .gtt/local/last-validation.json are "
                "written only by GTT's own scripts (also .gtt/local/delivery-snapshot.json and gtt-domain/delivery-log.jsonl, written by "
                "gtt-delivery.sh log). Run gtt-checkpoint.sh, gtt-validate.sh or gtt-delivery.sh log; never edit their result.")
+RUN_DIR = "gtt-domain/run"
+RUN_OWNED = ("GTT governance (deterministic-first): a run script (gtt-domain/run/*.sh), its log and gtt-domain/run/done/ are written "
+             "only by gtt-run.sh. Write the PLAN (gtt-domain/run/RUN-NNN-<slug>.md), then run `bash .gtt/scripts/gtt-run.sh generate "
+             "RUN-NNN --apply`; never write the script yourself.")
+RUN_EXECUTE = ("GTT governance (human-decision-authority): executing a run is the human's act, never an agent's. Hand it over "
+               "with the message `gtt-run.sh generate` prints - `gtt run <n>` - and continue with the work.")
 SETUP_RECORDS = (".gtt/methodology.json", ".gtt/development-method.json", ".gtt/selected-sources.json", ".gtt/delivery.json")
 SETUP_OWNED = ("GTT governance (human-decision-authority): the autonomy profile, the development method and the selected "
                "sources are the human's choices, recorded only through GTT's scripts or the CLI (gtt autonomy, gtt config). "
@@ -353,6 +359,8 @@ def protected_token(root, token, shell=False):
         return LEDGER_OWNED
     if low in LOCAL_STATE:
         return LOCAL_OWNED
+    if (under(low, RUN_DIR + "/done") or (under(low, RUN_DIR) and low.endswith(".sh"))) and installed(root):
+        return RUN_OWNED
     if low in SETUP_RECORDS and installed(root):
         return SETUP_OWNED
     if under(low, SOURCES_DIR) or (shell and low == "docs"):
@@ -551,6 +559,8 @@ def cli_act(words):
         i += 1
     if not named or not rest or rest[0] == "help":
         return None
+    if rest[0] == "run":                    # `gtt run <n>` executes; `gtt run`, `run show` and `run check` only read
+        return "run" if len(rest) > 1 and rest[1] not in CLI_READS else None
     if (rest[0],) in CLI_HUMAN_ACTS and not (len(rest) > 1 and rest[1] in CLI_READS):
         return " ".join(rest[:1])
     if tuple(rest[:2]) in CLI_HUMAN_ACTS:
@@ -637,6 +647,13 @@ def decide_units(root, command):
                 return SOURCE_FROZEN
             if base(word) in ("gtt-observe.sh", "gtt_observe.py") and follow and follow[0] in OBSERVE_DECISIONS:
                 return HUMAN_ACT
+            if base(word) in ("gtt-run.sh", "gtt_run.py") and follow and follow[0] == "execute" and not syntax_only:
+                return RUN_EXECUTE
+            if base(word) in ("gtt-contract.sh", "gtt_contract.py") and any(x.lower() == "confirmed_by_human=true" for x in follow):
+                return CLI_ACT                  # the human's confirmation token is never an agent's to pass
+            run_script = (relative(word, root) or "").lower()
+            if under(run_script, RUN_DIR) and run_script.endswith(".sh") and not syntax_only and (index == 0 or head in SHELLS):
+                return RUN_EXECUTE              # the sealed script itself, run without its log and its confirmation
             if base(word) == "gtt-git-hook.sh" and follow and follow[0] in ("install", "remove") and "--apply" in follow:
                 return HUMAN_ACT
     return None

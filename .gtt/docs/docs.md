@@ -825,6 +825,16 @@ code
   ADR. *Work* - Stories and code - is the ADE's, with no approval. After a freeze both routes end in a new one,
   taken in the same confirmation.
 
+## Simple execution
+
+When the human has to execute something, GTT hands over one line and one command: `gtt run <n>`. A governed act (promote, freeze, approve) keeps its own command and confirmation; anything that changes state or takes two or more commands is a **run plan**; a single read-only command may be given inline.
+
+1. **Plan.** The agent runs `bash .gtt/scripts/gtt-run.sh new <slug> --apply` and fills `gtt-domain/run/RUN-NNN-<slug>.md`: *What it does*, *Why*, *Changes* (`none | environment | data | code`) and a `gtt-run` block of `check:`, `step: <title> | <command>` and `next:` lines. The agent writes no script.
+2. **Script.** `gtt-run.sh generate RUN-NNN --apply` generates the script from a fixed template (`set -euo pipefail`, the checks, numbered steps, a summary), records the plan's sha256 in its header and reviews it. `gtt-run.sh check [RUN-NNN]` repeats the review.
+3. **Review (`.gtt/contract/run.json`).** Failures: RUN-01 writes to `gtt-domain/context/`, `gtt-domain/adr/`, `.gtt/` or a protected artifact; RUN-02 Git history (unless `commits: allowed` in `gtt-domain/workflow.md`); RUN-03 `rm -rf` outside temporary folders; RUN-04 a download piped into a shell; RUN-05 the script is not what its plan generates (the seal); RUN-06 an incomplete plan. Warnings: RUN-07 `sudo`, RUN-08 network, RUN-09 shellcheck.
+4. **Execution (the human).** `gtt run` lists what is pending, `gtt run <n>` shows the steps, asks once when the plan changes something, runs it, appends to `gtt-domain/run/log.jsonl` and moves it to `gtt-domain/run/done/` (the last 20). A plan with `Changes: none` runs without a prompt; a plan that changes something refuses to run without an interactive confirmation. The protection hook denies `gtt run <n>` and `gtt-run.sh execute` to agents, and writes to the generated scripts, `log.jsonl` and `done/`.
+5. **Session.** `gtt-domain/session.md` lists the pending runs under `## To run` (`## Para ejecutar` in a Spanish project).
+
 ## Continuity, review and Git
 
 Three things, all computed from the repository and none from a conversation:
