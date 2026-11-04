@@ -14,6 +14,7 @@ the next session deletes what is marked. Only this engine writes the folder.
   gtt_pending.py record REF|all ANSWER --quote "words" [--apply]         an agent records an answer given in the chat,
                                                                          with the human's exact words (checked)
   gtt_pending.py answer REF ANSWER | ok --confirmed-by-human             the human's act, never an agent's
+  gtt_pending.py show [--json]                                            the open questions as one batch for the chat, each in the form of its event
   gtt_pending.py done REF --in WHERE [--apply]                           mark an answered event as applied
   gtt_pending.py clean [--apply]                                         delete what is marked and the decisions
                                                                          nobody objected to for 7 days
@@ -799,6 +800,35 @@ def notice_text(c):
     return "\n".join(lines)
 
 
+def batch_text(c):
+    """The open questions as one batch for the chat, each in the form of its event, then the decisions to tell."""
+    m = messages(c)
+    asks = [ev for ev in events(c) if ev["kind"] == "ASK" and not ev["attended"] and not ev["answered"]]
+    decisions = [ev for ev in events(c) if ev["kind"] == "DEC" and not ev["attended"]]
+    if not asks and not decisions:
+        return ""
+    out = []
+    if asks:
+        out.append(f"@gtt · {m['needs']} ({len(asks)})")
+        for index, ev in enumerate(asks, 1):
+            body = ev["engine_lines"][:-1] if ev.get("engine_lines") else ev["lines"]
+            out += ["", f"── {index}/{len(asks)} · {ev['fields'].get('topic', ev['title'][:24])} · {ev['kind']}-{ev['number']:03d} ──"] + [l for l in body[:1]] + [l for l in body[2:] if l.strip()]
+        out += ["", m["batch_tail"]]
+    for ev in decisions:
+        out.append(f"{m['fyi']}: {ev['number']} {ev['title']}")
+    return "\n".join(out)
+
+
+def cmd_show(args):
+    c = contract()
+    text = batch_text(c)
+    if args.json:
+        emit({"schema": 1, "text": text, **{k: len(v) for k, v in summary(c).items()}})
+    else:
+        print(text or messages(c)["nothing"])
+    return 0
+
+
 def load_state(c):
     data = read_json(c["locations"]["state"])
     return data if isinstance(data, dict) else {}
@@ -883,11 +913,12 @@ def main(argv):
     p = sub.add_parser("done"); p.add_argument("ref"); p.add_argument("--in", dest="where", required=True); p.add_argument("--apply", action="store_true")
     p = sub.add_parser("clean"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("check"); p.add_argument("--json", action="store_true")
+    p = sub.add_parser("show"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("notice"); p.add_argument("--report", action="store_true"); p.add_argument("--due", action="store_true")
     p.add_argument("--session", action="store_true"); p.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     return {"ask": cmd_ask, "decide": cmd_decide, "list": cmd_list, "record": cmd_record, "answer": cmd_answer, "done": cmd_done,
-            "clean": cmd_clean, "check": cmd_check, "notice": cmd_notice}[args.cmd](args)
+            "clean": cmd_clean, "check": cmd_check, "notice": cmd_notice, "show": cmd_show}[args.cmd](args)
 
 
 if __name__ == "__main__":

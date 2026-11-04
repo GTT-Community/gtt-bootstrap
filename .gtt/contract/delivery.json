@@ -99,6 +99,7 @@
   "size": {
     "notice": "GTT measures and reports; the human decides what is too much. The only judgement is against numbers the human declared: scope_cap_h (a target in agent hours) and growth_pct (how much the backlog may grow since the baseline). Neither is a default of GTT's own: scope_cap_h has none, growth_pct is a starting value the human changes with `gtt delivery set --growth-pct`.",
     "baseline": "taken by `select --apply` when the backlog already holds growth_min_stories open Stories, and again with --rebase; never by an agent",
+    "tell": "the signals the human must hear about (DLV-NO-PLAN, DLV-GROWTH, DLV-OVER-TARGET, DLV-UNDER-TARGET) are printed by `gtt-delivery.sh tell` at the start of every session so the agent says them in one line; they are not repeated each turn",
     "unmeasurable": "fewer than noplan_min_coverage of the open Stories have a duration: the hours are reported as not measurable, never as 0"
   },
   "presets": {
@@ -111,15 +112,21 @@
     "prompts": {
       "choose": { "es": "¿Qué quieres hacer con el tamaño de este proyecto?", "en": "What do you want to do with the size of this project?" },
       "cap": { "es": "¿Cuántas horas de agente son demasiado para este proyecto? (un número, o none)", "en": "How many agent hours is too much for this project? (a number, or none)" },
+      "floor": { "es": "¿Cuántas horas de agente serían muy poco para este proyecto? (un número, o none)", "en": "How many agent hours would be too little for this project? (a number, or none)" },
       "pace": { "es": "¿En qué ritmo hablan los documentos del plan?", "en": "Which rhythm do the plan documents speak in?" }
     },
     "choices": [
       { "id": "keep", "label": { "es": "Mantener como está (el tamaño de hoy pasa a ser la referencia)", "en": "Keep it as it is (today's size becomes the reference)" } },
-      { "id": "target", "label": { "es": "Definir cuánto es demasiado (tope en horas de agente)", "en": "Define how much is too much (a cap in agent hours)" } },
+      { "id": "target", "label": { "es": "Definir cuánto es demasiado o muy poco (topes en horas de agente)", "en": "Define how much is too much or too little (caps in agent hours)" } },
       { "id": "single-pass", "label": { "es": "Pasar a una sola pasada", "en": "Switch to one pass" } },
+      { "id": "expand", "label": { "es": "Hacerlo más completo: pedir al agente que detalle, divida y estime", "en": "Make it fuller: ask the agent to detail, split and estimate" } },
       { "id": "slim", "label": { "es": "Adelgazar: ver qué se puede recortar, unir o comprar hecho", "en": "Slim down: see what can be cut, merged or bought ready-made" } },
       { "id": "answers", "label": { "es": "Cambiar mis respuestas (quién, frentes, fecha, ritmo)", "en": "Change my answers (who, fronts, date, rhythm)" } }
     ],
+    "expand_note": {
+      "es": "Detallar, dividir y estimar es trabajo del agente y no necesita aprobación (las historias son suyas); agregar una Épica nueva o ampliar su alcance es decisión tuya (gtt-propose-change, forma 4).",
+      "en": "Detailing, splitting and estimating is the agent's work and needs no approval (Stories are its own); adding a new Epic or widening its scope is your decision (gtt-propose-change, form 4)."
+    },
     "slim_note": {
       "es": "Recortar o unir Épicas es decisión tuya: pídele a tu agente una propuesta (gtt-propose-change, forma 4). Las historias las reordena el agente sin pedir permiso.",
       "en": "Cutting or merging Epics is your decision: ask your agent for a proposal (gtt-propose-change, form 4). Stories are reordered by the agent without asking."
@@ -154,6 +161,7 @@
     "DLV-NO-PLAN": "noplan_min_stories or more open Stories and fewer than noplan_min_coverage of them with a duration (their own Estimate or their Epic's): nobody can say how long the backlog takes; it fires even when delivery planning was never declared",
     "DLV-STALE-STATUS": "a Story that is not Done while a recent commit (last stale_commits_scanned) already closes it by name",
     "DLV-GROWTH": "the open Stories (or the estimated hours) grew by growth_pct or more since the baseline taken when the human declared the plan, with at least growth_min_stories more Stories: the project got bigger than declared",
+    "DLV-UNDER-TARGET": "the total estimated hours are below the scope_min_h the human declared: the plan is lighter than expected",
     "DLV-OVER-TARGET": "the remaining estimated hours exceed the scope_cap_h the human declared",
     "DLV-PACE-DRIFT": "a plan document speaks in the other rhythm than the declared pace (day N, jornada, cronograma under flow)"
   },

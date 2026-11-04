@@ -3770,7 +3770,22 @@ def delivery_visibility(project, tmp):
     check(state["pace"] == "flow" and state["horizon"] == "none" and state["deadline"] is None and state["preset"] == "single-pass",
           "one pass is continuous flow with no date and no day-by-day schedule", str(state))
     es = json.loads(run("size", "--json", "--lang", "es")[1])
-    check(len(es["choices"]) == 5 and es["prompts"]["choose"].startswith("¿") and es["slim_note"], "the review choices and prompts come from the contract, in the project's language")
+    check(len(es["choices"]) == 6 and es["prompts"]["choose"].startswith("¿") and es["slim_note"], "the review choices and prompts come from the contract, in the project's language")
+    # The minimum: too little is the human's call as well, and the agent says what the human must hear.
+    backlog(10, "**Estimate:** 10h\n")
+    check(run("select", "--scope-min", "abc", "--apply")[0] == 1 and run("select", "--scope-min", "0", "--apply")[0] == 1, "a minimum that is not a positive number is refused")
+    check(run("select", "--scope-min", "40", "--apply")[0] == 0, "the human declares how little would be too little: 40 agent hours")
+    size = json.loads(run("size", "--json")[1])
+    check(size["floor"]["state"] == "under" and size["total_h"] == 10, "10 h against a minimum of 40 is UNDER", str(size["floor"]))
+    out = run("tell")[1]
+    check("DLV-UNDER-TARGET" in out and "you set as too little" in out and out.count("\n") == 1, "`tell` gives the human one line about it", out)
+    check("DLV-UNDER-TARGET" in run("check")[1], "the check warns too")
+    ctx = bash(p, ".gtt/scripts/gtt-session-context.sh")[1]
+    check("## Tell the human" in ctx and "DLV-UNDER-TARGET" in ctx and "gtt delivery review" in ctx, "the session context hands the agent the lines the human must hear")
+    check(run("select", "--scope-min", "5", "--apply")[0] == 0 and run("tell")[1].strip() == "", "once the plan reaches the minimum `tell` is silent and the session context says nothing")
+    check("## Tell the human" not in bash(p, ".gtt/scripts/gtt-session-context.sh")[1], "the session context stays quiet when nothing is open")
+    check(run("select", "--scope-min", "none", "--apply")[0] == 0, "the minimum can be removed")
+    check(any(c["id"] == "expand" for c in es["choices"]) and es["expand_note"], "the review offers to make it fuller, with its note from the contract")
     ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
     check("delivery.size" in ops and ops["delivery.size"]["mutates"] is False, "delivery.size is a read-only operation")
     check({"preset", "scope_cap", "growth_pct", "rebase"} <= {a["name"] for a in ops["delivery.select"]["args"]}, "delivery.select declares preset, scope_cap, growth_pct and rebase")
@@ -3834,6 +3849,15 @@ def question_form(project, tmp):
     write(path, base.replace("\nAnswer:\n", "\nAnswer: 7\n"))
     check(pend("check")[0] == 1, "an answer that chooses an option that does not exist fails the check")
     write(path, base)
+    # The batch for the chat: every open question in the form of its file, the file stays the silent record.
+    rc, out = pend("show")
+    check(rc == 0 and out.startswith("@gtt · Needs you (4)\n") and out.count("\n── ") == 4 and "── 1/4 · pdfkit (PDF) · ASK-001 ──" in out
+          and "5. Talk about it in the chat" in out and "Answer each one with its number" in out and "gtt-domain/pending" not in out,
+          "`show` prints the open questions as one batch for the chat, without mentioning files", out[:400])
+    hook = subprocess.run([sys.executable, os.path.join(p, ".claude", "hooks", "pending-watch.py")], cwd=p, input=json.dumps({"session_id": "s1", "prompt": "hi"}),
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", env=dict(os.environ, GTT_NOW="2026-11-04T10:00:00Z"))
+    ctx = json.loads(hook.stdout)["hookSpecificOutput"]["additionalContext"] if hook.stdout.strip() else ""
+    check("gtt-pending.sh show" in ctx and "silent record" in ctx and "do not announce" in ctx, "the hook tells the agent to show the batch in the chat and not to announce files", ctx)
     es = fresh(project, tmp, "qform-es")
     save_json(os.path.join(es, ".gtt", "methodology.json"), {"schema": 1, "profile": "medium", "language": "es"})
     os.makedirs(os.path.join(es, "gtt-domain", "pending"), exist_ok=True)
@@ -3982,7 +4006,7 @@ def pending_events(project, tmp):
     pend("decide", "--affects", "cost", "--title", "Use the free tier of the mail service", "--what", "Mail goes through the free tier.", "--why", "It covers the volume of v1.", "--where", "src/sync/", "--apply", now="2026-11-02T10:00:00Z")
     pend("decide", "--affects", "scope", "--title", "Drop the export screen from v1", "--what", "Export moves to v1.1.", "--why", "It is not in the launch path.", "--where", "src/sync/", "--apply", now="2026-11-02T10:00:00Z")
     rc, out = pend("notice")
-    check(rc == 0 and "For your information: 5 Use the free tier" in out and "Say «ok»" not in out and "Answer here, in the file or with gtt answer" in out, "criterion 8: a pending decision appears as a «For your information» line", out)
+    check(rc == 0 and "For your information: 5 Use the free tier" in out and "Say «ok»" not in out and "Answer here in the chat, or with gtt answer" in out, "criterion 8: a pending decision appears as a «For your information» line", out)
     hook("ok a todas", now="2026-11-02T11:00:00Z")
     rc, out = pend("record", "all", "ok", "--quote", "ok a todas", "--apply", now="2026-11-02T11:00:00Z")
     left = [n for n in os.listdir(pdir) if n.startswith("DEC-")]
@@ -4002,7 +4026,7 @@ def pending_events(project, tmp):
     check(pend("notice", "--due", now="2026-11-09T20:00:00Z")[1].strip() == "", "criterion 8: no reminder before 24 h")
     check("Needs you" in pend("notice", "--due", now="2026-11-10T11:00:00Z")[1], "criterion 8: the reminder returns after 24 h while a question blocks")
     rc, ctx = hook("after a day", now="2026-11-11T12:00:00Z")
-    check("notice --report" in ctx, "criterion 8: the hook tells the agent the notice is overdue after 24 h", ctx)
+    check("gtt-pending.sh show" in ctx and "24 h" in ctx, "criterion 8: the hook tells the agent the notice is overdue after 24 h and to show it in the chat", ctx)
     for name in os.listdir(pdir):
         if name.startswith(("ASK", "DEC")):
             os.remove(path(name))
@@ -4035,7 +4059,7 @@ def pending_events(project, tmp):
     check("Tipo: dinero · Tema: Cobro en v1 · Bloquea: nada · Creada:" in es and "1. Sí, manual con factura (recomendada)\n   Armo el flujo de factura." in es and "4. Hablarlo en el chat: dime «hablemos»" in es and "Mientras no respondas: opción 1." in es and es.endswith("Respuesta:\n"),
           "a Spanish project gets the format of the order, word for word", es)
     out = pend("notice")[1]
-    check(out.startswith("@gtt · Te necesito (1)\n") and "→ recomiendo 1" in out and "Para que sepas: " in out and "Responde aquí, en el archivo o con gtt answer" in out, "the Spanish notice has the shape of the order", out)
+    check(out.startswith("@gtt · Te necesito (1)\n") and "→ recomiendo 1" in out and "Para que sepas: " in out and "Responde aquí en el chat, o con gtt answer" in out, "the Spanish notice has the shape of the order", out)
     rc, out = pend("answer", "ok", "--confirmed-by-human")
     check(rc == 0 and "Atendida:" in open(path(sorted(n for n in os.listdir(pdir) if n.startswith("DEC"))[0]), encoding="utf-8").read(), "`gtt answer ok` marks the decisions", out)
 
@@ -4043,7 +4067,7 @@ def pending_events(project, tmp):
         proc = subprocess.run([sys.executable, ".gtt/scripts/gtt_flow.py", "check", name], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace")
         check(proc.returncode == 0, f"criterion {label}: gtt_flow.py check {name} still passes", proc.stdout + proc.stderr)
     agents = open(os.path.join(project, "AGENTS.md"), encoding="utf-8").read()
-    check("## Pending events" in agents and "Never write the human's answer." in agents and "`@gtt · Needs you`" in agents, "AGENTS.md carries the rule for pending events")
+    check("## Pending events" in agents and "Never write the human's answer." in agents and "`@gtt · Needs you (N)`" in agents and "silent record" in agents and "never as free chat" not in agents, "AGENTS.md carries the rule for pending events")
     check(bash(p, ".gtt/scripts/gtt-check-contract.sh")[0] == 0 and bash(p, ".gtt/scripts/gtt-check-agents.sh")[0] == 0, "the contracts and AGENTS.md stay consistent with pending.json and the pending.* operations")
     ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
     check(ops["pending.answer"]["human_authority"] and not ops["pending.list"]["mutates"] and not ops["pending.check"]["mutates"], "pending.answer is human_authority; list and check only read")

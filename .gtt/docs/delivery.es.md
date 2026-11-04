@@ -74,6 +74,7 @@ siguiendo la cadena de dependencias más larga.
 | DLV-STALE-STATUS | Una Story que no está `Done` mientras un commit reciente ya la cierra por nombre (`closes STORY-168`) |
 | DLV-GROWTH | Las Stories abiertas (o las horas estimadas) crecieron `growth_pct` (50% de partida) o más desde el tamaño de referencia tomado cuando declaraste el plan |
 | DLV-OVER-TARGET | Las horas estimadas que faltan superan el tope que **tú** declaraste con `--scope-cap` |
+| DLV-UNDER-TARGET | Las horas estimadas totales están bajo el mínimo que **tú** declaraste con `--scope-min`: el plan es más liviano de lo que esperabas |
 | DLV-PACE-DRIFT | Un documento de plan habla en otro ritmo que el `pace` declarado (`día N`, `jornada`, `cronograma` bajo `flow`) |
 
 ### Qué tan grande es el proyecto y cómo cambiar de idea
@@ -83,6 +84,7 @@ agente que faltan (o «no medible» si las Épicas no tienen `Estimate`: nunca 0
 tamaño de referencia y tu propio tope. GTT solo juzga contra números que tú declaraste:
 
 - `gtt delivery review --scope-cap <horas|none>`: cuántas horas de agente son demasiadas para este proyecto.
+- `gtt delivery review --scope-min <horas|none>`: cuántas horas de agente serían muy poco. «Hacerlo más completo» es trabajo del agente (detallar, dividir, estimar); una Épica nueva es decisión tuya.
 - `gtt delivery set --growth-pct <n>`: cuánto puede crecer el backlog antes de que GTT avise.
 - `gtt delivery review --keep`: mantenerlo como está; el tamaño de hoy pasa a ser la referencia.
 - `gtt delivery review --single-pass`: una sola pasada continua: sin fecha y sin cronograma por días.

@@ -74,6 +74,7 @@ along the longest dependency chain.
 | DLV-STALE-STATUS | A Story that is not `Done` while a recent commit already closes it by name (`closes STORY-168`) |
 | DLV-GROWTH | The open Stories (or the estimated hours) grew by `growth_pct` (50% to start) or more since the reference size taken when you declared the plan |
 | DLV-OVER-TARGET | The remaining estimated hours exceed the cap **you** declared with `--scope-cap` |
+| DLV-UNDER-TARGET | The total estimated hours are below the minimum **you** declared with `--scope-min`: the plan is lighter than you expected |
 | DLV-PACE-DRIFT | A plan document speaks in the other rhythm than the declared `pace` (`day N`, `jornada`, `cronograma` under `flow`) |
 
 ### How big the project is, and how to change your mind
@@ -83,6 +84,7 @@ remaining agent hours (or "not measurable" when the Epics have no `Estimate`: ne
 the reference size and your own cap. GTT judges only against numbers you declared:
 
 - `gtt delivery review --scope-cap <hours|none>`: how many agent hours are too much for this project.
+- `gtt delivery review --scope-min <hours|none>`: how few agent hours would be too little. "Make it fuller" is the agent's work (detail, split, estimate); a new Epic is your decision.
 - `gtt delivery set --growth-pct <n>`: how much the backlog may grow before GTT warns.
 - `gtt delivery review --keep`: keep it as it is; today's size becomes the reference.
 - `gtt delivery review --single-pass`: one continuous pass: no date and no day-by-day schedule.

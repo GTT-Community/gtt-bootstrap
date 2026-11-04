@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "91a807490031fa972eeed24b447c356e8ac928758ccb92698a870d9da73f19f2",
+      "sha256": "e377d091c62b4d2f37d9357bb37591e3a7428d5f1edaaf8689bd363882672b96",
       "aliases": [],
       "sections": [
         {
@@ -666,7 +666,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "1d156accfc5fc9f09d0a0cc839c07d3e51335637ffb1febe88500d7245dfab5e",
+      "sha256": "2243d163b0aa64669809f3a79ee47d71f59c4f0f487f6dfca18916a8e835e6bc",
       "aliases": [],
       "sections": [
         {
@@ -1951,7 +1951,7 @@
       "title": "Delivery Planning",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "135a232e6950237e1edb46aaf904ab05393812e2c36c5c782e9fae1c9c1f4310",
+      "sha256": "a0c0230835974a72c19af67c33b8aaea456c20c20975f096fc114a6cafd166f9",
       "aliases": [],
       "sections": [
         {
@@ -1960,7 +1960,7 @@
           "anchor": "delivery-planning",
           "path": "Delivery Planning",
           "line_start": 1,
-          "line_end": 106
+          "line_end": 108
         },
         {
           "heading": "The skill",
@@ -2000,23 +2000,23 @@
           "anchor": "while-working-the-log-and-the-signals",
           "path": "Delivery Planning > While working: the log and the signals",
           "line_start": 54,
-          "line_end": 98
+          "line_end": 100
         },
         {
           "heading": "How big the project is, and how to change your mind",
           "level": 3,
           "anchor": "how-big-the-project-is-and-how-to-change-your-mind",
           "path": "Delivery Planning > While working: the log and the signals > How big the project is, and how to change your mind",
-          "line_start": 79,
-          "line_end": 98
+          "line_start": 80,
+          "line_end": 100
         },
         {
           "heading": "At the freeze",
           "level": 2,
           "anchor": "at-the-freeze",
           "path": "Delivery Planning > At the freeze",
-          "line_start": 99,
-          "line_end": 106
+          "line_start": 101,
+          "line_end": 108
         }
       ],
       "references": [],
@@ -2034,7 +2034,7 @@
       "title": "Planificación de entrega",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "8fc9b7e5a1c3445ad5a1592fbc0a01229d8f6984d3c4c29d62480b73e48fa2a1",
+      "sha256": "240e0d873083a82019b5ec70e364652204a096b548a35d186f73ea7f11fee0bb",
       "aliases": [],
       "sections": [
         {
@@ -2043,7 +2043,7 @@
           "anchor": "planificación-de-entrega",
           "path": "Planificación de entrega",
           "line_start": 1,
-          "line_end": 106
+          "line_end": 108
         },
         {
           "heading": "La skill",
@@ -2083,23 +2083,23 @@
           "anchor": "mientras-se-trabaja-el-registro-y-las-señales",
           "path": "Planificación de entrega > Mientras se trabaja: el registro y las señales",
           "line_start": 54,
-          "line_end": 98
+          "line_end": 100
         },
         {
           "heading": "Qué tan grande es el proyecto y cómo cambiar de idea",
           "level": 3,
           "anchor": "qué-tan-grande-es-el-proyecto-y-cómo-cambiar-de-idea",
           "path": "Planificación de entrega > Mientras se trabaja: el registro y las señales > Qué tan grande es el proyecto y cómo cambiar de idea",
-          "line_start": 79,
-          "line_end": 98
+          "line_start": 80,
+          "line_end": 100
         },
         {
           "heading": "En el freeze",
           "level": 2,
           "anchor": "en-el-freeze",
           "path": "Planificación de entrega > En el freeze",
-          "line_start": 99,
-          "line_end": 106
+          "line_start": 101,
+          "line_end": 108
         }
       ],
       "references": [],
@@ -3413,7 +3413,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "740434c9ba594d16548f7e3011ec5c3bfa3db3e2ac998d875a2ffa1a1bb366ed",
+      "sha256": "c416f9c9e31e2ba809d0b3f4987a7e89eda212c8425f768640c9dc3c05d3c7d9",
       "aliases": [],
       "sections": [
         {
@@ -3422,7 +3422,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 378
+          "line_end": 379
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3502,31 +3502,31 @@
           "anchor": "delivery-planning",
           "path": "Working inside a governed project > Delivery planning",
           "line_start": 324,
-          "line_end": 337
+          "line_end": 338
         },
         {
           "heading": "Simple execution",
           "level": 2,
           "anchor": "simple-execution",
           "path": "Working inside a governed project > Simple execution",
-          "line_start": 338,
-          "line_end": 347
+          "line_start": 339,
+          "line_end": 348
         },
         {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
-          "line_start": 348,
-          "line_end": 359
+          "line_start": 349,
+          "line_end": 360
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 360,
-          "line_end": 378
+          "line_start": 361,
+          "line_end": 379
         }
       ],
       "references": [],
@@ -5414,7 +5414,7 @@
       "title": "GTT delivery",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "6b07e202f12c64118576e70cdd987b1d1a7300cddaaaec5b35aeda0c544fa6cf",
+      "sha256": "86e722a77e9aea8b0d2c6ee9abdd5893d6659136c41fa5bedc57fb826757f9ad",
       "aliases": [],
       "sections": [
         {
@@ -7580,7 +7580,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "6b07e202f12c64118576e70cdd987b1d1a7300cddaaaec5b35aeda0c544fa6cf",
+      "sha256": "86e722a77e9aea8b0d2c6ee9abdd5893d6659136c41fa5bedc57fb826757f9ad",
       "aliases": [],
       "sections": [
         {

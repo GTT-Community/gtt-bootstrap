@@ -54,7 +54,9 @@ def main() -> int:
             names = ", ".join(r["id"] for r in open_events)
             wait_lines.append(f"Waiting for the human: {names}. If their message answers one, write it down with "
                               f"`bash .gtt/scripts/gtt-pending.sh record <n> <answer> --quote \"<their exact words>\" --apply` "
-                              f"(`record all ok` for «ok» to every decision); never write the answer yourself.")
+                              f"(`record all ok` for «ok» to every decision); never write the answer yourself. If you have not shown them yet, show the open questions "
+                              f"to the human in the chat as one batch: run `bash .gtt/scripts/gtt-pending.sh show` and show its output. The files are the "
+                              f"silent record: do not announce them.")
         due = engine.reminder_due(c, state)
         # What waits for the human is said once per session unless it changes; an answer to apply is said every turn.
         digest = hashlib.sha256("\n".join(wait_lines).encode("utf-8")).hexdigest()[:12]
@@ -67,7 +69,7 @@ def main() -> int:
         lines = apply_lines + wait_lines
         if due:
             lines.append("The human has not seen the pending block for 24 h and something blocks: end your report with "
-                         "`bash .gtt/scripts/gtt-pending.sh notice --report`.")
+                         "`bash .gtt/scripts/gtt-pending.sh show`, shown in the chat.")
         if not lines:
             engine.save_state(c, state)
             return 0
