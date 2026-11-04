@@ -45,6 +45,10 @@ Stories and almost none with an `Estimate`: size the Epics now), `DLV-STALE-STAT
 `Done` and `Closed`) and `DLV-PACE-DRIFT` (a plan document speaks in another rhythm than `pace`). Say each in one line and fix the part
 that is yours (Stories, estimates, plan documents); the pace itself is the human's (`gtt delivery set --pace days|flow`).
 
+`bash .gtt/scripts/gtt-delivery.sh size` reports how big the backlog is as facts (never "too big": the human declares the cap and the growth
+that matter). On `DLV-GROWTH` or `DLV-OVER-TARGET` say the numbers in one line and offer `gtt delivery review`: keep it, set a cap, one
+pass, or slim down (levers from `plan`; cutting or merging an Epic is a proposal for the human).
+
 ## After the freeze
 
 When observation opens a `DLV-*` signal (`bash .gtt/scripts/gtt-observe.sh backlog`), say it in one line and keep working. For

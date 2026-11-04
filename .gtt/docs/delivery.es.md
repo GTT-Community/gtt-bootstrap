@@ -72,7 +72,22 @@ siguiendo la cadena de dependencias más larga.
 | DLV-UNCALIBRATED | Menos de 3 Stories medidas |
 | DLV-NO-PLAN | 8 o más Stories abiertas y menos de la mitad con duración (su `Estimate` o el de su Epic). Se dispara **aunque nunca se haya declarado la planificación**: nadie puede decir cuánto dura el backlog |
 | DLV-STALE-STATUS | Una Story que no está `Done` mientras un commit reciente ya la cierra por nombre (`closes STORY-168`) |
+| DLV-GROWTH | Las Stories abiertas (o las horas estimadas) crecieron `growth_pct` (50% de partida) o más desde el tamaño de referencia tomado cuando declaraste el plan |
+| DLV-OVER-TARGET | Las horas estimadas que faltan superan el tope que **tú** declaraste con `--scope-cap` |
 | DLV-PACE-DRIFT | Un documento de plan habla en otro ritmo que el `pace` declarado (`día N`, `jornada`, `cronograma` bajo `flow`) |
+
+### Qué tan grande es el proyecto y cómo cambiar de idea
+
+GTT mide; **tú** decides qué es demasiado. `gtt delivery review` (o `gtt-delivery.sh size`) reporta las Stories abiertas, las horas de
+agente que faltan (o «no medible» si las Épicas no tienen `Estimate`: nunca 0), la capacidad hasta tu fecha, el crecimiento desde el
+tamaño de referencia y tu propio tope. GTT solo juzga contra números que tú declaraste:
+
+- `gtt delivery review --scope-cap <horas|none>`: cuántas horas de agente son demasiadas para este proyecto.
+- `gtt delivery set --growth-pct <n>`: cuánto puede crecer el backlog antes de que GTT avise.
+- `gtt delivery review --keep`: mantenerlo como está; el tamaño de hoy pasa a ser la referencia.
+- `gtt delivery review --single-pass`: una sola pasada continua: sin fecha y sin cronograma por días.
+- Para adelgazar, GTT muestra las palancas (recortar, unir, comprar hecho); recortar una Épica es una propuesta que tú decides.
+- En una terminal `gtt delivery review` pregunta qué hacer, incluso cambiar quién construye, los frentes, la fecha y el ritmo.
 
 `pace` es `days` o `flow` (flujo continuo). Se declara una vez con `gtt delivery set --pace flow`; cambiarlo después es el mismo
 comando, en un solo lugar, y DLV-PACE-DRIFT lista cada documento que aún habla distinto. Las tres señales solo avisan:

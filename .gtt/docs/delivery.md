@@ -72,7 +72,22 @@ along the longest dependency chain.
 | DLV-UNCALIBRATED | Fewer than 3 Stories measured |
 | DLV-NO-PLAN | 8 or more open Stories and fewer than half with a duration (their own `Estimate` or their Epic's). Fires **even when delivery planning was never declared**: nobody can say how long the backlog takes |
 | DLV-STALE-STATUS | A Story that is not `Done` while a recent commit already closes it by name (`closes STORY-168`) |
+| DLV-GROWTH | The open Stories (or the estimated hours) grew by `growth_pct` (50% to start) or more since the reference size taken when you declared the plan |
+| DLV-OVER-TARGET | The remaining estimated hours exceed the cap **you** declared with `--scope-cap` |
 | DLV-PACE-DRIFT | A plan document speaks in the other rhythm than the declared `pace` (`day N`, `jornada`, `cronograma` under `flow`) |
+
+### How big the project is, and how to change your mind
+
+GTT measures; **you** decide what is too much. `gtt delivery review` (or `gtt-delivery.sh size`) reports the open Stories, the
+remaining agent hours (or "not measurable" when the Epics have no `Estimate`: never 0), the capacity until your date, the growth since
+the reference size and your own cap. GTT judges only against numbers you declared:
+
+- `gtt delivery review --scope-cap <hours|none>`: how many agent hours are too much for this project.
+- `gtt delivery set --growth-pct <n>`: how much the backlog may grow before GTT warns.
+- `gtt delivery review --keep`: keep it as it is; today's size becomes the reference.
+- `gtt delivery review --single-pass`: one continuous pass: no date and no day-by-day schedule.
+- To slim down, GTT shows the levers (cut, merge, buy ready-made); cutting an Epic is a proposal you decide.
+- On a terminal `gtt delivery review` asks what to do, including changing who builds, the fronts, the date and the rhythm.
 
 `pace` is `days` or `flow` (continuous flow). Declare it once with `gtt delivery set --pace flow`; changing it later is the same
 command, in one place, and DLV-PACE-DRIFT lists every document that still speaks otherwise. The three signals above only warn:

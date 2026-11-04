@@ -3730,7 +3730,50 @@ def delivery_visibility(project, tmp):
     ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]["delivery.select"]
     check(any(a["name"] == "pace" and a["flag"] == "--pace" for a in ops["args"]), "the operation delivery.select declares pace for the CLI")
     for level in read_json(os.path.join(p, ".gtt", "contract", "profiles.json"))["profiles"].values():
-        check({"DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT"} <= set(level["delivery"]["signals"]), "every Autonomy Profile gives a level to the three new signals")
+        check({"DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-GROWTH", "DLV-OVER-TARGET"} <= set(level["delivery"]["signals"]), "every Autonomy Profile gives a level to the new signals")
+
+    # The size: GTT measures; what is too much is the human's to say.
+    write(os.path.join(p, "docs", "PLAN.md"), "# Plan\nContinuous flow by agent hours.\n")
+    backlog(10)
+    rc, out = run("size", "--json")
+    size = json.loads(out)
+    check(size["measurable"] is False and size["remaining_h"] is None and size["target"]["state"] == "none",
+          "without estimates the hours are NOT MEASURABLE (null), never 0, and with no cap GTT judges nothing", out[:300])
+    check("NOT MEASURABLE" in run("size")[1] and "gtt delivery set --scope-cap" in run("size")[1], "the text says what to do and that the human decides")
+    check(size["baseline"] is not None and size["baseline"]["open_stories"] >= 5, "declared with a backlog of 5 or more open Stories, the reference size was taken", str(size["baseline"]))
+    backlog(10, "**Estimate:** 10h\n")
+    size = json.loads(run("size", "--json")[1])
+    check(size["measurable"] is True and size["remaining_h"] == 10 and size["open_stories"] == 10, "with an Epic Estimate the remaining hours are measured", str(size))
+    check(run("select", "--scope-cap", "0", "--apply")[0] == 1 and run("select", "--scope-cap", "abc", "--apply")[0] == 1, "a cap that is not a positive number is refused")
+    check(run("select", "--scope-cap", "6", "--apply")[0] == 0, "the human declares what is too much: a cap of 6 agent hours")
+    size = json.loads(run("size", "--json")[1])
+    check(size["target"]["state"] == "over" and size["target"]["over_pct"] == 67, "10 h against a cap of 6 is OVER by 67%", str(size["target"]))
+    out = run("check")[1]
+    check("DLV-OVER-TARGET" in out and "you set as too much" in out, "the warning is against the cap the human declared", out[-300:])
+    check(run("select", "--scope-cap", "none", "--apply")[0] == 0 and "DLV-OVER-TARGET" not in run("check")[1], "the cap can be removed: nothing is judged any more")
+    check(run("select", "--scope-cap", "20", "--apply")[0] == 0 and "DLV-OVER-TARGET" not in run("check")[1], "within the cap raises nothing")
+    # Growth since the reference size.
+    check(run("select", "--rebase", "--apply")[0] == 0, "the human takes today's size as the reference")
+    base = read_json(os.path.join(p, ".gtt", "delivery.json"))["baseline"]
+    check(base["open_stories"] == 10 and base["remaining_h"] == 10, "the reference records open Stories and hours", str(base))
+    backlog(12, "**Estimate:** 10h\n")
+    check("DLV-GROWTH" not in run("check")[1], "+2 Stories (+20%) is under the growth warning")
+    backlog(30, "**Estimate:** 10h\n")
+    out = run("check")[1]
+    check("DLV-GROWTH" in out and "+20 open Stories" in out and "+200%" in out and "gtt delivery review" in out, "+20 Stories (+200%) warns, with the numbers and the way back", out[-400:])
+    check(run("select", "--growth-pct", "500", "--apply")[0] == 0 and "DLV-GROWTH" not in run("check")[1], "the human moves the growth warning to +500%")
+    check(run("select", "--rebase", "--apply")[0] == 0 and "DLV-GROWTH" not in run("check")[1], "keeping it as it is: today's size becomes the reference")
+    # One pass.
+    check(run("select", "--preset", "nope", "--apply")[0] == 1, "an unknown preset is refused")
+    check(run("select", "--preset", "single-pass", "--apply")[0] == 0, "the single-pass preset is accepted")
+    state = read_json(os.path.join(p, ".gtt", "delivery.json"))
+    check(state["pace"] == "flow" and state["horizon"] == "none" and state["deadline"] is None and state["preset"] == "single-pass",
+          "one pass is continuous flow with no date and no day-by-day schedule", str(state))
+    es = json.loads(run("size", "--json", "--lang", "es")[1])
+    check(len(es["choices"]) == 5 and es["prompts"]["choose"].startswith("¿") and es["slim_note"], "the review choices and prompts come from the contract, in the project's language")
+    ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
+    check("delivery.size" in ops and ops["delivery.size"]["mutates"] is False, "delivery.size is a read-only operation")
+    check({"preset", "scope_cap", "growth_pct", "rebase"} <= {a["name"] for a in ops["delivery.select"]["args"]}, "delivery.select declares preset, scope_cap, growth_pct and rebase")
 
 
 def pending_events(project, tmp):

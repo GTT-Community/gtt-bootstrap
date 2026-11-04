@@ -332,6 +332,7 @@ GTT plans and watches delivery time; it does not launch agents. In `.gtt/docs/de
 - A backlog must be sizeable: when you write an Epic or its Stories, give each Epic an `Estimate` (or its Stories theirs) in the same turn. `DLV-NO-PLAN` says when it is not, even if planning was never declared; say it in one line and size the backlog.
 - Close in the same turn: when a commit completes a Story, set `Status: Done` and `Closed:` (date and commit) before you go on. `DLV-STALE-STATUS` names the ones left behind.
 - One rhythm: read `pace` (`gtt-delivery.sh get`) before you write a plan, status or order, and speak only in it (`days`, or `flow` = agent hours, no "day N"). `DLV-PACE-DRIFT` lists the documents that disagree. Changing the pace is the human's `gtt delivery set --pace`, one place, never a rewrite by hand.
+- Size is the human's judgement: report it (`gtt-delivery.sh size`), never decide that a project is too big or too small. On `DLV-GROWTH` or `DLV-OVER-TARGET` say it in one line with the numbers and point to `gtt delivery review` (keep, set a cap, one pass, slim down). Cutting or merging an Epic is a proposal (`gtt-propose-change`, form 4), never done on your own.
 - Run `.gtt/scripts/gtt-delivery.sh` for the plan, the forecast and the report; never estimate by judgment what it computes. `gtt-domain/delivery-log.jsonl` is written only by `gtt-delivery.sh log`.
 
 ## Simple execution

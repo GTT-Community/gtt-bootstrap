@@ -12,6 +12,7 @@
   gtt_delivery.py select [--who W] [--lanes N] [--horizon H] [--pace days|flow] [--priority P] [--third-party T] [--restrictions TEXT]
                          [--epic-cap HOURS] [--team NAMES] [--by NAME] [--apply]
                                                     record the setup answer (dry run without --apply); allowed at any time
+  gtt_delivery.py size [--lang L] [--json]         how big the backlog is, as facts; judged only against the cap and growth the human set
   gtt_delivery.py get [--json]                     the setup answer and the thresholds in force
   gtt_delivery.py plan [--lanes] [--json]          the plan per front, the longest chain, the forecast, the levers
   gtt_delivery.py report [--epic EPIC-NNN] [--json] percent, real against estimated, calibration, forecast, open DLV signals
@@ -132,6 +133,9 @@ def thresholds():
     state = read_json(STATE) or {}
     if isinstance(state.get("epic_cap_h"), (int, float)) and state["epic_cap_h"] > 0:
         base["epic_cap_h"] = state["epic_cap_h"]
+    if isinstance(state.get("growth_pct"), (int, float)) and state["growth_pct"] > 0:
+        base["growth_pct"] = state["growth_pct"]
+    base["scope_cap_h"] = state["scope_cap_h"] if isinstance(state.get("scope_cap_h"), (int, float)) and state["scope_cap_h"] > 0 else None
     return base
 
 
@@ -730,6 +734,17 @@ def signals():
             "bring it to the declared pace or change it with `gtt delivery set --pace`", state=str(len(rows)))
     if not active(epics):
         return out
+    size = size_report(loaded)
+    if size["target"]["state"] == "over":
+        add("DLV-OVER-TARGET", "backlog", f"{size['remaining_h']:g} agent h remain, {size['target']['over_pct']}% over the {size['target']['cap_h']:g} h you set as too much: "
+            "keep, slim down or change the cap with `gtt delivery review`", state=f"{size['remaining_h']:g}/{size['target']['cap_h']:g}")
+    g, base = size["growth"], size["baseline"]
+    if g and base and g["stories_added"] >= th["growth_min_stories"] and \
+            ((g["stories_pct"] or 0) >= th["growth_pct"] or (g["hours_pct"] or 0) >= th["growth_pct"]):
+        add("DLV-GROWTH", "backlog", f"the project grew since {base['at']}: {g['stories_added']:+d} open Stories ({g['stories_pct']:+d}%)"
+            + (f", estimated hours {g['hours_pct']:+d}%" if g["hours_pct"] is not None else "")
+            + f" (you set the warning at +{th['growth_pct']:g}%): keep it, slim it down or change the answers with `gtt delivery review`",
+            state=f"{size['open_stories']}")
 
     for s in stories:
         row = times.get(s["id"])
@@ -786,7 +801,98 @@ def source_findings(limit_days):
     return found
 
 
-VISIBILITY = ("DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT")
+# ------------------------------------------------------------------------------------------- the size
+
+def take_baseline(loaded=None):
+    """The size the plan had when the human declared it: the reference for growth. None while the backlog is too small to measure."""
+    loaded = loaded or backlog()
+    if loaded is None:
+        return None
+    stories, epics = loaded
+    items = open_stories(stories, epics)
+    if len(items) < thresholds()["growth_min_stories"]:
+        return None
+    report = size_report(loaded, with_baseline=False)
+    return {"at": moment().date().isoformat(), "open_stories": len(items), "live_epics": len(live(epics)),
+            "remaining_h": report["remaining_h"]}
+
+
+def pct_change(now, before):
+    return None if not before or now is None else round(100.0 * (now - before) / before)
+
+
+def size_report(loaded=None, with_baseline=True):
+    """How big the backlog is, as facts. It judges nothing except against what the human declared (scope_cap_h, growth_pct)."""
+    loaded = loaded or backlog()
+    if loaded is None:
+        return None
+    stories, epics = loaded
+    th, state = thresholds(), read_json(STATE) or {}
+    items, alive = open_stories(stories, epics), live(epics)
+    sized_epics = {e["id"] for e in epics if epic_hours(e, stories) is not None}
+    sized = [s for s in items if s["estimate_h"] or s["epic"] in sized_epics]
+    coverage = len(sized) / len(items) if items else 1.0
+    measurable = bool(items) and coverage >= th["noplan_min_coverage"]
+    remaining = round(sum(remaining_h(e, stories) for e in alive), 1) if measurable else None
+    lanes = state.get("lanes") if isinstance(state.get("lanes"), int) else len({e["lane"] or "main" for e in alive}) or 1
+    limit = deadline()
+    left = max((limit - moment().date()).days, 0) if limit else None
+    capacity = round(left * th["hours_per_day"] * lanes, 1) if left is not None else None
+    target = th["scope_cap_h"]
+    out = {"schema": 1, "kind": "gtt-delivery-size", "declared": bool(state), "pace": state.get("pace"), "horizon": state.get("horizon"),
+           "deadline": limit.isoformat() if limit else None, "open_stories": len(items), "done_stories": sum(1 for s in stories if s["status"] == "Done"),
+           "live_epics": len(alive), "coverage_pct": round(100 * coverage), "measurable": measurable, "remaining_h": remaining,
+           "days_of_work": math.ceil(remaining / th["hours_per_day"]) if remaining else (0 if remaining == 0 else None),
+           "fronts": lanes, "capacity_h": capacity, "of_capacity_pct": round(100 * remaining / capacity) if remaining is not None and capacity else None,
+           "target": {"declared": target is not None, "cap_h": target,
+                      "state": "none" if target is None else "unknown" if remaining is None else "over" if remaining > target else "within",
+                      "over_pct": pct_change(remaining, target) if target and remaining is not None and remaining > target else None},
+           "growth_pct_limit": th["growth_pct"], "baseline": None, "growth": None}
+    base = state.get("baseline") if with_baseline else None
+    if base:
+        out["baseline"] = base
+        out["growth"] = {"stories_pct": pct_change(len(items), base.get("open_stories")),
+                         "stories_added": len(items) - base.get("open_stories", 0),
+                         "hours_pct": pct_change(remaining, base.get("remaining_h"))}
+    return out
+
+
+def cmd_size(args):
+    report = size_report()
+    if report is None:
+        die("there is no backlog yet (gtt-domain/backlog.md)")
+    lang = args.lang or "en"
+    spec = contract()["review"]
+    report["choices"] = [{"id": c["id"], "label": c["label"][lang]} for c in spec["choices"]]
+    report["slim_note"] = spec["slim_note"][lang]
+    report["pace_values"] = contract()["pace"]["values"]
+    report["prompts"] = {k: v[lang] for k, v in spec["prompts"].items()}
+    if args.json:
+        emit(report)
+        return 0
+    r = report
+    print(f"size: {r['open_stories']} open Stories in {r['live_epics']} live Epics, {r['done_stories']} Done")
+    if r["measurable"]:
+        print(f"  remaining: {r['remaining_h']:g} agent h (~{r['days_of_work']} day(s) of work on one front); {r['coverage_pct']}% of the open Stories have a duration")
+    else:
+        print(f"  remaining: NOT MEASURABLE - only {r['coverage_pct']}% of the open Stories have a duration; add `Estimate:` to the Epics")
+    if r["capacity_h"] is not None:
+        print(f"  until the deadline {r['deadline']}: {r['capacity_h']:g} agent h of capacity on {r['fronts']} front(s)"
+              + (f"; the remaining work is {r['of_capacity_pct']}% of it" if r["of_capacity_pct"] is not None else ""))
+    t = r["target"]
+    print("  your cap: " + (f"{t['cap_h']:g} h - " + {"within": "within", "over": f"OVER by {t['over_pct']}%", "unknown": "cannot be compared (not measurable)"}[t["state"]]
+                            if t["declared"] else "none declared (you decide what is too much: gtt delivery set --scope-cap <hours>)"))
+    if r["growth"]:
+        g = r["growth"]
+        print(f"  since {r['baseline']['at']}: {g['stories_added']:+d} open Stories ({g['stories_pct']:+d}%)"
+              + (f", hours {g['hours_pct']:+d}%" if g["hours_pct"] is not None else "") + f"; GTT warns at +{r['growth_pct_limit']:g}%")
+    elif r["declared"]:
+        print("  reference size: not taken yet (needs "
+              f"{thresholds()['growth_min_stories']} open Stories when you declare; take it now with `gtt delivery set --rebase`)")
+    return 0
+
+
+VISIBILITY = ("DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-GROWTH", "DLV-OVER-TARGET")
 
 
 def visibility_warnings():
@@ -877,14 +983,43 @@ def cmd_select(args):
     checks = (("who", args.who, WHO), ("horizon", args.horizon, HORIZONS), ("priority", args.priority, PRIORITY),
               ("third_party", args.third_party, THIRD))
     if all(v is None for _, v, _ in checks) and args.lanes is None and args.epic_cap is None and args.team is None \
-            and args.restrictions is None and args.pace is None:
-        die("give at least one of --who, --lanes, --horizon, --priority, --third-party, --restrictions, --epic-cap, --team, --pace")
+            and args.restrictions is None and args.pace is None \
+            and args.preset is None and args.scope_cap is None and args.growth_pct is None and not args.rebase:
+        die("give at least one of --who, --lanes, --horizon, --pace, --preset, --priority, --third-party, --restrictions, --epic-cap, --team, --scope-cap, --growth-pct, --rebase")
     for key, value, allowed in checks:
         if value is not None:
             if value not in allowed:
                 print(f"gtt-delivery: REFUSED - --{key.replace('_', '-')} must be one of {', '.join(allowed)}. Nothing was written.", file=sys.stderr)
                 return 1
             data[key] = value
+    if args.preset is not None:
+        preset = contract().get("presets", {}).get(args.preset)
+        if not preset:
+            print(f"gtt-delivery: REFUSED - --preset must be one of {', '.join(contract().get('presets', {}))}. Nothing was written.", file=sys.stderr)
+            return 1
+        args.horizon, args.pace = args.horizon or preset["horizon"], args.pace or preset["pace"]
+        data["horizon"], data["preset"] = args.horizon, args.preset
+    if args.scope_cap is not None:
+        if args.scope_cap == "none":
+            data.pop("scope_cap_h", None)
+        else:
+            try:
+                value = float(args.scope_cap)
+            except ValueError:
+                value = 0
+            if value <= 0:
+                print("gtt-delivery: REFUSED - --scope-cap must be a positive number of agent hours, or `none`. Nothing was written.", file=sys.stderr)
+                return 1
+            data["scope_cap_h"] = value
+    if args.growth_pct is not None:
+        try:
+            value = float(args.growth_pct)
+        except ValueError:
+            value = 0
+        if value <= 0:
+            print("gtt-delivery: REFUSED - --growth-pct must be a positive percentage. Nothing was written.", file=sys.stderr)
+            return 1
+        data["growth_pct"] = value
     if args.pace is not None:
         if args.pace not in PACES:
             print(f"gtt-delivery: REFUSED - --pace must be one of {', '.join(PACES)}. Nothing was written.", file=sys.stderr)
@@ -916,13 +1051,21 @@ def cmd_select(args):
         print("gtt-delivery: NOTE - a team needs the names of its members (--team ana,luis): they own the fronts.")
     shown = ", ".join(f"{k} {data[k]}" for k in ("who", "lanes", "horizon", "pace", "priority", "third_party") if k in data)
     print(f"delivery (setup answer): {shown}" + (f"; deadline {data['deadline']}" if data.get("deadline") else "")
-          + (f"; Epic cap {data['epic_cap_h']:g} h" if data.get("epic_cap_h") else ""))
+          + (f"; Epic cap {data['epic_cap_h']:g} h" if data.get("epic_cap_h") else "")
+          + (f"; scope cap {data['scope_cap_h']:g} h" if data.get("scope_cap_h") else ""))
     if OPEN in (data.get("who"), data.get("horizon")):
         print("  OPEN: nothing is invented. The plan shows it as OPEN and the agent asks again at the next natural moment.")
     print("  an operating answer, never architecture: it can change at any time with `gtt delivery set`.")
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")
         return 0
+    if args.rebase or not data.get("baseline"):
+        taken = take_baseline()
+        if taken:
+            data["baseline"] = taken
+        elif args.rebase:
+            print("gtt-delivery: NOTE - the backlog holds fewer than "
+                  f"{thresholds()['growth_min_stories']} open Stories: no reference size taken yet.")
     data.update({"schema": 1, "answered_by": args.by or previous.get("answered_by") or "unspecified", "answered_at": stamp(),
                  "authority": "none - an operating answer, never architecture"})
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
@@ -973,6 +1116,10 @@ def cmd_summary(args):
         print(f"- {epic['id']} [{epic['lane'] or 'main'}] {round(fraction * 100)}%" + (f" est {fmt_h(epic_hours(epic, stories))}" if epic_hours(epic, stories) is not None else " no estimate"))
     for wait in plan["waiting_on_you"]:
         print(f"waiting on you: {wait['story']}")
+    size = size_report(loaded)
+    print(f"size: {size['open_stories']} open Stories, " + (f"{size['remaining_h']:g} h remain (~{size['days_of_work']} day(s) of work)" if size["measurable"] else "hours not measurable (no Estimate)")
+          + (f"; cap {size['target']['cap_h']:g} h {size['target']['state']}" if size["target"]["declared"] else "; no cap declared")
+          + (f"; {size['growth']['stories_added']:+d} Stories since {size['baseline']['at']}" if size["growth"] else ""))
     open_signals = signals()
     if open_signals:
         print("signals: " + "; ".join(f"{s['rule']} {s['artifact']}" for s in open_signals if s["rule"] != "DLV-UNCALIBRATED") or "none")
@@ -987,9 +1134,11 @@ def main(argv):
     p = sub.add_parser("questions"); p.add_argument("--lang", choices=("es", "en")); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_questions)
     p = sub.add_parser("select"); p.add_argument("--who"); p.add_argument("--lanes"); p.add_argument("--horizon"); p.add_argument("--priority")
     p.add_argument("--third-party", dest="third_party"); p.add_argument("--restrictions"); p.add_argument("--epic-cap", dest="epic_cap", type=float)
-    p.add_argument("--team"); p.add_argument("--pace"); p.add_argument("--by"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_select)
+    p.add_argument("--team"); p.add_argument("--pace"); p.add_argument("--preset"); p.add_argument("--scope-cap", dest="scope_cap")
+    p.add_argument("--growth-pct", dest="growth_pct"); p.add_argument("--rebase", action="store_true"); p.add_argument("--by"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_select)
     p = sub.add_parser("get"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_get)
     p = sub.add_parser("plan"); p.add_argument("--lanes", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_plan)
+    p = sub.add_parser("size"); p.add_argument("--lang", choices=("es", "en")); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_size)
     p = sub.add_parser("report"); p.add_argument("--epic"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_report)
     p = sub.add_parser("check"); p.add_argument("--pre-freeze", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_check)
     p = sub.add_parser("log"); p.set_defaults(func=cmd_log)

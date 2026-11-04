@@ -92,7 +92,38 @@
     "calibration_min_stories": 3,
     "noplan_min_stories": 8,
     "noplan_min_coverage": 0.5,
-    "stale_commits_scanned": 300
+    "stale_commits_scanned": 300,
+    "growth_pct": 50,
+    "growth_min_stories": 5
+  },
+  "size": {
+    "notice": "GTT measures and reports; the human decides what is too much. The only judgement is against numbers the human declared: scope_cap_h (a target in agent hours) and growth_pct (how much the backlog may grow since the baseline). Neither is a default of GTT's own: scope_cap_h has none, growth_pct is a starting value the human changes with `gtt delivery set --growth-pct`.",
+    "baseline": "taken by `select --apply` when the backlog already holds growth_min_stories open Stories, and again with --rebase; never by an agent",
+    "unmeasurable": "fewer than noplan_min_coverage of the open Stories have a duration: the hours are reported as not measurable, never as 0"
+  },
+  "presets": {
+    "single-pass": {
+      "horizon": "none", "pace": "flow",
+      "label": { "es": "De una pasada: un solo flujo continuo, sin fecha ni cronograma por días", "en": "One pass: a single continuous flow, no date and no day-by-day schedule" }
+    }
+  },
+  "review": {
+    "prompts": {
+      "choose": { "es": "¿Qué quieres hacer con el tamaño de este proyecto?", "en": "What do you want to do with the size of this project?" },
+      "cap": { "es": "¿Cuántas horas de agente son demasiado para este proyecto? (un número, o none)", "en": "How many agent hours is too much for this project? (a number, or none)" },
+      "pace": { "es": "¿En qué ritmo hablan los documentos del plan?", "en": "Which rhythm do the plan documents speak in?" }
+    },
+    "choices": [
+      { "id": "keep", "label": { "es": "Mantener como está (el tamaño de hoy pasa a ser la referencia)", "en": "Keep it as it is (today's size becomes the reference)" } },
+      { "id": "target", "label": { "es": "Definir cuánto es demasiado (tope en horas de agente)", "en": "Define how much is too much (a cap in agent hours)" } },
+      { "id": "single-pass", "label": { "es": "Pasar a una sola pasada", "en": "Switch to one pass" } },
+      { "id": "slim", "label": { "es": "Adelgazar: ver qué se puede recortar, unir o comprar hecho", "en": "Slim down: see what can be cut, merged or bought ready-made" } },
+      { "id": "answers", "label": { "es": "Cambiar mis respuestas (quién, frentes, fecha, ritmo)", "en": "Change my answers (who, fronts, date, rhythm)" } }
+    ],
+    "slim_note": {
+      "es": "Recortar o unir Épicas es decisión tuya: pídele a tu agente una propuesta (gtt-propose-change, forma 4). Las historias las reordena el agente sin pedir permiso.",
+      "en": "Cutting or merging Epics is your decision: ask your agent for a proposal (gtt-propose-change, form 4). Stories are reordered by the agent without asking."
+    }
   },
   "pace": {
     "values": {
@@ -122,6 +153,8 @@
     "DLV-UNCALIBRATED": "fewer Stories measured than calibration_min_stories",
     "DLV-NO-PLAN": "noplan_min_stories or more open Stories and fewer than noplan_min_coverage of them with a duration (their own Estimate or their Epic's): nobody can say how long the backlog takes; it fires even when delivery planning was never declared",
     "DLV-STALE-STATUS": "a Story that is not Done while a recent commit (last stale_commits_scanned) already closes it by name",
+    "DLV-GROWTH": "the open Stories (or the estimated hours) grew by growth_pct or more since the baseline taken when the human declared the plan, with at least growth_min_stories more Stories: the project got bigger than declared",
+    "DLV-OVER-TARGET": "the remaining estimated hours exceed the scope_cap_h the human declared",
     "DLV-PACE-DRIFT": "a plan document speaks in the other rhythm than the declared pace (day N, jornada, cronograma under flow)"
   },
   "levels_owned_by": ".gtt/contract/profiles.json (profiles.<id>.delivery) - each Autonomy Profile defines what a signal means for it",
