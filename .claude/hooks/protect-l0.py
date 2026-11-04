@@ -159,7 +159,7 @@ PROPOSALS_DIR = "gtt-domain/proposals"
 GIT_HOOK = ".git/hooks/pre-commit"
 WORKFLOW_FILE = "gtt-domain/workflow.md"
 LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json", ".gtt/local/delivery-snapshot.json",
-               "gtt-domain/delivery-log.jsonl", "gtt-domain/run/log.jsonl")
+               "gtt-domain/delivery-log.jsonl", "gtt-domain/run/log.jsonl", ".gtt/local/prompts.jsonl", ".gtt/local/pending-state.json")
 SOURCES_DIR = "docs/sources"
 BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--contains", "--merged",
                   "--no-merged", "--points-at"}
@@ -264,6 +264,13 @@ RUN_OWNED = ("GTT governance (deterministic-first): a run script (gtt-domain/run
              "RUN-NNN --apply`; never write the script yourself.")
 RUN_EXECUTE = ("GTT governance (human-decision-authority): executing a run is the human's act, never an agent's. Hand it over "
                "with the message `gtt-run.sh generate` prints - `gtt run <n>` - and continue with the work.")
+PENDING_DIR = "gtt-domain/pending"
+PENDING_OWNED = ("GTT governance (deterministic-first): gtt-domain/pending/ is written only by gtt-pending.sh, and the human's answers "
+                 "are never an agent's to write. Create an event with `bash .gtt/scripts/gtt-pending.sh ask|decide ... --apply`, write down "
+                 "an answer the human gave in the chat with `record ... --quote \"their words\" --apply`, and mark an applied one with `done`.")
+PENDING_ANSWER = ("GTT governance (human-decision-authority): answering a pending event is the human's act, never an agent's. If they "
+                  "answered in the chat, record it with their exact words (`gtt-pending.sh record <n> <answer> --quote \"...\" --apply`); "
+                  "if not, tell them `gtt answer <n> <answer>` and continue with the work.")
 SETUP_RECORDS = (".gtt/methodology.json", ".gtt/development-method.json", ".gtt/selected-sources.json", ".gtt/delivery.json")
 SETUP_OWNED = ("GTT governance (human-decision-authority): the autonomy profile, the development method and the selected "
                "sources are the human's choices, recorded only through GTT's scripts or the CLI (gtt autonomy, gtt config). "
@@ -359,6 +366,8 @@ def protected_token(root, token, shell=False):
         return LEDGER_OWNED
     if low in LOCAL_STATE:
         return LOCAL_OWNED
+    if under(low, PENDING_DIR) and installed(root):
+        return PENDING_OWNED
     if (under(low, RUN_DIR + "/done") or (under(low, RUN_DIR) and low.endswith(".sh"))) and installed(root):
         return RUN_OWNED
     if low in SETUP_RECORDS and installed(root):
@@ -515,7 +524,7 @@ def git_subcommand(words):
 # list/show, change show, check, sync, doctor...) stay the agent's.
 # Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
 CLI_HUMAN_ACTS = {("freeze",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
-                  ("proposals", "withdraw"), ("design", "reset")}
+                  ("proposals", "withdraw"), ("design", "reset"), ("answer",)}
 CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply
 CLI_READS = {"show", "list", "check", "--help", "-h", "help"}
 CLI_NAME = re.compile(r"(gtt(\.exe)?|gtt-cli([@=].*)?)$")
@@ -647,6 +656,8 @@ def decide_units(root, command):
                 return SOURCE_FROZEN
             if base(word) in ("gtt-observe.sh", "gtt_observe.py") and follow and follow[0] in OBSERVE_DECISIONS:
                 return HUMAN_ACT
+            if base(word) in ("gtt-pending.sh", "gtt_pending.py") and follow and follow[0] == "answer" and not syntax_only:
+                return PENDING_ANSWER
             if base(word) in ("gtt-run.sh", "gtt_run.py") and follow and follow[0] == "execute" and not syntax_only:
                 return RUN_EXECUTE
             if base(word) in ("gtt-contract.sh", "gtt_contract.py") and any(x.lower() == "confirmed_by_human=true" for x in follow):

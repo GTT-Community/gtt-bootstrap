@@ -144,6 +144,12 @@ if [ -f ".gtt/scripts/gtt-run.sh" ] && [ -f ".gtt/contract/run.json" ]; then
   if [ -z "$RUN_STATE" ] || [ "$RUN_STATE" = "No pending runs." ]; then RUN_STATE="none"; fi
 fi
 
+# Pending events: what waits for the human in gtt-domain/pending/ (empty when nothing does).
+PENDING_STATE=""
+if [ -f ".gtt/scripts/gtt-pending.sh" ] && [ -f ".gtt/contract/pending.json" ]; then
+  PENDING_STATE="$(bash .gtt/scripts/gtt-pending.sh notice --session 2>/dev/null || true)"
+fi
+
 # Artifact identity/index state and repository resume hints. Both are derived
 # from the repository (manifest, index, git) - never from ADE memory.
 PY=""
@@ -200,6 +206,11 @@ CONTENT="$({
   echo "## Delivery (the plan against the declared time - computed, never a decision)"
   echo "${DELIVERY_STATE}"
   echo
+  if [ -n "${PENDING_STATE}" ]; then
+    echo "## Needs the human (gtt-domain/pending/ - end your report with this block; the human answers: gtt answer <n> <answer>)"
+    echo "${PENDING_STATE}"
+    echo
+  fi
   echo "## ${RUN_HEADING} (gtt-domain/run/ - things only the human runs, with gtt run <n>)"
   echo "${RUN_STATE}"
   echo

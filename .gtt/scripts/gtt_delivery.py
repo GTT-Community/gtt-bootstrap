@@ -418,6 +418,28 @@ def human_waits(stories, times):
             seen = (times.get(s["id"]) or {}).get("first_seen")
             hours = (now - seen).total_seconds() / 3600.0 if seen else 0.0
             out.append({"story": s["id"], "epic": s["epic"], "waiting_h": round(hours, 1)})
+    out += pending_waits({w["story"] for w in out}, stories, now)
+    return out
+
+
+def pending_waits(known, stories, now):
+    """A question for the human (gtt-domain/pending/) that blocks a Story is a wait on the human too."""
+    try:
+        import gtt_pending
+        asks = gtt_pending.summary()["blocking"]
+    except Exception:
+        return []
+    epic_of = {s["id"]: s["epic"] for s in stories}
+    out = []
+    for ask in asks:
+        if ask["blocks"] in known:
+            continue
+        try:
+            since = datetime.datetime.fromisoformat(ask["created"]).replace(tzinfo=datetime.timezone.utc)
+            hours = max((now - since).total_seconds() / 3600.0, 0.0)
+        except (TypeError, ValueError):
+            hours = 0.0
+        out.append({"story": ask["blocks"], "epic": epic_of.get(ask["blocks"], ""), "waiting_h": round(hours, 1), "ask": ask["id"]})
     return out
 
 

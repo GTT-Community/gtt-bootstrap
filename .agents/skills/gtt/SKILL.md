@@ -48,6 +48,7 @@ Never run a promotion (`bash .gtt/scripts/gtt-promote.sh <name>`), and never wri
 and stop; the human runs it. A governed decision is never taken in an
 unattended run: when one is needed, stop and report.
 Never run a run script (`gtt run <n>`, `gtt-run.sh execute`). When the human must execute something that changes state or takes two or more commands, write a run plan (`gtt-run.sh new`, then `generate`) and hand over the `gtt run <n>` message it prints; never write the script yourself.
+Never answer a pending event (`gtt answer`, `gtt-pending.sh answer`) and never write in `gtt-domain/pending/` by hand: create events with `gtt-pending.sh ask|decide`, write down an answer the human gave in the chat with `record` and their exact words, and mark an applied one with `done`. Ask only what is the human's and governed context cannot settle.
 
 ## Which procedure
 

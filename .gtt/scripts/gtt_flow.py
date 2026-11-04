@@ -354,6 +354,13 @@ def review_facts():
     request = read(CHANGE_REQUEST)
     if request and not re.search(r"^Change: <", request, re.MULTILINE):
         decide.append({"id": "change-request", "level": "REQUEST", "what": "a change request is waiting", "command": f"read {CHANGE_REQUEST}"})
+    try:                                    # the questions waiting in gtt-domain/pending/ are the human's too
+        import gtt_pending
+        for ask in gtt_pending.summary()["asks"]:
+            decide.append({"id": ask["id"], "level": "ASK", "what": f"{ask['id']} {ask['title']}" + (f" (blocks {ask['blocks']})" if ask["blocks"] else ""),
+                           "command": f"gtt answer {ask['number']} <option>"})
+    except Exception:
+        pass
     for epic in epics:
         if epic["status"] == "Proposed":
             decide.append({"id": epic["id"], "level": "EPIC", "what": f"{epic['id']} awaits approval", "command": f"bash .gtt/scripts/gtt-approve.sh {epic['id']}"})

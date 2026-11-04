@@ -341,6 +341,18 @@ When the human has to execute something, give them one line saying what it does 
 - **The hand-over.** Say exactly the message `generate` prints (`@gtt · To run`, what it does, `gtt run <n>`). `gtt run` lists what is pending.
 - **Never** edit a generated script, run `gtt run <n>` or `gtt-run.sh execute` (the hook denies it), or write `gtt-domain/run/done/` or `log.jsonl`. A hand-edited script is refused (RUN-05). The human's run is logged and, when it succeeds, archived in `gtt-domain/run/done/` (the last 20 are kept).
 
+## Pending events
+
+What waits for the human is one small file per event in `gtt-domain/pending/`, and only that. Normally the folder is empty. Only `.gtt/scripts/gtt-pending.sh` writes it.
+
+- **Settle it yourself first.** (1) If governed context, the design or a project rule settles it, decide and continue. (2) If it is a simple, reversible question, take the simplest option and continue, with no event. (3) Only a decision that is the human's (an account, a key, money, a legal matter, a product matter, a governed file) and that cannot be undone easily becomes an event.
+- **Two kinds.** A question (`ASK`) is a decision only the human can take: `gtt-pending.sh ask --type <account|key|money|legal|product|governed> --question "...?" --why "..." --option "..." --option "..." --recommended N [--blocks STORY-NNN] --apply`. A decision (`DEC`) is something you decided that changes scope, time, cost, security or the design: `gtt-pending.sh decide --affects <scope|time|cost|security|design> --title "..." --what "..." --why "..." --where <path|STORY-NNN|ADR-NNN> --apply`. Anything else is not an event: ordinary technical detail goes in the code, an agreement between fronts in the contract, a change of the governed design through `gtt promote`.
+- **Plain words.** At most 12 lines per file and 120 characters per line; the question is one line ending in «?»; 2 or 3 options, one recommended; the type or `Affects` is one of the list. The engine refuses a file that does not fit: shorten it, split it in two events, or put the detail in the code.
+- **The answer is the human's.** They answer in the chat («14: 1», «ok to all»), in the file after `Answer:` or with `gtt answer 14 1`. You never write it. If they answered in the chat, write it down with `gtt-pending.sh record <n> <answer> --quote "<their exact words>" --apply` (`record all ok` for «ok» to every decision); the engine checks the quote against their last 10 messages and refuses anything else. An answer that looks like a key is refused: keys go in `.env.local`. `gtt answer` and `gtt-pending.sh answer` are denied to you.
+- **Apply it, cite it, mark it.** When an answer exists, apply it where it belongs (the backlog, the code or a proposal), cite it there, then `gtt-pending.sh done <n> --in <where> --apply`. A decision answered «ok» is marked by the engine. The next session deletes what is marked and the decisions nobody objected to in 7 days; an answered event that is not marked is never deleted. An answer never ratifies the governed design: that stays `gtt promote`.
+- **Do not stop.** With no answer, use the recommended option and keep working on everything that does not depend on it.
+- **Tell the human once.** If something is pending, end your report with `@gtt · Needs you`: print `bash .gtt/scripts/gtt-pending.sh notice --report` (it prints nothing the second time in a turn). A decision shows as «For your information».
+
 ## Agent roles and the evidence boundary
 
 GTT distinguishes four responsibilities. No skill or script may collapse

@@ -835,6 +835,17 @@ When the human has to execute something, GTT hands over one line and one command
 4. **Execution (the human).** `gtt run` lists what is pending, `gtt run <n>` shows the steps, asks once when the plan changes something, runs it, appends to `gtt-domain/run/log.jsonl` and moves it to `gtt-domain/run/done/` (the last 20). A plan with `Changes: none` runs without a prompt; a plan that changes something refuses to run without an interactive confirmation. The protection hook denies `gtt run <n>` and `gtt-run.sh execute` to agents, and writes to the generated scripts, `log.jsonl` and `done/`.
 5. **Session.** `gtt-domain/session.md` lists the pending runs under `## To run` (`## Para ejecutar` in a Spanish project).
 
+## Pending events
+
+What waits for the human is **one small file per event** in `gtt-domain/pending/`, and nothing else; normally the folder is empty. Before creating one the agent settles by itself what governed context, the design or a project rule answers, and takes the simplest option for a simple, reversible question. Only what is the human's and cannot be undone easily becomes an event.
+
+1. **Two kinds** (`.gtt/contract/pending.json`). A **question** (`ASK-NNN`) is a decision only the human takes: an account, a key, money, a legal matter, a product matter or a governed file. A **decision** (`DEC-NNN`) is something the agent decided that changes scope, time, cost, security or the design; it stands unless the human objects. One numbering for both.
+2. **Plain words, checked by the engine.** At most 12 lines per file and 120 characters per line; a question is one line ending in «?» with 2 or 3 options and one recommended; a decision has *what*, *why* and *where it landed* (which must exist). `gtt-pending.sh ask|decide ... --apply` refuses a file that does not fit; `gtt-pending.sh check` (PEN-01 to PEN-07) repeats the review.
+3. **You answer in three ways.** In the chat («14: 1», «ok to all»), in the file after `Answer:`, or with `gtt answer 14 1` (`gtt answer ok` for every decision). An answer in the chat is written down by the agent with your exact words (`gtt-pending.sh record <n> <answer> --quote "..."`); the engine checks them against your last 10 messages. `gtt answer` is yours only: the hook denies it to agents. An answer that looks like a key is refused: keys go in `.env.local`.
+4. **Applied, cited, marked.** The agent applies the answer where it belongs (backlog, code or proposal), cites it there and marks the event (`done <n> --in <where>`). The next session deletes what is marked; a decision nobody answers stands «without objection» after 7 days and is deleted; an answered event that was not marked is never lost. An answer never ratifies the governed design: that stays `gtt promote`.
+5. **The notice.** `@gtt · Needs you (n)` lists each question with the recommended option and what it blocks; a pending decision appears as a «For your information» line. It shows at session start, at the end of each report of the agent and again every 24 h while something blocks, never twice in a turn. Meanwhile the agent does not stop: it continues with the recommended option and with everything that does not depend on the answer.
+6. **Signals.** `gtt-domain/session.md` carries the notice; `gtt review` lists the open questions under DECIDE; a question that blocks a Story counts as a wait on you for `DLV-HUMAN-WAIT`.
+
 ## Continuity, review and Git
 
 Three things, all computed from the repository and none from a conversation:

@@ -320,6 +320,12 @@ When the human must execute something: a governed act is one promotion command; 
 
 In `.gtt/docs/agents/operations.md` → *Simple execution*.
 
+## Pending events
+
+Settle simple, reversible questions yourself: take the simplest option and continue. Ask the human only decisions that are theirs (account, key, money, legal, product, governed file) and that governed context cannot settle. Tell them a decision only when it changes scope, time, cost, security or the design. One file per event, only through gtt-pending.sh; plain words, one idea per line. With no answer, use the recommended option. Apply each answer where it belongs, then mark it with `done`. If something is pending, end your report with `@gtt · Needs you`. Never write the human's answer.
+
+In `.gtt/docs/agents/operations.md` → *Pending events*.
+
 ## Working without unnecessary interruption
 
 In `.gtt/docs/agents/operations.md` → *Working without unnecessary interruption*.

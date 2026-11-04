@@ -1810,6 +1810,24 @@ ENFORCEMENT_CASES = [
     ("run", "installed", "file", "gtt-domain/run/RUN-001-env.sh", "deny", "gtt-run.sh"),
     ("run", "installed", "file", "gtt-domain/run/RUN-001-env.md", "allow", None),
     ("run", "installed", "shell", "echo x > gtt-domain/run/log.jsonl", "deny", "deterministic-first"),
+    ("pending", "installed", "file", "gtt-domain/pending/ASK-001.md", "deny", "gtt-pending.sh"),
+    ("pending", "installed", "file", "gtt-domain/pending/README.md", "deny", "gtt-pending.sh"),
+    ("pending", "installed", "shell", "echo 'Answer: 1' >> gtt-domain/pending/ASK-001.md", "deny", "gtt-pending.sh"),
+    ("pending", "installed", "shell", "sed -i 's/Answer:/Answer: 1/' gtt-domain/pending/ASK-001.md", "deny", "gtt-pending.sh"),
+    ("pending", "installed", "shell", "rm gtt-domain/pending/ASK-001.md", "deny", "gtt-pending.sh"),
+    ("pending", "installed", "shell", "echo '{\"text\":\"1\"}' >> .gtt/local/prompts.jsonl", "deny", "deterministic-first"),
+    ("pending", "installed", "file", ".gtt/local/pending-state.json", "deny", "deterministic-first"),
+    ("pending", "installed", "shell", "gtt answer 14 1", "deny", "human-decision-authority"),
+    ("pending", "installed", "shell", "gtt answer ok", "deny", "human-decision-authority"),
+    ("pending", "installed", "shell", "bash .gtt/scripts/gtt-pending.sh answer 1 2 --confirmed-by-human", "deny", "answering a pending event"),
+    ("pending", "installed", "shell", "python3 .gtt/scripts/gtt_pending.py answer ok --confirmed-by-human", "deny", "answering a pending event"),
+    ("pending", "installed", "shell", "bash .gtt/scripts/gtt-contract.sh run pending.answer ref=1 reply=2 confirmed_by_human=true", "deny", "human-decision-authority"),
+    ("pending", "installed", "shell", "bash .gtt/scripts/gtt-pending.sh ask --type money --question 'x?' --why y --option a --option b --recommended 1 --apply", "allow", None),
+    ("pending", "installed", "shell", "bash .gtt/scripts/gtt-pending.sh record 1 1 --quote '1: 1' --apply", "allow", None),
+    ("pending", "installed", "shell", "bash .gtt/scripts/gtt-pending.sh done 1 --in STORY-001 --apply", "allow", None),
+    ("pending", "installed", "shell", "cat gtt-domain/pending/ASK-001.md", "allow", None),
+    ("pending", "installed", "shell", "gtt pending", "allow", None),
+    ("pending", "installed", "shell", "gtt pending list", "allow", None),
     ("run", "installed", "shell", "rm gtt-domain/run/done/RUN-001-env.md", "deny", "gtt-run.sh"),
     ("local", "pre", "file", ".gtt/local/checkpoint.json", "deny", "deterministic-first"),
     ("local", "pre", "file", ".gtt/local/last-validation.json", "deny", "deterministic-first"),
@@ -3652,6 +3670,222 @@ def simple_execution(project, tmp):
     check(bash(p, ".gtt/scripts/gtt-check-contract.sh")[0] == 0, "the contracts stay consistent with run.json and the run.* operations")
 
 
+def pending_events(project, tmp):
+    print("[pending] one file per event: asked, answered by the human, applied, marked and deleted")
+    p = fresh(project, tmp, "pending")
+    pdir = os.path.join(p, "gtt-domain", "pending")
+    path = lambda name: os.path.join(pdir, name)
+    HOOK = os.path.join(".claude", "hooks", "pending-watch.py")
+    os.makedirs(os.path.join(p, "src", "sync"), exist_ok=True)
+    write(os.path.join(p, "gtt-domain", "backlog.md"), "# Backlog\n\n##### STORY-022 — billing\n- **Status:** Todo\n\n##### STORY-066 — sync\n- **Status:** Todo\n")
+
+    def pend(*args, now="2026-11-01T10:00:00Z", cwd=None):
+        proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", *args], cwd=cwd or p, capture_output=True, text=True, encoding="utf-8",
+                              errors="replace", env=dict(os.environ, GTT_NOW=now))
+        return proc.returncode, proc.stdout + proc.stderr
+
+    def hook(prompt, session="s1", now="2026-11-01T10:00:00Z"):
+        proc = subprocess.run([sys.executable, HOOK], cwd=p, input=json.dumps({"session_id": session, "prompt": prompt}), capture_output=True,
+                              text=True, encoding="utf-8", errors="replace", env=dict(os.environ, GTT_NOW=now))
+        try:
+            return proc.returncode, json.loads(proc.stdout)["hookSpecificOutput"]["additionalContext"] if proc.stdout.strip() else ""
+        except (ValueError, KeyError):
+            return proc.returncode, proc.stdout
+
+    ASK = ["ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--why", "Decides if online billing enters v1.",
+           "--option", "Yes, manual with invoice", "--option", "No, online billing from v1", "--recommended", "1", "--blocks", "STORY-066"]
+    DEC = ["decide", "--affects", "security", "--title", "Phone data goes unencrypted in v1", "--what", "Local data stays unencrypted until v1.1.",
+           "--why", "Encrypting needs a native build; v1 runs on Expo Go.", "--where", "src/sync/"]
+
+    rc, out = pend(*ASK)
+    check(rc == 0 and "dry run" in out and not os.path.exists(path("ASK-001.md")), "criterion 1: ask is a dry run without --apply", out)
+    rc, out = pend(*ASK, "--apply")
+    text = open(path("ASK-001.md"), encoding="utf-8").read() if os.path.isfile(path("ASK-001.md")) else ""
+    check(rc == 0 and text.startswith("# ASK-001 · Manual billing with an invoice in v1?\n") and "Type: money · Blocks: STORY-066 · Created: 2026-11-01" in text
+          and "1. Yes, manual with invoice (recommended)\n2. No, online billing from v1\n" in text and "Until you answer: option 1." in text and text.endswith("\nAnswer:\n"),
+          "criterion 1: ask writes the question in the exact format", text)
+    rc, out = pend(*DEC, "--apply")
+    text = open(path("DEC-002.md"), encoding="utf-8").read() if os.path.isfile(path("DEC-002.md")) else ""
+    check(rc == 0 and "# DEC-002 · Phone data goes unencrypted in v1" in text and "Affects: security · Created: 2026-11-01" in text and "Where it landed: src/sync/" in text
+          and text.endswith("Answer: (ok, or tell me what to change)\n"), "criterion 1: decide writes the decision in the exact format, one numbering for both", text)
+    check(pend("check")[0] == 0 and len(text.splitlines()) <= 12, "criterion 1: the files pass the engine's own check")
+
+    long_q = "A question that is too long to be a plain one, because it keeps going and going without ever getting to the point, so it overruns the line?"
+    bad = [("a long question", ["ask", "--type", "money", "--question", long_q, "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+           ("no question mark", ["ask", "--type", "money", "--question", "Manual billing", "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+           ("four options", ["ask", "--type", "money", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b", "--option", "c", "--option", "d", "--recommended", "1"]),
+           ("two recommended / none", ["ask", "--type", "money", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b"]),
+           ("a type outside the list", ["ask", "--type", "technical", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+           ("a decision without a valid Affects", ["decide", "--affects", "taste", "--title", "t", "--what", "w", "--why", "y", "--where", "src/sync/"]),
+           ("a decision whose Where it landed does not exist", ["decide", "--affects", "cost", "--title", "t", "--what", "w", "--why", "y", "--where", "nowhere/at/all"]),
+           ("a long line", ["decide", "--affects", "cost", "--title", "t", "--what", "x" * 130, "--why", "y", "--where", "src/sync/"])]
+    for label, args in bad:
+        rc, out = pend(*args, "--apply")
+        check(rc == 1, f"criteria 2 and 10: {label} is refused", out)
+    check(sorted(os.listdir(pdir)) == [".seq", "ASK-001.md", "DEC-002.md", "README.md"], "criterion 2: a refused event leaves nothing behind")
+    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n2. b\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
+    rc, out = pend("check")
+    check(rc == 1 and "PEN-01" in out and "13 lines" in out, "criterion 2: a file of 13 lines fails the check", out)
+    os.remove(path("ASK-009.md"))
+    write(path("DEC-008.md"), "# DEC-008 · No affects\n\nCreated: 2026-11-01\nWhat I decided: a\nWhy: b\nWhere it landed: src/sync/\n\nAnswer: (ok, or tell me what to change)\n")
+    rc, out = pend("check")
+    check(rc == 1 and "PEN-03" in out, "criterion 10: a decision without Affects fails the check", out)
+    os.remove(path("DEC-008.md"))
+
+    rc, out = pend("answer", "1", "1")
+    check(rc == 1 and "human's act" in out, "criterion 3: the engine refuses `answer` without the human's flag", out)
+    rc, out = pend("answer", "1", "1", "--confirmed-by-human")
+    check(rc == 0 and "Answer: 1\n" in open(path("ASK-001.md"), encoding="utf-8").read(), "the human's answer is written, and shown before", out)
+    rc, out = pend("answer", "1", "3", "--confirmed-by-human")
+    check(rc == 1 and "options 1 to 2" in out, "an option that does not exist is refused", out)
+    for secret in ("sk-abcdefghijklmnopqrstuvwxyz0123", "AKIAABCDEFGHIJKLMNOP", "password=hunter22hunter", "-----BEGIN PRIVATE KEY-----", "Xk3jD9aLm2Qp7Rt5Vw8Yz1Bc4Nf6Hs0Gu2Ji9Ko3L"):
+        rc, out = pend("answer", "2", secret, "--confirmed-by-human")
+        check(rc == 1 and "looks like a key" in out, f"criterion 9: `{secret[:14]}...` as an answer is rejected", out)
+    check(pend("answer", "2", "src/sync/subscription-handler.ts with the long name feature-flag-controller", "--confirmed-by-human")[0] == 0, "a long path or a sentence is not mistaken for a key")
+    rc, out = pend("answer", "2", "ok", "--confirmed-by-human")
+    check(rc == 0 and "Attended: 2026-11-01 · ok · applied in: src/sync/" in open(path("DEC-002.md"), encoding="utf-8").read(), "criterion 7: `ok` marks a decision; it needs nothing applied", out)
+    # the answer written by hand in the file, as the human would
+    shutil.copy2(path("ASK-001.md"), os.path.join(tmp, "ask-backup.md"))
+    content = open(path("ASK-001.md"), encoding="utf-8").read().replace("Answer: 1\n", "Answer:\n")
+    write(path("ASK-001.md"), content)
+    check(not parse_answered(path("ASK-001.md")), "an event with an empty answer is open")
+    open(path("ASK-001.md"), "a", encoding="utf-8").write("2\n")
+    rc, ctx = hook("here is my answer in the file")
+    check(rc == 0 and "ASK-001 is answered" in ctx and "gtt-pending.sh done 1 --in" in ctx, "criterion 4: the next message tells the agent to apply and mark the answer written in the file", ctx)
+    rc, ctx = hook("another message")
+    check(rc == 0 and "ASK-001 is answered" in ctx, "criterion 4: an answer that was not applied is reminded again")
+
+    # the chat: the quote must be the human's, recent and say the answer
+    write(path("ASK-001.md"), content)
+    for text in ("hola", "14: 1", "ok a todas"):
+        hook(text)
+    rc, out = pend("record", "1", "1", "--quote", "sí, la uno por favor", "--apply")
+    check(rc == 1 and "Nothing was recorded" in out and "Answer:\n" in open(path("ASK-001.md"), encoding="utf-8").read(), "criterion 5: a quote the human did not write is rejected", out)
+    rc, out = pend("record", "1", "2", "--quote", "14: 1", "--apply")
+    check(rc == 1, "criterion 5: a quote that does not say the answer is rejected", out)
+    rc, out = pend("record", "1", "1", "--quote", "14: 1", "--apply")
+    check(rc == 0 and "Answer: 1 (chat: «14: 1»)" in open(path("ASK-001.md"), encoding="utf-8").read(), "criterion 5: a real quote records the answer with the human's words", out)
+    rc, out = pend("record", "1", "2", "--quote", "14: 1", "--apply")
+    check(rc == 1 and "only the human changes it" in out, "an agent never overwrites an answer", out)
+    for number in range(12):
+        hook(f"filler {number}")
+    write(path("ASK-001.md"), content)
+    rc, out = pend("record", "1", "1", "--quote", "14: 1", "--apply")
+    check(rc == 1, "criterion 5: a quote older than the last 10 messages is rejected", out)
+    kept = len(open(os.path.join(p, ".gtt", "local", "prompts.jsonl"), encoding="utf-8").read().splitlines())
+    check(kept == 10, "the hook keeps the last 10 messages and no more", str(kept))
+    rc, out = pend("record", "1", "sk-abcdefghijklmnopqrstuvwxyz0123", "--quote", "sk-abcdefghijklmnopqrstuvwxyz0123", "--apply")
+    check(rc == 1 and "looks like a key" in out, "criterion 9: a key-shaped answer from the chat is rejected too", out)
+
+    # apply, mark, delete
+    hook("1")
+    rc, out = pend("record", "1", "1", "--quote", "1", "--apply")
+    check(rc == 0, "a one-word reply that is a whole message of the human counts as a quote", out)
+    rc, out = pend("done", "1", "--in", "nowhere/at/all", "--apply")
+    check(rc == 1, "criterion 6: `done` must cite a place that exists", out)
+    rc, out = pend("done", "1", "--in", "STORY-022", "--apply")
+    check(rc == 0 and "Attended: 2026-11-01 · option 1 · applied in: STORY-022" in open(path("ASK-001.md"), encoding="utf-8").read(), "criterion 6: `done` writes the one-line mark", out)
+    pend("ask", "--type", "legal", "--question", "Sign the DPA with the vendor?", "--why", "Needed before storing EU data.", "--option", "Yes", "--option", "No", "--recommended", "2", "--apply")
+    pend("answer", "3", "1", "--confirmed-by-human")
+    rc, out = pend("clean", "--apply")
+    names = sorted(n for n in os.listdir(pdir) if n.endswith(".md") and n != "README.md")
+    check(rc == 0 and "removed 2" in out and names == ["ASK-003.md"], "criterion 6: clean deletes what is marked, says how many, and keeps an answer nobody applied", out + str(names))
+    check(next_free(pdir) == 4, "a number is never reused after its file is deleted")
+    check(pend("ask", *ASK[1:], "--apply")[0] == 0 and os.path.isfile(path("ASK-004.md")), "the next event takes the next number")
+
+    # the session start deletes what is marked; the status shows the notice
+    pend("done", "3", "--in", "STORY-022", "--apply")
+    proc = subprocess.run(["bash", ".gtt/scripts/gtt-session-context.sh"], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          env=dict(os.environ, GTT_NOW="2026-11-02T10:00:00Z"))
+    check(proc.returncode == 0 and not os.path.exists(path("ASK-003.md")) and "@gtt · Needs you (1)" in proc.stdout
+          and "recommend 1 · blocks STORY-066" in proc.stdout, "criterion 6 and 8: the session start deletes what is marked and shows the notice", proc.stdout[-600:] + proc.stderr)
+
+    # decisions: ok to all, 7 days
+    pend("decide", "--affects", "cost", "--title", "Use the free tier of the mail service", "--what", "Mail goes through the free tier.", "--why", "It covers the volume of v1.", "--where", "src/sync/", "--apply", now="2026-11-02T10:00:00Z")
+    pend("decide", "--affects", "scope", "--title", "Drop the export screen from v1", "--what", "Export moves to v1.1.", "--why", "It is not in the launch path.", "--where", "src/sync/", "--apply", now="2026-11-02T10:00:00Z")
+    rc, out = pend("notice")
+    check(rc == 0 and "For your information: 5 Use the free tier" in out and "Say «ok»" not in out and "Answer here, in the file or with gtt answer" in out, "criterion 8: a pending decision appears as a «For your information» line", out)
+    hook("ok a todas", now="2026-11-02T11:00:00Z")
+    rc, out = pend("record", "all", "ok", "--quote", "ok a todas", "--apply", now="2026-11-02T11:00:00Z")
+    left = [n for n in os.listdir(pdir) if n.startswith("DEC-")]
+    check(rc == 0 and all("Attended:" in open(path(n), encoding="utf-8").read() for n in left), "criterion 7: «ok to all» marks every decision", out)
+    pend("decide", "--affects", "design", "--title", "Sync runs on a timer", "--what", "A 30 s timer drives the sync.", "--why", "Push needs a native build.", "--where", "src/sync/", "--apply", now="2026-11-02T10:00:00Z")
+    pend("clean", "--apply", now="2026-11-08T10:00:00Z")
+    check(os.path.isfile(path("DEC-007.md")), "criterion 7: a decision with no answer is kept before 7 days")
+    pend("clean", "--apply", now="2026-11-09T10:00:00Z")
+    check(not os.path.exists(path("DEC-007.md")), "criterion 7: a decision with no answer is deleted after 7 days («without objection»)")
+    check(os.path.isfile(path("ASK-004.md")), "an unanswered question is never deleted")
+
+    # the notice: once per turn, again after 24 h while something blocks
+    hook("new turn")
+    first = pend("notice", "--report", now="2026-11-09T10:00:00Z")[1]
+    second = pend("notice", "--report", now="2026-11-09T10:00:00Z")[1]
+    check("@gtt · Needs you (1)" in first and second.strip() == "", "criterion 8: the notice appears once per turn, never twice", first + "|" + second)
+    check(pend("notice", "--due", now="2026-11-09T20:00:00Z")[1].strip() == "", "criterion 8: no reminder before 24 h")
+    check("Needs you" in pend("notice", "--due", now="2026-11-10T11:00:00Z")[1], "criterion 8: the reminder returns after 24 h while a question blocks")
+    rc, ctx = hook("after a day", now="2026-11-11T12:00:00Z")
+    check("notice --report" in ctx, "criterion 8: the hook tells the agent the notice is overdue after 24 h", ctx)
+    for name in os.listdir(pdir):
+        if name.startswith(("ASK", "DEC")):
+            os.remove(path(name))
+    rc, ctx = hook("nothing is pending", session="s9")
+    check(rc == 0 and ctx == "", "with nothing pending the hook says nothing")
+    check(pend("notice")[1].strip() == "", "with nothing pending the notice is empty")
+
+    # review and delivery see a blocking question
+    pend("ask", *ASK[1:], "--apply", now="2026-11-01T10:00:00Z")
+    proc = subprocess.run([sys.executable, ".gtt/scripts/gtt_flow.py", "review", "--json"], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    try:
+        decide = json.loads(proc.stdout)["decide"]
+    except ValueError:
+        decide = []
+    check(any(d["level"] == "ASK" and "STORY-066" in d["what"] for d in decide), "the review lists the open question under DECIDE", proc.stdout[:300] + proc.stderr[:300])
+    proc = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, '.gtt/scripts'); import gtt_delivery as d; print([w for w in d.pending_waits(set(), [], d.moment())])"],
+                          cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace", env=dict(os.environ, GTT_NOW="2026-11-03T10:00:00Z"))
+    check("STORY-066" in proc.stdout and "'waiting_h': 58.0" in proc.stdout, "a question that blocks a Story counts as a wait on the human (DLV-HUMAN-WAIT)", proc.stdout + proc.stderr)
+
+    # Spanish project: the same file, in the human's language
+    write(os.path.join(p, ".gtt", "methodology.json"), json.dumps({"language": "es"}))
+    for name in os.listdir(pdir):
+        if name.startswith(("ASK", "DEC")):
+            os.remove(path(name))
+    pend("ask", "--type", "dinero", "--question", "¿Cobro manual con factura en v1?", "--why", "Decide si el cobro en línea entra en v1.", "--option", "Sí, manual con factura",
+         "--option", "No, cobro en línea desde v1", "--recommended", "1", "--apply")
+    pend("decide", "--affects", "seguridad", "--title", "Los datos del teléfono van sin cifrar en v1", "--what", "Lo guardado queda sin cifrar hasta v1.1.", "--why", "Cifrar exige un build nativo.",
+         "--where", "src/sync/", "--apply")
+    es = open(path(sorted(n for n in os.listdir(pdir) if n.startswith("ASK"))[0]), encoding="utf-8").read()
+    check("Tipo: dinero · Bloquea: nada · Creada:" in es and "1. Sí, manual con factura (recomendada)" in es and "Mientras no respondas: opción 1." in es and es.endswith("Respuesta:\n"),
+          "a Spanish project gets the format of the order, word for word", es)
+    out = pend("notice")[1]
+    check(out.startswith("@gtt · Te necesito (1)\n") and "→ recomiendo 1" in out and "Para que sepas: " in out and "Responde aquí, en el archivo o con gtt answer" in out, "the Spanish notice has the shape of the order", out)
+    rc, out = pend("answer", "ok", "--confirmed-by-human")
+    check(rc == 0 and "Atendida:" in open(path(sorted(n for n in os.listdir(pdir) if n.startswith("DEC"))[0]), encoding="utf-8").read(), "`gtt answer ok` marks the decisions", out)
+
+    for name, label in (("overlay-block", 11), ("no-commits", 11)):
+        proc = subprocess.run([sys.executable, ".gtt/scripts/gtt_flow.py", "check", name], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        check(proc.returncode == 0, f"criterion {label}: gtt_flow.py check {name} still passes", proc.stdout + proc.stderr)
+    agents = open(os.path.join(project, "AGENTS.md"), encoding="utf-8").read()
+    check("## Pending events" in agents and "Never write the human's answer." in agents and "`@gtt · Needs you`" in agents, "AGENTS.md carries the rule for pending events")
+    check(bash(p, ".gtt/scripts/gtt-check-contract.sh")[0] == 0 and bash(p, ".gtt/scripts/gtt-check-agents.sh")[0] == 0, "the contracts and AGENTS.md stay consistent with pending.json and the pending.* operations")
+    ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
+    check(ops["pending.answer"]["human_authority"] and not ops["pending.list"]["mutates"] and not ops["pending.check"]["mutates"], "pending.answer is human_authority; list and check only read")
+
+
+def parse_answered(path):
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
+    import gtt_pending
+    cwd = os.getcwd()
+    try:
+        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(path)))))
+        return gtt_pending.parse(path, gtt_pending.contract())["answered"]
+    finally:
+        os.chdir(cwd)
+
+
+def next_free(pdir):
+    return int(open(os.path.join(pdir, ".seq"), encoding="utf-8").read().strip()) + 1
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=".")
@@ -3661,7 +3895,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events):
             scenario(project, tmp)
     finally:
         if args.keep:

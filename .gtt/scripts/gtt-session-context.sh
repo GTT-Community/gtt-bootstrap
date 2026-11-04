@@ -54,6 +54,12 @@ if ! "$PY" .gtt/scripts/gtt_artifacts.py summary >/dev/null 2>&1; then
   fail "gtt_artifacts.py summary failed - run it directly to see why."
 fi
 
+# A new session deletes the pending events that were attended (marked) and the decisions nobody objected to.
+# Only here, never in gtt-status.sh: the status also runs at the end of every turn.
+if [ -f .gtt/scripts/gtt-pending.sh ] && [ -f .gtt/contract/pending.json ]; then
+  bash .gtt/scripts/gtt-pending.sh clean --apply >/dev/null 2>&1 || true
+fi
+
 STATUS_ERR="$(bash .gtt/scripts/gtt-status.sh 2>&1 >/dev/null)" \
   || fail "gtt-status.sh failed: ${STATUS_ERR}"
 

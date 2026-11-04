@@ -50,6 +50,14 @@
       "aliases": []
     },
     {
+      "id": "ART-GTT-DOMAIN-PENDING-README",
+      "type": "documentation",
+      "path": "gtt-domain/pending/README.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-GTT-DOMAIN-RUN-README",
       "type": "documentation",
       "path": "gtt-domain/run/README.md",

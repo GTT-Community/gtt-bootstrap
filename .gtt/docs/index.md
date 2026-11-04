@@ -232,6 +232,10 @@ source repository is the catalog, not an installed project.
 | `.gtt/scripts/gtt-run.sh` / `.gtt/scripts/gtt_run.py` | Simple execution (operations `run.*`): `new` a plan, `generate` the sealed script, `check` the review (RUN-01 to RUN-09), `list` what is pending, `execute` (the human's act, `gtt run <n>`: asks once, logs, archives) |
 | `.gtt/contract/run.json` | The simple-execution contract: plan grammar, rules RUN-01 to RUN-09, hand-over message (es/en), locations, retention and threshold. Data only |
 | `gtt-domain/run/` | Plans (`RUN-NNN-<slug>.md`), the sealed scripts generated from them, `log.jsonl` and `done/` (the last 20). The agent writes plans; only GTT writes the rest |
+| `.gtt/scripts/gtt-pending.sh` / `.gtt/scripts/gtt_pending.py` | Pending events (operations `pending.*`): `ask` a question, `decide` a decision, `list`, `record` an answer given in the chat (with the human's exact words), `answer` (the human's act, `gtt answer`), `done` to mark an applied one, `clean` (session start), `check` (PEN-01 to PEN-07), `notice` |
+| `.gtt/contract/pending.json` | The pending-events contract: kinds, type lists, limits, key shapes, times, labels and messages (es/en) and the threshold. Data only |
+| `gtt-domain/pending/` | One file per open question (`ASK-NNN.md`) or decision (`DEC-NNN.md`); normally empty. Only GTT writes it |
+| `.claude/hooks/pending-watch.py` | UserPromptSubmit hook: keeps the human's last 10 messages locally for the quote check, opens the turn, tells the agent what to apply or record; silent when nothing is pending |
 | `.gtt/scripts/gtt_flow.py` | The engine behind the five scripts above and the static checks `gtt-validate.sh` runs on them |
 | `.gtt/scripts/gtt_session_hook.py` | Session Memory adapter for ADEs whose session-start hook answers in JSON (Cursor, OpenHands); only wraps what `gtt-session-context.sh` produces |
 | `gtt-domain/workflow.md` | The Git policy of the project: commits, convention, branches and tags, review thresholds. Human-owned; the ADE reads it and never edits it | you |
