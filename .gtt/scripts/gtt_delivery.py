@@ -9,7 +9,7 @@
     .gtt/local/delivery-snapshot.json  the statuses `log` saw last (local, never versioned)
 
   gtt_delivery.py questions [--lang L] [--json]    the six questions, texts from the contract
-  gtt_delivery.py select [--who W] [--lanes N] [--horizon H] [--priority P] [--third-party T] [--restrictions TEXT]
+  gtt_delivery.py select [--who W] [--lanes N] [--horizon H] [--pace days|flow] [--priority P] [--third-party T] [--restrictions TEXT]
                          [--epic-cap HOURS] [--team NAMES] [--by NAME] [--apply]
                                                     record the setup answer (dry run without --apply); allowed at any time
   gtt_delivery.py get [--json]                     the setup answer and the thresholds in force
@@ -56,6 +56,7 @@ FIELDS = ("Estimate", "Depends on", "Lane", "Owner", "Touches", "Build", "Budget
 WHO = ("solo", "solo-multi", "team", OPEN)
 HORIZONS = ("days", "weeks", "month", "none", OPEN)
 PRIORITY = ("speed", "balance", "own", OPEN)
+PACES = ("days", "flow")
 THIRD = ("yes", "oss", "restricted", OPEN)
 HOURS = re.compile(r"(\d+(?:[.,]\d+)?)\s*h\b", re.I)
 DECISIONS = re.compile(r"(\d+)\s*(?:decisions?|decisiones|decisión|pd)\b", re.I)
@@ -63,6 +64,11 @@ EPIC_ID = re.compile(r"\bEPIC-\d+\b")
 BUDGET_ACCEPTED = re.compile(r"^over\s*[-—–]+\s*accepted:\s*\S.*[-—–]\s*\S.*[-—–]\s*\d{4}-\d{2}-\d{2}\s*$", re.I)
 BUDGET_LEVER = re.compile(r"^over\s*[-—–]+\s*(split|cut|integrate)\b", re.I)
 BUILD_INTEGRATE = re.compile(r"^integrate\s*\(\s*(ADR-\d{3,})\s*\)\s*$", re.I)
+CLOSING = re.compile(r"\b(?:clos(?:e[sd]?|ing)|fix(?:e[sd]|ing)?|resolv(?:e[sd]?|ing)|complet(?:e[sd]?|ing)|finish(?:e[sd]|ing)?|done|"
+                     r"cierr[ae]n?|cerr[oó]|cerrad[ao]s?|termin[oó]|terminad[ao]s?|complet[oó]|completad[ao]s?)\b", re.I)
+CLOSED_AFTER = re.compile(r"(STORY-\d+)\W{0,3}(?:done|closed|completed|cerrad[ao]|completad[ao]|terminad[ao])\b", re.I)
+NOT_CLOSING = re.compile(r"\b(?:wip|partial(?:ly)?|parcial(?:mente)?|part of|toward[s]?|not|no|sin)\b", re.I)
+STORY_ID = re.compile(r"\bSTORY-\d+\b")
 SOURCE = re.compile(r"\[FUENTE:\s*([^\]]*?)\s*,?\s*(?:consultado|consulted|accessed)\s+(\d{4}-\d{2}-\d{2})\s*\]", re.I)
 
 
@@ -615,10 +621,89 @@ def has_method():
     return bool(state) and state.get("style") not in (None, OPEN, [OPEN], [])
 
 
+def open_stories(stories, epics):
+    """The Stories still to do under a live Epic."""
+    alive = {e["id"] for e in live(epics)}
+    return [s for s in stories if s["status"] not in DONE and s["epic"] in alive]
+
+
+def noplan_finding(stories, epics):
+    """(open Stories, with a duration, Epics) when the backlog holds a lot of work that nothing sizes, else None.
+    Independent of whether delivery planning was declared: this is exactly the project that never did."""
+    th, items = thresholds(), open_stories(stories, epics)
+    if len(items) < th["noplan_min_stories"]:
+        return None
+    sized_epics = {e["id"] for e in epics if epic_hours(e, stories) is not None}
+    sized = [s for s in items if s["estimate_h"] or s["epic"] in sized_epics]
+    if len(sized) / len(items) >= th["noplan_min_coverage"]:
+        return None
+    return len(items), len(sized), len({s["epic"] for s in items})
+
+
+def noplan_text(found):
+    total, sized, epics = found
+    return (f"{total} open Stories in {epics} Epics, {sized} with a duration: GTT cannot say how long this takes or when it ends. "
+            "Add `Estimate: <n>h` to the Epics (or their Stories) and run `gtt delivery set --horizon ... --pace days|flow`")
+
+
+def stale_statuses(stories):
+    """[(story id, commit)]: Stories not Done whose recent commits already close them. The backlog must say what happened."""
+    import subprocess
+    known = {s["id"]: s for s in stories if s["status"] not in DONE}
+    if not known or not os.path.isdir(".git"):
+        return []
+    try:
+        proc = subprocess.run(["git", "log", "-n", str(thresholds()["stale_commits_scanned"]), "--no-merges", "--format=%h%x1f%s%n%b%x1e"],
+                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if proc.returncode != 0:
+        return []
+    found = {}
+    for entry in proc.stdout.split("\x1e"):
+        sha, _, message = entry.strip().partition("\x1f")
+        for line in message.splitlines():
+            if NOT_CLOSING.search(line):
+                continue
+            closed = set(m.group(1) for m in CLOSED_AFTER.finditer(line))
+            verb = CLOSING.search(line)
+            if verb:
+                closed |= set(STORY_ID.findall(line[verb.end():]))
+            for ident in closed:
+                if ident in known and ident not in found:
+                    found[ident] = sha
+    return sorted(found.items())
+
+
+def drift_paths():
+    skip = ("gtt-domain/session.md", "gtt-domain/change-request.md", "gtt-domain/delivery-log.jsonl")
+    paths = glob.glob("gtt-domain/*.md") + glob.glob("docs/**/*.md", recursive=True) + glob.glob("*.md")
+    return sorted(p.replace(os.sep, "/") for p in set(paths) if p.replace(os.sep, "/") not in skip)
+
+
+def pace_drift():
+    """[(path, line, text)]: documents that speak in the other rhythm than the one declared in `pace`."""
+    state = read_json(STATE) or {}
+    pace = state.get("pace")
+    spec = contract().get("pace", {}).get("drift", {})
+    if pace not in PACES or not spec.get(pace):
+        return []
+    pattern = re.compile("|".join(f"(?:{p})" for p in spec[pace]), re.I)
+    out = []
+    for path in drift_paths():
+        fenced = False
+        for number, line in enumerate((read(path) or "").splitlines(), 1):
+            if line.lstrip().startswith("```"):
+                fenced = not fenced
+            if not fenced and pattern.search(line):
+                out.append((path, number, line.strip()[:80]))
+    return out
+
+
 def signals():
     """Every open DLV condition as {rule, level, artifact, detail, state}; levels come from the Autonomy Profile."""
     loaded = backlog()
-    if loaded is None or not active(loaded[1]):
+    if loaded is None:
         return []
     stories, epics = loaded
     th, levels, times, now = thresholds(), profile_delivery()["signals"], timeline(), moment()
@@ -629,6 +714,22 @@ def signals():
         if level:
             out.append({"rule": rule, "level": lane_cross_level(level) if rule == "DLV-LANE-CROSS" else level,
                         "artifact": artifact, "detail": detail, "state": state})
+
+    # The signals that do not depend on a declaration: they exist for the project that never declared anything.
+    found = noplan_finding(stories, epics)
+    if found:
+        add("DLV-NO-PLAN", "backlog", noplan_text(found), state=f"{found[0]}/{found[1]}")
+    for ident, sha in stale_statuses(stories):
+        add("DLV-STALE-STATUS", ident, f"{ident} is still not Done but commit {sha} already closes it: set `Status: Done` and `Closed:` (date and commit)", state=sha)
+    drifted = {}
+    for path, number, text in pace_drift():
+        drifted.setdefault(path, []).append((number, text))
+    for path, rows in drifted.items():
+        pace = (read_json(STATE) or {}).get("pace")
+        add("DLV-PACE-DRIFT", path, f"the declared pace is `{pace}` but {path} speaks otherwise ({len(rows)} line(s), first {path}:{rows[0][0]}: \"{rows[0][1]}\"): "
+            "bring it to the declared pace or change it with `gtt delivery set --pace`", state=str(len(rows)))
+    if not active(epics):
+        return out
 
     for s in stories:
         row = times.get(s["id"])
@@ -685,11 +786,21 @@ def source_findings(limit_days):
     return found
 
 
+VISIBILITY = ("DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT")
+
+
+def visibility_warnings():
+    """The signals that need no declaration, as check findings. They warn and never fail: the project may not have chosen planning."""
+    return [("WARN", s["artifact"], f"{s['rule']}: {s['detail']}") for s in signals() if s["rule"] in VISIBILITY]
+
+
 def check_all():
     """[(level, where, message)] - level is FAIL or WARN according to the Autonomy Profile."""
     loaded = backlog()
-    if loaded is None or not active(loaded[1]):
+    if loaded is None:
         return [], False
+    if not active(loaded[1]):
+        return visibility_warnings(), False
     stories, epics = loaded
     th, freeze, found = thresholds(), profile_delivery()["freeze"], []
 
@@ -719,7 +830,7 @@ def check_all():
             add("lanes", BACKLOG, f"{a} and {b} are on different fronts and both touch `{path}`: declare the interface (Depends on) or move one")
     for where, message in source_findings(th["source_max_age_days"]):
         add("source", where, message)
-    return found, True
+    return found + visibility_warnings(), True
 
 
 def cmd_check(args):
@@ -766,14 +877,19 @@ def cmd_select(args):
     checks = (("who", args.who, WHO), ("horizon", args.horizon, HORIZONS), ("priority", args.priority, PRIORITY),
               ("third_party", args.third_party, THIRD))
     if all(v is None for _, v, _ in checks) and args.lanes is None and args.epic_cap is None and args.team is None \
-            and args.restrictions is None:
-        die("give at least one of --who, --lanes, --horizon, --priority, --third-party, --restrictions, --epic-cap, --team")
+            and args.restrictions is None and args.pace is None:
+        die("give at least one of --who, --lanes, --horizon, --priority, --third-party, --restrictions, --epic-cap, --team, --pace")
     for key, value, allowed in checks:
         if value is not None:
             if value not in allowed:
                 print(f"gtt-delivery: REFUSED - --{key.replace('_', '-')} must be one of {', '.join(allowed)}. Nothing was written.", file=sys.stderr)
                 return 1
             data[key] = value
+    if args.pace is not None:
+        if args.pace not in PACES:
+            print(f"gtt-delivery: REFUSED - --pace must be one of {', '.join(PACES)}. Nothing was written.", file=sys.stderr)
+            return 1
+        data["pace"] = args.pace
     if args.lanes is not None:
         if args.lanes != "propose" and not (args.lanes.isdigit() and 1 <= int(args.lanes) <= 12):
             print("gtt-delivery: REFUSED - --lanes must be a number from 1 to 12 or `propose`. Nothing was written.", file=sys.stderr)
@@ -798,7 +914,7 @@ def cmd_select(args):
         data["lanes"] = 1
     if data.get("who") == "team" and not data.get("team"):
         print("gtt-delivery: NOTE - a team needs the names of its members (--team ana,luis): they own the fronts.")
-    shown = ", ".join(f"{k} {data[k]}" for k in ("who", "lanes", "horizon", "priority", "third_party") if k in data)
+    shown = ", ".join(f"{k} {data[k]}" for k in ("who", "lanes", "horizon", "pace", "priority", "third_party") if k in data)
     print(f"delivery (setup answer): {shown}" + (f"; deadline {data['deadline']}" if data.get("deadline") else "")
           + (f"; Epic cap {data['epic_cap_h']:g} h" if data.get("epic_cap_h") else ""))
     if OPEN in (data.get("who"), data.get("horizon")):
@@ -827,7 +943,7 @@ def cmd_get(args):
         print("delivery: not declared yet (gtt delivery set ...)")
         return 0
     print(f"delivery: who {state.get('who', OPEN)}, fronts {state.get('lanes', OPEN)}, horizon {state.get('horizon', OPEN)}"
-          + (f" (deadline {state['deadline']})" if state.get("deadline") else "") + f", Epic cap {th['epic_cap_h']:g} h")
+          + (f" (deadline {state['deadline']})" if state.get("deadline") else "") + f", pace {state.get('pace', 'undeclared')}" + f", Epic cap {th['epic_cap_h']:g} h")
     return 0
 
 
@@ -836,6 +952,8 @@ def cmd_summary(args):
     state, loaded = current_state(), backlog()
     if state is None and not (loaded and active(loaded[1])):
         print("not declared (no .gtt/delivery.json; gtt delivery set ...)")
+        for s in (signals() if loaded else []):
+            print(f"signal: {s['rule']} {s['artifact']} - {s['detail']}")
         return 0
     if loaded is None:
         print("declared; no backlog yet")
@@ -845,6 +963,7 @@ def cmd_summary(args):
     state = state or {}
     print(f"who {state.get('who', OPEN)}; fronts {state.get('lanes', OPEN)}; "
           + (f"deadline {plan['deadline']}" if plan["deadline"] else f"horizon {state.get('horizon', OPEN)}")
+          + f"; pace {state.get('pace', 'UNDECLARED (gtt delivery set --pace days|flow)')}"
           + ("; UNCALIBRATED" if plan["calibration"]["uncalibrated"] else f"; calibrated x{plan['calibration']['ratio']}"))
     if plan["eta"] and plan["chain"]:
         print(f"forecast: {plan['chain_hours']:g} agent h on the longest chain ({' -> '.join(plan['chain'])}), finish {plan['eta']}"
@@ -868,7 +987,7 @@ def main(argv):
     p = sub.add_parser("questions"); p.add_argument("--lang", choices=("es", "en")); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_questions)
     p = sub.add_parser("select"); p.add_argument("--who"); p.add_argument("--lanes"); p.add_argument("--horizon"); p.add_argument("--priority")
     p.add_argument("--third-party", dest="third_party"); p.add_argument("--restrictions"); p.add_argument("--epic-cap", dest="epic_cap", type=float)
-    p.add_argument("--team"); p.add_argument("--by"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_select)
+    p.add_argument("--team"); p.add_argument("--pace"); p.add_argument("--by"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_select)
     p = sub.add_parser("get"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_get)
     p = sub.add_parser("plan"); p.add_argument("--lanes", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_plan)
     p = sub.add_parser("report"); p.add_argument("--epic"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_report)

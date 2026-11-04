@@ -70,6 +70,13 @@ along the longest dependency chain.
 | DLV-LANE-CROSS | Epics of different fronts overlap in `Touches` |
 | DLV-NO-VALUE | No Epic of `Kind: slice` or `skeleton` (only with a development method declared) |
 | DLV-UNCALIBRATED | Fewer than 3 Stories measured |
+| DLV-NO-PLAN | 8 or more open Stories and fewer than half with a duration (their own `Estimate` or their Epic's). Fires **even when delivery planning was never declared**: nobody can say how long the backlog takes |
+| DLV-STALE-STATUS | A Story that is not `Done` while a recent commit already closes it by name (`closes STORY-168`) |
+| DLV-PACE-DRIFT | A plan document speaks in the other rhythm than the declared `pace` (`day N`, `jornada`, `cronograma` under `flow`) |
+
+`pace` is `days` or `flow` (continuous flow). Declare it once with `gtt delivery set --pace flow`; changing it later is the same
+command, in one place, and DLV-PACE-DRIFT lists every document that still speaks otherwise. The three signals above only warn:
+they never stop a project that did not declare planning.
 
 What each means depends on your Autonomy Profile (`profiles.json`, `delivery`). `gtt report [--epic EPIC-NNN] [--json]`
 shows percent per Epic, real against estimated, the ratio, the forecast and the open signals.

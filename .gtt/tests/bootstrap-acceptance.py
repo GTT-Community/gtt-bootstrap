@@ -3670,6 +3670,69 @@ def simple_execution(project, tmp):
     check(bash(p, ".gtt/scripts/gtt-check-contract.sh")[0] == 0, "the contracts stay consistent with run.json and the run.* operations")
 
 
+def delivery_visibility(project, tmp):
+    print("[visibility] a backlog nobody sized, a Story already closed by a commit and a plan in the wrong rhythm are never silent")
+    p = fresh(project, tmp, "vis")
+    D = ".gtt/scripts/gtt-delivery.sh"
+    env = dict(os.environ, GTT_NOW="2026-11-04T10:00:00Z")
+
+    def run(*args):
+        proc = subprocess.run(["bash", D, *args], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+        return proc.returncode, proc.stdout + proc.stderr
+
+    def git(*args):
+        return subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=p, capture_output=True, text=True, env=env)
+
+    def backlog(stories, estimate=""):
+        body = "# Project Backlog\n\n### EPIC-001\n**Status:** In Progress\n**Goal:** g\n**Approved:** ana - 2026-11-01\n" + estimate + "\n"
+        for n in range(1, stories + 1):
+            body += f"##### STORY-{n:03d} t\n- **Status:** Planned\n- **Implements:** x\n- **Done when:** run: true\n\n"
+        write(os.path.join(p, "gtt-domain", "backlog.md"), body)
+
+    backlog(10)
+    check(not os.path.exists(os.path.join(p, ".gtt", "delivery.json")), "the project never declared delivery planning")
+    rc, out = run("check")
+    check(rc == 0 and "DLV-NO-PLAN" in out and "10 open Stories" in out and "0 with a duration" in out,
+          "a backlog of 10 open Stories with no duration warns even though planning was never declared, and never fails", out[-300:])
+    check("DLV-NO-PLAN" in run("summary")[1], "the session summary says it too")
+    backlog(7)
+    check("DLV-NO-PLAN" not in run("check")[1], "a small backlog (under 8 open Stories) is not flagged")
+    backlog(10, "**Estimate:** 12h\n")
+    check("DLV-NO-PLAN" not in run("check")[1], "an Epic with an Estimate sizes all of its Stories")
+
+    git("init", "-q")
+    git("add", "-A")
+    git("commit", "-q", "-m", "feat: login, closes STORY-002 and STORY-003")
+    git("commit", "-q", "--allow-empty", "-m", "wip: STORY-004 partial")
+    git("commit", "-q", "--allow-empty", "-m", "feat: STORY-005 start")
+    out = run("check")[1]
+    check("STORY-002" in out and "STORY-003" in out and "DLV-STALE-STATUS" in out, "a Story still Planned that a commit closes by name is reported", out[-400:])
+    check("STORY-004" not in out and "STORY-005" not in out, "wip, partial or a mere mention does not close a Story", out[-400:])
+    text = open(os.path.join(p, "gtt-domain", "backlog.md"), encoding="utf-8").read().replace("##### STORY-002 t\n- **Status:** Planned", "##### STORY-002 t\n- **Status:** Done")
+    write(os.path.join(p, "gtt-domain", "backlog.md"), text)
+    check("STORY-002" not in run("check")[1], "once the Story is Done the signal goes away")
+
+    write(os.path.join(p, "docs", "PLAN.md"), "# Plan\nDia 3: todo listo\nEl cronograma manda\n")
+    check("DLV-PACE-DRIFT" not in run("check")[1] and "DLV-PACE-DRIFT" not in run("summary")[1], "without a declared pace nothing is judged about rhythm")
+    rc, out = run("select", "--pace", "weekly", "--apply")
+    check(rc == 1 and not os.path.exists(os.path.join(p, ".gtt", "delivery.json")), "an unknown pace is refused and nothing is written", out[-200:])
+    check(run("select", "--pace", "flow", "--apply")[0] == 0, "the pace is an operating answer: `select --pace flow --apply`")
+    check(read_json(os.path.join(p, ".gtt", "delivery.json")).get("pace") == "flow", "it is recorded in .gtt/delivery.json")
+    out = run("summary")[1]
+    check("pace flow" in out and "DLV-PACE-DRIFT docs/PLAN.md" in out, "under flow, a plan that speaks of `Dia 3` and `cronograma` is reported with its file", out[-300:])
+    write(os.path.join(p, "docs", "PLAN.md"), "# Plan\nContinuous flow by agent hours.\n")
+    check("DLV-PACE-DRIFT" not in run("summary")[1], "a plan in the declared rhythm raises nothing")
+    run("select", "--pace", "days", "--apply")
+    write(os.path.join(p, "docs", "PLAN.md"), "# Plan\nPasamos a flujo continuo.\n")
+    check("DLV-PACE-DRIFT docs/PLAN.md" in run("summary")[1], "the check also works the other way: `days` against `flujo continuo`")
+    out = run("get")[1]
+    check("pace days" in out, "get shows the pace", out)
+    ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]["delivery.select"]
+    check(any(a["name"] == "pace" and a["flag"] == "--pace" for a in ops["args"]), "the operation delivery.select declares pace for the CLI")
+    for level in read_json(os.path.join(p, ".gtt", "contract", "profiles.json"))["profiles"].values():
+        check({"DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT"} <= set(level["delivery"]["signals"]), "every Autonomy Profile gives a level to the three new signals")
+
+
 def pending_events(project, tmp):
     print("[pending] one file per event: asked, answered by the human, applied, marked and deleted")
     p = fresh(project, tmp, "pending")
@@ -3895,7 +3958,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events, delivery_visibility):
             scenario(project, tmp)
     finally:
         if args.keep:

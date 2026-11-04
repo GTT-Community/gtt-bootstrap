@@ -666,7 +666,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "8e9b17b285ea0955bc805918888e2ee423ff5644efe559543c7a085abaf1ba49",
+      "sha256": "807f2c42760c091328b7a317715ca627c2ccf09989ea27f0745d33cfe268bb77",
       "aliases": [],
       "sections": [
         {
@@ -675,7 +675,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 9,
-          "line_end": 47
+          "line_end": 54
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -686,12 +686,20 @@
           "line_end": 40
         },
         {
+          "heading": "At any time (even if planning was never declared)",
+          "level": 2,
+          "anchor": "at-any-time-even-if-planning-was-never-declared",
+          "path": "GTT delivery > At any time (even if planning was never declared)",
+          "line_start": 41,
+          "line_end": 47
+        },
+        {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 41,
-          "line_end": 47
+          "line_start": 48,
+          "line_end": 54
         }
       ],
       "references": [],
@@ -1943,7 +1951,7 @@
       "title": "Delivery Planning",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "9b22ea269fb0a22c5ee9066f2076a5be49ec8a8a12c5130f0293b227378c8c9c",
+      "sha256": "f5e3aa7953a37ba3fed9de468d251e90ca332a87343abeef1df45fac6e566d03",
       "aliases": [],
       "sections": [
         {
@@ -1952,7 +1960,7 @@
           "anchor": "delivery-planning",
           "path": "Delivery Planning",
           "line_start": 1,
-          "line_end": 84
+          "line_end": 91
         },
         {
           "heading": "The skill",
@@ -1992,15 +2000,15 @@
           "anchor": "while-working-the-log-and-the-signals",
           "path": "Delivery Planning > While working: the log and the signals",
           "line_start": 54,
-          "line_end": 76
+          "line_end": 83
         },
         {
           "heading": "At the freeze",
           "level": 2,
           "anchor": "at-the-freeze",
           "path": "Delivery Planning > At the freeze",
-          "line_start": 77,
-          "line_end": 84
+          "line_start": 84,
+          "line_end": 91
         }
       ],
       "references": [],
@@ -2018,7 +2026,7 @@
       "title": "Planificación de entrega",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "d5655c30c0a5fb435ed4b693b7d98349ad9d46fdf85ff5670af07a44738776af",
+      "sha256": "fcdd5ea4a7865567d9e3a19412676426d9475b4ea1011b821cb037793ee91821",
       "aliases": [],
       "sections": [
         {
@@ -2027,7 +2035,7 @@
           "anchor": "planificación-de-entrega",
           "path": "Planificación de entrega",
           "line_start": 1,
-          "line_end": 84
+          "line_end": 91
         },
         {
           "heading": "La skill",
@@ -2067,15 +2075,15 @@
           "anchor": "mientras-se-trabaja-el-registro-y-las-señales",
           "path": "Planificación de entrega > Mientras se trabaja: el registro y las señales",
           "line_start": 54,
-          "line_end": 76
+          "line_end": 83
         },
         {
           "heading": "En el freeze",
           "level": 2,
           "anchor": "en-el-freeze",
           "path": "Planificación de entrega > En el freeze",
-          "line_start": 77,
-          "line_end": 84
+          "line_start": 84,
+          "line_end": 91
         }
       ],
       "references": [],
@@ -3389,7 +3397,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "a68b19d2f24ebb903ef9449f513a0a9fdac3070035f80b48c8c372b92c3f6884",
+      "sha256": "40a12871a9cf1380aa597653b1a777173f32a0a30890284f316a74e673452c48",
       "aliases": [],
       "sections": [
         {
@@ -3398,7 +3406,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 374
+          "line_end": 377
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3478,31 +3486,31 @@
           "anchor": "delivery-planning",
           "path": "Working inside a governed project > Delivery planning",
           "line_start": 324,
-          "line_end": 333
+          "line_end": 336
         },
         {
           "heading": "Simple execution",
           "level": 2,
           "anchor": "simple-execution",
           "path": "Working inside a governed project > Simple execution",
-          "line_start": 334,
-          "line_end": 343
+          "line_start": 337,
+          "line_end": 346
         },
         {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
-          "line_start": 344,
-          "line_end": 355
+          "line_start": 347,
+          "line_end": 358
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 356,
-          "line_end": 374
+          "line_start": 359,
+          "line_end": 377
         }
       ],
       "references": [],
@@ -5390,7 +5398,7 @@
       "title": "GTT delivery",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "19241489165f70a45804efdbeb89f00a53c98d793bc7eeb26fe14efada3f1374",
+      "sha256": "492657c66c48c05896bbf87d006d7f5a8e0c4f843173e452edcc42ea8a9ba190",
       "aliases": [],
       "sections": [
         {
@@ -5399,7 +5407,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 8,
-          "line_end": 46
+          "line_end": 53
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -5410,12 +5418,20 @@
           "line_end": 39
         },
         {
+          "heading": "At any time (even if planning was never declared)",
+          "level": 2,
+          "anchor": "at-any-time-even-if-planning-was-never-declared",
+          "path": "GTT delivery > At any time (even if planning was never declared)",
+          "line_start": 40,
+          "line_end": 46
+        },
+        {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 40,
-          "line_end": 46
+          "line_start": 47,
+          "line_end": 53
         }
       ],
       "references": [],
@@ -7548,7 +7564,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "19241489165f70a45804efdbeb89f00a53c98d793bc7eeb26fe14efada3f1374",
+      "sha256": "492657c66c48c05896bbf87d006d7f5a8e0c4f843173e452edcc42ea8a9ba190",
       "aliases": [],
       "sections": [
         {
@@ -7557,7 +7573,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 8,
-          "line_end": 46
+          "line_end": 53
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -7568,12 +7584,20 @@
           "line_end": 39
         },
         {
+          "heading": "At any time (even if planning was never declared)",
+          "level": 2,
+          "anchor": "at-any-time-even-if-planning-was-never-declared",
+          "path": "GTT delivery > At any time (even if planning was never declared)",
+          "line_start": 40,
+          "line_end": 46
+        },
+        {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 40,
-          "line_end": 46
+          "line_start": 47,
+          "line_end": 53
         }
       ],
       "references": [],
@@ -8504,6 +8528,11 @@
     ],
     "assessing and strengthening an existing design": [
       "DOC-GUIDE#assessing-and-strengthening-an-existing-design"
+    ],
+    "at any time (even if planning was never declared)": [
+      "ART-KIRO-STEERING-GTT-DELIVERY#at-any-time-even-if-planning-was-never-declared",
+      "GTT-SKILL#at-any-time-even-if-planning-was-never-declared",
+      "SKILL-GTT-DELIVERY#at-any-time-even-if-planning-was-never-declared"
     ],
     "at the freeze": [
       "DOC-DELIVERY#at-the-freeze"

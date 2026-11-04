@@ -38,6 +38,13 @@ Until three Stories have been measured the plan is *uncalibrated*: say it.
 4. Run `bash .gtt/scripts/gtt-delivery.sh plan` and give the human the summary it computes, e.g. "With 3 fronts: ~N h of agent,
    finish X, deadline Y -> does not fit. To fit: integrate identity (-5 Stories), cut EPIC-008 (-4 Stories)". Every lever is a `[PROPUESTA]`.
 
+## At any time (even if planning was never declared)
+
+`bash .gtt/scripts/gtt-delivery.sh check` and `summary` report three signals with or without a declaration: `DLV-NO-PLAN` (many open
+Stories and almost none with an `Estimate`: size the Epics now), `DLV-STALE-STATUS` (a commit already closed a Story still not `Done`: set
+`Done` and `Closed`) and `DLV-PACE-DRIFT` (a plan document speaks in another rhythm than `pace`). Say each in one line and fix the part
+that is yours (Stories, estimates, plan documents); the pace itself is the human's (`gtt delivery set --pace days|flow`).
+
 ## After the freeze
 
 When observation opens a `DLV-*` signal (`bash .gtt/scripts/gtt-observe.sh backlog`), say it in one line and keep working. For

@@ -89,7 +89,21 @@
     "human_wait_h": 24,
     "source_max_age_days": 90,
     "hours_per_day": 8,
-    "calibration_min_stories": 3
+    "calibration_min_stories": 3,
+    "noplan_min_stories": 8,
+    "noplan_min_coverage": 0.5,
+    "stale_commits_scanned": 300
+  },
+  "pace": {
+    "values": {
+      "days": "the work is planned in days: the plan, the status and the orders may speak of days",
+      "flow": "continuous flow: Stories are pulled as they free up and the only clock is agent hours; no document speaks of day N, jornadas or a day-by-day schedule"
+    },
+    "state": "pace in .gtt/delivery.json, changed with `gtt delivery set --pace days|flow`; it is an operating answer, never architecture",
+    "drift": {
+      "flow": ["\\bd[ií]a\\s+\\d+\\b", "\\bday\\s+\\d+\\b", "\\bjornadas?\\b", "\\bcada\\s+d[ií]a\\b", "\\bcronograma\\b", "\\bday[- ]by[- ]day\\b"],
+      "days": ["\\bflujo\\s+continuo\\b", "\\bcontinuous\\s+flow\\b"]
+    }
   },
   "fields": {
     "epic": ["Estimate", "Depends on", "Lane", "Owner", "Touches", "Build", "Budget"],
@@ -105,12 +119,15 @@
     "DLV-HUMAN-WAIT": "a human action (Owner: human) open for more than human_wait_h",
     "DLV-LANE-CROSS": "Epics of different fronts declare overlapping Touches",
     "DLV-NO-VALUE": "no Epic of Kind slice or skeleton, with a development method declared",
-    "DLV-UNCALIBRATED": "fewer Stories measured than calibration_min_stories"
+    "DLV-UNCALIBRATED": "fewer Stories measured than calibration_min_stories",
+    "DLV-NO-PLAN": "noplan_min_stories or more open Stories and fewer than noplan_min_coverage of them with a duration (their own Estimate or their Epic's): nobody can say how long the backlog takes; it fires even when delivery planning was never declared",
+    "DLV-STALE-STATUS": "a Story that is not Done while a recent commit (last stale_commits_scanned) already closes it by name",
+    "DLV-PACE-DRIFT": "a plan document speaks in the other rhythm than the declared pace (day N, jornada, cronograma under flow)"
   },
   "levels_owned_by": ".gtt/contract/profiles.json (profiles.<id>.delivery) - each Autonomy Profile defines what a signal means for it",
   "verification": {
     "freeze": "gtt-delivery.sh check --pre-freeze: every Planned Epic has an Estimate; an Epic over its cap carries the decision in Budget; with more than one front every Epic has Lane and Touches and no two fronts overlap; every `Build: integrate (ADR-NNN)` names an ADR that exists; every external [FUENTE: ..., consultado AAAA-MM-DD] is younger than source_max_age_days",
-    "silent_when": "no .gtt/delivery.json and no Epic with a delivery field: a project that never declared delivery planning is never obstructed"
+    "silent_when": "no .gtt/delivery.json and no Epic with a delivery field: a project that never declared delivery planning is never obstructed (the freeze and the check). It is not silent about size: DLV-NO-PLAN, DLV-STALE-STATUS and DLV-PACE-DRIFT are computed anyway and only warn"
   },
   "boundary": "GTT plans and watches the fronts. It does not launch, create or orchestrate agents: that belongs to the ADE. `lanes` only prints summaries and the `git worktree add` commands to copy."
 }

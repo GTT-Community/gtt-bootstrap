@@ -70,6 +70,13 @@ siguiendo la cadena de dependencias más larga.
 | DLV-LANE-CROSS | Epics de frentes distintos con `Touches` cruzados |
 | DLV-NO-VALUE | Ningún Epic `Kind: slice` o `skeleton` (solo con método declarado) |
 | DLV-UNCALIBRATED | Menos de 3 Stories medidas |
+| DLV-NO-PLAN | 8 o más Stories abiertas y menos de la mitad con duración (su `Estimate` o el de su Epic). Se dispara **aunque nunca se haya declarado la planificación**: nadie puede decir cuánto dura el backlog |
+| DLV-STALE-STATUS | Una Story que no está `Done` mientras un commit reciente ya la cierra por nombre (`closes STORY-168`) |
+| DLV-PACE-DRIFT | Un documento de plan habla en otro ritmo que el `pace` declarado (`día N`, `jornada`, `cronograma` bajo `flow`) |
+
+`pace` es `days` o `flow` (flujo continuo). Se declara una vez con `gtt delivery set --pace flow`; cambiarlo después es el mismo
+comando, en un solo lugar, y DLV-PACE-DRIFT lista cada documento que aún habla distinto. Las tres señales solo avisan:
+nunca detienen un proyecto que no declaró planificación.
 
 Qué significa cada una depende de tu Autonomy Profile (`profiles.json`, `delivery`). `gtt report [--epic EPIC-NNN] [--json]`
 muestra % por Epic, real contra estimado, la razón, la fecha estimada y las señales abiertas.
