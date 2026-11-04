@@ -3776,6 +3776,74 @@ def delivery_visibility(project, tmp):
     check({"preset", "scope_cap", "growth_pct", "rebase"} <= {a["name"] for a in ops["delivery.select"]["args"]}, "delivery.select declares preset, scope_cap, growth_pct and rebase")
 
 
+def question_form(project, tmp):
+    print("[question-form] a question is rare, short, and always in the same form: topic, question, options with what happens, something else, the chat")
+    p = fresh(project, tmp, "qform")
+    pdir = os.path.join(p, "gtt-domain", "pending")
+    os.makedirs(pdir, exist_ok=True)
+
+    def pend(*args):
+        proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", *args], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              env=dict(os.environ, GTT_NOW="2026-11-04T10:00:00Z"))
+        return proc.returncode, proc.stdout + proc.stderr
+
+    def ask(question, typ="product", blocks="STORY-467", header="pdfkit (PDF)", options=None, recommended="1", apply=True):
+        options = options if options is not None else ["Yes, approve pdfkit | I add it to apps/api and close STORY-467.", "No, another library | You name it in the answer and I use it.",
+                                                         "Leave the PDF for later | STORY-467 stays partial (XLSX only)."]
+        args = ["ask", "--type", typ, "--question", question, "--why", "It closes STORY-467.", "--recommended", recommended]
+        for o in options:
+            args += ["--option", o]
+        if header is not None:
+            args += ["--header", header]
+        if blocks:
+            args += ["--blocks", blocks]
+        return pend(*args, *(["--apply"] if apply else []))
+
+    Q = "Do you approve adding the pdfkit library to apps/api to build the PDF reports?"
+    rc, out = ask(Q)
+    text = open(os.path.join(pdir, "ASK-001.md"), encoding="utf-8").read()
+    lines = text.splitlines()
+    check(rc == 0 and lines[0] == "# ASK-001 · " + Q and "Topic: pdfkit (PDF)" in lines[2] and lines[4] == "1. Yes, approve pdfkit (recommended)"
+          and lines[5].startswith("   I add it") and lines[10] == "4. Something else: write it in «Answer»" and lines[11].startswith("5. Talk about it in the chat"),
+          "the question is the topic, the question, three numbered options with what happens, something else and the chat", text)
+    check(pend("check")[0] == 0 and len(lines) <= 16, "the question passes the engine's own check and fits 16 lines")
+    check(ask("Which colour?", typ="product", blocks="")[0] == 1, "a product question that blocks nothing is refused: it is not necessary")
+    check(ask("Which colour?", typ="governed", blocks="")[0] == 1, "a governed question that blocks nothing is refused too")
+    check(ask("Do you pay the invoice for the PDF service?", typ="money", blocks="")[0] == 0, "an account, key, money or legal question is always the human's")
+    check(ask(Q)[0] == 1 and "already open" in ask(Q)[1], "the same open question is not asked twice")
+    check(ask("Which one?", header="")[0] == 1 and ask("Which one?", header="x" * 30)[0] == 1, "a question needs a short topic")
+    check(ask("Which one?", options=["A", "B"])[0] == 1, "an option without its description (what happens) is refused")
+    ask("Second product question for STORY-468?", blocks="STORY-468")
+    ask("Third product question for STORY-469?", blocks="STORY-469")
+    rc, out = ask("Fifth product question for STORY-470?", blocks="STORY-470")
+    check(rc == 1 and "already open" in out and "limit is 4" in out, "at most four questions are open at once: the human answers those first", out)
+    # The two closing lines are part of the form.
+    broken = text.replace("4. Something else: write it in «Answer»\n", "")
+    write(os.path.join(pdir, "ASK-009.md"), broken.replace("ASK-001", "ASK-009"))
+    rc, out = pend("check")
+    check(rc == 1 and "closing lines are missing" in out, "a question without its two closing lines fails the check", out[-300:])
+    os.remove(os.path.join(pdir, "ASK-009.md"))
+    # Answering: an option, something else, the chat.
+    path = os.path.join(pdir, "ASK-001.md")
+    base = open(path, encoding="utf-8").read()
+    for answer, state in (("1", "answered"), ("4 use pdf-lib instead", "answered"), ("5", "open")):
+        write(path, base.replace("\nAnswer:\n", f"\nAnswer: {answer}\n"))
+        rows = json.loads(pend("list", "--json")[1])
+        row = [r for r in (rows["events"] if isinstance(rows, dict) else rows) if r["id"] == "ASK-001"][0]
+        check(row["state"] == state, f"the answer «{answer}» leaves the question {state}" + (" (the human wants to talk: it is not an answer)" if state == "open" else ""), str(row))
+    write(path, base.replace("\nAnswer:\n", "\nAnswer: 7\n"))
+    check(pend("check")[0] == 1, "an answer that chooses an option that does not exist fails the check")
+    write(path, base)
+    es = fresh(project, tmp, "qform-es")
+    save_json(os.path.join(es, ".gtt", "methodology.json"), {"schema": 1, "profile": "medium", "language": "es"})
+    os.makedirs(os.path.join(es, "gtt-domain", "pending"), exist_ok=True)
+    proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--header", "PDF", "--question", "¿Apruebas pdfkit?", "--why", "Cierra la 467.", "--option", "Sí | Lo agrego.", "--option", "No | Otra librería.",
+                           "--recommended", "1", "--blocks", "STORY-467", "--apply"], cwd=es, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    text_es = open(os.path.join(es, "gtt-domain", "pending", "ASK-001.md"), encoding="utf-8").read() if proc.returncode == 0 else proc.stdout + proc.stderr
+    check("Tema: PDF" in text_es and "3. Otra respuesta: escríbela en «Respuesta»" in text_es and "4. Hablarlo en el chat: dime «hablemos»" in text_es,
+          "in a Spanish project the form is in Spanish, word for word", text_es)
+
+
 def pending_events(project, tmp):
     print("[pending] one file per event: asked, answered by the human, applied, marked and deleted")
     p = fresh(project, tmp, "pending")
@@ -3799,7 +3867,8 @@ def pending_events(project, tmp):
             return proc.returncode, proc.stdout
 
     ASK = ["ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--why", "Decides if online billing enters v1.",
-           "--option", "Yes, manual with invoice", "--option", "No, online billing from v1", "--recommended", "1", "--blocks", "STORY-066"]
+           "--header", "Billing in v1", "--option", "Yes, manual with invoice | I build the invoice flow and close STORY-066.",
+           "--option", "No, online billing from v1 | I add the payment provider first and STORY-066 waits.", "--recommended", "1", "--blocks", "STORY-066"]
     DEC = ["decide", "--affects", "security", "--title", "Phone data goes unencrypted in v1", "--what", "Local data stays unencrypted until v1.1.",
            "--why", "Encrypting needs a native build; v1 runs on Expo Go.", "--where", "src/sync/"]
 
@@ -3807,8 +3876,9 @@ def pending_events(project, tmp):
     check(rc == 0 and "dry run" in out and not os.path.exists(path("ASK-001.md")), "criterion 1: ask is a dry run without --apply", out)
     rc, out = pend(*ASK, "--apply")
     text = open(path("ASK-001.md"), encoding="utf-8").read() if os.path.isfile(path("ASK-001.md")) else ""
-    check(rc == 0 and text.startswith("# ASK-001 · Manual billing with an invoice in v1?\n") and "Type: money · Blocks: STORY-066 · Created: 2026-11-01" in text
-          and "1. Yes, manual with invoice (recommended)\n2. No, online billing from v1\n" in text and "Until you answer: option 1." in text and text.endswith("\nAnswer:\n"),
+    check(rc == 0 and text.startswith("# ASK-001 · Manual billing with an invoice in v1?\n") and "Type: money · Topic: Billing in v1 · Blocks: STORY-066 · Created: 2026-11-01" in text
+          and "1. Yes, manual with invoice (recommended)\n   I build the invoice flow and close STORY-066.\n2. No, online billing from v1\n   I add the payment provider first and STORY-066 waits.\n"
+          "3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\n" in text and "Until you answer: option 1." in text and text.endswith("\nAnswer:\n"),
           "criterion 1: ask writes the question in the exact format", text)
     rc, out = pend(*DEC, "--apply")
     text = open(path("DEC-002.md"), encoding="utf-8").read() if os.path.isfile(path("DEC-002.md")) else ""
@@ -3826,12 +3896,14 @@ def pending_events(project, tmp):
            ("a decision whose Where it landed does not exist", ["decide", "--affects", "cost", "--title", "t", "--what", "w", "--why", "y", "--where", "nowhere/at/all"]),
            ("a long line", ["decide", "--affects", "cost", "--title", "t", "--what", "x" * 130, "--why", "y", "--where", "src/sync/"])]
     for label, args in bad:
+        if args[0] == "ask":
+            args = [a if a in ("ask", "--type") or not a.islower() or len(a) > 1 else a + " | x" for a in args] + ["--header", "Topic"]
         rc, out = pend(*args, "--apply")
         check(rc == 1, f"criteria 2 and 10: {label} is refused", out)
     check(sorted(os.listdir(pdir)) == [".seq", "ASK-001.md", "DEC-002.md", "README.md"], "criterion 2: a refused event leaves nothing behind")
-    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n2. b\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
+    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
     rc, out = pend("check")
-    check(rc == 1 and "PEN-01" in out and "13 lines" in out, "criterion 2: a file of 13 lines fails the check", out)
+    check(rc == 1 and "PEN-01" in out and "17 lines" in out, "criterion 2: a file of 13 lines fails the check", out)
     os.remove(path("ASK-009.md"))
     write(path("DEC-008.md"), "# DEC-008 · No affects\n\nCreated: 2026-11-01\nWhat I decided: a\nWhy: b\nWhere it landed: src/sync/\n\nAnswer: (ok, or tell me what to change)\n")
     rc, out = pend("check")
@@ -3891,7 +3963,7 @@ def pending_events(project, tmp):
     check(rc == 1, "criterion 6: `done` must cite a place that exists", out)
     rc, out = pend("done", "1", "--in", "STORY-022", "--apply")
     check(rc == 0 and "Attended: 2026-11-01 · option 1 · applied in: STORY-022" in open(path("ASK-001.md"), encoding="utf-8").read(), "criterion 6: `done` writes the one-line mark", out)
-    pend("ask", "--type", "legal", "--question", "Sign the DPA with the vendor?", "--why", "Needed before storing EU data.", "--option", "Yes", "--option", "No", "--recommended", "2", "--apply")
+    pend("ask", "--type", "legal", "--header", "DPA", "--question", "Sign the DPA with the vendor?", "--why", "Needed before storing EU data.", "--option", "Yes | I record it and store EU data.", "--option", "No | EU data stays out.", "--recommended", "2", "--apply")
     pend("answer", "3", "1", "--confirmed-by-human")
     rc, out = pend("clean", "--apply")
     names = sorted(n for n in os.listdir(pdir) if n.endswith(".md") and n != "README.md")
@@ -3955,12 +4027,12 @@ def pending_events(project, tmp):
     for name in os.listdir(pdir):
         if name.startswith(("ASK", "DEC")):
             os.remove(path(name))
-    pend("ask", "--type", "dinero", "--question", "¿Cobro manual con factura en v1?", "--why", "Decide si el cobro en línea entra en v1.", "--option", "Sí, manual con factura",
-         "--option", "No, cobro en línea desde v1", "--recommended", "1", "--apply")
+    pend("ask", "--type", "dinero", "--header", "Cobro en v1", "--question", "¿Cobro manual con factura en v1?", "--why", "Decide si el cobro en línea entra en v1.", "--option", "Sí, manual con factura | Armo el flujo de factura.",
+         "--option", "No, cobro en línea desde v1 | Primero integro el proveedor de pagos.", "--recommended", "1", "--apply")
     pend("decide", "--affects", "seguridad", "--title", "Los datos del teléfono van sin cifrar en v1", "--what", "Lo guardado queda sin cifrar hasta v1.1.", "--why", "Cifrar exige un build nativo.",
          "--where", "src/sync/", "--apply")
     es = open(path(sorted(n for n in os.listdir(pdir) if n.startswith("ASK"))[0]), encoding="utf-8").read()
-    check("Tipo: dinero · Bloquea: nada · Creada:" in es and "1. Sí, manual con factura (recomendada)" in es and "Mientras no respondas: opción 1." in es and es.endswith("Respuesta:\n"),
+    check("Tipo: dinero · Tema: Cobro en v1 · Bloquea: nada · Creada:" in es and "1. Sí, manual con factura (recomendada)\n   Armo el flujo de factura." in es and "4. Hablarlo en el chat: dime «hablemos»" in es and "Mientras no respondas: opción 1." in es and es.endswith("Respuesta:\n"),
           "a Spanish project gets the format of the order, word for word", es)
     out = pend("notice")[1]
     check(out.startswith("@gtt · Te necesito (1)\n") and "→ recomiendo 1" in out and "Para que sepas: " in out and "Responde aquí, en el archivo o con gtt answer" in out, "the Spanish notice has the shape of the order", out)
@@ -4001,7 +4073,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events, delivery_visibility):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events, question_form, delivery_visibility):
             scenario(project, tmp)
     finally:
         if args.keep:
