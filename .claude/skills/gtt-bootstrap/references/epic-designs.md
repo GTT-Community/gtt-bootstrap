@@ -36,8 +36,7 @@ are written.
   cited, every rule and flow in an example. This is the same in every Autonomy Profile and at every THINK Depth.
   `bash .gtt/scripts/gtt-method.sh check` must hold too: no Epic cut by layer when the method forbids it, the
   skeleton first, every slice with its fields. It reports; it never corrects the backlog or a design for you.
-- **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1`, a `Context:` of
-  at most five lines each ending with its anchor, and `Done when:` naming an example of the design and its test
-  file. A Story cites the design; it never cites a source and never decides.
+- **Stories.** Write them in the backlog's format: `Implements: design/EPIC-NNN#R-2, #F-1, #E-1` and `Done when:` naming an example of the design and its executable
+  evidence (a test file, or `run: <command>`). Nothing else is needed: no `Context:` copy of the design. A Story cites the design; it never cites a source and never decides.
 - **Approval is the human's.** Give the command - `bash .gtt/scripts/gtt-approve.sh EPIC-NNN` - and never write
   `Approved` yourself.

@@ -17,7 +17,8 @@ What fails (structure that tooling and people rely on, never a judgment):
   * an Epic that is Planned, In Progress or Completed without its Goal or its `Approved`
   * an Epic marked Completed while one of its Stories is neither Done nor Cancelled
   * a Story that implements anchors that do not exist, or that is being worked without executable evidence in
-    `Done when` (a test file, or `run: <command>` for content and other work without tests)
+    `Done when` (a test file, or `run: <command>` for content and other work without tests), or whose
+    `Done when` names an example (E-n) that is in none of the designs the Story cites
 
 What is only reported, and never stops anything:
 
@@ -158,7 +159,6 @@ def cmd_check(path):
 
 DESIGN_DIR = "gtt-domain/context/design"
 DESIGN_REF = re.compile(r"(?:design/(EPIC-\d+))?#([RFIED]-\d+)")
-ANCHOR_END = re.compile(r"#[RFIED]-\d+\)?[.;,]?\s*$")
 TEST_PATH = re.compile(r"[\w./-]*(?:tests?|specs?|__tests__|e2e)/[\w./-]+|[\w/-]+[._](?:test|spec)\.\w+|\b[\w/-]+\.(?:py|ts|tsx|js|jsx|java|cs|go|rb|kt|rs|php|feature)\b")
 RUN_EVIDENCE = re.compile(r"(?i)\brun:\s*\S+")
 SCENARIO = re.compile(r"(?i)\b(given|dado)\b.*\b(when|cuando)\b.*\b(then|entonces)\b")
@@ -226,9 +226,10 @@ def check_trace(path, stories, epics):
             elif story["epic"] in declared:
                 print(f"gtt-check-backlog: WARN - {story['id']} has no `Implements:` (the parts of its Epic's design it builds) ({where})")
             continue
-        last, cited = story["epic"], 0
+        last, cited, designs = story["epic"], 0, {story["epic"]}
         for epic_id, item in DESIGN_REF.findall(implements):
             last = epic_id or last
+            designs.add(last)
             anchors = design_anchors(last)
             cited += 1
             if anchors is None:
@@ -241,12 +242,15 @@ def check_trace(path, stories, epics):
                 fail(f"{story['id']} implements {adr}, which does not exist ({where})")
         if not cited:
             fail(f"{story['id']}: `Implements:` cites nothing - point at the design (design/{story['epic']}#R-1) ({where})")
-        anchors = design_anchors(story["epic"]) or set()
+        # An example may belong to any design the Story cites (a Story can build parts of two Epics), so it
+        # is looked up in all of them: the parent Epic's, those in `Implements`, and any `design/EPIC-n` it names.
         done = story["fields"].get("Done when", "")
+        designs.update(re.findall(r"design/(EPIC-\d+)", done))
+        anchors = set()
+        for epic_id in designs:
+            anchors |= design_anchors(epic_id) or set()
         examples = re.findall(r"\bE-\d+\b", done)
-        problems = [f"{e} is not an example of the design" for e in examples if e not in anchors]
-        if not examples and not (SCENARIO.search(done) and re.search(r"#[RFIED]-\d+", done)):
-            problems.append("it names no example of the design (E-n), nor a Given/When/Then with its anchor")
+        problems = [f"{e} is not an example of the design it cites" for e in dict.fromkeys(examples) if e not in anchors]
         if not (TEST_PATH.search(done) or RUN_EVIDENCE.search(done)):
             problems.append("it names no executable evidence (a test file, or `run: <command>`)")
         for problem in problems:
@@ -255,14 +259,14 @@ def check_trace(path, stories, epics):
                 fail(message)
             else:
                 print(f"gtt-check-backlog: WARN - {message}")
-        # `Context:` is optional and never fails: it copies the design, and two sources of truth is drift.
+        # Which example proves it is good practice, not a gate: the link (anchors) and the evidence are what is checked.
+        if not examples and not (SCENARIO.search(done) and re.search(r"#[RFIED]-\d+", done)) and normal(story["status"]) in ACTIVE:
+            print(f"gtt-check-backlog: NOTE - {story['id']} `Done when:` names no example of the design (E-n) ({where})")
+        # `Context:` is optional and never fails: the design is the source, a copy of it is drift and costs tokens.
         lines = context_lines(path, story)
         if len(lines) > 5:
             print(f"gtt-check-backlog: WARN - {story['id']} `Context:` has {len(lines)} lines - the design is the source; "
-                  f"distil at most five or drop it ({where})")
-        for line in lines:
-            if not ANCHOR_END.search(line):
-                print(f"gtt-check-backlog: WARN - {story['id']} `Context:` line does not end with its design anchor (#R-2): {line[:60]} ({where})")
+                  f"point at it with `Implements:` and drop the copy ({where})")
     return failed
 
 

@@ -537,8 +537,14 @@ def design_problems(design, approval=False):
             fails.append(f"[VACÍO: {gap}] is a BLOCKING gap: it is decided before the design is approved")
     opened = [g for g in design["open"] if g not in blocking]
     if opened:
-        notes.append(f"{len(opened)} open point(s) cross as explicit pending items: {', '.join(sorted(set(g or 'unclassified' for g in opened)))}")
+        notes.append(f"{len(opened)} open point(s) cross as explicit pending items: {brief(sorted(set(g or 'unclassified' for g in opened)), 6)}")
     return fails, notes
+
+
+def brief(items, limit=8):
+    """A list for one line: the first few and how many more, so a large Epic does not print a page."""
+    items = list(items)
+    return ", ".join(items[:limit]) + (f" (+{len(items) - limit} more)" if len(items) > limit else "")
 
 
 def epic_design(epic):
@@ -610,7 +616,7 @@ def check_all(only=None, prefreeze=False, approval=False):
         if only and entry["epic"] != only:
             continue
         if entry["missing"] and entry["closed"]:
-            findings.append(("FAIL", BACKLOG, f"{entry['epic']}: every Story is Done and {', '.join(entry['missing'])} of its design was never implemented"))
+            findings.append(("FAIL", BACKLOG, f"{entry['epic']}: every Story is Done and {brief(entry['missing'])} of its design was never implemented"))
     return findings
 
 

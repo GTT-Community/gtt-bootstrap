@@ -182,7 +182,6 @@ you never write `Approved`. The Stories under it are yours and need no approval,
 ##### STORY-NNN — <title>
 - **Status:** Planned
 - **Implements:** design/EPIC-NNN#R-2, #F-1, #E-1 · ADR-NNN
-- **Context:** <5 lines at most, distilled from the design; each line ends with its design anchor (#R-2)>
 - **Done when:** E-1 passes (Given … when … then …) · <test file>
 ```
 

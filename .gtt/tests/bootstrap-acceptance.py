@@ -2752,12 +2752,18 @@ def design_sources(project, tmp):
             ("a reference to a design that does not exist fails", good.replace("design/EPIC-001#R-1", "design/EPIC-077#R-1"), "EPIC-077.md does not exist"),
             ("a reference to an ADR that does not exist fails", good.replace("#E-1\n", "#E-1 · ADR-777\n"), "ADR-777, which does not exist"),
             ("an Implements that points at a missing anchor still fails", good.replace("#R-1, #E-1", "#R-1, #E-9"), "#E-9"),
-            ("`Done when` without an example of the design fails", good.replace("E-1 passes", "it works"), "names no example of the design"),
+            ("`Done when` naming an example that is in no design it cites fails", good.replace("E-1 passes", "E-7 passes"), "E-7 is not an example of the design it cites"),
             ("`Done when` without executable evidence fails", good.replace(" · tests/test_orders.py", ""), "names no executable evidence")):
         rc, out = stories(broken)
         check(rc == 1 and expect in out, label, out[-300:])
     rc, out = stories(good.replace("(#R-1)", ""))
-    check(rc == 0 and "WARN" in out and "does not end with its design anchor" in out, "a Context line without its anchor only warns: the check polices links, not wording", out[-300:])
+    check(rc == 0 and "WARN -" not in out, "a Context line without its anchor is not even a warning: the check polices links and evidence, not wording", out[-300:])
+    rc, out = stories(good.replace("- **Context:** The total of an order is never negative (#R-1)\n", ""))
+    check(rc == 0 and "WARN -" not in out, "a Story is `Implements` + `Done when`: without a `Context` it passes clean", out[-300:])
+    rc, out = stories(good.replace("E-1 passes", "it works"))
+    check(rc == 0 and "names no example of the design" in out, "`Done when` without an example only notes it: the example is practice, the link and the evidence are the check", out[-300:])
+    rc, out = stories(good.replace("- **Context:**", "- **Context:** a\n  b\n  c\n  d\n  e\n  f\n- **Was:**"))
+    check(rc == 0 and "`Context:` has" in out, "a Context of more than five lines warns: point at the design instead of copying it", out[-300:])
     rc, out = stories(good.replace(" · tests/test_orders.py", " · run: python3 tools/audit.py"))
     check(rc == 0, "`run: <command>` is executable evidence: a content Story needs no test file", out[-300:])
     rc, out = stories(good.replace("In Progress", "Planned").replace("- **Implements:** design/EPIC-001#R-1, #E-1\n", ""))
@@ -3420,9 +3426,20 @@ def delivery_planning(project, tmp):
           "**Design:** gtt-domain/context/design/EPIC-900.md\n\n##### STORY-901 - content\n- **Status:** In Progress\n- **Implements:** design/EPIC-900#R-1\n"
           "- **Context:** a line without any anchor\n- **Done when:** E-3 \u00b7 run: python3 tools/audit.py\n")
     rc, out, err = bash(p3, ".gtt/scripts/gtt-check-backlog.sh")
-    check(rc == 0 and "Context" in out + err and "WARN" in out + err, "criterion 12: `run: <command>` is evidence and a Context line without an anchor only warns", (out + err)[-300:])
+    check(rc == 0 and "FAILED" not in out + err, "criterion 12: `run: <command>` is evidence and a Context line without an anchor says nothing", (out + err)[-300:])
     write(os.path.join(p3, "gtt-domain", "backlog.md"), open(os.path.join(p3, "gtt-domain", "backlog.md"), encoding="utf-8").read().replace("#R-1", "#R-9"))
     check(bash(p3, ".gtt/scripts/gtt-check-backlog.sh")[0] == 1, "an Implements pointing at an anchor that does not exist still fails")
+    # Real case (OmniFarmOps): a Story under one Epic builds parts of two designs and its example belongs to the second.
+    write(os.path.join(p3, "gtt-domain", "context", "design", "EPIC-901.md"), "# EPIC-901\n\n- **R-4** other rule\n- **E-5** other example\n")
+    cross = ("# Project Backlog\n\n### EPIC-900 - Docs\n**Status:** Planned\n**Goal:** g\n**Approved:** ana - 2026-10-30\n"
+             "**Design:** gtt-domain/context/design/EPIC-900.md\n\n##### STORY-901 - content\n- **Status:** In Progress\n"
+             "- **Implements:** design/EPIC-900#R-1 \u00b7 design/EPIC-901#R-4\n- **Done when:** design/EPIC-901 E-5 passes \u00b7 run: python3 tools/audit.py\n")
+    write(os.path.join(p3, "gtt-domain", "backlog.md"), cross)
+    rc, out, err = bash(p3, ".gtt/scripts/gtt-check-backlog.sh")
+    check(rc == 0, "a Story that builds parts of two designs may take its example from the second", (out + err)[-300:])
+    write(os.path.join(p3, "gtt-domain", "backlog.md"), cross.replace("E-5", "E-8"))
+    rc, out, err = bash(p3, ".gtt/scripts/gtt-check-backlog.sh")
+    check(rc == 1 and "E-8 is not an example of the design it cites" in out + err, "an example that is in none of the designs the Story cites still fails", (out + err)[-300:])
 
     write(os.path.join(p, ".gtt", "ade.json"), "{}\n")      # an installed project: the setup records are protected
     for target in (".gtt/delivery.json", "gtt-domain/delivery-log.jsonl", ".gtt/local/delivery-snapshot.json"):
@@ -4092,13 +4109,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=".")
     parser.add_argument("--keep", action="store_true")
+    parser.add_argument("--only", nargs="+", metavar="SCENARIO", help="run only these scenarios (by function name) while iterating")
     args = parser.parse_args()
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
                          session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events, question_form, delivery_visibility):
-            scenario(project, tmp)
+            if not args.only or scenario.__name__ in args.only:
+                scenario(project, tmp)
     finally:
         if args.keep:
             print("kept:", tmp)

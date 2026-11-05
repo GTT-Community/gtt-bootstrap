@@ -63,7 +63,7 @@ disagree*, at the end).
 |---|---|
 | `Status` | Where the Story stands (table below) |
 | `Implements` | Which parts of the Epic's design this Story builds |
-| `Context` | Optional. Up to five lines taken from the design, each ending with its anchor; the design is the source, so leave it out when the pointer in `Implements` is enough |
+| `Context` | Optional, and best left out: the design is the source and a copy is drift that costs tokens on every read. Over five lines it warns |
 | `Done when` | The example from the design that must work, and the executable evidence: a test file, or `run: <command>` for work without tests (content, an audit, a measurement) |
 | `Estimate` | Agent hours, e.g. `1.5h`. Optional |
 | `Owner` | `agent` (default) or `human` for an action only you can do |
@@ -128,7 +128,6 @@ This file is yours to edit. Nothing in it is locked.
 
 - **Status:** Planned
 - **Implements:** design/EPIC-NNN#R-2, #F-1, #E-1 · ADR-NNN
-- **Context:** <optional; 5 lines at most, distilled from the design; each ends with its design anchor (#R-2)>
 - **Done when:** E-1 passes (Given … when … then …) · <test file> or run: <command>
 - **Closed:** <YYYY-MM-DD> — <commit or PR> — <tests passed>
 
@@ -174,7 +173,7 @@ A Story points at that design and never decides anything itself:
 
 - `Implements` names the parts it builds, by their ids in the design
   (`design/EPIC-NNN#R-2, #F-1`: rule 2, flow 1).
-- `Context` is optional; if present it distils at most five lines, each ending with the id it comes from (only a warning otherwise).
+- `Context` is optional and best left out; the check never reads its wording (only a warning over five lines).
 - `Done when` names an example of the design (`E-1`) and the executable evidence: a test file or `run: <command>`.
 
 A Story never cites a source document directly, and a design decision is

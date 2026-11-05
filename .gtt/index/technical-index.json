@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "e377d091c62b4d2f37d9357bb37591e3a7428d5f1edaaf8689bd363882672b96",
+      "sha256": "8b59796a5e43323d0423a86191c704bd0574e04c244f7148c1049346ae4466f1",
       "aliases": [],
       "sections": [
         {
@@ -554,7 +554,7 @@
       "title": "Step 6 - Register the sources and write the design of each Epic",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "7a1cc9725fc947114ba75e880bdd0e8bfa3f089a24cc96d9e5857816acba07f5",
+      "sha256": "4e47d64ff73b7fd1b6899d50cf030ba6d6d55096cf77ce04b04780e3dad42ac0",
       "aliases": [],
       "sections": [
         {
@@ -563,7 +563,7 @@
           "anchor": "step-6---register-the-sources-and-write-the-design-of-each-epic",
           "path": "Step 6 - Register the sources and write the design of each Epic",
           "line_start": 1,
-          "line_end": 44
+          "line_end": 43
         }
       ],
       "references": [
@@ -968,7 +968,7 @@
       "title": "Project Backlog",
       "authority": "development-line",
       "version": "v3.0",
-      "sha256": "8eb8c95277747cf23621e2d4afe324df37b0ccde575815b89116df90e109c357",
+      "sha256": "130e460ce7b8a2ffdb1e161a6ba48d7a7e16f2c07e0e3a071e96f847811af37a",
       "aliases": [],
       "sections": [
         {
@@ -977,7 +977,7 @@
           "anchor": "project-backlog",
           "path": "Project Backlog",
           "line_start": 1,
-          "line_end": 222
+          "line_end": 221
         },
         {
           "heading": "Development Line",
@@ -1041,7 +1041,7 @@
           "anchor": "epics",
           "path": "Project Backlog > Epics",
           "line_start": 110,
-          "line_end": 136
+          "line_end": 135
         },
         {
           "heading": "EPIC-001 — <Epic title (example)>",
@@ -1049,7 +1049,7 @@
           "anchor": "epic-001--epic-title-example",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)>",
           "line_start": 115,
-          "line_end": 136
+          "line_end": 135
         },
         {
           "heading": "Stories",
@@ -1057,7 +1057,7 @@
           "anchor": "stories",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories",
           "line_start": 125,
-          "line_end": 136
+          "line_end": 135
         },
         {
           "heading": "STORY-001 — <Story title (example)>",
@@ -1065,71 +1065,71 @@
           "anchor": "story-001--story-title-example",
           "path": "Project Backlog > Epics > EPIC-001 — <Epic title (example)> > Stories > STORY-001 — <Story title (example)>",
           "line_start": 127,
-          "line_end": 136
+          "line_end": 135
         },
         {
           "heading": "General Development Work",
           "level": 2,
           "anchor": "general-development-work",
           "path": "Project Backlog > General Development Work",
-          "line_start": 137,
-          "line_end": 142
+          "line_start": 136,
+          "line_end": 141
         },
         {
           "heading": "Current Focus",
           "level": 2,
           "anchor": "current-focus",
           "path": "Project Backlog > Current Focus",
-          "line_start": 143,
-          "line_end": 148
+          "line_start": 142,
+          "line_end": 147
         },
         {
           "heading": "Next Work",
           "level": 2,
           "anchor": "next-work",
           "path": "Project Backlog > Next Work",
-          "line_start": 149,
-          "line_end": 154
+          "line_start": 148,
+          "line_end": 153
         },
         {
           "heading": "Blocked",
           "level": 2,
           "anchor": "blocked",
           "path": "Project Backlog > Blocked",
-          "line_start": 155,
-          "line_end": 160
+          "line_start": 154,
+          "line_end": 159
         },
         {
           "heading": "Reference",
           "level": 2,
           "anchor": "reference",
           "path": "Project Backlog > Reference",
-          "line_start": 161,
-          "line_end": 222
+          "line_start": 160,
+          "line_end": 221
         },
         {
           "heading": "Where the detail lives",
           "level": 3,
           "anchor": "where-the-detail-lives",
           "path": "Project Backlog > Reference > Where the detail lives",
-          "line_start": 166,
-          "line_end": 183
+          "line_start": 165,
+          "line_end": 182
         },
         {
           "heading": "When the plan and the design disagree",
           "level": 3,
           "anchor": "when-the-plan-and-the-design-disagree",
           "path": "Project Backlog > Reference > When the plan and the design disagree",
-          "line_start": 184,
-          "line_end": 202
+          "line_start": 183,
+          "line_end": 201
         },
         {
           "heading": "What keeps it honest",
           "level": 3,
           "anchor": "what-keeps-it-honest",
           "path": "Project Backlog > Reference > What keeps it honest",
-          "line_start": 203,
-          "line_end": 222
+          "line_start": 202,
+          "line_end": 221
         }
       ],
       "references": [],
@@ -7749,7 +7749,7 @@
       "title": "GTT change proposal",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "3104a9a85d5d13fde77ccc2d996d73a7e72d0d3ed4b4d82fb4a3170b1015af05",
+      "sha256": "dbc2ba1e352306e8b388cdf45171b869cacead3c1daedc5692927541da6e3d36",
       "aliases": [],
       "sections": [
         {
@@ -7758,7 +7758,7 @@
           "anchor": "gtt-change-proposal",
           "path": "GTT change proposal",
           "line_start": 8,
-          "line_end": 324
+          "line_end": 323
         },
         {
           "heading": "First: is this governance at all?",
@@ -7830,47 +7830,47 @@
           "anchor": "4-epic-change",
           "path": "GTT change proposal > 4. Epic change",
           "line_start": 145,
-          "line_end": 190
+          "line_end": 189
         },
         {
           "heading": "5. Protected artifact change (GTTGuard)",
           "level": 2,
           "anchor": "5-protected-artifact-change-gttguard",
           "path": "GTT change proposal > 5. Protected artifact change (GTTGuard)",
-          "line_start": 191,
-          "line_end": 226
+          "line_start": 190,
+          "line_end": 225
         },
         {
           "heading": "6. Development method change",
           "level": 2,
           "anchor": "6-development-method-change",
           "path": "GTT change proposal > 6. Development method change",
-          "line_start": 227,
-          "line_end": 267
+          "line_start": 226,
+          "line_end": 266
         },
         {
           "heading": "7. Autonomy Profile change (frozen project)",
           "level": 2,
           "anchor": "7-autonomy-profile-change-frozen-project",
           "path": "GTT change proposal > 7. Autonomy Profile change (frozen project)",
-          "line_start": 268,
-          "line_end": 296
+          "line_start": 267,
+          "line_end": 295
         },
         {
           "heading": "Quality bar",
           "level": 2,
           "anchor": "quality-bar",
           "path": "GTT change proposal > Quality bar",
-          "line_start": 297,
-          "line_end": 306
+          "line_start": 296,
+          "line_end": 305
         },
         {
           "heading": "After writing",
           "level": 2,
           "anchor": "after-writing",
           "path": "GTT change proposal > After writing",
-          "line_start": 307,
-          "line_end": 324
+          "line_start": 306,
+          "line_end": 323
         }
       ],
       "references": [],

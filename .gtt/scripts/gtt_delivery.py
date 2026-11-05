@@ -847,7 +847,7 @@ def size_report(loaded=None, with_baseline=True):
     total = round(sum(epic_hours(e, stories) or 0 for e in alive), 1) if measurable else None
     out = {"schema": 1, "kind": "gtt-delivery-size", "declared": bool(state), "pace": state.get("pace"), "horizon": state.get("horizon"),
            "deadline": limit.isoformat() if limit else None, "open_stories": len(items), "done_stories": sum(1 for s in stories if s["status"] == "Done"),
-           "live_epics": len(alive), "coverage_pct": round(100 * coverage), "measurable": measurable, "remaining_h": remaining,
+           "live_epics": len(alive), "open_epics": len({i["epic"] for i in items}), "coverage_pct": round(100 * coverage), "measurable": measurable, "remaining_h": remaining,
            "days_of_work": math.ceil(remaining / th["hours_per_day"]) if remaining else (0 if remaining == 0 else None),
            "fronts": lanes, "capacity_h": capacity, "of_capacity_pct": round(100 * remaining / capacity) if remaining is not None and capacity else None,
            "target": {"declared": target is not None, "cap_h": target,
@@ -891,7 +891,7 @@ def cmd_size(args):
         emit(report)
         return 0
     r = report
-    print(f"size: {r['open_stories']} open Stories in {r['live_epics']} live Epics, {r['done_stories']} Done")
+    print(f"size: {r['open_stories']} open Stories in {r['open_epics']} of {r['live_epics']} live Epics, {r['done_stories']} Done")
     if r["measurable"]:
         print(f"  remaining: {r['remaining_h']:g} agent h (~{r['days_of_work']} day(s) of work on one front); {r['coverage_pct']}% of the open Stories have a duration")
     else:
