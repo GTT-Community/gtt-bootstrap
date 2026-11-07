@@ -478,6 +478,35 @@ def questionnaire(project, tmp):
     check(rc == 1 and "elicitation directive" in out, "the elicitation contract stays tied to the questionnaire's own structure", out[-200:])
 
 
+def think_plan(project, tmp):
+    print("[think-plan] THINK runs in order: Epics or context before it are out of order, only the human skips a step")
+    host = make_host(project, tmp, "questionnaire-host")
+    open(os.path.join(host, ".gtt/ade.json"), "w").write("{}")
+    write(os.path.join(host, "design.md"), "# Design\nA school system.\n")
+
+    def plan():
+        rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "--json")
+        return json.loads(out)
+
+    p = plan()
+    check(p["active"] and p["current"] == "depth" and not p["violations"], "a design document with nothing done: THINK starts at the depth")
+    rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "next-action")
+    check("think-plan" in out and "NEXT: depth" in out, "the next action names the THINK step, whatever the first message says")
+    backlog = os.path.join(host, "gtt-domain/backlog.md")
+    write(backlog, open(backlog, encoding="utf-8").read() + "\n### EPIC-001 \u2014 Base\n\n- **Status:** Proposed\n")
+    p = plan()
+    check(p["violations"] and "depth" in p["violations"][0], "Epics cut before THINK finished are reported out of order")
+    rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "--gate")
+    check(rc == 1 and "FAIL  THINK" in err, "the gate fails on it")
+    for step in ("depth", "assessment", "guidelines"):
+        bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "skip", step, "--by", "tester", "--reason", "test", "--apply")
+    bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "skip", "questionnaire", "--by", "tester", "--reason", "test", "--apply")
+    rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "--gate")
+    check(rc == 0 and not plan()["violations"], "the steps the human skipped let the gate pass; the skip names who")
+    rc, out, err = bash(host, ".gtt/scripts/gtt-project.sh", "think-plan", "skip", "depth", "--apply")
+    check(rc != 0, "a skip without who and why is refused")
+
+
 def elicitation_start(project, tmp):
     print("[questionnaire] computed state, a Next action while it is open, resumed from the working copy")
     eli = json.loads(contract(project, "show", "elicitation")[1])
@@ -2716,6 +2745,31 @@ def design_sources(project, tmp):
         check(rc == 1 and expect in err, label, (out + err)[-300:])
     write(orders, DESIGN_ORDERS)
 
+    # Acceptance criteria (AC-n): agreed with the human, each one shown by an example.
+    with_ac = DESIGN_ORDERS.replace("**Source sections:** D:§2.1 · D:§2.2\n",
+                                    "**Source sections:** D:§2.1 · D:§2.2\n\n**Acceptance criteria**\n\n- **AC-1** An order with a negative total is refused. (D-1)\n- **AC-2** A paid order cannot be cancelled. [FUENTE: D:§2.2]\n", 1)
+    with_ac = with_ac.replace("- **E-1** (R-1)", "- **E-1** (AC-1, R-1)", 1).replace("- **E-2** (R-2, F-1)", "- **E-2** (AC-2, R-2, F-1)", 1)
+    write(orders, with_ac)
+    rc, out, err = bash(d, ".gtt/scripts/gtt-check-design.sh", "EPIC-001", "--approval")
+    check(rc == 0, "acceptance criteria, each in an example and each backed by a source or a decision, pass", out + err)
+    for label, broken, expect in (
+            ("an acceptance criterion that appears in no example fails", with_ac.replace("(AC-2, R-2, F-1)", "(R-2, F-1)"), "AC-2 appears in no example"),
+            ("an acceptance criterion with neither a source nor a decision fails", with_ac.replace("is refused. (D-1)", "is refused."), "AC-1 carries neither")):
+        write(orders, broken)
+        rc, out, err = bash(d, ".gtt/scripts/gtt-check-design.sh", "EPIC-001", "--approval")
+        check(rc == 1 and expect in err, label, (out + err)[-300:])
+    write(orders, DESIGN_ORDERS)
+    rc, out, err = bash(d, ".gtt/scripts/gtt-check-design.sh", "EPIC-001", "--approval")
+    check(rc == 0 and "no acceptance criteria" in out + err, "an Epic without acceptance criteria is not blocked: the approval notes it once", out + err)
+    rc, out, err = bash(d, ".gtt/scripts/gtt-check-design.sh", "EPIC-001")
+    check(rc == 0 and "no acceptance criteria" not in out + err, "outside the approval the note is silent: no tokens on every read", out + err)
+    probe = ("import sys; sys.path.insert(0, '.gtt/scripts'); import gtt_design; "
+             "print(sorted(gtt_design.implements_of({'fields': {'Implements': 'design/EPIC-001#AC-2, #R-1'}})[0]))")
+    done = subprocess.run([sys.executable, "-c", probe], cwd=d, capture_output=True, text=True)
+    check("'AC-2'" in done.stdout and "'R-1'" in done.stdout, "a Story can say `Implements: design/EPIC-NNN#AC-n`", done.stdout + done.stderr)
+    scaffolded = open(payments, encoding="utf-8").read()
+    check("**AC-1**" in scaffolded and "(AC-1, R-1, F-1)" in scaffolded, "the scaffold carries the acceptance criteria and the example that shows them", scaffolded[:400])
+
     def approve(answer, *args):
         proc = subprocess.run(["bash", ".gtt/scripts/gtt-approve.sh", *args], cwd=d, input=answer, capture_output=True, text=True, encoding="utf-8", errors="replace")
         return proc.returncode, proc.stdout, proc.stderr
@@ -3507,6 +3561,59 @@ def skills_for_ades(project, tmp):
     check(rc == 1 and "YAML" in err, "a description that would break the YAML front matter is refused", err)
 
 
+def nested_checkouts(project, tmp):
+    print("[worktrees] a worktree or clone inside the project is not part of its kit: the index and the gates ignore it")
+    p = fresh(project, tmp, "worktrees")
+    bash(p, ".gtt/scripts/gtt-index.sh")
+    rc, _o, _e = bash(p, ".gtt/scripts/gtt-validate.sh")
+    check(rc == 0, "baseline: the project validates before the worktree exists")
+    copy = os.path.join(p, ".claude", "worktrees", "w1")
+    shutil.copytree(p, copy, ignore=shutil.ignore_patterns("worktrees", "__pycache__"))
+    write(os.path.join(copy, ".git"), "gitdir: /elsewhere/.git/worktrees/w1\n")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-index.sh")
+    check(rc == 0 and "duplicate" not in out + err, "the index does not register a worktree under .claude/worktrees", out + err)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-validate.sh")
+    check(rc == 0 and "worktrees" not in out, "validation passes with a worktree inside the project", (out + err)[-300:])
+    clone = os.path.join(p, "vendor-clone")
+    shutil.copytree(os.path.join(p, "gtt-domain"), os.path.join(clone, "gtt-domain"))
+    os.makedirs(os.path.join(clone, ".git"))
+    rc, out, err = bash(p, ".gtt/scripts/gtt-index.sh")
+    check(rc == 0, "a folder with its own .git is another checkout and is not indexed either", out + err)
+
+
+def human_handoff(project, tmp):
+    print("[handoff] every act the human must run reaches them in one format, with a command that was built and checked")
+    p = fresh(project, tmp, "handoff")
+    H = ".gtt/scripts/gtt-handoff.sh"
+    hand = lambda *a: bash(p, H, *a)
+    rc, out, err = hand("freeze")
+    check(rc == 0 and out.startswith("@gtt ·") and "Run:" in out and "freeze" in out, "freeze is handed over in the standard shape", out + err)
+    rc, out, err = hand("accept", "OBS-xxxx")
+    check(rc == 1 and "OBS-xxxx" in err and not out, "an observation that does not exist is never handed over (no placeholder reaches the human)", out + err)
+    rc, out, err = hand("promote", "no-such-set")
+    check(rc == 1 and "no promotion set" in err and not out, "a promotion set that does not exist is never handed over", out + err)
+    rc, out, err = hand("approve", "EPIC-99")
+    check(rc == 1 and "not an Epic" in err, "an Epic that does not exist is never handed over", out + err)
+    rc, out, err = hand("explode")
+    check(rc == 1 and "not a human act" in err, "an act the contract does not know is refused", out + err)
+    rc, out, err = hand("run", "7")
+    check(rc == 1 and "no pending run" in err, "a run that does not exist is never handed over", out + err)
+    write(os.path.join(p, "ctx.md"), "# ctx\n")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-stage.sh", "adr-x", "--reason", "Use Postgres", "ctx.md=gtt-domain/context/stack.md")
+    check(rc == 0 and "gtt-handoff.sh promote adr-x" in out, "gtt-stage points to the hand-over, not to a command to retype", out + err)
+    rc, out, err = hand("promote", "adr-x")
+    check(rc == 0 and "Use Postgres" in out and "gtt-domain/context/stack.md" in out and "promote adr-x" in out,
+          "a promotion set is handed over with its reason, its files and the command", out + err)
+    rc, js, err = hand("promote", "adr-x", "--json")
+    check(rc == 0 and json.loads(js)["command"].split()[-1] == "adr-x" and "promote" in json.loads(js)["command"], "--json carries the exact command", js)
+    rc, out, err = bash(p, ".gtt/scripts/gtt-run.sh", "new", "demo", "--apply")
+    rc, out, err = hand("run", "1")
+    check(rc == 0 and "RUN-001" in out, "a pending run is handed over by its number", out + err)
+    write(os.path.join(p, ".gtt", "methodology.json"), json.dumps({**(json.load(open(os.path.join(p, ".gtt", "methodology.json"))) if os.path.isfile(os.path.join(p, ".gtt", "methodology.json")) else {}), "language": "es"}))
+    rc, out, err = hand("freeze")
+    check(rc == 0 and out.startswith("@gtt · Para ti") and "Ejecuta:" in out, "the message follows the project's language", out + err)
+
+
 def simple_execution(project, tmp):
     print("[run] simple execution: a plan, a sealed script, a review, and one command only the human runs")
     p = fresh(project, tmp, "run")
@@ -3519,7 +3626,7 @@ def simple_execution(project, tmp):
 
     def plan(n, slug, changes, body, what="Does a thing", why="STORY-001"):
         write(plan_path(f"RUN-{n:03d}-{slug}.md"),
-              f"# RUN-{n:03d}\n\n- **What it does:** {what}\n- **Why:** {why}\n- **Changes:** {changes}\n\n```gtt-run\n{body}\n```\n")
+              f"# RUN-{n:03d}\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md\n\n- **What it does:** {what}\n- **Why:** {why}\n- **Changes:** {changes}\n\n```gtt-run\n{body}\n```\n")
 
     def issues(*args):
         rc, out = run("check", *args, "--json")
@@ -3600,6 +3707,56 @@ def simple_execution(project, tmp):
     run("generate", "1", "--apply")
     check(issues("1")[0] == 0, "generating again restores the seal")
 
+    # What the human receives has to work: syntax, named scripts, and a rehearsal in a throwaway copy (RUN-10 to RUN-12).
+    def drop(n):
+        for name in os.listdir(os.path.join(p, "gtt-domain", "run")):
+            if name.startswith(f"RUN-{n:03d}-"):
+                os.remove(plan_path(name))
+
+    check("Canonical reference" in text, "a plan from `new` carries the canonical reference, so the markdown gate passes on it", text)
+    plan(20, "sintaxis", "code", "step: Broken | if true; then echo hi")
+    rc, out = run("generate", "20", "--apply")
+    check(rc == 1 and "RUN-10" in out, "RUN-10: a script bash cannot parse is not handed over", out)
+    drop(20)
+    plan(20, "falta", "code", "step: Call | bash .gtt/scripts/gtt-no-existe.sh")
+    rc, out = run("generate", "20", "--apply")
+    check(rc == 1 and "RUN-11" in out, "RUN-11: a step that runs a script that does not exist is not handed over", out)
+    drop(20)
+    plan(20, "crea", "code", "step: Make | echo created > gtt-domain/run/salida.txt")
+    rc, out = run("generate", "20", "--apply")
+    check("RUN-11" not in out, "RUN-11 does not check files a step creates", out)
+    drop(20)
+    plan(20, "falla", "code", "step: Boom | cp no-such-file.txt out.txt")
+    rc, out = run("generate", "20", "--apply")
+    check(rc == 1 and "RUN-12" in out, "RUN-12: a script that fails in the rehearsal copy is not handed over", out)
+    drop(20)
+    q = fresh(project, tmp, "run-rehearsal")
+    qproc = subprocess.run(["bash", R, "new", "rojo", "--apply"], cwd=q, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    qplan = os.path.join(q, "gtt-domain", "run", "RUN-001-rojo.md")
+    body = open(qplan, encoding="utf-8").read()
+    body = re.sub(r"\*\*What it does:\*\*.*", "**What it does:** leaves an orphan", body)
+    body = re.sub(r"\*\*Why:\*\*.*", "**Why:** test", body)
+    body = re.sub(r"\*\*Changes:\*\*.*", "**Changes:** code", body)
+    body = re.sub(r"```gtt-run.*?```", "```gtt-run\nstep: Leave | mkdir -p gtt-domain/notas-run && echo x > gtt-domain/notas-run/NOTA.md\n```", body, flags=re.S)
+    write(qplan, body)
+    qproc = subprocess.run(["bash", R, "generate", "1", "--apply"], cwd=q, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = qproc.stdout + qproc.stderr
+    check(qproc.returncode == 1 and "RUN-12" in out and "validation" in out, "RUN-12: a script that leaves validation failing is not handed over", out)
+    check(not os.path.exists(os.path.join(q, "gtt-domain", "notas-run")), "the rehearsal never touches the real project", out)
+    plan(20, "red", "code", "step: Get | curl -s https://example.invalid/x -o /dev/null")
+    rc, out = run("generate", "20", "--apply")
+    check("not rehearsed" in out, "RUN-12 says plainly when it cannot rehearse (network)", out)
+    drop(20)
+    plan(20, "herramienta", "code", "step: Test | npm test")
+    rc, out = run("generate", "20", "--apply")
+    check(rc == 0 and "not rehearsed" in out and "`npm`" in out, "RUN-12 never blocks on a tool a copy may not reproduce (npm): it says so and hands it over", out)
+    drop(20)
+    plan(20, "falla-a-proposito", "code", "step: Break | false")
+    rc, out = run("generate", "20", "--apply")
+    check(rc == 0, "a step that fails on purpose is not a rehearsal failure: `false` is not something a copy vouches for", out)
+    drop(20)
+    run("generate", "1", "--apply")
+
     rc, out = run("execute", "1")
     check(rc == 1 and "human" in out and not os.path.exists(os.path.join(p, "gtt-domain", "run", "log.jsonl")), "execute without --confirmed-by-human is refused", out)
     rc, out = run("execute", "1", "--confirmed-by-human", stdin="")
@@ -3675,12 +3832,12 @@ def simple_execution(project, tmp):
     check(rc == 0 and env["exit_code"] == 0 and os.path.isfile(os.path.join(done, "RUN-031-pending.md")), "run.execute with apply and confirmed_by_human runs it", str(env)[:200])
 
     agents = open(os.path.join(project, "AGENTS.md"), encoding="utf-8").read()
-    check("handed over as `gtt run <n>`" in agents and "Never write the script yourself, never run it" in agents and "Run: gtt promote <name>" in agents
-          and "gtt-promote.sh <name>`: it shows" in agents, "criterion 12: AGENTS.md carries the threshold rule and the `gtt promote <set>` message")
+    check("handed over as `gtt run <n>`" in agents and "Never write the script yourself, never run it" in agents and "gtt-handoff.sh promote <name>" in agents
+          and "gtt-promote.sh <name>`: it shows" in agents, "criterion 12: AGENTS.md carries the threshold rule and the promotion hand-over (gtt-handoff.sh)")
     for rel in (".cursor/rules/gtt.mdc", ".agents/rules/gtt.md", ".agents/skills/gtt/SKILL.md"):
         check("gtt run <n>" in open(os.path.join(project, rel), encoding="utf-8").read(), f"criterion 12: {rel} carries the run rule")
     for rel in (".gtt/docs/agents/operations.md", ".claude/skills/gtt-adr/SKILL.md"):
-        check("Run: gtt promote" in open(os.path.join(project, rel), encoding="utf-8").read(), f"criterion 12: {rel} hands over `gtt promote`")
+        check("gtt-handoff.sh promote" in open(os.path.join(project, rel), encoding="utf-8").read(), f"criterion 12: {rel} hands over through gtt-handoff.sh")
     for name in ("overlay-block", "no-commits"):
         proc = subprocess.run([sys.executable, ".gtt/scripts/gtt_flow.py", "check", name], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace")
         check(proc.returncode == 0, f"criterion {12 if name == 'overlay-block' else 14}: gtt_flow.py check {name} passes", proc.stdout + proc.stderr)
@@ -3747,7 +3904,31 @@ def delivery_visibility(project, tmp):
     ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]["delivery.select"]
     check(any(a["name"] == "pace" and a["flag"] == "--pace" for a in ops["args"]), "the operation delivery.select declares pace for the CLI")
     for level in read_json(os.path.join(p, ".gtt", "contract", "profiles.json"))["profiles"].values():
-        check({"DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-GROWTH", "DLV-OVER-TARGET"} <= set(level["delivery"]["signals"]), "every Autonomy Profile gives a level to the new signals")
+        check({"DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-GROWTH", "DLV-OVER-TARGET", "DLV-UNINTEGRATED"} <= set(level["delivery"]["signals"]), "every Autonomy Profile gives a level to the new signals")
+
+    # Finished work piling up outside Git history: said once, never a question, never a commit.
+    def done_stories(closed):
+        body = "# Project Backlog\n\n### EPIC-001\n**Status:** In Progress\n**Goal:** g\n**Approved:** ana - 2026-11-01\n\n"
+        for n in range(1, 4):
+            body += f"##### STORY-{n:03d} t\n- **Status:** Done\n- **Implements:** x\n- **Done when:** run: true\n- **Closed:** {closed}\n\n"
+        write(os.path.join(p, "gtt-domain", "backlog.md"), body)
+
+    done_stories("2026-11-06, tests passed")
+    check("DLV-UNINTEGRATED" not in run("check")[1], "Done Stories with a clean tree are not flagged: nothing is waiting outside Git")
+    for n in range(22):
+        write(os.path.join(p, f"pending-{n}.txt"), "x\n")
+    out = run("check")[1]
+    check(run("check")[0] == 0 and "DLV-UNINTEGRATED" in out and "3 Stories are Done" in out and "never commits for you" in out,
+          "3 Done Stories without a commit and 20+ uncommitted paths are said once, and never fail", out[-300:])
+    done_stories("2026-11-06, abc1234, tests passed")
+    check("DLV-UNINTEGRATED" not in run("check")[1], "a commit in `Closed:` clears it")
+    done_stories("2026-11-06, tests passed")
+    write(os.path.join(p, "gtt-domain", "workflow.md"), "# Workflow\n\n```gtt-workflow\ncommits: never\n```\n")
+    check("DLV-UNINTEGRATED" not in run("check")[1], "with `commits: never` the human said so: nothing is asked")
+    os.remove(os.path.join(p, "gtt-domain", "workflow.md"))
+    for n in range(22):
+        os.remove(os.path.join(p, f"pending-{n}.txt"))
+    backlog(10, "**Estimate:** 12h\n")
 
     # The size: GTT measures; what is too much is the human's to say.
     write(os.path.join(p, "docs", "PLAN.md"), "# Plan\nContinuous flow by agent hours.\n")
@@ -4114,8 +4295,8 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
-        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, pending_events, question_form, delivery_visibility):
+        for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, think_plan, sources, export_and_clean, recovery,
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, nested_checkouts, human_handoff, pending_events, question_form, delivery_visibility):
             if not args.only or scenario.__name__ in args.only:
                 scenario(project, tmp)
     finally:

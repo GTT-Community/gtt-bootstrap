@@ -93,6 +93,8 @@
     "noplan_min_stories": 8,
     "noplan_min_coverage": 0.5,
     "stale_commits_scanned": 300,
+    "unintegrated_min_stories": 3,
+    "unintegrated_min_paths": 20,
     "growth_pct": 50,
     "growth_min_stories": 5
   },
@@ -160,6 +162,7 @@
     "DLV-UNCALIBRATED": "fewer Stories measured than calibration_min_stories",
     "DLV-NO-PLAN": "noplan_min_stories or more open Stories and fewer than noplan_min_coverage of them with a duration (their own Estimate or their Epic's): nobody can say how long the backlog takes; it fires even when delivery planning was never declared",
     "DLV-STALE-STATUS": "a Story that is not Done while a recent commit (last stale_commits_scanned) already closes it by name",
+    "DLV-UNINTEGRATED": "unintegrated_min_stories or more Stories are Done with neither a commit nor a pull request in `Closed:`, and unintegrated_min_paths or more paths are uncommitted: finished work is piling up outside Git history, which is the human's; it never commits for them and never asks, it says it once",
     "DLV-GROWTH": "the open Stories (or the estimated hours) grew by growth_pct or more since the baseline taken when the human declared the plan, with at least growth_min_stories more Stories: the project got bigger than declared",
     "DLV-UNDER-TARGET": "the total estimated hours are below the scope_min_h the human declared: the plan is lighter than expected",
     "DLV-OVER-TARGET": "the remaining estimated hours exceed the scope_cap_h the human declared",
@@ -168,7 +171,7 @@
   "levels_owned_by": ".gtt/contract/profiles.json (profiles.<id>.delivery) - each Autonomy Profile defines what a signal means for it",
   "verification": {
     "freeze": "gtt-delivery.sh check --pre-freeze: every Planned Epic has an Estimate; an Epic over its cap carries the decision in Budget; with more than one front every Epic has Lane and Touches and no two fronts overlap; every `Build: integrate (ADR-NNN)` names an ADR that exists; every external [FUENTE: ..., consultado AAAA-MM-DD] is younger than source_max_age_days",
-    "silent_when": "no .gtt/delivery.json and no Epic with a delivery field: a project that never declared delivery planning is never obstructed (the freeze and the check). It is not silent about size: DLV-NO-PLAN, DLV-STALE-STATUS and DLV-PACE-DRIFT are computed anyway and only warn"
+    "silent_when": "no .gtt/delivery.json and no Epic with a delivery field: a project that never declared delivery planning is never obstructed (the freeze and the check). It is not silent about size: DLV-NO-PLAN, DLV-STALE-STATUS, DLV-PACE-DRIFT and DLV-UNINTEGRATED are computed anyway and only warn"
   },
   "boundary": "GTT plans and watches the fronts. It does not launch, create or orchestrate agents: that belongs to the ADE. `lanes` only prints summaries and the `git worktree add` commands to copy."
 }

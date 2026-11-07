@@ -52,7 +52,7 @@ TEMPLATE = ".gtt/scaffold/templates/gtt-design-epic.md"
 SIDECAR = ".gtt-source.json"
 AUTHORITIES = ("primary", "secondary", "reference", "evidence")
 SECTIONS = ("Purpose and scope", "Data", "Rules", "Flows", "Interfaces", "Examples", "Open points", "Decisions taken with the human")
-ITEM = re.compile(r"^\s*[-*]\s+\*\*([RFIED])-(\d+)\*\*(.*)$")
+ITEM = re.compile(r"^\s*[-*]\s+\*\*(AC|[RFIED])-(\d+)\*\*(.*)$")
 CITE = re.compile(r"\[FUENTE:\s*([^\]]+)\]")
 VACIO = re.compile(r"\[VAC[ÍI]O(?::\s*([^\]]*))?\]")
 PLACEHOLDER = re.compile(r"<[^<>\n]{2,}>")
@@ -465,17 +465,17 @@ def parse_design(path):
             sections[current] += line + "\n"
     listed = re.search(r"\*\*Source sections:\*\*\s*(.*)", sections.get(1, ""))
     items, duplicates, examples, unsupported = {}, [], {}, []
-    for number in (2, 3, 4, 5, 6, 8):
+    for number in (1, 2, 3, 4, 5, 6, 8):
         for line in sections.get(number, "").split("\n"):
             found = ITEM.match(line)
-            if not found:
-                continue
+            if not found or (number == 1 and found.group(1) != "AC"):
+                continue   # section 1 holds only the acceptance criteria (AC-n); the other kinds live in 2 to 8
             key = f"{found.group(1)}-{found.group(2)}"
             if key in items:
                 duplicates.append(key)
             items[key] = line
             if found.group(1) == "E":
-                examples[key] = re.findall(r"\b([RFI]-\d+)\b", found.group(3))
+                examples[key] = re.findall(r"\b((?:AC|[RFI])-\d+)\b", found.group(3))
             if found.group(1) != "D" and not CITE.search(line) and not re.search(r"\bD-\d+\b", found.group(3)):
                 unsupported.append(key)
     cites = [found.group(1).strip() for number in range(2, 7) for found in CITE.finditer(masked(sections.get(number, "")))]
@@ -526,9 +526,11 @@ def design_problems(design, approval=False):
     for key in design["unsupported"]:
         fails.append(f"{key} carries neither a [FUENTE] nor a D-n: nothing supports it")
     used = {ref for refs in design["examples"].values() for ref in refs}
-    lonely = sorted(k for k in design["items"] if k[0] in "RF" and k not in used)
+    lonely = sorted(k for k in design["items"] if (k[0] in "RF" or k.startswith("AC-")) and k not in used)
     for key in lonely:
-        fails.append(f"{key} appears in no example: every rule and flow is shown by at least one E-n")
+        fails.append(f"{key} appears in no example: every acceptance criterion, rule and flow is shown by at least one E-n")
+    if approval and not any(k.startswith("AC-") for k in design["items"]):
+        notes.append("no acceptance criteria (AC-n) in section 1: agree them with the human, one batch per Epic")
     blocking = sorted(blocking_gaps() & set(design["open"]))
     if approval or design["status"] == "Approved":
         if PLACEHOLDER.search(masked(design["text"])):
@@ -556,7 +558,7 @@ def implements_of(story):
     """The design items a Story says it builds: {(epic design file, 'R-2'), ...} and the ADRs it names."""
     field = story["fields"].get("Implements", "")
     items, last = set(), None
-    for token in re.findall(r"(?:design/(EPIC-\d+))?#([RFIED]-\d+)", field):
+    for token in re.findall(r"(?:design/(EPIC-\d+))?#((?:AC|[RFIED])-\d+)", field):
         last = token[0] or last
         if last:
             items.add((last, token[1]))
@@ -726,8 +728,8 @@ def cmd_approve(args):
     count = lambda letter: sum(1 for k in design["items"] if k[0] == letter)
     cited = sum(1 for ref in design["listed"] if covered(ref, design["cites"]))
     used = {ref for refs in design["examples"].values() for ref in refs}
-    lonely = sorted(k for k in design["items"] if k[0] in "RF" and k not in used)
-    print(f"Design    {path}: {count('R')} rules, {count('F')} flows, {count('I')} interfaces, {count('E')} examples")
+    lonely = sorted(k for k in design["items"] if (k[0] in "RF" or k.startswith("AC-")) and k not in used)
+    print(f"Design    {path}: {sum(1 for k in design['items'] if k.startswith('AC-'))} acceptance criteria, {count('R')} rules, {count('F')} flows, {count('I')} interfaces, {count('E')} examples")
     print(f"          source sections covered: {cited}/{len(design['listed'])} · rules or flows without an example: {', '.join(lonely) or 'none'}"
           f" · open points: {len(design['open'])}")
     fails = [m for level, where, m in check_all(args.epic, approval=True) if level == "FAIL"]

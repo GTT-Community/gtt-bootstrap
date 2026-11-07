@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "description": "The human acts and the one message that hands each to the person. The command is built and checked by gtt-handoff.sh, never typed by a model. An agent hands over an act with `gtt-handoff.sh <act> [arguments]` and shows its output, nothing more. Acts that have a `gtt` command use it when the CLI is installed and their `script` otherwise.",
+  "heading": {
+    "en": "@gtt · For you",
+    "es": "@gtt · Para ti"
+  },
+  "labels": {
+    "en": {
+      "what": "What",
+      "changes": "Changes",
+      "blocks": "Blocks",
+      "run": "Run",
+      "optional": "Optional"
+    },
+    "es": {
+      "what": "Qué",
+      "changes": "Cambia",
+      "blocks": "Bloquea",
+      "run": "Ejecuta",
+      "optional": "Opcional"
+    }
+  },
+  "acts": {
+    "promote": {
+      "args": [
+        "set"
+      ],
+      "command": "gtt promote {set}",
+      "check": "staged-set",
+      "what": {
+        "en": "Apply the promotion set {set}: {reason}",
+        "es": "Aplicar el conjunto de promoción {set}: {reason}"
+      },
+      "changes": {
+        "en": "{files} (shows the diff and asks for `apply`; keeps the originals)",
+        "es": "{files} (muestra el diff y pide `apply`; conserva los originales)"
+      },
+      "blocks": {
+        "en": "the governed change it carries",
+        "es": "el cambio gobernado que contiene"
+      },
+      "script": "bash .gtt/scripts/gtt-promote.sh {set}"
+    },
+    "approve": {
+      "args": [
+        "epic"
+      ],
+      "command": "bash .gtt/scripts/gtt-approve.sh {epic}",
+      "check": "epic",
+      "what": {
+        "en": "Approve {epic}{title}",
+        "es": "Aprobar {epic}{title}"
+      },
+      "changes": {
+        "en": "the Epic and its design become approved intent",
+        "es": "la Épica y su diseño pasan a ser intención aprobada"
+      },
+      "blocks": {
+        "en": "the Stories of {epic}",
+        "es": "las Stories de {epic}"
+      }
+    },
+    "accept": {
+      "args": [
+        "observation"
+      ],
+      "command": "bash .gtt/scripts/gtt-observe.sh accept {observation} --by \"{by}\" --apply",
+      "check": "observation",
+      "what": {
+        "en": "Accept the observation {observation}: the deviation is intended",
+        "es": "Aceptar la observación {observation}: la desviación es intencional"
+      },
+      "changes": {
+        "en": "the governance backlog only; no code",
+        "es": "solo el registro de gobierno; no toca el código"
+      },
+      "blocks": null,
+      "optional": {
+        "en": "add your reason: --note \"...\"",
+        "es": "añade tu motivo: --note \"...\""
+      }
+    },
+    "reject": {
+      "args": [
+        "observation"
+      ],
+      "command": "bash .gtt/scripts/gtt-observe.sh reject {observation} --by \"{by}\" --apply",
+      "check": "observation",
+      "what": {
+        "en": "Reject the observation {observation}: the deviation must be undone",
+        "es": "Rechazar la observación {observation}: la desviación debe deshacerse"
+      },
+      "changes": {
+        "en": "the governance backlog only; no code",
+        "es": "solo el registro de gobierno; no toca el código"
+      },
+      "blocks": {
+        "en": "the affected operation, until it is resolved",
+        "es": "la operación afectada, hasta resolverla"
+      },
+      "optional": {
+        "en": "add your reason: --note \"...\"",
+        "es": "añade tu motivo: --note \"...\""
+      }
+    },
+    "defer": {
+      "args": [
+        "observation"
+      ],
+      "command": "bash .gtt/scripts/gtt-observe.sh defer {observation} --by \"{by}\" --apply",
+      "check": "observation",
+      "what": {
+        "en": "Defer the observation {observation}: decide later",
+        "es": "Diferir la observación {observation}: decidir más adelante"
+      },
+      "changes": {
+        "en": "the governance backlog only; no code",
+        "es": "solo el registro de gobierno; no toca el código"
+      },
+      "blocks": null,
+      "optional": {
+        "en": "add your reason: --note \"...\"",
+        "es": "añade tu motivo: --note \"...\""
+      }
+    },
+    "freeze": {
+      "args": [],
+      "command": "gtt freeze",
+      "check": null,
+      "what": {
+        "en": "Freeze the governed design: it becomes the authority",
+        "es": "Congelar el diseño gobernado: pasa a ser la autoridad"
+      },
+      "changes": {
+        "en": "records a new baseline; the code stays free",
+        "es": "registra una nueva línea base; el código sigue libre"
+      },
+      "blocks": {
+        "en": "direct edits of the governed design (changes go through the change flow)",
+        "es": "las ediciones directas del diseño gobernado (los cambios pasan por el flujo de cambio)"
+      },
+      "script": "bash .gtt/scripts/gtt-freeze.sh"
+    },
+    "run": {
+      "args": [
+        "run"
+      ],
+      "command": "gtt run {run}",
+      "check": "run",
+      "what": {
+        "en": "Run {run}",
+        "es": "Ejecutar {run}"
+      },
+      "changes": {
+        "en": "what its plan says (it asks once if it changes something)",
+        "es": "lo que dice su plan (pregunta una vez si cambia algo)"
+      },
+      "blocks": null,
+      "script": "bash .gtt/scripts/gtt-run.sh execute {run} --confirmed-by-human"
+    }
+  }
+}

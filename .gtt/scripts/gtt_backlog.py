@@ -158,7 +158,7 @@ def cmd_check(path):
 
 
 DESIGN_DIR = "gtt-domain/context/design"
-DESIGN_REF = re.compile(r"(?:design/(EPIC-\d+))?#([RFIED]-\d+)")
+DESIGN_REF = re.compile(r"(?:design/(EPIC-\d+))?#((?:AC|[RFIED])-\d+)")
 TEST_PATH = re.compile(r"[\w./-]*(?:tests?|specs?|__tests__|e2e)/[\w./-]+|[\w/-]+[._](?:test|spec)\.\w+|\b[\w/-]+\.(?:py|ts|tsx|js|jsx|java|cs|go|rb|kt|rs|php|feature)\b")
 RUN_EVIDENCE = re.compile(r"(?i)\brun:\s*\S+")
 SCENARIO = re.compile(r"(?i)\b(given|dado)\b.*\b(when|cuando)\b.*\b(then|entonces)\b")
@@ -169,7 +169,7 @@ def design_anchors(epic_id, cache={}):
     if epic_id not in cache:
         try:
             with open(os.path.join(DESIGN_DIR, epic_id + ".md"), encoding="utf-8") as handle:
-                cache[epic_id] = set(re.findall(r"\*\*([RFIED]-\d+)\*\*", handle.read()))
+                cache[epic_id] = set(re.findall(r"\*\*((?:AC|[RFIED])-\d+)\*\*", handle.read()))
         except OSError:
             cache[epic_id] = None
     return cache[epic_id]
@@ -260,7 +260,7 @@ def check_trace(path, stories, epics):
             else:
                 print(f"gtt-check-backlog: WARN - {message}")
         # Which example proves it is good practice, not a gate: the link (anchors) and the evidence are what is checked.
-        if not examples and not (SCENARIO.search(done) and re.search(r"#[RFIED]-\d+", done)) and normal(story["status"]) in ACTIVE:
+        if not examples and not (SCENARIO.search(done) and re.search(r"#(?:AC|[RFIED])-\d+", done)) and normal(story["status"]) in ACTIVE:
             print(f"gtt-check-backlog: NOTE - {story['id']} `Done when:` names no example of the design (E-n) ({where})")
         # `Context:` is optional and never fails: the design is the source, a copy of it is drift and costs tokens.
         lines = context_lines(path, story)

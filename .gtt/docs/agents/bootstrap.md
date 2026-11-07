@@ -199,6 +199,9 @@ The bootstrap entry points stay at the root **of the bootstrap repository**. Ins
 
 During initial bootstrap:
 
+The Think stage is an ordered plan computed by `bash .gtt/scripts/gtt-project.sh think-plan` (depth, assessment, the human's guidelines, questionnaire, mapping, Epic designs, Stories of the first Epic). Never skip or abbreviate a step on your own, whatever the request says; only the human skips one (`think-plan skip`). Writing context or Epics ahead of it is out of order and the freeze refuses it.
+
+
 1. Detect the candidate ADEs, have the human choose the participating ADEs and
    exactly one Primary, and resolve the adapters to install (see *Multi-ADE
    participation*) before touching the filesystem.
@@ -235,8 +238,19 @@ section of the sources that belongs to the Epic and carry its content over in fu
 What the sources do not define is a `[VACÍO]`: ask the human under `@gtt · Design EPIC-NNN`, at most five
 questions a turn, grouped by Epic, with options where the source suggests them; each answer goes to section 8 as
 `D-n` and closes its `[VACÍO]`. The design is complete in every Autonomy Profile and at every THINK Depth: the depth
-changes how much is analysed, never which sections exist. The human approves the Epic and its design together
-(`bash .gtt/scripts/gtt-approve.sh EPIC-NNN`); you never do.
+changes how much is analysed, never which sections exist.
+
+**Acceptance criteria, agreed before the Stories.** In section 1 of each design, propose three to six `AC-n`: one
+verifiable sentence each, in the human's words, taken from the sources (`[FUENTE]`). Show them in the chat as one
+batch per Epic, `@gtt · Acceptance criteria EPIC-NNN`: the numbered criteria, and the options *accept all*, *adjust*
+(the human says which) or *add*; recommended first. What the human answers goes to section 8 as `D-n` and the
+criteria it changed cite it. Every `AC-n` appears in at least one example `E-n` (`E-1 (AC-1, R-2)`), which is what
+`gtt-design.sh check` verifies; a Story then says `Implements: design/EPIC-NNN#AC-2` and `Done when:` names the example
+and its test. A criterion is never invented to fill the list, and an Epic with none is not blocked: the approval
+notes it once.
+
+The human approves the Epic and its design together; you never do: hand it over with
+`bash .gtt/scripts/gtt-handoff.sh approve EPIC-NNN` and show its output.
 
 While reading the sources, run `bash .gtt/scripts/gtt-workflow.sh detect`. If the project's own
 documents mention a commit convention, it prints one `@gtt · Finding` line: pass it on as it is.

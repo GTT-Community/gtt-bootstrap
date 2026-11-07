@@ -508,7 +508,7 @@ def cmd_stage(args):
         json.dump({"schema": 1, "name": args.name, "reason": args.reason.strip().splitlines()[0], "files": files}, handle, indent=2)
         handle.write("\n")
     print(f"gtt-stage: {len(files)} file(s) staged in {folder}/. Nothing was applied.")
-    print(f"The human applies it with: gtt promote {args.name}")
+    print(f"Hand it over with: bash .gtt/scripts/gtt-handoff.sh promote {args.name}   (show its output, nothing more)")
     return 0
 
 

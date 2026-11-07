@@ -6,6 +6,7 @@ actual project (never from an agent's recollection, never authority):
 
   detect                     project detection: GTT state, layout, freeze, design-source candidates
   elicitation [--next-action] Initial Design Questionnaire state (absent|pending|in-progress|complete), read-only
+  think-plan [skip <step>]   the THINK stage as ordered steps computed from the files; --gate fails when context or Epics came first
   next-action [--json]       what GTT is waiting on: an open questionnaire, then a change request to process
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
@@ -431,6 +432,154 @@ def cmd_think(args):
     return 1 if state["findings"] else 0
 
 
+# ------------------------------------------------------------------ THINK plan
+
+THINK_SKIPS = "gtt-domain/proposals/bootstrap/think-skips.json"
+THINK_ORDER = ("depth", "assessment", "guidelines", "questionnaire", "mapping", "designs", "stories")
+THINK_BEFORE_MAPPING = ("depth", "assessment", "guidelines", "questionnaire")
+THINK_LABEL = {
+    "depth": "THINK Depth chosen by the human",
+    "assessment": "Design Assessment written (gtt-template.sh materialize design-assessment)",
+    "guidelines": "the human's guidelines asked and recorded (`Human guidelines:` line of the THINK Depth block)",
+    "questionnaire": "Initial Design Questionnaire completed for what is THIN or MISSING",
+    "mapping": "the six context files written from the confirmed design",
+    "designs": "one design per Epic (gtt-domain/context/design/EPIC-NNN.md)",
+    "stories": "Stories of the first Epic drafted (Implements + Done when) and their open questions asked",
+}
+
+
+def think_skips():
+    data = read_json(THINK_SKIPS) or {}
+    return {s.get("step"): s for s in data.get("skips", []) if s.get("step") in THINK_ORDER}
+
+
+def backlog_epics():
+    """(epic ids, Stories per epic) read from the backlog by shape only."""
+    try:
+        with open("gtt-domain/backlog.md", encoding="utf-8") as handle:
+            text = handle.read().replace("\r\n", "\n")
+    except OSError:
+        return [], {}
+    ids, stories, current = [], {}, None
+    for line in text.split("\n"):
+        epic = re.match(r"^#{2,4}\s+(EPIC-\d+)\b", line)
+        if epic and "(example)" not in line:
+            current = epic.group(1)
+            ids.append(current)
+            stories[current] = 0
+        elif current and re.match(r"^#{3,6}\s+STORY-\d+", line) and "(example)" not in line:
+            stories[current] += 1
+    return ids, stories
+
+
+def guidelines_recorded(path):
+    if not path or not os.path.isfile(path):
+        return False
+    with open(path, encoding="utf-8") as handle:
+        found = re.search(r"^Human guidelines:[ \t]*(\S.*)$", handle.read(), re.M)
+    return bool(found)
+
+
+def think_plan():
+    """The THINK stage as an ordered list of steps, each done, pending or skipped, computed from the files.
+    A step before the mapping that is pending while the context is already written, or the Epics already cut,
+    is a violation: THINK was skipped, not done. Only the human skips a step (think-plan skip). Never a decision."""
+    installed = os.path.isfile(".gtt/ade.json")
+    frozen = os.path.isfile(FROZEN)
+    report = ""
+    try:
+        with open(".gtt/docs/gtt-completion.md", encoding="utf-8") as handle:
+            report = handle.read()
+    except OSError:
+        pass
+    recorded = bool(report) and "No bootstrap has been recorded yet" not in report
+    out = {"schema": 1, "kind": "gtt-think-plan", "authority": "none", "active": installed and not frozen and not recorded,
+           "steps": [], "violations": [], "current": None}
+    if not out["active"]:
+        return out
+    skips = think_skips()
+    has_doc = bool(design_candidates() or glob.glob("SOURCE-BRIEF.*"))
+    copy = think_copy()
+    think = think_state(copy)
+    quest = elicitation_state()
+    ids, stories = backlog_epics()
+    mapped = all(v == "no-placeholders" for v in context_state().values())
+    templates = gm.templates(gm.load())
+    assess_path = (templates.get("design-assessment") or {}).get("materialize_to")
+    assessed = bool(assess_path and os.path.isfile(assess_path) and think_state(assess_path)["verdict"])
+    needs_quest = (not has_doc) or (think["verdict"] != "STRONG")
+    done = {
+        "depth": think["selected"] is not None,
+        "assessment": assessed,
+        "guidelines": guidelines_recorded(copy),
+        "questionnaire": quest["state"] == "complete",
+        "mapping": mapped,
+        "designs": bool(ids) and all(os.path.isfile(f"gtt-domain/context/design/{i}.md") for i in ids),
+        "stories": bool(ids) and stories.get(sorted(ids)[0], 0) > 0,
+    }
+    required = {"depth": True, "assessment": has_doc, "guidelines": True, "questionnaire": needs_quest,
+                "mapping": True, "designs": True, "stories": True}
+    for step in THINK_ORDER:
+        if not required[step]:
+            state = "not-needed"
+        elif done[step]:
+            state = "done"
+        elif step in skips:
+            state = "skipped"
+        else:
+            state = "pending"
+        out["steps"].append({"id": step, "label": THINK_LABEL[step], "state": state,
+                             "skipped_by": skips[step].get("by") if state == "skipped" else None})
+    state_of = {s["id"]: s["state"] for s in out["steps"]}
+    out["current"] = next((s["id"] for s in out["steps"] if s["state"] == "pending"), None)
+    written = [name for name, flag in (("the six context files", mapped), ("the Epics in the backlog", bool(ids))) if flag]
+    open_before = [s for s in THINK_BEFORE_MAPPING if state_of[s] == "pending"]
+    if written and open_before:
+        out["violations"].append(f"{' and '.join(written)} written before THINK finished: "
+                                 f"{', '.join(open_before)} not done and not skipped by the human")
+    return out
+
+
+def think_plan_text(plan):
+    """The one block the ADE reads: where THINK stands and what to do now. Short on purpose."""
+    mark = {"done": "x", "skipped": "-", "not-needed": " ", "pending": " "}
+    lines = [f"[{mark[s['state']]}] {s['id']}: {s['label']}" + (" (skipped by the human)" if s["state"] == "skipped" else "")
+             for s in plan["steps"] if s["state"] != "not-needed"]
+    if plan["violations"]:
+        lines.insert(0, "OUT OF ORDER - " + "; ".join(plan["violations"]) + ". Go back to the first pending step; "
+                        "do not continue from here. Nothing already written is deleted.")
+    if plan["current"]:
+        lines.append(f"NEXT: {plan['current']} - {THINK_LABEL[plan['current']]}. Never skip a step on your own; "
+                     f"only if the human asks: gtt-project.sh think-plan skip {plan['current']} --by <who> --reason <why> --apply")
+    return "\n".join(lines)
+
+
+def cmd_think_plan(args):
+    if args.action == "skip":
+        if args.step not in THINK_ORDER or not args.by or not args.reason:
+            die("skip needs a step (" + ", ".join(THINK_ORDER) + "), --by and --reason: only the human skips a THINK step.", 2)
+        print(f"skip {args.step}: by {args.by} - {args.reason}")
+        if not args.apply:
+            print("(dry run - nothing written; re-run with --apply)")
+            return 0
+        data = read_json(THINK_SKIPS) or {"schema": 1, "skips": []}
+        data["skips"] = [s for s in data["skips"] if s.get("step") != args.step] + [
+            {"step": args.step, "by": args.by, "reason": args.reason, "at": now()}]
+        os.makedirs(os.path.dirname(THINK_SKIPS), exist_ok=True)
+        write_json(THINK_SKIPS, data)
+        return 0
+    plan = think_plan()
+    if args.json:
+        emit(plan)
+    elif plan["active"]:
+        print(think_plan_text(plan))
+    if args.gate and plan["violations"]:
+        for v in plan["violations"]:
+            print(f"FAIL  THINK: {v}", file=sys.stderr)
+        return 1
+    return 0
+
+
 QUESTIONNAIRE_SLOT = re.compile(r"<!-- ADE (?:inspects project and )?populates this section -->")
 PROVENANCE_TAG = re.compile(r"\[(FUENTE|VAC[IÍ]O|CONFLICTO|PROPUESTA)\b")
 READINESS = ("READY", "READY_WITH_OPEN_ITEMS", "NOT_READY")
@@ -523,6 +672,19 @@ def next_action():
     human asked to have processed, then - in an installed project with no design yet - the design itself.
     `text` is the agent's instruction; `human` is what the person does next.
     Computed, never a decision."""
+    plan = think_plan()
+    if plan["active"] and plan["current"] and (plan["violations"] or design_candidates() or glob.glob("SOURCE-BRIEF.*")):
+        candidates = design_candidates()
+        named = (f"No governed design yet. Design document candidates: {', '.join(candidates)}. Ask the human which one(s) are the design "
+                 "before anything else.\n") if candidates else ""
+        step = plan["current"] or "review"
+        spanish = ((read_json(METHOD) or {}).get("language") == "es")
+        human = (f"Abre el proyecto en el ADE principal y escribe cualquier cosa: su primera respuesta continúa THINK en el paso donde quedó ({step})."
+                 if spanish else
+                 f"Open the project in the Primary ADE and write anything: its first answer continues THINK at the step it stopped ({step}).")
+        return {"kind": "think", "text": named + "THINK is in progress; follow it in order (AGENTS.md -> Bootstrap behavior). Run "
+                "`bash .gtt/scripts/gtt-project.sh think-plan` and show the human where it stands.\n" + think_plan_text(plan),
+                "human": human}
     line = elicitation_state()["next_action"]
     if line:
         handoff = (read_json(os.path.join(CONTRACT, "elicitation.json")) or {}).get("handoff", {}).get("next_action")
@@ -947,6 +1109,9 @@ def build_parser():
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("detect"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_detect)
     p = sub.add_parser("think"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_think)
+    p = sub.add_parser("think-plan"); p.add_argument("action", nargs="?", choices=["show", "skip"], default="show")
+    p.add_argument("step", nargs="?"); p.add_argument("--by"); p.add_argument("--reason"); p.add_argument("--json", action="store_true")
+    p.add_argument("--gate", action="store_true"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_think_plan)
     p = sub.add_parser("next-action"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_next_action)
     p = sub.add_parser("elicitation"); p.add_argument("--json", action="store_true"); p.add_argument("--next-action", action="store_true")
     p.set_defaults(func=cmd_elicitation)

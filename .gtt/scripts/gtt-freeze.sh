@@ -91,6 +91,15 @@ if [ -f "$HERE/gtt-check-provenance.sh" ]; then
   fi
 fi
 
+# THINK is not skippable by an ADE: context or Epics written before the depth, the assessment, the human's
+# guidelines and the questionnaire are done (or skipped by the human) refuse the freeze.
+if ! bash "$HERE/gtt-project.sh" think-plan --gate >/dev/null 2>"${TMPDIR:-/tmp}/.gtt-think-gate.$$"; then
+  cat "${TMPDIR:-/tmp}/.gtt-think-gate.$$" >&2
+  echo "gtt-freeze: THINK was not completed in order (bash .gtt/scripts/gtt-project.sh think-plan)" >&2
+  fail=1
+fi
+rm -f "${TMPDIR:-/tmp}/.gtt-think-gate.$$"
+
 # Sources are immutable evidence, and an approved Epic is frozen with its design: complete,
 # approved, the same in every Autonomy Profile. A freeze over a missing or draft design would
 # ratify an Epic nobody specified.

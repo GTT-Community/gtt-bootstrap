@@ -122,6 +122,18 @@ If any are found:
   rewriting) to its current scaffold path, remove the old copy, and report
   exactly what moved.
 
+## THINK is a plan, not a suggestion
+
+Whatever the user asked ("implement GTT", "bootstrap this"), the Think stage runs in order and is not abbreviated:
+depth -> assessment -> the human's guidelines -> questionnaire (what is THIN or MISSING) -> mapping -> a design
+per Epic -> the Stories of the first Epic. `bash .gtt/scripts/gtt-project.sh think-plan` computes where it stands from
+the files; run it at the start of every session and before each step, and show its block to the human. You never skip a
+step: only the human does (`think-plan skip <step> --by <who> --reason <why> --apply`, when they ask). Writing
+the context files or cutting Epics before the steps before the mapping are done is out of order, and the freeze refuses it.
+Ask the guidelines in one round in the chat (priorities, constraints, what NOT to build; record them on the
+`Human guidelines:` line). For the first Epic, draft its Stories (Implements + Done when) and ask the open questions in
+one batch (`gtt-pending.sh`); the other Epics get minimal Stories until they are next.
+
 ## 2. Look for an existing solution document
 
 Look at the project root only — not subdirectories, not the rest of the repo.

@@ -136,14 +136,7 @@ may delete the drafts once they are staged. You never run the promotion.
 
 ## Tell the user
 
-Exactly this, and nothing more:
-
-```text
-@gtt · Authorization required
-Changes: gtt-domain/adr/ADR-NNN-<slug>.md, gtt-domain/context/stack.md - <one-line reason>
-Run: gtt promote ADR-NNN-<slug>
-Nothing was applied; it is your decision.
-```
+Run `bash .gtt/scripts/gtt-handoff.sh promote ADR-NNN-<slug>` and show its output, nothing more.
 
 The promotion shows the reason, the files and the diff before it asks for `apply`,
 applies everything or nothing, prints its undo and validates the result. A governed

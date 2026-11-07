@@ -17,8 +17,8 @@ slice. The method adds structure inside section 1; it never changes the eight se
 method `OPEN` nothing is inserted.
 
 The eight sections always exist; one that does not apply says `N/A — <reason>`. Every R, F, I and E
-carries a `[FUENTE]` or points to a `D-n`. Ids are stable and never reused. Every rule and every
-flow appears in at least one example, and a flow includes its error path.
+carries a `[FUENTE]` or points to a `D-n`. Ids are stable and never reused. Every acceptance criterion, rule and
+every flow appears in at least one example, and a flow includes its error path.
 
 ------------------------------------------------------------------------
 
@@ -34,6 +34,10 @@ flow appears in at least one example, and a flow includes its error path.
 <what this Epic delivers and where it stops>
 
 **Source sections:** <every section of the sources that belongs to this Epic, e.g. D:§16–22 · ARQ:§3.4>
+
+**Acceptance criteria** (what the human accepts this Epic for; proposed from the sources, agreed with the human in the chat, one batch per Epic):
+
+- **AC-1** <one verifiable sentence, in the human's words> [FUENTE: <D:§…>] or the decision that agreed it (D-n)
 
 ## 2. Data
 
@@ -53,7 +57,7 @@ flow appears in at least one example, and a flow includes its error path.
 
 ## 6. Examples
 
-- **E-1** (R-1, F-1) Given <…>, when <…>, then <…>. [FUENTE: <D:§…>]
+- **E-1** (AC-1, R-1, F-1) Given <…>, when <…>, then <…>. [FUENTE: <D:§…>]
 
 ## 7. Open points
 

@@ -128,7 +128,8 @@ def tracked_files():
     # .github/ belongs to the host project: only GTT's own instruction files there (gtt*.md) are kit files.
     for base in (".gtt", "gtt-domain", ".claude", ".kiro", ".github/instructions"):
         for dirpath, dirnames, filenames in os.walk(base):
-            dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__"))
+            dirnames[:] = sorted(d for d in dirnames if d not in (".git", "__pycache__")
+                                 and not nested_checkout(os.path.join(dirpath, d)))
             if norm(dirpath) == ".gtt":
                 dirnames[:] = [d for d in dirnames if d != "local"]   # per-user state (backups, checkpoints): never kit
             for name in sorted(filenames):
@@ -140,6 +141,13 @@ def tracked_files():
                     continue                # derived, never an artifact
                 found.append(norm(os.path.join(dirpath, name)))
     return sorted(set(found))
+
+
+def nested_checkout(path):
+    """A folder that is another checkout of the repository (a Git worktree under .claude/worktrees, a clone): it holds
+    a full copy of the kit, so indexing it would register every file twice. It is never part of this project's kit."""
+    p = norm(path)
+    return p == ".claude/worktrees" or p.startswith(".claude/worktrees/") or os.path.exists(os.path.join(path, ".git"))
 
 
 def derive(path):

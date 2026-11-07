@@ -75,12 +75,11 @@ No step-by-step narration, no tables unless asked, no repeated content, no unreq
 Detail is never withheld: give it when asked, or point to it (`gtt-review.sh --files`,
 `gtt-maintain.sh --verbose`, `gtt-status.sh`, `gtt-query.sh`, the full output of a check).
 
-```text
-@gtt · Authorization required
-Changes: AGENTS.md, .claude/settings.json - <one-line reason>
-Run: gtt promote <name>
-Nothing was applied; it is your decision.
-```
+**Handing a human act over.** Whatever the human must run, the message is one and the same, built by a script so
+that the command is exact: `bash .gtt/scripts/gtt-handoff.sh promote <set> | approve <EPIC-NNN> | accept|reject|defer <OBS-NNNN> | freeze | run <n>`.
+It prints `@gtt · For you` (`@gtt · Para ti` in Spanish), what is asked, what it changes, what it blocks and the command, and it refuses
+(exit 1, saying why) when the set, the Epic, the observation or the plan does not exist, so a command that cannot work
+is never shown. Show its output as it is. Nothing was applied; it is the human's decision.
 
 ## Protected artifacts (GTTGuard)
 
@@ -342,7 +341,7 @@ When the human has to execute something, give them one line saying what it does 
 
 - **Threshold.** A governed act (promote, freeze, approve) keeps its own command: `gtt promote <set>`. Anything that changes state, or takes two or more commands, is a run plan. A single read-only command may be given inline.
 - **The plan.** `bash .gtt/scripts/gtt-run.sh new <slug> --apply` creates `gtt-domain/run/RUN-NNN-<slug>.md`. Fill in *What it does*, *Why*, *Changes* (`none | environment | data | code`) and the `gtt-run` block (`check:`, `step: <title> | <command>`, `next:`). You write the plan, never the script.
-- **The script.** `bash .gtt/scripts/gtt-run.sh generate RUN-NNN --apply` makes the script from a fixed template, seals it with the plan's sha256 and reviews it (RUN-01 to RUN-09: no writes to governed paths, no Git history unless `commits: allowed`, no `rm -rf` outside temporary folders, no download piped into a shell; `sudo` and network are warnings). If the review fails, fix the plan and generate again; do not hand it over.
+- **The script.** `bash .gtt/scripts/gtt-run.sh generate RUN-NNN --apply` makes the script from a fixed template, seals it with the plan's sha256 and reviews it (RUN-01 to RUN-12: no writes to governed paths, no Git history unless `commits: allowed`, no `rm -rf` outside temporary folders, no download piped into a shell; `sudo` and network are warnings; the script must parse, name only files that exist, and, when it changes only code or nothing and every step is a script of the project or a basic file utility, it is rehearsed in a throwaway copy: it must exit 0 and leave `gtt-validate.sh` no worse; any other tool is not rehearsed, and that never blocks). If the review fails, fix the plan and generate again; do not hand it over.
 - **The hand-over.** Say exactly the message `generate` prints (`@gtt · To run`, what it does, `gtt run <n>`). `gtt run` lists what is pending.
 - **Never** edit a generated script, run `gtt run <n>` or `gtt-run.sh execute` (the hook denies it), or write `gtt-domain/run/done/` or `log.jsonl`. A hand-edited script is refused (RUN-05). The human's run is logged and, when it succeeds, archived in `gtt-domain/run/done/` (the last 20 are kept).
 

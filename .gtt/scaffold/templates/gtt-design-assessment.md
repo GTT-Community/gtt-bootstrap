@@ -35,6 +35,7 @@ Left empty it is **not selected**, and `STANDARD` applies as a fallback.
 THINK Depth:
 Selected by:
 Date:
+Human guidelines:
 ```
 
 | | `QUICK` | `STANDARD` | `DEEP` |

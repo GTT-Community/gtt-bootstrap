@@ -6,7 +6,9 @@ GTT generates the script from a fixed template, reviews it, seals it and runs it
 
   gtt_run.py new SLUG [--apply] [--json]       a plan skeleton, gtt-domain/run/RUN-NNN-SLUG.md (an agent may run this)
   gtt_run.py generate RUN [--apply] [--json]   the script, from the plan, with the plan's sha256 as its seal (an agent may run this)
-  gtt_run.py check [RUN|--all] [--json]        the review, rules RUN-01 to RUN-09 (.gtt/contract/run.json)
+  gtt_run.py check [RUN|--all] [--rehearse] [--json]
+                                               the review, rules RUN-01 to RUN-12 (.gtt/contract/run.json); --rehearse also runs
+                                               the script in a throwaway copy of the project (generate --apply always does)
   gtt_run.py list [--json]                     the pending runs, one line each
   gtt_run.py execute RUN --confirmed-by-human [--confirmed]
                                                run the script (the human runs this, never an agent): checks it first,
@@ -46,6 +48,13 @@ GOVERNED = ("gtt-domain/context/", "gtt-domain/adr/", ".gtt/")
 TEMP_DIRS = {"tmp", "temp", ".tmp", ".cache", "build", "dist", "node_modules", "target"}
 NETWORK = re.compile(r"\b(?:curl|wget|git\s+(?:clone|fetch|pull)|npm\s+(?:install|ci|i)|pnpm\s+(?:install|i)|yarn\s+(?:install|add)|pip3?\s+install|"
                      r"docker\s+(?:pull|compose\s+pull)|apt(?:-get)?\s+(?:install|update)|brew\s+install|go\s+(?:get|install)|cargo\s+(?:install|fetch))\b")
+REHEARSAL_SECONDS = 120
+# What a throwaway copy reproduces faithfully: the project's own scripts and the basic file utilities. Any other tool
+# (npm, docker, a compiler, a test runner) may need what a copy lacks - dependencies, services, secrets - and a failure
+# there would say nothing about the plan, so it is not rehearsed and never blocks.
+REHEARSABLE = {"echo", "printf", "mkdir", "cp", "mv", "rm", "touch", "cat", "ls", "test", "[", "cd", "chmod", "grep", "sed", "sort", "wc"}
+REHEARSAL_MAX_BYTES = 300 * 1024 * 1024
+LOCAL_FILE = re.compile(r"^(?:\./|\.\./)?[A-Za-z0-9_.][A-Za-z0-9_.-]*(?:/[A-Za-z0-9_.-]+)+\.(?:sh|py|json|ya?ml|md)$")
 SEPARATORS = re.compile(r"\s*(?:&&|\|\||;|\|)\s*")
 
 
@@ -346,7 +355,121 @@ def check_lines(plan, workflow_commits, extra):
     return findings
 
 
-def review(number, c):
+def missing_files(plan):
+    """[(where, path)] of the local scripts a command RUNS or LOADS that do not exist (RUN-11).
+    Files a step creates (redirects, mkdir, cp targets) are not checked: only what is executed, sourced or fed to an interpreter."""
+    out = []
+    interpreters = {"bash", "sh", "zsh", "python", "python3", "source", "."}
+    commands = [("check", i, cmd) for i, cmd in enumerate(plan["checks"], 1)] + \
+               [("step", i, cmd) for i, (_t, cmd) in enumerate(plan["steps"], 1)]
+    for kind, index, command in commands:
+        for segment in SEPARATORS.split(command):
+            try:
+                words = shlex.split(segment, posix=True)
+            except ValueError:
+                continue
+            while words and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", words[0]):
+                words = words[1:]
+            if not words:
+                continue
+            target = None
+            if words[0] in interpreters:
+                rest = [w for w in words[1:] if not w.startswith("-")]
+                target = rest[0] if rest else None
+            elif "/" in words[0]:
+                target = words[0]
+            if target and LOCAL_FILE.match(target) and not os.path.exists(target):
+                out.append((f"{kind} {index}", target))
+    return out
+
+
+
+def not_rehearsable(plan):
+    """The first thing in the plan a copy cannot stand in for, or None."""
+    for command in [c for _t, c in plan["steps"]] + list(plan["checks"]):
+        if "$(" in command or "`" in command or "<(" in command:
+            return "a command substitution"
+        for segment in SEPARATORS.split(command):
+            try:
+                words = shlex.split(segment, posix=True)
+            except ValueError:
+                return "a command it cannot read"
+            while words and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=.*", words[0]):
+                words = words[1:]
+            if not words:
+                continue
+            first = words[0]
+            if first in ("bash", "sh"):
+                rest = [w for w in words[1:] if not w.startswith("-")]
+                if not rest or not os.path.isfile(rest[0]) or "-c" in words[1:2]:
+                    return f"`{first} -c` or a script that is not a file of the project"
+            elif first in REHEARSABLE or (("/" in first) and os.path.isfile(first)):
+                continue
+            else:
+                return f"`{first}`"
+    return None
+
+
+def rehearsal(script, plan):
+    """(level, message) or None. Runs the sealed script in a throwaway copy of the project, then the project's own
+    validation, and reports what the human would have met. Never touches the real project."""
+    text = " ".join(c for _t, c in plan["steps"]) + " " + " ".join(plan["checks"])
+    if plan["changes"] in ("environment", "data"):
+        return ("note", f"not rehearsed: it changes {plan['changes']}, which a copy cannot stand in for")
+    if NETWORK.search(text) or re.search(r"\bsudo\b", text) or gtt_flow.SH_GIT.search(text) or re.search(r"\bgit\b", text):
+        return ("note", "not rehearsed: it uses the network, sudo or Git, which a copy cannot stand in for")
+    blocker = not_rehearsable(plan)
+    if blocker:
+        return ("note", f"not rehearsed: it uses {blocker}, which a copy of the project may not reproduce (dependencies, services, secrets)")
+    total = 0
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in (".git", "node_modules", "__pycache__")]
+        for name in files:
+            try:
+                total += os.path.getsize(os.path.join(root, name))
+            except OSError:
+                pass
+        if total > REHEARSAL_MAX_BYTES:
+            return ("note", "not rehearsed: the project is too large to copy")
+    box = tempfile.mkdtemp(prefix="gtt-rehearsal-")
+    try:
+        copy = os.path.join(box, "p")
+        shutil.copytree(".", copy, symlinks=True, ignore=shutil.ignore_patterns(".git", "node_modules", "__pycache__"))
+        validate = os.path.join(copy, ".gtt", "scripts", "gtt-validate.sh")
+        if not os.path.isfile(validate):
+            return ("note", "not rehearsed: this project has no gtt-validate.sh")
+        env = dict(os.environ, GTT_NONINTERACTIVE="1")
+
+        def run(argv):
+            return subprocess.run(argv, cwd=copy, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                  timeout=REHEARSAL_SECONDS, env=env, stdin=subprocess.DEVNULL)
+
+        # The index is derived data and goes stale on every plan edit; refresh it in the copy so the baseline is
+        # about the project, not about that.
+        index = os.path.join(copy, ".gtt", "scripts", "gtt-index.sh")
+        if os.path.isfile(index):
+            run([bash_executable(), index])
+        before = run([bash_executable(), validate]).returncode
+        done = run([bash_executable(), os.path.join(copy, script)])
+        if done.returncode != 0:
+            tail = " | ".join((done.stderr or done.stdout).strip().splitlines()[-3:])[:200]
+            return ("fail", f"in a copy of the project the script stopped with exit {done.returncode}: {tail}")
+        after = run([bash_executable(), validate])
+        if after.returncode != 0:
+            lines = [l.strip() for l in after.stdout.splitlines() if "FAIL" in l][:3]
+            if before == 0:
+                return ("fail", "in a copy, the script ran but left validation failing: " + " | ".join(lines)[:260])
+            return ("warn", "the project already fails validation before this script, and still does after: " + " | ".join(lines)[:220])
+        return ("note", "rehearsed in a copy of the project: the script ran and validation passes")
+    except subprocess.TimeoutExpired:
+        return ("warn", f"the rehearsal took more than {REHEARSAL_SECONDS}s and was stopped; the script was not verified")
+    except OSError as error:
+        return ("note", f"not rehearsed: {error}")
+    finally:
+        shutil.rmtree(box, ignore_errors=True)
+
+
+def review(number, c, rehearse=False):
     """The review of one pending run: {id, path, plan, findings, ok}."""
     path = plans(folder(c)).get(number)
     entry = {"id": rid(number), "path": path, "findings": [], "ok": False, "plan": None}
@@ -368,6 +491,19 @@ def review(number, c):
         entry["findings"].append(("RUN-05", "fail", "script", f"{script} does not exist: run `gtt-run.sh generate {rid(number)} --apply`"))
     elif expected is not None and actual != expected.encode("utf-8"):
         entry["findings"].append(("RUN-05", "fail", "script", f"{script} is not what its plan generates (edited by hand, or the plan changed): fix the plan and generate again"))
+    if actual is not None:
+        syntax = subprocess.run([bash_executable(), "-n", script], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if syntax.returncode != 0:
+            entry["findings"].append(("RUN-10", "fail", "script", "bash cannot parse it: " + (syntax.stderr.strip().splitlines() or ["syntax error"])[-1][:140]))
+    if plan and not plan_problems(plan, c):
+        for where, missing in missing_files(plan):
+            entry["findings"].append(("RUN-11", "fail", where, f"`{missing}` does not exist in the project"))
+    if rehearse and actual is not None and plan and not plan_problems(plan, c) \
+            and not any(f[1] == "fail" for f in entry["findings"]):
+        result = rehearsal(script, plan)
+        if result:
+            level = {"fail": "fail", "warn": "warn", "note": "note"}[result[0]]
+            entry["findings"].append(("RUN-12", level, "rehearsal", result[1]))
     if actual is not None and shutil.which("shellcheck"):
         done = subprocess.run(["shellcheck", "-f", "gcc", script], capture_output=True, text=True, encoding="utf-8", errors="replace")
         for line in done.stdout.splitlines()[:5]:
@@ -398,6 +534,20 @@ def handover(number, plan, c):
 
 # ----------------------------------------------------------------------------- commands
 
+def canonical_line(c):
+    """The canonical-reference line every GTT .md carries, taken from the run folder's own README so the generation follows the project."""
+    found = re.search(r"^>\s*\*\*Canonical reference:\*\*.*$", read(os.path.join(folder(c), "README.md")) or "", re.MULTILINE)
+    return found.group(0) if found else \
+        "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
+
+
+def register_artifacts():
+    """A new file under gtt-domain/ must be in the artifact index, or the integrity gate fails on it. Best effort, silent."""
+    index = os.path.join(HERE, "gtt-index.sh")
+    if os.path.isfile(index):
+        subprocess.run([bash_executable(), index], capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=60)
+
+
 def cmd_new(args):
     c = contract()
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", args.slug):
@@ -406,6 +556,7 @@ def cmd_new(args):
     number = max(taken(c), default=0) + 1
     path = f"{folder(c)}/{rid(number)}-{args.slug}.md"
     text = (f"# {rid(number)} — {args.slug.replace('-', ' ').capitalize()}\n\n"
+            f"{canonical_line(c)}\n\n"
             "- **What it does:** <one line: what running this does>\n"
             "- **Why:** <the Story or reason, e.g. STORY-007>\n"
             "- **Changes:** none   <!-- none | environment | data | code -->\n\n"
@@ -419,6 +570,7 @@ def cmd_new(args):
         os.makedirs(folder(c), exist_ok=True)
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
+        register_artifacts()
     if args.json:
         emit(out)
     else:
@@ -460,7 +612,7 @@ def cmd_generate(args):
     if args.apply:
         with open(target, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(script)
-    entry = review(number, c) if args.apply else None
+    entry = review(number, c, rehearse=True) if args.apply else None
     ok = entry["ok"] if entry else True
     if args.json:
         emit({"schema": 1, "id": rid(number), "script": target, "applied": bool(args.apply), "ok": ok,
@@ -489,7 +641,7 @@ def cmd_check(args):
         numbers = [number]
     else:
         numbers = sorted(plans(folder(c)))
-    entries = [review(n, c) for n in numbers]
+    entries = [review(n, c, rehearse=args.rehearse) for n in numbers]
     ok = all(e["ok"] for e in entries)
     if args.json:
         emit({"schema": 1, "ok": ok, "runs": [{"id": e["id"], "ok": e["ok"], "findings": finding_dicts(e)} for e in entries]})
@@ -603,7 +755,7 @@ def main(argv):
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("new"); p.add_argument("slug"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("generate"); p.add_argument("run"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
-    p = sub.add_parser("check"); p.add_argument("run", nargs="?"); p.add_argument("--all", action="store_true"); p.add_argument("--json", action="store_true")
+    p = sub.add_parser("check"); p.add_argument("run", nargs="?"); p.add_argument("--all", action="store_true"); p.add_argument("--rehearse", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("list"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("execute"); p.add_argument("run"); p.add_argument("--confirmed-by-human", action="store_true")
     p.add_argument("--confirmed", action="store_true")

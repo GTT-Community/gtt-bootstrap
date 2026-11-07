@@ -123,14 +123,8 @@ prepared, applies everything or nothing, keeps the originals and prints the
 one-line undo. It never stages or commits. **Never write an application script by
 hand, and never run the promotion**: it is the human's act, whatever the file.
 
-After staging, tell the user exactly this, and nothing more:
-
-```text
-@gtt · Authorization required
-Changes: AGENTS.md, .claude/settings.json - <one-line reason>
-Run: gtt promote <name>
-Nothing was applied; it is your decision.
-```
+After staging, hand it over with `bash .gtt/scripts/gtt-handoff.sh promote <name>` and show its output, nothing
+more: the script builds the message and the command and checks that they work. Nothing was applied; it is the human's decision.
 
 Generating a proposal, an ADR draft or a promotion set is never itself approval, and
 approving one change does not carry over to the next.
@@ -316,7 +310,7 @@ In `.gtt/docs/agents/operations.md` → *Delivery planning*.
 
 ## Simple execution
 
-When the human must execute something: a governed act is one promotion command; anything that changes state or takes two or more commands is a run plan in `gtt-domain/run/` (`gtt-run.sh new`, then `generate`), handed over as `gtt run <n>`; a single read-only command may be given inline. Never write the script yourself, never run it, and never ask the human to assemble a sequence.
+When the human must execute something: a governed act is one promotion command; anything that changes state or takes two or more commands is a run plan in `gtt-domain/run/` (`gtt-run.sh new`, then `generate`), handed over as `gtt run <n>`; a single read-only command may be given inline. Never write the script yourself, never run it, and never ask the human to assemble a sequence. Every other act that is the human's (approve an Epic, accept, reject or defer an observation, freeze) is handed over the same way: `bash .gtt/scripts/gtt-handoff.sh <act> <id>`, its output shown as it is. Never type a command for the human yourself.
 
 In `.gtt/docs/agents/operations.md` → *Simple execution*.
 

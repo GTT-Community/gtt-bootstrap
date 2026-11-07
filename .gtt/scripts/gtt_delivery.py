@@ -198,7 +198,8 @@ def backlog():
         f = story["fields"]
         out_stories.append({"id": story["id"], "epic": story["epic"], "line": story["line"],
                             "status": gtt_backlog.normal(story["status"]), "estimate_h": hours_of(f.get("Estimate", "")),
-                            "owner": (f.get("Owner", "agent").strip().lower() or "agent"), "done_when": f.get("Done when", "")})
+                            "owner": (f.get("Owner", "agent").strip().lower() or "agent"), "done_when": f.get("Done when", ""),
+                            "closed": f.get("Closed", "")})
     for epic in epics:
         f = epic["fields"]
         out_epics.append({"id": epic["id"], "line": epic["line"], "status": gtt_backlog.normal(epic.get("status", "")),
@@ -687,6 +688,24 @@ def drift_paths():
     return sorted(p.replace(os.sep, "/") for p in set(paths) if p.replace(os.sep, "/") not in skip)
 
 
+def unintegrated(stories):
+    """(Stories Done without a commit or PR in `Closed:`, uncommitted paths): finished work that Git history does not hold yet."""
+    import subprocess
+    th = thresholds()
+    done = [s["id"] for s in stories if s["status"] == "Done" and not re.search(r"\b[0-9a-f]{7,40}\b|#\d+|\bPR\b|pull request", s["closed"], re.I)]
+    if len(done) < th["unintegrated_min_stories"] or not os.path.exists(".git"):
+        return [], 0
+    try:
+        proc = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", ".", ":(exclude)gtt-domain/session.md"],
+                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return [], 0
+    if proc.returncode != 0:
+        return [], 0
+    dirty = len([l for l in proc.stdout.splitlines() if "__pycache__/" not in l and not l.endswith(".pyc")])
+    return (done, dirty) if dirty >= th["unintegrated_min_paths"] else ([], dirty)
+
+
 def pace_drift():
     """[(path, line, text)]: documents that speak in the other rhythm than the one declared in `pace`."""
     state = read_json(STATE) or {}
@@ -704,6 +723,12 @@ def pace_drift():
             if not fenced and pattern.search(line):
                 out.append((path, number, line.strip()[:80]))
     return out
+
+
+def workflow_commits():
+    """The `commits:` value of gtt-domain/workflow.md; the default when the file or the block is missing."""
+    found = re.search(r"^commits:\s*([a-z-]+)", read("gtt-domain/workflow.md") or "", re.MULTILINE)
+    return found.group(1) if found else "on-request"
 
 
 def signals():
@@ -727,6 +752,10 @@ def signals():
         add("DLV-NO-PLAN", "backlog", noplan_text(found), state=f"{found[0]}/{found[1]}")
     for ident, sha in stale_statuses(stories):
         add("DLV-STALE-STATUS", ident, f"{ident} is still not Done but commit {sha} already closes it: set `Status: Done` and `Closed:` (date and commit)", state=sha)
+    pending, dirty = unintegrated(stories)
+    if pending and (workflow_commits() != "never"):
+        add("DLV-UNINTEGRATED", "git", f"{len(pending)} Stories are Done with no commit or PR in `Closed:` and {dirty} paths are uncommitted: "
+            "when you decide to integrate, commit them and put the commit in `Closed:` (Git history is yours; GTT never commits for you)", state=f"{len(pending)}/{dirty}")
     drifted = {}
     for path, number, text in pace_drift():
         drifted.setdefault(path, []).append((number, text))
@@ -915,8 +944,8 @@ def cmd_size(args):
     return 0
 
 
-VISIBILITY = ("DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-GROWTH", "DLV-OVER-TARGET", "DLV-UNDER-TARGET")
-TELL = ("DLV-NO-PLAN", "DLV-GROWTH", "DLV-OVER-TARGET", "DLV-UNDER-TARGET")
+VISIBILITY = ("DLV-NO-PLAN", "DLV-STALE-STATUS", "DLV-PACE-DRIFT", "DLV-UNINTEGRATED", "DLV-GROWTH", "DLV-OVER-TARGET", "DLV-UNDER-TARGET")
+TELL = ("DLV-NO-PLAN", "DLV-UNINTEGRATED", "DLV-GROWTH", "DLV-OVER-TARGET", "DLV-UNDER-TARGET")
 
 
 def visibility_warnings():

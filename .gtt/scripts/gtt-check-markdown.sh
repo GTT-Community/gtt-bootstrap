@@ -37,7 +37,7 @@ while IFS= read -r f; do
 done < <(find .gtt gtt-domain -path .gtt/local -prune -o -name "*.md" ! -name session.md -print 2>/dev/null | sort)   # .gtt/local is per-user state, never kit
 while IFS= read -r f; do
   files+=("$f")
-done < <({ find .claude .kiro -name "*.md" 2>/dev/null; find .github/instructions -name "gtt*.md" 2>/dev/null; } | sort)
+done < <({ find .claude .kiro -path .claude/worktrees -prune -o -name "*.md" -print 2>/dev/null; find .github/instructions -name "gtt*.md" 2>/dev/null; } | sort)
 
 echo "GTT Markdown Check"
 echo

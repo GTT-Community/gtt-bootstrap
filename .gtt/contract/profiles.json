@@ -197,7 +197,7 @@
         { "control": "confirmation-batching", "how": "Confirmation A and B may be asked in one exchange; each still needs its own explicit human answer." },
         { "control": "audit-cadence", "how": "gtt-audit is not scheduled." }
       ],
-      "delivery": {"signals": {"DLV-STORY-OVER": "NOTICE", "DLV-EPIC-BUDGET": "WARNING", "DLV-FORECAST": "WARNING", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "NOTICE", "DLV-NO-VALUE": "WARNING", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "NOTICE", "DLV-STALE-STATUS": "NOTICE", "DLV-PACE-DRIFT": "NOTICE", "DLV-GROWTH": "NOTICE", "DLV-OVER-TARGET": "NOTICE", "DLV-UNDER-TARGET": "NOTICE"}, "freeze": {"estimate": "warn", "budget": "warn", "lanes": "warn", "build": "warn", "source": "warn"}},
+      "delivery": {"signals": {"DLV-STORY-OVER": "NOTICE", "DLV-EPIC-BUDGET": "WARNING", "DLV-FORECAST": "WARNING", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "NOTICE", "DLV-NO-VALUE": "WARNING", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "NOTICE", "DLV-STALE-STATUS": "NOTICE", "DLV-PACE-DRIFT": "NOTICE", "DLV-UNINTEGRATED": "NOTICE", "DLV-GROWTH": "NOTICE", "DLV-OVER-TARGET": "NOTICE", "DLV-UNDER-TARGET": "NOTICE"}, "freeze": {"estimate": "warn", "budget": "warn", "lanes": "warn", "build": "warn", "source": "warn"}},
       "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false, "governance_observation_fails_check": false }
     },
     "medium": {
@@ -226,7 +226,7 @@
         "evidence_requirements": "Verification claims are classified (STATIC / RUNTIME VERIFIED, DOCUMENTED ONLY, NO EVIDENCE) when recorded."
       },
       "relaxes": [],
-      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "WARNING", "DLV-NO-VALUE": "WARNING", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "WARNING", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "NOTICE", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "WARNING", "DLV-UNDER-TARGET": "NOTICE"}, "freeze": {"estimate": "warn", "budget": "fail", "lanes": "warn", "build": "fail", "source": "warn"}},
+      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "WARNING", "DLV-NO-VALUE": "WARNING", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "WARNING", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "NOTICE", "DLV-UNINTEGRATED": "NOTICE", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "WARNING", "DLV-UNDER-TARGET": "NOTICE"}, "freeze": {"estimate": "warn", "budget": "fail", "lanes": "warn", "build": "fail", "source": "warn"}},
       "gates": { "provenance_policy": "advisory", "warnings_block_freeze": false, "sources_manifest_required_for_freeze": false, "open_gap_requires_affects": false, "governance_observation_fails_check": false }
     },
     "hard": {
@@ -255,7 +255,7 @@
         "evidence_requirements": "Every verification claim recorded with command, result and evidence type; NO EVIDENCE stated for what was not run."
       },
       "relaxes": [],
-      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "GOVERNANCE", "DLV-NO-VALUE": "GOVERNANCE", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "GOVERNANCE", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "WARNING", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "GOVERNANCE", "DLV-UNDER-TARGET": "WARNING"}, "freeze": {"estimate": "fail", "budget": "fail", "lanes": "fail", "build": "fail", "source": "fail"}},
+      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "GOVERNANCE", "DLV-NO-VALUE": "GOVERNANCE", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "GOVERNANCE", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "WARNING", "DLV-UNINTEGRATED": "WARNING", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "GOVERNANCE", "DLV-UNDER-TARGET": "WARNING"}, "freeze": {"estimate": "fail", "budget": "fail", "lanes": "fail", "build": "fail", "source": "fail"}},
       "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true, "governance_observation_fails_check": true }
     },
     "team": {
@@ -286,7 +286,7 @@
         "evidence_requirements": "Every verification claim recorded with command, result, evidence type and who ran it; NO EVIDENCE stated for what was not run."
       },
       "relaxes": [],
-      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "GOVERNANCE", "DLV-NO-VALUE": "GOVERNANCE", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "GOVERNANCE", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "WARNING", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "GOVERNANCE", "DLV-UNDER-TARGET": "WARNING"}, "freeze": {"estimate": "fail", "budget": "fail", "lanes": "fail", "build": "fail", "source": "fail"}, "lane_cross_blocking": "BLOCKING only when the team declares `lane-cross: blocking` in the gtt-delivery block of gtt-domain/working-agreements.md; otherwise GOVERNANCE"},
+      "delivery": {"signals": {"DLV-STORY-OVER": "WARNING", "DLV-EPIC-BUDGET": "GOVERNANCE", "DLV-FORECAST": "GOVERNANCE", "DLV-HUMAN-WAIT": "WARNING", "DLV-LANE-CROSS": "GOVERNANCE", "DLV-NO-VALUE": "GOVERNANCE", "DLV-UNCALIBRATED": "NOTICE", "DLV-NO-PLAN": "GOVERNANCE", "DLV-STALE-STATUS": "WARNING", "DLV-PACE-DRIFT": "WARNING", "DLV-UNINTEGRATED": "WARNING", "DLV-GROWTH": "WARNING", "DLV-OVER-TARGET": "GOVERNANCE", "DLV-UNDER-TARGET": "WARNING"}, "freeze": {"estimate": "fail", "budget": "fail", "lanes": "fail", "build": "fail", "source": "fail"}, "lane_cross_blocking": "BLOCKING only when the team declares `lane-cross: blocking` in the gtt-delivery block of gtt-domain/working-agreements.md; otherwise GOVERNANCE"},
       "gates": { "provenance_policy": "required", "warnings_block_freeze": true, "sources_manifest_required_for_freeze": true, "open_gap_requires_affects": true, "governance_observation_fails_check": true }
     }
   }
