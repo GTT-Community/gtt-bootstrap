@@ -208,6 +208,27 @@ with `git commit --no-verify`, so the guaranteed layer is CI: run
 
 ---
 
+## Sonar: see everything in one page
+
+GTT Sonar is the visible face of observation. `gtt sonar` generates one HTML page from the project's own state and opens it;
+`gtt sonar --all` does the same for every repo you listed with `gtt sonar add <path>`. It is the departures board of an airport:
+you see what leaves, what is late and what waits for you, but nothing is launched from the screen.
+
+- **Three views:** portfolio (all your projects, and *I need you* ordered by how much each item blocks), project (what is coming, the flow line per Epic, the Stories by state, the signals) and latest (what Claude, you and GTT did, by day).
+- **Read only.** The page does not read or write anything: it is drawn from a snapshot GTT calculated (`gtt-sonar.sh snapshot`). Every act that is yours is a command with a *copy* button; you run it in the terminal.
+- **Derived and disposable.** `.gtt/local/sonar.html` and `sonar.json` are outside git; delete them and `gtt sonar` brings them back. The portfolio page lives in `~/.gtt/sonar/index.html`.
+- **Almost live.** It is regenerated when the state changes (a hook after a write in `gtt-domain/`, the start of each session and the end of each act of yours) and the page reloads every 5 seconds; a button pauses it.
+- **Safe.** No server, no network, no external resource. Everything it shows is escaped and drawn as text, and a Content Security Policy only lets it run its own script.
+- **Without the page:** `bash .gtt/scripts/gtt-sonar.sh render` writes it; `bash .gtt/scripts/gtt-sonar.sh snapshot` prints the JSON (schema `sonar.v1`).
+
+### Ideas
+
+An idea is your own words in `docs/ideas/IDEA-NNN.md`. Write one from the page (the box *new idea* builds the command) or with `gtt idea add '<text>'`.
+GTT keeps the text exactly as written. The agent can only add one line after it saying what became of it: covered by an Epic, turned into a proposal, a
+non-goal or a question. Parking (`gtt idea park`) and dropping (`gtt idea drop`) are yours. `session.md` tells the agent how many new ideas wait.
+
+---
+
 ## Protected artifacts (GTTGuard)
 
 Some L3 code deserves a narrower rule than "freely editable": a file,

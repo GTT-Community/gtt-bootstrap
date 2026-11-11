@@ -34,6 +34,8 @@ con libertad dentro de ese diseño; GTT mantiene separadas las dos cosas.
 | `gtt change`, `gtt proposals`, `gtt promote`, `gtt undo` | El flujo de cambios |
 | `gtt check` | ¿El código respeta las reglas de dependencias del método? |
 | `gtt autonomy` | Ver o cambiar el perfil de autonomía |
+| `gtt sonar`, `gtt sonar --all` | Una página de solo lectura con todo lo que está en marcha y lo que viene (ver *Sonar* en `.gtt/docs/usage.es.md`) |
+| `gtt idea add '<texto>'` | Anotar una idea para el proyecto, tal como la escribiste |
 
 ## Dónde está cada cosa
 

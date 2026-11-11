@@ -33,6 +33,8 @@ builds it freely inside that design; GTT keeps the two apart.
 | `gtt change`, `gtt proposals`, `gtt promote`, `gtt undo` | The change flow |
 | `gtt check` | Does the code respect the development method's dependency rules? |
 | `gtt autonomy` | Show or change the autonomy profile |
+| `gtt sonar`, `gtt sonar --all` | One read-only page with everything under way and what comes next (see *Sonar* in `.gtt/docs/usage.md`) |
+| `gtt idea add '<text>'` | Write down an idea for the project, exactly as you wrote it |
 
 ## Where things live
 

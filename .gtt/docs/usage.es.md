@@ -212,6 +212,27 @@ el CI: ejecuta `gtt-validate.sh` y `gtt-check-stack.sh` sobre el pull request.
 
 ---
 
+## Sonar: todo en una página
+
+GTT Sonar es la cara visible de la observación. `gtt sonar` genera una página HTML desde el propio estado del proyecto y la abre;
+`gtt sonar --all` hace lo mismo con todos los repos que agregaste con `gtt sonar add <ruta>`. Funciona como el tablero de salidas de un aeropuerto:
+ves qué sale, qué se atrasó y qué te espera, pero desde la pantalla no se despega nada.
+
+- **Tres vistas:** portafolio (todos tus proyectos y *te necesito*, ordenado por cuánto bloquea cada cosa), proyecto (lo que viene, la línea de flujo por Epic, las Stories por estado, las señales) y lo último (lo que hicieron Claude, tú y GTT, por día).
+- **Solo lectura.** La página no lee ni escribe nada: se dibuja desde un snapshot que GTT calculó (`gtt-sonar.sh snapshot`). Cada acto que es tuyo es un comando con un botón *copiar*; lo corres en la terminal.
+- **Derivada y desechable.** `.gtt/local/sonar.html` y `sonar.json` van fuera de git; si los borras, `gtt sonar` los devuelve. La página del portafolio vive en `~/.gtt/sonar/index.html`.
+- **Casi en vivo.** Se regenera cuando cambia el estado (un hook tras escribir en `gtt-domain/`, el inicio de cada sesión y el final de cada acto tuyo) y la página se recarga cada 5 segundos; un botón la pausa.
+- **Segura.** Sin servidor, sin red, sin recursos externos. Todo lo que muestra va escapado y se pinta como texto, y una Content Security Policy solo le deja correr su propio script.
+- **Sin la página:** `bash .gtt/scripts/gtt-sonar.sh render` la escribe; `bash .gtt/scripts/gtt-sonar.sh snapshot` imprime el JSON (esquema `sonar.v1`).
+
+### Ideas
+
+Una idea son tus propias palabras en `docs/ideas/IDEA-NNN.md`. Escríbela desde la página (el cuadro *nueva idea* arma el comando) o con `gtt idea add '<texto>'`.
+GTT guarda el texto tal cual. El agente solo puede agregar una línea después diciendo qué fue de ella: cubierta por un Epic, convertida en propuesta, no-objetivo
+o pregunta. Aparcarla (`gtt idea park`) y descartarla (`gtt idea drop`) es tuyo. `session.md` le dice al agente cuántas ideas nuevas esperan.
+
+---
+
 ## Artefactos protegidos (GTTGuard)
 
 Algo de código L3 merece una regla más estricta que "libremente editable":
