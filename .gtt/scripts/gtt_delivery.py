@@ -196,13 +196,13 @@ def backlog():
     out_stories, out_epics = [], []
     for story in stories:
         f = story["fields"]
-        out_stories.append({"id": story["id"], "epic": story["epic"], "line": story["line"],
+        out_stories.append({"id": story["id"], "epic": story["epic"], "line": story["line"], "title": story.get("title"),
                             "status": gtt_backlog.normal(story["status"]), "estimate_h": hours_of(f.get("Estimate", "")),
                             "owner": (f.get("Owner", "agent").strip().lower() or "agent"), "done_when": f.get("Done when", ""),
                             "closed": f.get("Closed", "")})
     for epic in epics:
         f = epic["fields"]
-        out_epics.append({"id": epic["id"], "line": epic["line"], "status": gtt_backlog.normal(epic.get("status", "")),
+        out_epics.append({"id": epic["id"], "line": epic["line"], "title": epic.get("title"), "status": gtt_backlog.normal(epic.get("status", "")),
                           "kind": f.get("Kind", "").strip().strip("`").lower(),
                           "lane": f.get("Lane", "").strip().strip("`"), "owner": f.get("Owner", "").strip(),
                           "depends": EPIC_ID.findall(f.get("Depends on", "")), "touches": split_list(f.get("Touches", "")),

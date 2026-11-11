@@ -144,6 +144,16 @@ if [ -f ".gtt/scripts/gtt-run.sh" ] && [ -f ".gtt/contract/run.json" ]; then
   if [ -z "$RUN_STATE" ] || [ "$RUN_STATE" = "No pending runs." ]; then RUN_STATE="none"; fi
 fi
 
+# New ideas: the human's loose ideas in docs/ideas/ that nobody has triaged yet (empty when there are none).
+IDEAS_STATE=""
+if [ -f ".gtt/scripts/gtt-idea.sh" ] && [ -f ".gtt/contract/ideas.json" ]; then
+  IDEAS_NEW="$(bash .gtt/scripts/gtt-idea.sh list 2>/dev/null | grep -E '^IDEA-[0-9]+ +new ' || true)"
+  if [ -n "${IDEAS_NEW}" ]; then
+    IDEAS_STATE="$(printf '%s\n' "${IDEAS_NEW}" | sed -E 's/^(IDEA-[0-9]+) +new +/\1 /')"
+    IDEAS_COUNT="$(printf '%s\n' "${IDEAS_NEW}" | wc -l | tr -d ' ')"
+  fi
+fi
+
 # Pending events: what waits for the human in gtt-domain/pending/ (empty when nothing does).
 PENDING_STATE=""
 if [ -f ".gtt/scripts/gtt-pending.sh" ] && [ -f ".gtt/contract/pending.json" ]; then
@@ -206,6 +216,11 @@ CONTENT="$({
   echo "## Delivery (the plan against the declared time - computed, never a decision)"
   echo "${DELIVERY_STATE}"
   echo
+  if [ -n "${IDEAS_STATE}" ]; then
+    echo "## New ideas (${IDEAS_COUNT}) (docs/ideas/ - the human's own words; triage each once: bash .gtt/scripts/gtt-idea.sh triage IDEA-NNN --result covered|converted|non-goal|ask --to <ref> --apply)"
+    echo "${IDEAS_STATE}"
+    echo
+  fi
   if [ -n "${PENDING_STATE}" ]; then
     echo "## Needs the human (gtt-domain/pending/ - end your report with this block; the human answers: gtt answer <n> <answer>)"
     echo "${PENDING_STATE}"

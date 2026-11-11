@@ -197,6 +197,12 @@ RUN_OWNED = ("GTT governance (deterministic-first): a run script (gtt-domain/run
              "RUN-NNN --apply`; never write the script yourself.")
 RUN_EXECUTE = ("GTT governance (human-decision-authority): executing a run is the human's act, never an agent's. Hand it over "
                "with the message `gtt-run.sh generate` prints - `gtt run <n>` - and continue with the work.")
+IDEAS_DIR = "docs/ideas"
+IDEAS_OWNED = ("GTT governance (human-decision-authority): docs/ideas/ holds the human's ideas, and the text of an idea is never an agent's to "
+               "write. The only thing an agent adds is one triage line, through the engine: `bash .gtt/scripts/gtt-idea.sh triage IDEA-NNN "
+               "--result covered|converted|non-goal|ask --to <ref> --apply`.")
+IDEAS_ACT = ("GTT governance (human-decision-authority): adding, parking or dropping an idea is the human's act, never an agent's. Tell them the "
+             "command (`gtt idea add '<text>'`, `gtt idea park IDEA-NNN`, `gtt idea drop IDEA-NNN`) and continue with the work.")
 PENDING_DIR = "gtt-domain/pending"
 PENDING_OWNED = ("GTT governance (deterministic-first): gtt-domain/pending/ is written only by gtt-pending.sh, and the human's answers "
                  "are never an agent's to write. Create an event with `bash .gtt/scripts/gtt-pending.sh ask|decide ... --apply`, write down "
@@ -299,6 +305,8 @@ def protected_token(root, token, shell=False):
         return LEDGER_OWNED
     if low in LOCAL_STATE:
         return LOCAL_OWNED
+    if under(low, IDEAS_DIR) and installed(root):
+        return IDEAS_OWNED
     if under(low, PENDING_DIR) and installed(root):
         return PENDING_OWNED
     if (under(low, RUN_DIR + "/done") or (under(low, RUN_DIR) and low.endswith(".sh"))) and installed(root):
@@ -457,7 +465,8 @@ def git_subcommand(words):
 # list/show, change show, check, sync, doctor...) stay the agent's.
 # Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
 CLI_HUMAN_ACTS = {("freeze",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
-                  ("proposals", "withdraw"), ("design", "reset"), ("answer",)}
+                  ("proposals", "withdraw"), ("design", "reset"), ("answer",), ("idea", "add"), ("idea", "park"), ("idea", "drop"),
+                  ("sonar", "add"), ("sonar", "remove")}
 CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply
 CLI_READS = {"show", "list", "check", "--help", "-h", "help"}
 CLI_NAME = re.compile(r"(gtt(\.exe)?|gtt-cli([@=].*)?)$")
@@ -589,6 +598,8 @@ def decide_units(root, command):
                 return SOURCE_FROZEN
             if base(word) in ("gtt-observe.sh", "gtt_observe.py") and follow and follow[0] in OBSERVE_DECISIONS:
                 return HUMAN_ACT
+            if base(word) in ("gtt-idea.sh", "gtt_idea.py") and follow and follow[0] in ("add", "park", "drop") and not syntax_only:
+                return IDEAS_ACT
             if base(word) in ("gtt-pending.sh", "gtt_pending.py") and follow and follow[0] == "answer" and not syntax_only:
                 return PENDING_ANSWER
             if base(word) in ("gtt-run.sh", "gtt_run.py") and follow and follow[0] == "execute" and not syntax_only:

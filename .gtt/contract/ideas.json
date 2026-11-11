@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "notice": "Ideas contract: the human's loose ideas, one file each in docs/ideas/ (IDEA-NNN.md). The text is the human's, written only by `gtt-idea.sh add`; the agent may add one triage line through the engine and nothing else. Parking and dropping are the human's. Data only.",
+  "dir": "docs/ideas",
+  "file_pattern": "IDEA-{number}.md",
+  "max_chars": 4000,
+  "title_chars": 80,
+  "triage_results": {
+    "covered":   { "to": "EPIC-\\d+",  "es": "cubierta por", "en": "covered by" },
+    "converted": { "to": "[A-Za-z0-9._-]+", "es": "convertida en", "en": "converted into" },
+    "non-goal":  { "to": "solution-vision\\.md", "es": "no-objetivo en", "en": "non-goal in" },
+    "ask":       { "to": "ASK-\\d+", "es": "pregunta", "en": "question" }
+  },
+  "labels": {
+    "es": { "author": "Autor", "human": "humano", "created": "Creada", "triage": "Triage", "parked": "Aparcada", "dropped": "Descartada", "empty": "Sin ideas." },
+    "en": { "author": "Author", "human": "human", "created": "Created", "triage": "Triage", "parked": "Parked", "dropped": "Dropped", "empty": "No ideas." }
+  }
+}

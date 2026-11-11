@@ -38,6 +38,7 @@ layers:
 
 engine:
   - { path: .gtt/scripts/, kind: dir, required: true, role: deterministic services and checks (Bash and Python) }
+  - { path: .gtt/sonar/, kind: dir, required: true, role: GTT Sonar page - template.html (one HTML with its CSS and JS, no build) and fonts/ (Geist and Geist Mono, OFL); the page is generated from it by gtt-sonar.sh into .gtt/local/ and is derived and disposable }
   - { path: .gtt/index/, kind: dir, required: true, role: artifact identity manifest and derived technical index }
   - { path: .gtt/index/artifacts.json, kind: file, required: true, role: identity manifest - authoritative for id to path only }
   - { path: .gtt/index/technical-index.json, kind: file, required: true, derived: true, role: derived accelerator - never a source of truth }

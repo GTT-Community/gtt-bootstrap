@@ -105,6 +105,7 @@ are written. Then check what only judgment can catch:
 | An Epic whose goal or scope no longer matches what is being built | Compare the Epic's `Goal` / `Scope` with the Stories closed under it and with the code; scope that grew without a decision is a finding |
 | Closure that the repository does not support | Open each `Done` Story's `Closed`: the commit or PR exists and the tests it names pass; a closure nobody can trace is a finding |
 | Story contradicting governed context or an ADR | Report it; what it means and who acts is *Precedence* in `AGENTS.md` → *Backlog* |
+| An idea (`docs/ideas/IDEA-NNN.md`) with no triage | `bash .gtt/scripts/gtt-idea.sh list` shows the `new` ones. Compare each with the Epics and the proposals; when one is covered, converted into a proposal, a non-goal in `solution-vision.md` or a question, add the one triage line with `gtt-idea.sh triage IDEA-NNN --result ... --to <ref> --apply`. Never edit an idea's text, and park or drop nothing: those are the human's |
 
 Report findings. An Epic is governed: do not add, remove or "fix" one
 yourself — a correction to an Epic's goal, scope or approval goes through

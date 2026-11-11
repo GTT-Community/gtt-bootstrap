@@ -59,8 +59,13 @@ def blank(text):
     return PLACEHOLDER.sub("", text).strip(SEPARATORS).lower() in EMPTY
 
 
+def heading_title(rest):
+    """The text after `EPIC-001 — `: the title of an entry, or None."""
+    return rest.strip().lstrip("-—–:").strip() or None
+
+
 def parse(path):
-    """(stories, epics). Story: id, line, status, epic, fields. Epic: id, line, fields. Template
+    """(stories, epics). Story: id, line, title, status, epic, fields. Epic: id, line, title, fields. Template
     examples (a heading that still holds a <placeholder>) are skipped."""
     with open(path, encoding="utf-8") as handle:
         lines = handle.read().replace("\r\n", "\n").split("\n")
@@ -70,7 +75,7 @@ def parse(path):
         if head:
             story = None
             if not PLACEHOLDER.search(line):
-                story = {"id": head.group(1), "line": number, "status": "", "fields": {},
+                story = {"id": head.group(1), "line": number, "title": heading_title(head.group(2)), "status": "", "fields": {},
                          "epic": epic["id"] if epic else None}
                 stories.append(story)
             field = None
@@ -79,7 +84,7 @@ def parse(path):
         if epic_head:
             story = field = epic = None
             if not PLACEHOLDER.search(line):
-                epic = {"id": epic_head.group(1), "line": number, "fields": {}}
+                epic = {"id": epic_head.group(1), "line": number, "title": heading_title(epic_head.group(2)), "fields": {}}
                 epics.append(epic)
             continue
         if line.startswith("#") or line.startswith("---"):

@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="__SONAR_CSP__">
+<title>GTT Sonar</title>
+<style>
+@font-face{font-family:"Geist";src:local("Geist"),url("__SONAR_FONTS__/Geist-Variable.woff2") format("woff2");font-weight:100 900}
+@font-face{font-family:"Geist Mono";src:local("Geist Mono"),url("__SONAR_FONTS__/GeistMono-Variable.woff2") format("woff2");font-weight:100 900}
+:root{
+  --bg:#0E1621;--surface:#131D2B;--rail:#0B121C;--line:#23324A;--line-soft:#1C2A3D;
+  --text:#E6EDF5;--muted:#8FA1B5;--dim:#7D90A6;
+  --agent:#2DD4BF;--agent-bg:#0F2A2B;--needs:#FBBF24;--needs-bg:#221D0E;--danger:#F87171;
+  --cmd:#0A111A;--sans:"Geist",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans)}
+a{color:var(--agent)}
+a:hover{color:#99F6E4}
+:focus-visible{outline:2px solid var(--agent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+header.bar{display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding:0 24px;min-height:56px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font:500 15px var(--mono)}
+.brand i{width:10px;height:10px;border-radius:2px;background:var(--agent);display:inline-block}
+nav.tabs{display:flex;gap:22px;align-self:stretch;font:13px var(--mono)}
+nav.tabs a{display:flex;align-items:center;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent}
+nav.tabs a[aria-current="page"]{color:var(--text);border-bottom-color:var(--agent)}
+.grow{flex:1}
+.meta{display:flex;align-items:center;gap:18px;flex-wrap:wrap;font:12px var(--mono);color:var(--muted)}
+.live{display:flex;align-items:center;gap:7px;color:var(--agent);background:none;border:0;font:12px var(--mono);cursor:pointer;padding:6px 4px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--agent);display:inline-block}
+.live[aria-pressed="true"]{color:var(--muted)}
+.live[aria-pressed="true"] i{background:transparent;box-shadow:inset 0 0 0 1px var(--muted)}
+select,input[type=text]{font:12px var(--mono);padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text)}
+main{padding:28px 32px 40px;display:flex;flex-direction:column;gap:28px;max-width:1280px;margin:0 auto}
+.stale{border:1px solid var(--needs);background:var(--needs-bg);color:var(--needs);border-radius:8px;padding:8px 14px;font:12px var(--mono)}
+.cmdline{font:12px var(--mono);color:var(--dim)}
+h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-0.4px}
+h2.sec{margin:0;font:500 13px var(--mono);color:#B6C4D3}
+h2.sec::before{content:"# ";color:var(--dim)}
+.head{display:flex;flex-direction:column;gap:6px}
+.sub{margin:0;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.needs{border-color:#5C4A17;overflow:hidden}
+.needs .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px;background:var(--needs-bg);border-bottom:1px solid #5C4A17}
+.needs h2{margin:0;font:500 13px var(--mono);color:var(--needs)}
+.needs h2::before{content:"# ";color:#A88A3A}
+.count{font:500 12px var(--mono);padding:1px 8px;border-radius:4px;background:var(--needs);color:var(--bg)}
+.needs .hint{font-size:13px;color:#D9C48A}
+.row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.row:last-child{border-bottom:0}
+.ref{font:12px var(--mono);color:var(--muted);min-width:70px}
+.grow2{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:2px}
+.grow2 b{font-weight:500}
+.small{font-size:13px;color:var(--muted)}
+.tag{font:11px var(--mono);padding:2px 7px;border:1px solid #2E4058;border-radius:4px;color:#B6C4D3;display:inline-block}
+.tag.dev{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
+.tag.think{border:1px dashed var(--agent);color:var(--agent)}
+.tag.red{border-color:var(--danger);color:var(--danger)}
+.tag.amber{border-color:var(--needs);color:var(--needs)}
+.cmd{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--cmd);overflow:hidden;max-width:100%}
+.cmd code{font:12.5px var(--mono);padding:8px 12px;color:var(--text);overflow-wrap:anywhere}
+.cmd code span{color:var(--dim)}
+.cmd button{min-height:40px;padding:0 14px;border:0;border-left:1px solid var(--line);background:var(--surface);color:var(--agent);font:12px var(--mono);cursor:pointer}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th{text-align:left;font:400 11.5px var(--mono);color:var(--dim);padding:11px 10px;border-bottom:1px solid var(--line)}
+td{padding:16px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th:first-child,td:first-child{padding-left:18px}
+tr:last-child td{border-bottom:0}
+td .stack{display:flex;flex-direction:column;gap:3px}
+.bar8{height:8px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 8px)}
+.bar8>div{height:100%;background:repeating-linear-gradient(90deg,var(--agent) 0 6px,transparent 6px 8px)}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.strip>div{background:var(--surface);padding:14px 18px;display:flex;flex-direction:column;gap:4px}
+.strip .k{font:11.5px var(--mono);color:var(--dim)}
+.strip .v{font:500 18px var(--mono)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.card.assert{border:1px dashed var(--agent);background:var(--agent-bg)}
+.card .t{font-weight:500}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:14px;height:9px;border-radius:2px;display:inline-block}
+.sw.done{background:var(--agent)}
+.sw.prog{background:rgba(45,212,191,.2);box-shadow:inset 0 0 0 1px var(--agent)}
+.sw.plan{box-shadow:inset 0 0 0 1px #50647C}
+.flow{padding:14px 16px 18px;overflow-x:auto}
+.flowin{position:relative;min-width:860px}
+.grid2{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:center}
+.days{display:flex}
+.days span{flex:1;text-align:center;font:11px var(--mono);color:var(--muted)}
+.days span.we{color:var(--dim)}
+.lane{padding:12px 0 4px;font:11.5px var(--mono);color:var(--muted)}
+.erow{min-height:58px;border-bottom:1px solid var(--line-soft)}
+.erow button.name{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding-right:12px;box-sizing:border-box}
+.erow button.name:focus-visible{outline:2px solid var(--agent)}
+.track{position:relative;height:30px}
+.segs{position:absolute;top:5px;height:20px;display:flex;gap:2px}
+.segs div{border-radius:3px}
+.segs .d{background:var(--agent)}
+.segs .p{background:rgba(45,212,191,.2);box-shadow:inset 0 0 0 1px var(--agent)}
+.segs .n{box-shadow:inset 0 0 0 1px #50647C}
+.vline{position:absolute;top:0;bottom:0;width:0;pointer-events:none}
+.vline.today{border-left:2px solid var(--text)}
+.vline.eta{border-left:2px dashed var(--agent)}
+.vline.due{border-left:2px solid var(--danger)}
+.detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.detail>div{background:var(--rail);padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.detail h3{margin:0;font:500 12px var(--mono);color:var(--muted)}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-wrap:anywhere}
+.scard.over{border-color:var(--danger)}
+.sigs{display:flex;flex-direction:column}
+.sig{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line-soft);align-items:baseline}
+.sig:last-child{border-bottom:0}
+.filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--muted)}
+.dayh{font:500 12px var(--mono);color:#B6C4D3;margin:0;padding:10px 18px;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+.dayh:first-child{border-top:0}
+.ev{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--line-soft)}
+.ev time{font:12px var(--mono);color:var(--dim);min-width:48px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot.agent{background:var(--agent)}
+.dot.human{background:var(--text)}
+.dot.gtt{background:var(--needs)}
+.dot.unknown{box-shadow:inset 0 0 0 1px var(--dim)}
+.empty{padding:18px;color:var(--muted)}
+.update{border:1px dashed var(--needs);color:var(--needs)}
+textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--cmd);color:var(--text);width:100%;resize:vertical}
+@media (max-width:720px){main{padding:20px 16px}.detail{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript>GTT Sonar needs JavaScript to draw the page. The data is in sonar.json.</noscript>
+<script type="application/json" id="sonar-data">__SONAR_DATA__</script>
+<script>
+(function () {
+"use strict";
+
+var STR = {
+  es: {
+    portfolio: "portafolio", project: "proyecto", last: "lo-último", repos: "repos", suite: "suite", live: "en vivo", paused: "en pausa",
+    portfolioTitle: "Portafolio", portfolioSub: "Proyectos GTT, leídos desde sus repos.", needs: "te necesito",
+    needsHint: "Ordenado por cuánto bloquea. Cada acto se corre en tu terminal.", projects: "proyectos", copy: "copiar", copied: "copiado",
+    cProject: "proyecto", cPhase: "fase", cProgress: "avance", cEta: "fecha estimada", cDoing: "en curso", cNeeds: "te necesita", cSignal: "señal", open: "abrir",
+    nodata: "sin dato", noplan: "sin plan", onTime: "a tiempo", late: "no llega al plazo", deadline: "plazo", eta: "estimada", calib: "calibración",
+    uncalibrated: "sin calibrar", coming: "lo que viene", flow: "línea de flujo por epic", done: "hecho", doing: "en curso", pending: "pendiente",
+    today: "hoy", etaLine: "fecha estimada", due: "plazo", detail: "detalle", signals: "señales", nothingNeeds: "Nada te espera.", nothingNext: "Nada por venir.",
+    toApprove: "por aprobar", proposal: "propuesta", planned: "plan", stories: "stories", noDates: "sin fechas", update: "actualiza GTT en este repo",
+    staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
+    claude: "claude", you: "tú", gtt: "gtt", unknown: "sin dato", logTitle: "Lo último", daySummary: "eventos", noEvents: "Sin actividad registrada.",
+    noEpics: "Sin Epics en el backlog.", pickEpic: "Abre un Epic para ver sus stories.", columns: { "Planned": "Planificado", "In Progress": "En curso", "Done": "Hecho" },
+    noRepos: "Sin repos en este portafolio.", progressWord: "avance", lateDays: "atrasado", weight: "bloquea", hours: "h",
+    ideas: "ideas", newIdea: "nueva idea", ideaLabel: "Escribe la idea", ideaHint: "Se guarda cuando corres el comando en la carpeta del repo:",
+    ideaNone: "Sin ideas todavía.", ideaStates: { "new": "nueva", "triaged": "triage", "covered": "cubierta", "converted": "convertida", "non-goal": "no-objetivo", "ask": "pregunta", "parked": "aparcada", "dropped": "descartada" }
+  },
+  en: {
+    portfolio: "portfolio", project: "project", last: "latest", repos: "repos", suite: "suite", live: "live", paused: "paused",
+    portfolioTitle: "Portfolio", portfolioSub: "GTT projects, read from their repos.", needs: "i need you",
+    needsHint: "Ordered by how much each blocks. Run each act in your terminal.", projects: "projects", copy: "copy", copied: "copied",
+    cProject: "project", cPhase: "phase", cProgress: "progress", cEta: "estimated date", cDoing: "in progress", cNeeds: "needs you", cSignal: "signal", open: "open",
+    nodata: "no data", noplan: "no plan", onTime: "on time", late: "misses the deadline", deadline: "deadline", eta: "estimated", calib: "calibration",
+    uncalibrated: "uncalibrated", coming: "what comes next", flow: "flow line by epic", done: "done", doing: "in progress", pending: "pending",
+    today: "today", etaLine: "estimated date", due: "deadline", detail: "detail", signals: "signals", nothingNeeds: "Nothing waits for you.", nothingNext: "Nothing coming up.",
+    toApprove: "to approve", proposal: "proposal", planned: "plan", stories: "stories", noDates: "no dates", update: "update GTT in this repo",
+    staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
+    claude: "claude", you: "you", gtt: "gtt", unknown: "no data", logTitle: "Latest", daySummary: "events", noEvents: "No recorded activity.",
+    noEpics: "No Epics in the backlog.", pickEpic: "Open an Epic to see its stories.", columns: { "Planned": "Planned", "In Progress": "In Progress", "Done": "Done" },
+    noRepos: "No repos in this portfolio.", progressWord: "progress", lateDays: "late", weight: "blocks", hours: "h",
+    ideas: "ideas", newIdea: "new idea", ideaLabel: "Write the idea", ideaHint: "It is saved when you run the command in the repo folder:",
+    ideaNone: "No ideas yet.", ideaStates: { "new": "new", "triaged": "triaged", "covered": "covered", "converted": "converted", "non-goal": "non-goal", "ask": "question", "parked": "parked", "dropped": "dropped" }
+  }
+};
+
+var raw = document.getElementById("sonar-data").textContent;
+var DATA;
+try { DATA = JSON.parse(raw); } catch (e) { DATA = { repos: [] }; }
+var REPOS = (DATA.repos || []);
+var OK = REPOS.filter(function (r) { return r && r.snapshot && r.snapshot.schema === "sonar.v1"; }).map(function (r) { return r.snapshot; });
+var LANG = (OK[0] && OK[0].lang === "en") ? "en" : "es";
+if (!OK.length && DATA.lang === "en") LANG = "en";
+var T = STR[LANG];
+document.documentElement.setAttribute("lang", LANG);
+
+/* ---------- DOM helpers: text only, never markup ---------- */
+function h(tag, attrs) {
+  var el = document.createElement(tag);
+  if (attrs) {
+    Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === "class") el.className = v;
+      else if (k === "text") el.textContent = String(v);
+      else if (k === "on") Object.keys(v).forEach(function (ev) { el.addEventListener(ev, v[ev]); });
+      else if (k === "width") el.style.width = v;
+      else if (k === "left") el.style.left = v;
+      else if (k === "gridCols") el.style.gridTemplateColumns = v;
+      else el.setAttribute(k, v === true ? "" : String(v));
+    });
+  }
+  function add(c) {
+    if (c === null || c === undefined || c === false) return;
+    if (Array.isArray(c)) { c.forEach(add); return; }
+    el.appendChild(typeof c === "string" || typeof c === "number" ? document.createTextNode(String(c)) : c);
+  }
+  for (var i = 2; i < arguments.length; i++) add(arguments[i]);
+  return el;
+}
+function sec(text) { return h("h2", { class: "sec", text: text }); }
+function nodata() { return h("span", { class: "small", text: T.nodata }); }
+
+/* ---------- state in location.hash ---------- */
+function readHash() {
+  var out = {}; var s = location.hash.replace(/^#\/?/, "");
+  s.split("&").forEach(function (p) { if (!p) return; var i = p.indexOf("="); var k = i < 0 ? p : p.slice(0, i); var v = i < 0 ? "" : p.slice(i + 1); try { out[k] = decodeURIComponent(v); } catch (e) { out[k] = v; } });
+  return out;
+}
+function writeHash(st) {
+  var parts = Object.keys(st).filter(function (k) { return st[k] !== "" && st[k] !== undefined && st[k] !== null; }).map(function (k) { return k + "=" + encodeURIComponent(st[k]); });
+  location.hash = "/" + parts.join("&");
+}
+function go(patch) { var st = readHash(); Object.keys(patch).forEach(function (k) { st[k] = patch[k]; }); writeHash(st); }
+window.addEventListener("hashchange", render);
+
+/* ---------- the one command the page builds: `gtt idea add` ---------- */
+/*IDEA-CMD*/
+function ideaCommand(text) {
+  return "gtt idea add '" + String(text).replace(/'/g, "'\\''") + "'";
+}
+/*END-IDEA-CMD*/
+
+/* ---------- copy ---------- */
+function copyButton(text) {
+  var b = h("button", { type: "button", text: T.copy, "aria-label": T.copy + ": " + text });
+  b.addEventListener("click", function () {
+    var done = function () { b.textContent = T.copied; setTimeout(function () { b.textContent = T.copy; }, 1500); };
+    var fallback = function () {
+      var code = b.parentNode.querySelector("code"); var r = document.createRange(); r.selectNodeContents(code);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  });
+  return b;
+}
+function cmdBlock(text) {
+  return h("div", { class: "cmd" }, h("code", null, h("span", { "aria-hidden": "true", text: "$ " }), text), copyButton(text));
+}
+
+/* ---------- shared pieces ---------- */
+function repoById(key) { return OK.filter(function (s) { return s.repo.key === key; })[0] || OK[0]; }
+function fmtDate(d) {
+  if (!d) return null; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d); if (!m) return d;
+  var names = LANG === "es" ? ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"] : ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+  return String(+m[3]) + " " + names[+m[2] - 1];
+}
+function phaseTag(p) {
+  var cls = p.phase === "DEV" ? "tag dev" : "tag think";
+  return h("span", { class: cls, text: p.phase });
+}
+function levelRank(l) { return { GOVERNANCE: 3, WARNING: 2, INFO: 1 }[l] || 0; }
+function worst(snap) {
+  var w = null; (snap.signals || []).forEach(function (s) { if (!w || levelRank(s.level) > levelRank(w)) w = s.level; }); return w;
+}
+function levelTag(l) {
+  if (!l) return h("span", { class: "small", text: "-" });
+  return h("span", { class: "tag " + (l === "GOVERNANCE" ? "red" : l === "WARNING" ? "amber" : ""), text: l });
+}
+function etaNote(snap) {
+  var s = snap.summary;
+  if (!s.forecast) return h("span", { class: "small", text: snap.stories.length ? T.nodata : T.noplan });
+  var note = s.on_time === true ? T.onTime : s.on_time === false ? T.late : (s.deadline ? "" : T.nodata);
+  return h("div", { class: "stack" }, h("span", { class: "mono", text: fmtDate(s.forecast) }), note ? h("span", { class: "small", text: note }) : null);
+}
+function inProgress(snap) { return snap.stories.filter(function (x) { return x.status === "In Progress"; }).length; }
+function statusBar(pct) {
+  var inner = h("div"); inner.style.width = pct + "%";
+  return h("div", { class: "bar8", "aria-hidden": "true" }, inner);
+}
+function topBar(view) {
+  var st = readHash();
+  function tab(id, label) {
+    var a = h("a", { href: "#/" + (function () { var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.view = id; return Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&"); })(), text: label });
+    if (view === id) a.setAttribute("aria-current", "page");
+    return a;
+  }
+  var paused = st.pause === "1";
+  var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }), paused ? T.paused : T.live);
+  live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
+  var suite = OK[0] && OK[0].suite_version;
+  return h("header", { class: "bar" },
+    h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"),
+    h("nav", { class: "tabs", "aria-label": "Views" }, tab("portfolio", T.portfolio), tab("project", T.project), tab("last", T.last)),
+    h("div", { class: "grow" }),
+    h("div", { class: "meta" }, h("span", { text: REPOS.length + " " + T.repos }), suite ? h("span", { text: T.suite + " " + suite }) : null, live));
+}
+function staleBanner() {
+  var newest = 0; OK.forEach(function (s) { var t = Date.parse(s.generated_at); if (t > newest) newest = t; });
+  var gen = DATA.generated_at ? Date.parse(DATA.generated_at) : newest;
+  if (!gen) return null;
+  var old = Date.now() - gen > 120000;
+  return old ? h("div", { class: "stale", role: "status", text: T.staleWarn + " (" + T.generated + " " + new Date(gen).toLocaleTimeString() + ")" }) : null;
+}
+
+/* ---------- views ---------- */
+function needsAll() {
+  var out = [];
+  OK.forEach(function (s) { (s.needs_you || []).forEach(function (n) { out.push({ n: n, repo: s.repo.key }); }); });
+  out.sort(function (a, b) { return ((b.n.weight.stories || 0) - (a.n.weight.stories || 0)) || ((b.n.weight.hours || 0) - (a.n.weight.hours || 0)); });
+  return out;
+}
+function needsPanel(items, showRepo) {
+  var box = h("section", { class: "panel needs", "aria-labelledby": "needs-h" },
+    h("div", { class: "top" }, h("h2", { id: "needs-h", text: T.needs }), h("span", { class: "count", text: items.length }), h("span", { class: "hint", text: T.needsHint })));
+  if (!items.length) box.appendChild(h("div", { class: "empty", text: T.nothingNeeds }));
+  items.forEach(function (it) {
+    var n = it.n; var w = [];
+    if (n.weight && n.weight.stories) w.push(n.weight.stories + " " + T.stories + " " + T.weight);
+    if (n.weight && n.weight.hours) w.push(n.weight.hours + T.hours);
+    box.appendChild(h("div", { class: "row" },
+      h("span", { class: "ref", text: n.ref }),
+      h("div", { class: "grow2" }, h("b", { text: n.title || n.ref }), h("span", { class: "small", text: [n.kind].concat(w).join(" · ") })),
+      showRepo ? h("span", { class: "tag", text: it.repo }) : null,
+      n.command ? cmdBlock(n.command) : nodata()));
+  });
+  return box;
+}
+
+function viewPortfolio() {
+  var st = readHash();
+  var rows = REPOS.map(function (r) {
+    if (!r || !r.snapshot || r.snapshot.schema !== "sonar.v1") {
+      var info = (r && r.stale) || {};
+      return h("tr", null, h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: info.key || "?" }), h("b", { text: info.name || info.path || "?" }))),
+        h("td", { colspan: "7" }, h("span", { class: "tag update", text: T.update }), info.reason ? h("span", { class: "small", text: "  " + info.reason }) : null));
+    }
+    var s = r.snapshot; var sum = s.summary; var needs = (s.needs_you || []).length;
+    return h("tr", null,
+      h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: s.repo.key }), h("b", { text: s.repo.name }))),
+      h("td", null, phaseTag(s.project)),
+      h("td", { style: "min-width:160px" }, sum.progress_pct === null ? h("span", { class: "small", text: T.noplan }) : h("div", { class: "stack" }, h("span", { class: "mono", text: sum.progress_pct + "%" }), statusBar(sum.progress_pct))),
+      h("td", null, etaNote(s)),
+      h("td", null, String(inProgress(s))),
+      h("td", null, needs ? h("span", { class: "count", text: needs }) : "0"),
+      h("td", null, levelTag(worst(s))),
+      h("td", null, h("a", { href: "#/view=project&repo=" + encodeURIComponent(s.repo.key), text: T.open, "aria-label": T.open + " " + s.repo.name })));
+  });
+  var head = h("tr", null, [T.cProject, T.cPhase, T.cProgress, T.cEta, T.cDoing, T.cNeeds, T.cSignal, ""].map(function (c) { return h("th", { scope: "col" }, c ? c : h("span", { class: "sr", text: T.open })); }));
+  return h("main", null,
+    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --all" }), h("h1", { text: T.portfolioTitle }), h("p", { class: "sub", text: T.portfolioSub })),
+    needsPanel(needsAll(), true),
+    h("section", { "aria-labelledby": "proj-h", style: "display:flex;flex-direction:column;gap:12px" }, h("h2", { id: "proj-h", class: "sec", text: T.projects }),
+      REPOS.length ? h("div", { class: "panel tablewrap" }, h("table", null, h("thead", null, head), h("tbody", null, rows))) : h("div", { class: "empty", text: T.noRepos })));
+}
+
+function dayNum(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ""); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000 : null; }
+
+function flowLine(snap) {
+  var today = dayNum(snap.generated_at);
+  var pts = [today, dayNum(snap.summary.forecast), dayNum(snap.summary.deadline)];
+  snap.epics.forEach(function (e) { pts.push(dayNum(e.start), dayNum(e.end)); });
+  pts = pts.filter(function (x) { return x !== null; });
+  var wrap = h("div", { class: "panel flow" });
+  if (!snap.epics.length) { wrap.appendChild(h("div", { class: "empty", text: T.noEpics })); return wrap; }
+  var min = Math.min.apply(null, pts) - 1, max = Math.max.apply(null, pts) + 2;
+  if (max - min < 14) max = min + 14;
+  var span = max - min; var pct = function (d) { return ((d - min) / span * 100); };
+  var inner = h("div", { class: "flowin" });
+  var days = h("div", { class: "days" });
+  for (var d = Math.floor(min); d < Math.ceil(max); d++) {
+    var dt = new Date(d * 86400000); var dow = dt.getUTCDay();
+    days.appendChild(h("span", { class: (dow === 0 || dow === 6) ? "we" : "", text: dt.getUTCDate() }));
+  }
+  inner.appendChild(h("div", { class: "grid2", style: "padding-bottom:8px;border-bottom:1px solid var(--line)" }, h("span", { class: "mono small", text: fmtDate(snap.generated_at.slice(0, 10)).split(" ")[1] }), days));
+  var lines = h("div", { style: "position:absolute;left:250px;right:0;top:0;bottom:0;pointer-events:none" });
+  function vline(day, cls, label) { if (day === null) return; var l = h("div", { class: "vline " + cls, "aria-hidden": "true", title: label }); l.style.left = pct(day) + "%"; lines.appendChild(l); }
+  vline(today, "today", T.today); vline(dayNum(snap.summary.forecast), "eta", T.etaLine); vline(dayNum(snap.summary.deadline), "due", T.due);
+  inner.appendChild(lines);
+  var st = readHash(); var lanes = {};
+  snap.epics.forEach(function (e) { (lanes[e.lane] = lanes[e.lane] || []).push(e); });
+  Object.keys(lanes).sort().forEach(function (ln) {
+    inner.appendChild(h("div", { class: "lane", text: ln }));
+    lanes[ln].forEach(function (e) {
+      var total = e.stories.done + e.stories.in_progress + e.stories.planned;
+      var open = st.epic === e.ref;
+      var name = h("button", { type: "button", class: "name", "aria-expanded": open ? "true" : "false", on: { click: function () { go({ epic: open ? "" : e.ref }); } } },
+        h("span", { style: "font-weight:500" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""),
+        h("span", { class: "small", text: e.stories.done + "/" + total + " " + T.stories }));
+      var track = h("div", { class: "track" });
+      var s = dayNum(e.start);
+      if (s === null) { track.appendChild(h("span", { class: "small", text: T.noDates, style: "position:absolute;top:5px;left:8px" })); }
+      else {
+        var endDay = dayNum(e.end) !== null ? dayNum(e.end) : Math.max(dayNum(snap.summary.forecast) || today, today);
+        var seg = h("div", { class: "segs" }); seg.style.left = pct(s) + "%"; seg.style.width = Math.max(pct(endDay + 1) - pct(s), 1.5) + "%";
+        [["d", e.stories.done], ["p", e.stories.in_progress], ["n", e.stories.planned]].forEach(function (pair) {
+          if (!pair[1] || !total) return; var seg1 = h("div", { class: pair[0] }); seg1.style.width = (pair[1] / total * 100) + "%"; seg.appendChild(seg1);
+        });
+        track.appendChild(seg);
+      }
+      inner.appendChild(h("div", { class: "grid2 erow" }, name, track));
+    });
+  });
+  wrap.appendChild(inner);
+  return wrap;
+}
+
+function epicDetail(snap, ref) {
+  var epic = snap.epics.filter(function (e) { return e.ref === ref; })[0];
+  if (!epic) return h("div", { class: "empty", text: T.pickEpic });
+  var cols = snap.columns.map(function (c) {
+    var list = snap.stories.filter(function (s) { return s.epic === ref && (c === "Planned" ? (s.status !== "In Progress" && s.status !== "Done") : s.status === c); });
+    return h("div", null, h("h3", { text: (T.columns[c] || c) + " · " + list.length }),
+      list.map(function (s) {
+        var over = (s.flags || []).indexOf("DLV-STORY-OVER") >= 0;
+        var bits = [];
+        if (s.estimate_h !== null && s.estimate_h !== undefined) bits.push(s.estimate_h + T.hours + " est.");
+        if (s.elapsed_h !== null && s.elapsed_h !== undefined) bits.push(s.elapsed_h + T.hours);
+        return h("div", { class: "scard" + (over ? " over" : "") }, h("span", { class: "mono small", text: s.ref }), h("div", { text: s.title || "" }), bits.length ? h("span", { class: "small", text: bits.join(" · ") }) : null);
+      }));
+  });
+  return h("div", { class: "detail", "aria-label": epic.ref }, cols);
+}
+
+var DRAFT_KEY = "gtt-sonar-idea-draft";
+function draftGet() { try { return sessionStorage.getItem(DRAFT_KEY) || ""; } catch (e) { return ""; } }
+function draftSet(v) { try { if (v) sessionStorage.setItem(DRAFT_KEY, v); else sessionStorage.removeItem(DRAFT_KEY); } catch (e) { /* storage may be blocked */ } }
+
+function ideasSection(snap) {
+  var list = snap.ideas;
+  var box = h("div", { class: "panel" });
+  if (list === null || list === undefined) box.appendChild(h("div", { class: "empty", text: T.nodata }));
+  else if (!list.length) box.appendChild(h("div", { class: "empty", text: T.ideaNone }));
+  else list.forEach(function (i) {
+    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: i.ref }), h("div", { class: "grow2" }, h("b", { text: i.title || i.ref })),
+      h("span", { class: i.state === "new" ? "tag amber" : "tag", text: T.ideaStates[i.state] || i.state }), i.to ? h("span", { class: "mono small", text: i.to }) : null));
+  });
+  var area = h("textarea", { id: "idea-text", rows: "3", "aria-label": T.ideaLabel, placeholder: T.ideaLabel, maxlength: "4000" });
+  area.value = draftGet();
+  var out = h("div", { id: "idea-cmd" });
+  function paint() {
+    draftSet(area.value);
+    while (out.firstChild) out.removeChild(out.firstChild);
+    if (area.value.trim()) out.appendChild(cmdBlock(ideaCommand(area.value)));
+  }
+  area.addEventListener("input", paint);
+  paint();
+  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.ideas), box,
+    h("div", { class: "panel", style: "padding:14px 18px;display:flex;flex-direction:column;gap:10px" },
+      h("label", { class: "small", for: "idea-text", text: T.newIdea }), area,
+      h("span", { class: "small", text: T.ideaHint }), h("span", { class: "mono small", text: "$ cd " + snap.repo.path }), out));
+}
+
+function viewProject() {
+  var st = readHash(); var snap = repoById(st.repo);
+  if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var sum = snap.summary;
+  var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "" }); } } },
+    OK.map(function (s) { return h("option", { value: s.repo.key, selected: s.repo.key === snap.repo.key, text: s.repo.key }); }));
+  var strip = h("div", { class: "strip" },
+    h("div", null, h("span", { class: "k", text: T.cEta }), h("span", { class: "v", text: sum.forecast ? fmtDate(sum.forecast) : T.nodata }), sum.deadline ? h("span", { class: "small", text: T.deadline + " " + fmtDate(sum.deadline) + (sum.on_time === true ? " · " + T.onTime : sum.on_time === false ? " · " + T.late : "") }) : null),
+    h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: sum.progress_pct === null ? T.noplan : sum.progress_pct + "%" }), h("span", { class: "small", text: sum.stories_done + "/" + sum.stories_total + " " + T.stories })),
+    h("div", null, h("span", { class: "k", text: T.calib }), h("span", { class: "v", text: sum.calibration.ratio === null ? T.uncalibrated : "x" + sum.calibration.ratio + (sum.calibration.uncalibrated ? " · " + T.uncalibrated : "") })),
+    h("div", null, h("span", { class: "k", text: T.needs }), h("span", { class: "v", text: (snap.needs_you || []).length })));
+  var cards = [];
+  (snap.next.proposals || []).forEach(function (p) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.proposal }), h("span", { class: "t", text: p.title || p.ref }), p.command ? cmdBlock(p.command) : null)); });
+  (snap.next.epics_to_approve || []).forEach(function (e) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.toApprove }), h("span", { class: "t" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""), e.command ? cmdBlock(e.command) : null)); });
+  (snap.next.planned_epics || []).forEach(function (e) { cards.push(h("div", { class: "card" }, h("span", { class: "tag", text: T.planned }), h("span", { class: "t" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""))); });
+  var sigs = (snap.signals || []);
+  return h("main", null,
+    h("div", { class: "head" },
+      h("span", { class: "cmdline", text: "$ gtt sonar " + snap.repo.key }),
+      h("h1", { text: snap.repo.name }),
+      h("div", { class: "meta" }, phaseTag(snap.project), snap.project.profile ? h("span", { text: snap.project.profile }) : null,
+        h("label", { class: "sr", for: "repo-pick", text: T.project }), select)),
+    strip,
+    (snap.needs_you || []).length ? needsPanel(snap.needs_you.map(function (n) { return { n: n, repo: snap.repo.key }; }), false) : null,
+    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : h("div", { class: "empty", text: T.nothingNext })),
+    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.flow),
+      h("div", { class: "legend", "aria-hidden": "true" },
+        h("span", null, h("i", { class: "sw done" }), T.done), h("span", null, h("i", { class: "sw prog" }), T.doing), h("span", null, h("i", { class: "sw plan" }), T.pending),
+        h("span", { text: "| " + T.today }), h("span", { text: "¦ " + T.etaLine }), h("span", { style: "color:var(--danger)", text: "| " + T.due })),
+      flowLine(snap)),
+    st.epic ? h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.detail + " " + st.epic), epicDetail(snap, st.epic)) : null,
+    ideasSection(snap),
+    sigs.length ? h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.signals),
+      h("div", { class: "panel sigs" }, sigs.map(function (g) { return h("div", { class: "sig" }, levelTag(g.level), h("span", { class: "mono small", text: g.code + (g.ref ? " " + g.ref : "") }), h("span", { text: g.text })); }))) : null);
+}
+
+function viewLast() {
+  var st = readHash(); var proj = st.proj || ""; var who = st.who || "";
+  var evs = [];
+  OK.forEach(function (s) { (s.recent || []).forEach(function (r) { evs.push({ r: r, repo: s.repo.key }); }); });
+  evs = evs.filter(function (e) { return (!proj || e.repo === proj) && (!who || (e.r.actor || "unknown") === who); });
+  evs.sort(function (a, b) { return String(b.r.at).localeCompare(String(a.r.at)); });
+  var byDay = {}; var order = [];
+  evs.forEach(function (e) { var d = String(e.r.at || "").slice(0, 10) || "?"; if (!byDay[d]) { byDay[d] = []; order.push(d); } byDay[d].push(e); });
+  var projSel = h("select", { id: "f-proj", on: { change: function (ev) { go({ proj: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
+    OK.map(function (s) { return h("option", { value: s.repo.key, selected: s.repo.key === proj, text: s.repo.key }); }));
+  var whoSel = h("select", { id: "f-who", on: { change: function (ev) { go({ who: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
+    [["agent", T.claude], ["human", T.you], ["gtt", T.gtt], ["unknown", T.unknown]].map(function (o) { return h("option", { value: o[0], selected: o[0] === who, text: o[1] }); }));
+  var body = h("div", { class: "panel" });
+  if (!order.length) body.appendChild(h("div", { class: "empty", text: T.noEvents }));
+  order.forEach(function (d) {
+    body.appendChild(h("h3", { class: "dayh", text: d + " · " + byDay[d].length + " " + T.daySummary }));
+    byDay[d].forEach(function (e) {
+      var a = e.r.actor || "unknown"; var time = String(e.r.at || "").slice(11, 16);
+      body.appendChild(h("div", { class: "ev" }, h("time", { text: time }), h("span", { class: "dot " + a, "aria-hidden": "true" }),
+        h("span", { class: "tag", text: a === "agent" ? T.claude : a === "human" ? T.you : a === "gtt" ? T.gtt : T.unknown }),
+        h("span", { text: e.r.text || e.r.action || "" }), e.r.ref ? h("span", { class: "mono small", text: e.r.ref }) : null, h("span", { class: "tag", text: e.repo })));
+    });
+  });
+  return h("main", null,
+    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --log" }), h("h1", { text: T.logTitle })),
+    h("div", { class: "filters" }, h("label", { for: "f-proj", text: T.project }), projSel, h("label", { for: "f-who", text: T.who }), whoSel),
+    body);
+}
+
+/* ---------- render + refresh ---------- */
+var timer = null;
+function render() {
+  var st = readHash(); var view = st.view || "portfolio";
+  if (view !== "project" && view !== "last") view = "portfolio";
+  var app = document.getElementById("app");
+  var focus = document.activeElement && document.activeElement.id;
+  while (app.firstChild) app.removeChild(app.firstChild);
+  app.appendChild(topBar(view));
+  var banner = staleBanner();
+  var page = view === "project" ? viewProject() : view === "last" ? viewLast() : viewPortfolio();
+  if (banner) page.insertBefore(banner, page.firstChild);
+  app.appendChild(page);
+  if (focus) { var el = document.getElementById(focus); if (el) el.focus(); }
+  document.title = "GTT Sonar · " + (T[view === "last" ? "last" : view] || view);
+}
+function schedule() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  if (readHash().pause === "1") return;
+  timer = setTimeout(function () {
+    var a = document.activeElement;
+    if (a && a.id === "idea-text") { schedule(); return; }      // never reload under a draft being typed
+    location.reload();
+  }, 5000);
+}
+render();
+schedule();
+})();
+</script>
+</body>
+</html>

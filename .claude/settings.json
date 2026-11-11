@@ -24,6 +24,8 @@
       "Write(/.gtt/local/last-validation.json)",
       "Edit(/docs/sources/**)",
       "Write(/docs/sources/**)",
+      "Edit(/docs/ideas/**)",
+      "Write(/docs/ideas/**)",
       "Edit(/gtt-domain/pending/**)",
       "Write(/gtt-domain/pending/**)",
       "Edit(/.gtt/local/prompts.jsonl)",
@@ -81,6 +83,10 @@
           {
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/delivery-log.py"
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/sonar-render.py"
           }
         ]
       },

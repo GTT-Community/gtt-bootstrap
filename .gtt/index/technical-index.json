@@ -7366,7 +7366,7 @@
       "title": "Audit context freshness",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "269a68c00adfd20424f595969ea6e2789d5c51c5defea3575d1cd97c2a09f85a",
+      "sha256": "6cf6d28affa6ed822720f295659affbd5ea06ebab37fe941e926b16afdbbaef8",
       "aliases": [],
       "sections": [
         {
@@ -7375,7 +7375,7 @@
           "anchor": "audit-context-freshness",
           "path": "Audit context freshness",
           "line_start": 8,
-          "line_end": 176
+          "line_end": 177
         },
         {
           "heading": "Procedure",
@@ -7415,23 +7415,23 @@
           "anchor": "backlog-reconciliation",
           "path": "Audit context freshness > Backlog reconciliation",
           "line_start": 86,
-          "line_end": 118
+          "line_end": 119
         },
         {
           "heading": "Classification",
           "level": 2,
           "anchor": "classification",
           "path": "Audit context freshness > Classification",
-          "line_start": 119,
-          "line_end": 131
+          "line_start": 120,
+          "line_end": 132
         },
         {
           "heading": "Output",
           "level": 2,
           "anchor": "output",
           "path": "Audit context freshness > Output",
-          "line_start": 132,
-          "line_end": 176
+          "line_start": 133,
+          "line_end": 177
         }
       ],
       "references": [],
