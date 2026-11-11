@@ -401,6 +401,21 @@ def cmd_undo(args):
         print(f"  {'restores' if entry['existed'] else 'removes '} {entry['to']}")
     if last.get("froze"):
         print("  the promotion recorded a freeze: a new freeze records the earlier state again (no unfreeze; the history stays)")
+    if last.get("froze") and os.path.isfile(FROZEN):
+        import gtt_act
+        import gtt_flow as _flow
+        root = os.getcwd()
+
+        def rehearse():
+            folder = os.path.join(root, _flow.BACKUPS, last["name"])
+            for entry in last["files"]:
+                if entry["existed"]:
+                    os.makedirs(os.path.dirname(entry["to"]) or ".", exist_ok=True)
+                    shutil.copyfile(os.path.join(folder, entry["backup"]), entry["to"])
+                elif os.path.isfile(entry["to"]):
+                    os.remove(entry["to"])
+        if gtt_act.refuse_before_asking("gtt-change", prepare=rehearse):
+            return 1
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")
         return 0
@@ -428,9 +443,10 @@ def cmd_undo(args):
         subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-index.sh")], capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
     if last.get("froze") and os.path.isfile(FROZEN):
-        done = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True,
-                              encoding="utf-8", errors="replace")
-        if done.returncode not in (0, 2):
+        import gtt_act
+        code, text = gtt_act.freeze_now()
+        done = type("Done", (), {"returncode": code, "stdout": text, "stderr": ""})
+        if not gtt_act.ok(code):
             for path, text in keep.items():
                 write(path, text)
             for path, data in saved.items():

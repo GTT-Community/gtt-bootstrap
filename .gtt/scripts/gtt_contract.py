@@ -387,6 +387,14 @@ def check_contracts():
             add(f"operation `{op_id}`: a mutating operation must offer `apply` (dry run by default)")
     if not operations.get("freeze", {}).get("human_authority"):
         add("operation `freeze` must declare human_authority")
+    # A8: every human act is covered by the human-acts bench (the bench itself checks the hook denies it)
+    bench = os.path.join(".gtt", "tests", "human-acts.py")
+    if os.path.isfile(bench):
+        covered = set(re.findall(r'"([a-z]+(?:\.[a-z]+)?)"', open(bench, encoding="utf-8").read().split("COVERED = {")[1].split("}")[0])) \
+            if "COVERED = {" in open(bench, encoding="utf-8").read() else set()
+        for op_id, op in operations.items():
+            if op.get("human_authority") and op_id not in covered:
+                add(f"operation `{op_id}` is a human act but .gtt/tests/human-acts.py does not cover it")
     # capabilities
     seen = set()
     for cap in caps["capabilities"]:

@@ -712,6 +712,25 @@ def replace_line(path, pattern, new, after=None):
     return True
 
 
+def write_approval(epic, design, path, stamp):
+    """The approval's two writes. Raises when the design cannot be marked: never an approval half done."""
+    lines = read(BACKLOG).split("\n")
+    end = next((i for i in range(epic["line"], len(lines)) if re.match(r"^(### |## |---)", lines[i])), len(lines))
+    block = lines[epic["line"]:end]
+    for index, line in enumerate(block):
+        if re.match(r"^\*\*Status:\*\*\s*Proposed\s*$", line):
+            block[index] = "**Status:** Planned"
+    block = [l for l in block if not re.match(r"^\*\*(Approved|Design):\*\*", l)]
+    anchor = next((i for i, l in enumerate(block) if re.match(r"^\*\*", l)), 0)
+    last = max((i for i, l in enumerate(block) if re.match(r"^\*\*[^*]+:\*\*", l)), default=anchor)
+    block[last + 1:last + 1] = [f"**Design:** {path}", f"**Approved:** {stamp}"]
+    write(BACKLOG, "\n".join(lines[:epic["line"]] + block + lines[end:]))
+    status = next((l for l in design["text"].split("\n") if "**Status:**" in l and re.match(r"^\*\*Epic:\*\*", l)), None)
+    if status is None or not replace_line(path, r"^\*\*Epic:\*\*.*\*\*Status:\*\*",
+                                          re.sub(r"\*\*Status:\*\*.*$", f"**Status:** Approved — {stamp}", status)):
+        raise ValueError(f"{path} has no `**Epic:** ... **Status:**` header line to mark as approved")
+
+
 def cmd_approve(args):
     stories, epics = backlog()
     epic = next((e for e in epics if e["id"] == args.epic), None)
@@ -732,41 +751,47 @@ def cmd_approve(args):
     print(f"Design    {path}: {sum(1 for k in design['items'] if k.startswith('AC-'))} acceptance criteria, {count('R')} rules, {count('F')} flows, {count('I')} interfaces, {count('E')} examples")
     print(f"          source sections covered: {cited}/{len(design['listed'])} · rules or flows without an example: {', '.join(lonely) or 'none'}"
           f" · open points: {len(design['open'])}")
+    already = bool(epic["fields"].get("Approved")) and re.search(r"\*\*Status:\*\*\s*Approved", design["text"]) is not None
+    if already:
+        print(f"{args.epic} is already approved ({epic['fields'].get('Approved')}). Nothing to do.")
+        return 0
     fails = [m for level, where, m in check_all(args.epic, approval=True) if level == "FAIL"]
     if fails:
         for message in fails:
             print(f"  missing: {message}", file=sys.stderr)
         print("gtt-approve: the design is not complete. Nothing was approved.", file=sys.stderr)
         return 1
-    print("Type `approve` to approve this Epic and its design together, anything else to cancel: ", end="", flush=True)
-    if sys.stdin.readline().strip() != "approve":
+    import gtt_act
+    if gtt_act.refuse_before_asking("gtt-approve", prepare=lambda: write_approval(epic, design, path, f"rehearsal — {today()}")):
+        return 1
+    if args.non_interactive and not args.confirmed:
+        print("(dry run - nothing written; the human confirms to approve)")
+        return 0
+    if not args.confirmed:
+        print("Type `approve` to approve this Epic and its design together, anything else to cancel: ", end="", flush=True)
+    if not args.confirmed and sys.stdin.readline().strip() != "approve":
         print("gtt-approve: not confirmed; nothing was written.", file=sys.stderr)
         return 1
     who = args.by or (subprocess.run(["git", "config", "user.name"], capture_output=True, text=True).stdout.strip() or os.environ.get("USER") or "unknown")
     stamp = f"{who} — {today()}"
     originals = {BACKLOG: read(BACKLOG), path: design["text"]}
-    lines = originals[BACKLOG].split("\n")
-    end = next((i for i in range(epic["line"], len(lines)) if re.match(r"^(### |## |---)", lines[i])), len(lines))
-    block = lines[epic["line"]:end]
-    for index, line in enumerate(block):
-        if re.match(r"^\*\*Status:\*\*\s*Proposed\s*$", line):
-            block[index] = "**Status:** Planned"
-    block = [l for l in block if not re.match(r"^\*\*(Approved|Design):\*\*", l)]
-    anchor = next((i for i, l in enumerate(block) if re.match(r"^\*\*", l)), 0)
-    last = max((i for i, l in enumerate(block) if re.match(r"^\*\*[^*]+:\*\*", l)), default=anchor)
-    block[last + 1:last + 1] = [f"**Design:** {path}", f"**Approved:** {stamp}"]
-    write(BACKLOG, "\n".join(lines[:epic["line"]] + block + lines[end:]))
-    replace_line(path, r"^\*\*Epic:\*\*.*\*\*Status:\*\*", re.sub(r"\*\*Status:\*\*.*$", f"**Status:** Approved — {stamp}",
-                                                                 next(l for l in design["text"].split("\n") if "**Status:**" in l)))
+    try:
+        write_approval(epic, design, path, stamp)
+    except (OSError, ValueError) as error:
+        for target, content in originals.items():
+            write(target, content)
+        print(f"gtt-approve: {error}. Nothing was approved: both files are as they were.", file=sys.stderr)
+        return 1
     if frozen():
-        done = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
-        if done.returncode != 0:
-            for target, text in originals.items():
-                write(target, text)
-            print(done.stdout + done.stderr, file=sys.stderr)
+        code, text = gtt_act.freeze_now()
+        if not gtt_act.ok(code):
+            for target, content in originals.items():
+                write(target, content)
+            print(text, file=sys.stderr)
             print("gtt-approve: the new freeze failed, so nothing was approved: both files are as they were.", file=sys.stderr)
             return 1
-        print("A new freeze was recorded with this approval.")
+        print("A new freeze was recorded with this approval." if code == gtt_act.DONE
+              else "The freeze was already up to date; nothing more to record.")
     print(f"Approved {args.epic} and its design - {stamp}. Nothing was staged or committed.")
     return 0
 
@@ -791,7 +816,7 @@ def main(argv):
     p = design.add_parser("check"); p.add_argument("epic", nargs="?"); p.add_argument("--pre-freeze", action="store_true")
     p.add_argument("--approval", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_design_check)
     p = design.add_parser("coverage"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_design_coverage)
-    p = sub.add_parser("approve"); p.add_argument("epic"); p.add_argument("--by"); p.set_defaults(func=cmd_approve)
+    p = sub.add_parser("approve"); p.add_argument("epic"); p.add_argument("--by"); p.add_argument("--confirmed", action="store_true", help="the human already confirmed through the CLI; no prompt"); p.add_argument("--non-interactive", action="store_true", help="show and verify without asking; with --confirmed, approve"); p.set_defaults(func=cmd_approve)
     args = parser.parse_args(argv[1:])
     return args.func(args)
 

@@ -628,6 +628,17 @@ def cmd_promote(args):
     for entry in spec["files"]:
         diffs[entry["to"]], added, removed = diff_of(os.path.join(folder, entry["from"]), entry["to"])
         print(f"  {'new     ' if entry.get('sha_before') is None else 'replaces'} {entry['to']}  +{added} −{removed}")
+    if os.path.isfile(FROZEN) and any(e["to"].startswith(GOVERNED_DIRS) for e in spec["files"]):
+        import gtt_act
+        root = os.getcwd()
+
+        def rehearse():
+            for entry in spec["files"]:
+                if entry["from"] is not None:
+                    os.makedirs(os.path.dirname(entry["to"]) or ".", exist_ok=True)
+                    shutil.copyfile(os.path.join(root, folder, entry["from"]), entry["to"])
+        if gtt_act.refuse_before_asking("gtt-promote", prepare=rehearse):
+            return 1
     if args.non_interactive and not args.confirmed:
         for lines in diffs.values():
             sys.stdout.writelines(lines)
@@ -697,7 +708,8 @@ def cmd_promote(args):
         ledger = "gtt-domain/governance-backlog.json"
         ledger_before = open(ledger, "rb").read() if os.path.isfile(ledger) else None
         freeze = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
-        if freeze.returncode != 0:
+        import gtt_act
+        if not gtt_act.ok(freeze.returncode):
             restore(args.name, quiet=True)
             if ledger_before is None:
                 if os.path.isfile(ledger):
@@ -725,7 +737,9 @@ def cmd_promote(args):
     if os.path.isfile(maintain):
         done = subprocess.run([bash_executable(), maintain], capture_output=True, text=True, encoding="utf-8", errors="replace")
         print(done.stdout.rstrip())
-        return 0 if done.returncode == 0 else 1
+        if done.returncode != 0:      # the promotion is already applied and recorded: say so, never "failed"
+            print("gtt-promote: the promotion IS applied. The follow-up maintenance reported a problem (see above); "
+                  "run bash .gtt/scripts/gtt-maintain.sh again.", file=sys.stderr)
     return 0
 
 

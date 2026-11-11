@@ -15,7 +15,11 @@
 # nothing.
 #
 # Exit 0 = frozen (first freeze or a new baseline), 1 = validation failed,
-#      2 = already frozen and the governed state has not changed.
+#      2 = already frozen and the governed state has not changed (a success: nothing to do).
+#
+# `--check` runs every verification the freeze runs and writes NOTHING (the canonical-reference
+# additions are listed, the derived index is restored): same exit codes, so a caller can refuse an act
+# BEFORE asking the human to confirm it, instead of failing after the confirmation.
 
 set -euo pipefail
 
@@ -23,6 +27,18 @@ MARKER="gtt-domain/.frozen"
 CTX="gtt-domain/context"
 REQUIRED=(stack.md architecture.md solution-vision.md principles.md constraints.md glossary.md)
 HERE="$(cd "$(dirname "$0")" && pwd)"
+CHECK=0
+case "${1:-}" in
+  --check) CHECK=1 ;;
+  "") ;;
+  *) echo "gtt-freeze: unknown argument ${1}. The only option is --check (verify, write nothing)." >&2; exit 1 ;;
+esac
+if [ "$CHECK" -eq 1 ]; then
+  # --check writes nothing: the governance backlog the observation engine may touch goes back as it was, on every exit.
+  LEDGER="gtt-domain/governance-backlog.json"; LEDGER_SAVE=""
+  [ -f "$LEDGER" ] && { LEDGER_SAVE="$(mktemp "${TMPDIR:-/tmp}/.gtt-freeze-ledger.XXXXXX")"; cp "$LEDGER" "$LEDGER_SAVE"; }
+  trap 'if [ -n "$LEDGER_SAVE" ]; then cp "$LEDGER_SAVE" "$LEDGER"; rm -f "$LEDGER_SAVE"; else rm -f "$LEDGER"; fi' EXIT
+fi
 CANON_REF="> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
 CANON_RE='https://github\.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL(-v[0-9]+(\.[0-9]+)*)?\.md'
 
@@ -32,11 +48,16 @@ CANON_RE='https://github\.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL(-
 added=()
 while IFS= read -r f; do
   grep -qE "$CANON_RE" "$f" && continue
+  if [ "$CHECK" -eq 1 ]; then added+=("$f"); continue; fi
   awk -v ref="$CANON_REF" 'NR==1 && /^# /{print; print ""; print ref; next} NR==1{print ref; print ""} {print}' "$f" > "$f.gtt-tmp" \
     && mv "$f.gtt-tmp" "$f" && added+=("$f")
 done < <(find "$CTX" gtt-domain/adr -name '*.md' 2>/dev/null | sort)
 if [ "${#added[@]}" -gt 0 ]; then
-  echo "gtt-freeze: added the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
+  if [ "$CHECK" -eq 1 ]; then
+    echo "gtt-freeze: the freeze will add the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
+  else
+    echo "gtt-freeze: added the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
+  fi
 fi
 
 DIGEST="$(bash "$HERE/gtt-observe.sh" digest)" || { echo "gtt-freeze: cannot compute the governed digest." >&2; exit 1; }
@@ -147,6 +168,10 @@ fi
 
 # Artifact identity is derived state: register what was written since (a hand-written ADR, say), then
 # refuse what `gtt validate` would refuse, so a freeze never leaves a project that fails CI.
+if [ "$CHECK" -eq 1 ]; then
+  INDEX_SAVE="$(mktemp -d "${TMPDIR:-/tmp}/.gtt-freeze-index.XXXXXX")"
+  [ -d .gtt/index ] && cp -R .gtt/index/. "$INDEX_SAVE/" 2>/dev/null || true
+fi
 bash "$HERE/gtt-index.sh" >/dev/null 2>&1 || true
 if [ -f "$HERE/gtt-check-integrity.sh" ] && ! out="$(bash "$HERE/gtt-check-integrity.sh" 2>&1)"; then
   printf '%s\n' "$out" | grep -E 'FAIL' >&2
@@ -154,9 +179,19 @@ if [ -f "$HERE/gtt-check-integrity.sh" ] && ! out="$(bash "$HERE/gtt-check-integ
   fail=1
 fi
 if [ -f "$HERE/gtt-check-markdown.sh" ] && ! out="$(bash "$HERE/gtt-check-markdown.sh" 2>&1)"; then
-  printf '%s\n' "$out" | grep -E '^FAIL' | sed 's/$/  (missing the canonical reference line)/' >&2
-  echo "gtt-freeze: GTT Markdown files lack the canonical reference (bash .gtt/scripts/gtt-check-markdown.sh)" >&2
-  fail=1
+  lacking="$(printf '%s\n' "$out" | grep -E '^FAIL' || true)"
+  if [ "$CHECK" -eq 1 ]; then      # the files the freeze itself will fix are not a failure
+    for f in "${added[@]}"; do lacking="$(printf '%s\n' "$lacking" | grep -vF -- "$f" || true)"; done
+  fi
+  if [ -n "$lacking" ]; then
+    printf '%s\n' "$lacking" | sed 's/$/  (missing the canonical reference line)/' >&2
+    echo "gtt-freeze: GTT Markdown files lack the canonical reference (bash .gtt/scripts/gtt-check-markdown.sh)" >&2
+    fail=1
+  fi
+fi
+if [ "$CHECK" -eq 1 ] && [ -n "${INDEX_SAVE:-}" ]; then      # derived state goes back as it was
+  rm -rf .gtt/index && mkdir -p .gtt/index && cp -R "$INDEX_SAVE/." .gtt/index/ 2>/dev/null || true
+  rm -rf "$INDEX_SAVE"
 fi
 
 if [ "$fail" -ne 0 ]; then
@@ -169,6 +204,11 @@ text would be ratified as if it were a decision. Fix what is listed above, or
 run the gtt-bootstrap skill, then try again.
 MSG
   exit 1
+fi
+
+if [ "$CHECK" -eq 1 ]; then
+  echo "gtt-freeze: check passed - the freeze would be recorded; nothing was written."
+  exit 0
 fi
 
 COMMIT="$(git rev-parse HEAD 2>/dev/null || echo none)"

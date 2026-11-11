@@ -135,6 +135,17 @@ if [ -f .gtt/scripts/gtt-check-contract.sh ]; then
   rm -f /tmp/gtt-validate-contract.$$
 fi
 
+# The human-acts bench exists only where the Bootstrap's own tests do (this repository) and runs when asked
+# (GTT_HUMAN_ACTS=1, as CI does): every human act, in every state, under the laws of GTT-ORDEN-freeze-confiable.
+# It builds many project copies, so it is never part of an ordinary validation.
+if [ "${GTT_HUMAN_ACTS:-}" = "1" ] && [ -f .gtt/tests/human-acts.py ] && [ -f .gtt/tests/bootstrap-acceptance.py ]; then
+  python3 .gtt/tests/human-acts.py >/tmp/gtt-validate-acts.$$ 2>&1
+  ACTS_RC=$?
+  report "human-acts.py" "$ACTS_RC"
+  [ "$ACTS_RC" -ne 0 ] && grep -E "FAIL|checks held" /tmp/gtt-validate-acts.$$
+  rm -f /tmp/gtt-validate-acts.$$
+fi
+
 # Design Assessment or questionnaire working copy (present only during bootstrap THINK): whatever
 # the THINK Depth, the floor is assessed and a design below it is POOR, and the
 # depth is the human's choice. Nothing to check once the copy is gone.
