@@ -149,27 +149,54 @@ def build(root):
 
     lanes = [{"id": k, "name": k} for k in sorted({e["lane"] for e in sorted_epics})]
 
+    words = {"es": {"batch": "Epics con trabajo hecho o en curso, sin aprobar", "sealed": "ya construido: falta tu sello", "open": "stories abiertas"},
+             "en": {"batch": "Epics with work done or under way, not approved", "sealed": "already built: needs your seal", "open": "open stories"}}.get(lang or "en", {})
+    here = os.getcwd()
+
+    def at(command):
+        """Every act runs in the project's folder: the command carries the way there."""
+        return "cd '" + here.replace("'", "'\\''") + "' && " + command
+
+    def is_open(s):
+        return s["status"] not in ("Done", "Cancelled")
+
     ctx = safe(gtt_pending.contract)
     pend = safe(lambda: gtt_pending.summary(ctx), {}) or {}
     waits = {w.get("ask"): w for w in (safe(lambda: dl.human_waits(stories, times), []) or []) if w.get("ask")}
     needs = []
     for r in pend.get("asks", []):
         wait = waits.get(r["id"], {})
-        blocked = [s for s in stories if r.get("blocks") and s["id"] == r["blocks"]]
+        blocked = [s for s in stories if r.get("blocks") and s["id"] == r["blocks"] and is_open(s)]
         number = r["number"]
         needs.append({"ref": r["id"], "kind": "ask", "title": r["title"],
-                      "weight": {"stories": len(blocked) if r.get("blocks") else 0, "hours": wait.get("waiting_h")},
-                      "command": f"gtt answer {number} {r['recommended'] or 'ok'}"})
+                      "weight": {"stories": len(blocked), "hours": wait.get("waiting_h")}, "unblocks": [s["id"] for s in blocked][:3],
+                      "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
+    # Only a promotion set that is ready to apply is an act of the human; a folder left without its spec is not.
     proposals = safe(lambda: gtt_change.drafts(), []) or []
-    nxt_props = [{"ref": p["name"], "kind": p["kind"], "title": p.get("title") or p["name"],
-                  "command": f"gtt promote {p['name']}" if p["kind"] == "promotion-set" else None} for p in proposals]
-    to_approve = []
+    nxt_props = [{"ref": p["name"], "kind": p["kind"], "title": p.get("title") or p["name"], "command": at(f"gtt promote {p['name']}")}
+                 for p in proposals if p["kind"] == "promotion-set" and p.get("state") == "ready to promote"]
+    # A Proposed Epic needs you when work already stands on it (a Story done or in progress): the seal of what is
+    # built. One without movement waits, and is listed apart; approving it moves nothing today.
+    to_approve, underway = [], []
     for e in epics:
-        if e["status"] == "Proposed":
-            to_approve.append({"ref": e["id"], "title": e.get("title"), "command": f"gtt approve {e['id']}"})
-            needs.append({"ref": e["id"], "kind": "epic", "title": e.get("title") or e["id"], "weight": {"stories": sum(1 for s in stories if s["epic"] == e["id"]), "hours": e["estimate_h"]},
-                          "command": f"gtt approve {e['id']}"})
-    needs.sort(key=lambda n: (-(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), n["ref"]))
+        if e["status"] != "Proposed":
+            continue
+        own = [s for s in stories if s["epic"] == e["id"] and s["status"] != "Cancelled"]
+        opened = [s for s in own if is_open(s)]
+        moving = any(s["status"] in ("Done", "In Progress") for s in own)
+        row = {"ref": e["id"], "title": e.get("title"), "open_stories": len(opened), "done_stories": len(own) - len(opened), "command": at(f"gtt approve {e['id']}")}
+        if moving:
+            underway.append(e["id"])
+            needs.append({"ref": e["id"], "kind": "epic", "title": e.get("title") or e["id"], "weight": {"stories": len(opened), "hours": e["estimate_h"]},
+                          "unblocks": [s["id"] for s in opened][:3], "note": words.get("sealed"), "command": row["command"]})
+        else:
+            to_approve.append(row)
+    if len(underway) >= 3:
+        weight = sum(n["weight"]["stories"] or 0 for n in needs if n["kind"] == "epic")
+        needs.append({"ref": f"{underway[0]}…{underway[-1]}", "kind": "epic-batch", "title": f"{len(underway)} " + words.get("batch", ""),
+                      "weight": {"stories": weight, "hours": None}, "unblocks": [], "refs": underway,
+                      "command": at("for e in " + " ".join(underway) + "; do gtt approve $e; done")})
+    needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), n["ref"]))
     planned = [{"ref": e["id"], "title": e.get("title"), "lane": e["lane"] or "main"} for e in epics if e["status"] == "Planned"][:3]
 
     recent = []

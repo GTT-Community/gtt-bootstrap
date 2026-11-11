@@ -128,6 +128,8 @@ td .stack{display:flex;flex-direction:column;gap:3px}
 .dot.unknown{box-shadow:inset 0 0 0 1px var(--dim)}
 .empty{padding:18px;color:var(--muted)}
 .update{border:1px dashed var(--needs);color:var(--needs)}
+details.idle summary{cursor:pointer;padding:12px 18px;font:13px var(--mono);color:var(--muted)}
+details.idle[open] summary{border-bottom:1px solid var(--line)}
 textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--cmd);color:var(--text);width:100%;resize:vertical}
 @media (max-width:720px){main{padding:20px 16px}.detail{grid-template-columns:1fr}}
 </style>
@@ -150,7 +152,7 @@ var STR = {
     uncalibrated: "sin calibrar", coming: "lo que viene", flow: "línea de flujo por epic", done: "hecho", doing: "en curso", pending: "pendiente",
     today: "hoy", etaLine: "fecha estimada", due: "plazo", detail: "detalle", signals: "señales", nothingNeeds: "Nada te espera.", nothingNext: "Nada por venir.",
     toApprove: "por aprobar", proposal: "propuesta", planned: "plan", stories: "stories", noDates: "sin fechas", update: "actualiza GTT en este repo",
-    more: "más; el orden es por cuánto bloquea cada uno", compat: "leído con un Bootstrap más nuevo", staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
+    openSt: "stories abiertas", unblocksW: "destraba", idleEpics: "Epics planificados sin movimiento (no urgen)", more: "más; el orden es por cuánto bloquea cada uno", compat: "leído con un Bootstrap más nuevo", staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
     claude: "claude", you: "tú", gtt: "gtt", unknown: "sin dato", logTitle: "Lo último", daySummary: "eventos", noEvents: "Sin actividad registrada. Se llena cuando Stories y Epics cambian de estado (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "Sin Epics en el backlog. Aparecen cuando `gtt-domain/backlog.md` los tiene: un proyecto con su diseño ratificado, no el kit del Bootstrap.", pickEpic: "Abre un Epic para ver sus stories.", columns: { "Planned": "Planificado", "In Progress": "En curso", "Done": "Hecho" },
     noRepos: "Sin repos en este portafolio.", progressWord: "avance", lateDays: "atrasado", weight: "bloquea", hours: "h",
@@ -166,7 +168,7 @@ var STR = {
     uncalibrated: "uncalibrated", coming: "what comes next", flow: "flow line by epic", done: "done", doing: "in progress", pending: "pending",
     today: "today", etaLine: "estimated date", due: "deadline", detail: "detail", signals: "signals", nothingNeeds: "Nothing waits for you.", nothingNext: "Nothing coming up.",
     toApprove: "to approve", proposal: "proposal", planned: "plan", stories: "stories", noDates: "no dates", update: "update GTT in this repo",
-    more: "more; ordered by how much each blocks", compat: "read with a newer Bootstrap", staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
+    openSt: "open stories", unblocksW: "unblocks", idleEpics: "Planned Epics with no movement (not urgent)", more: "more; ordered by how much each blocks", compat: "read with a newer Bootstrap", staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
     claude: "claude", you: "you", gtt: "gtt", unknown: "no data", logTitle: "Latest", daySummary: "events", noEvents: "No recorded activity. It fills in as Stories and Epics change state (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "No Epics in the backlog. They appear when `gtt-domain/backlog.md` has them: a project with its design ratified, not the Bootstrap kit itself.", pickEpic: "Open an Epic to see its stories.", columns: { "Planned": "Planned", "In Progress": "In Progress", "Done": "Done" },
     noRepos: "No repos in this portfolio.", progressWord: "progress", lateDays: "late", weight: "blocks", hours: "h",
@@ -318,7 +320,9 @@ function needsPanel(items, showRepo, limit) {
   if (!items.length) box.appendChild(h("div", { class: "empty", text: T.nothingNeeds }));
   items.forEach(function (it) {
     var n = it.n; var w = [];
-    if (n.weight && n.weight.stories) w.push(n.weight.stories + " " + T.stories + " " + T.weight);
+    if (n.note) w.push(n.note);
+    if (n.weight && n.weight.stories) w.push(n.weight.stories + " " + T.openSt);
+    if (n.unblocks && n.unblocks.length) w.push(T.unblocksW + " " + n.unblocks.join(", "));
     if (n.weight && n.weight.hours) w.push(n.weight.hours + T.hours);
     box.appendChild(h("div", { class: "row" },
       h("span", { class: "ref", text: n.ref }),
@@ -467,7 +471,7 @@ function viewProject() {
     h("div", null, h("span", { class: "k", text: T.needs }), h("span", { class: "v", text: (snap.needs_you || []).length })));
   var cards = [];
   (snap.next.proposals || []).forEach(function (p) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.proposal }), h("span", { class: "t", text: p.title || p.ref }), p.command ? cmdBlock(p.command) : null)); });
-  (snap.next.epics_to_approve || []).forEach(function (e) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.toApprove }), h("span", { class: "t" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""), e.command ? cmdBlock(e.command) : null)); });
+  var idle = snap.next.epics_to_approve || [];
   (snap.next.planned_epics || []).forEach(function (e) { cards.push(h("div", { class: "card" }, h("span", { class: "tag", text: T.planned }), h("span", { class: "t" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""))); });
   var sigs = (snap.signals || []);
   return h("main", null,
@@ -479,7 +483,9 @@ function viewProject() {
     snap.compat ? h("div", { class: "stale", role: "status" }, T.compat + " " + snap.compat.read_with + " (" + snap.compat.installed + "). ", snap.compat.command ? cmdBlock(snap.compat.command) : null) : null,
     strip,
     (snap.needs_you || []).length ? needsPanel(snap.needs_you.map(function (n) { return { n: n, repo: snap.repo.name }; }), false, 15) : null,
-    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : h("div", { class: "empty", text: T.nothingNext })),
+    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : (idle.length ? null : h("div", { class: "empty", text: T.nothingNext })),
+      idle.length ? h("details", { class: "panel idle" }, h("summary", { text: idle.length + " " + T.idleEpics }),
+        idle.map(function (e) { return h("div", { class: "row" }, h("span", { class: "ref", text: e.ref }), h("div", { class: "grow2" }, h("b", { text: e.title || e.ref }), h("span", { class: "small", text: e.open_stories + " " + T.openSt })), e.command ? cmdBlock(e.command) : null); })) : null),
     h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.flow),
       h("div", { class: "legend", "aria-hidden": "true" },
         h("span", null, h("i", { class: "sw done" }), T.done), h("span", null, h("i", { class: "sw prog" }), T.doing), h("span", null, h("i", { class: "sw plan" }), T.pending),

@@ -129,11 +129,12 @@ def main():
         check(snap["summary"]["deadline"] is None and snap["summary"]["calibration"]["ratio"] is None and snap["summary"]["calibration"]["uncalibrated"] is True, "what GTT does not yet calculate is null")
         check(next(s for s in snap["stories"] if s["ref"] == "STORY-001")["closed_by_evidence"] is True, "a Done Story with `Closed` counts as closed by evidence")
         check(next(s for s in snap["stories"] if s["ref"] == "STORY-002")["closed_by_evidence"] is False, "an open Story is not closed by evidence")
-        check([e["ref"] for e in snap["next"]["epics_to_approve"]] == ["EPIC-002"], "a Proposed Epic is to approve")
+        check([e["ref"] for e in snap["next"]["epics_to_approve"]] == ["EPIC-002"], "a Proposed Epic with no movement waits, listed apart")
         cmds = {n["ref"]: n["command"] for n in snap["needs_you"]}
-        check(cmds.get("EPIC-002") == "gtt approve EPIC-002", "an Epic to approve brings its command", str(cmds))
+        check("EPIC-002" not in cmds, "a Proposed Epic with no movement is not 'I need you'", str(cmds))
+        check(snap["next"]["epics_to_approve"][0]["command"] == f"cd '{dest}' && gtt approve EPIC-002", "its command carries the way to the project", snap["next"]["epics_to_approve"][0]["command"])
         ask_ref = next((r for r in cmds if r.startswith("ASK-")), None)
-        check(ask_ref is not None and cmds[ask_ref].startswith("gtt answer ") and cmds[ask_ref].endswith(" 1"), "a question brings its command with the recommended option", str(cmds))
+        check(ask_ref is not None and cmds[ask_ref].startswith(f"cd '{dest}' && gtt answer ") and cmds[ask_ref].endswith(" 1"), "a question brings its command with the recommended option", str(cmds))
         check(all(n["command"] for n in snap["needs_you"]), "every act the human must do carries a command")
         weights = [(n["weight"]["stories"] or 0) for n in snap["needs_you"]]
         check(weights == sorted(weights, reverse=True), "needs_you is ordered by weight", str(weights))
@@ -163,6 +164,30 @@ def main():
             if from_wt:
                 check(from_wt["repo"]["path"] == snap["repo"]["path"], "the worktree reports the repo, not itself", from_wt["repo"]["path"])
                 check(stable(from_wt) == stable(snap), "the worktree sees the same single state")
+
+        print("'I need you' holds only what holds work back")
+        epics = ""
+        for n, states in ((10, ("Done", "Done", "Planned")), (11, ("In Progress", "Planned")), (12, ("Done",)), (13, ("Planned", "Planned"))):
+            epics += f"### EPIC-0{n} — Epic {n}\n**Status:** Proposed\n**Lane:** A\n**Estimate:** 2h\n\n#### Stories\n\n"
+            for i, s in enumerate(states):
+                epics += f"##### STORY-{n}{i} — Story {n}{i}\n- **Status:** {s}\n- **Estimate:** 1h\n\n"
+        with open(os.path.join(dest, "gtt-domain", "backlog.md"), "w", encoding="utf-8") as handle:
+            handle.write("# Backlog\n\n## Epics\n\n" + epics)
+        staged = os.path.join(dest, "gtt-domain", "proposals", "staged")
+        os.makedirs(os.path.join(staged, "ready-set"), exist_ok=True)
+        os.makedirs(os.path.join(staged, "leftover-folder"), exist_ok=True)
+        json.dump({"reason": "a set", "files": []}, open(os.path.join(staged, "ready-set", "promote.json"), "w"))
+        _, s2 = snapshot(dest)
+        kinds = {n["ref"]: n for n in s2["needs_you"]}
+        check({"EPIC-010", "EPIC-011", "EPIC-012"} <= set(kinds) and "EPIC-013" not in kinds, "Epics with work done or under way need you; the idle one does not", str(list(kinds)))
+        check([e["ref"] for e in s2["next"]["epics_to_approve"]] == ["EPIC-013"], "the idle Epic is listed apart")
+        check(kinds["EPIC-010"]["weight"]["stories"] == 1 and kinds["EPIC-012"]["weight"]["stories"] == 0, "the weight counts open Stories, not the finished ones", str(kinds["EPIC-010"]["weight"]))
+        check(kinds["EPIC-011"]["unblocks"] == ["STORY-111"] or "STORY-110" in kinds["EPIC-011"]["unblocks"], "it says which Stories it unblocks", str(kinds["EPIC-011"]["unblocks"]))
+        batch = [n for n in s2["needs_you"] if n["kind"] == "epic-batch"]
+        check(len(batch) == 1 and batch[0]["refs"] == ["EPIC-010", "EPIC-011", "EPIC-012"] and s2["needs_you"][0]["kind"] == "epic-batch", "three or more are one batch, first", str(batch))
+        check(batch and batch[0]["command"] == f"cd '{dest}' && for e in EPIC-010 EPIC-011 EPIC-012; do gtt approve $e; done", "the batch is one command", batch[0]["command"] if batch else "")
+        props = {p["ref"]: p for p in s2["next"]["proposals"]}
+        check("ready-set" in props and "leftover-folder" not in props and props["ready-set"]["command"].endswith("gtt promote ready-set"), "only a promotion set that is ready to apply is offered", str(list(props)))
 
         print("budget")
         started = time.time()
