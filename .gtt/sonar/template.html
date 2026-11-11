@@ -150,7 +150,7 @@ var STR = {
     uncalibrated: "sin calibrar", coming: "lo que viene", flow: "línea de flujo por epic", done: "hecho", doing: "en curso", pending: "pendiente",
     today: "hoy", etaLine: "fecha estimada", due: "plazo", detail: "detalle", signals: "señales", nothingNeeds: "Nada te espera.", nothingNext: "Nada por venir.",
     toApprove: "por aprobar", proposal: "propuesta", planned: "plan", stories: "stories", noDates: "sin fechas", update: "actualiza GTT en este repo",
-    staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
+    more: "más; el orden es por cuánto bloquea cada uno", compat: "leído con un Bootstrap más nuevo", staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
     claude: "claude", you: "tú", gtt: "gtt", unknown: "sin dato", logTitle: "Lo último", daySummary: "eventos", noEvents: "Sin actividad registrada. Se llena cuando Stories y Epics cambian de estado (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "Sin Epics en el backlog. Aparecen cuando `gtt-domain/backlog.md` los tiene: un proyecto con su diseño ratificado, no el kit del Bootstrap.", pickEpic: "Abre un Epic para ver sus stories.", columns: { "Planned": "Planificado", "In Progress": "En curso", "Done": "Hecho" },
     noRepos: "Sin repos en este portafolio.", progressWord: "avance", lateDays: "atrasado", weight: "bloquea", hours: "h",
@@ -166,7 +166,7 @@ var STR = {
     uncalibrated: "uncalibrated", coming: "what comes next", flow: "flow line by epic", done: "done", doing: "in progress", pending: "pending",
     today: "today", etaLine: "estimated date", due: "deadline", detail: "detail", signals: "signals", nothingNeeds: "Nothing waits for you.", nothingNext: "Nothing coming up.",
     toApprove: "to approve", proposal: "proposal", planned: "plan", stories: "stories", noDates: "no dates", update: "update GTT in this repo",
-    staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
+    more: "more; ordered by how much each blocks", compat: "read with a newer Bootstrap", staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
     claude: "claude", you: "you", gtt: "gtt", unknown: "no data", logTitle: "Latest", daySummary: "events", noEvents: "No recorded activity. It fills in as Stories and Epics change state (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "No Epics in the backlog. They appear when `gtt-domain/backlog.md` has them: a project with its design ratified, not the Bootstrap kit itself.", pickEpic: "Open an Epic to see its stories.", columns: { "Planned": "Planned", "In Progress": "In Progress", "Done": "Done" },
     noRepos: "No repos in this portfolio.", progressWord: "progress", lateDays: "late", weight: "blocks", hours: "h",
@@ -250,7 +250,7 @@ function cmdBlock(text) {
 }
 
 /* ---------- shared pieces ---------- */
-function repoById(key) { return OK.filter(function (s) { return s.repo.key === key; })[0] || OK[0]; }
+function repoById(id) { return OK.filter(function (s) { return s.repo.path === id; })[0] || OK.filter(function (s) { return s.repo.key === id; })[0] || OK[0]; }
 function fmtDate(d) {
   if (!d) return null; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d); if (!m) return d;
   var names = LANG === "es" ? ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"] : ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
@@ -289,7 +289,7 @@ function topBar(view) {
   var paused = st.pause === "1";
   var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }), paused ? T.paused : T.live);
   live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
-  var suite = OK[0] && OK[0].suite_version;
+  var suite = null; OK.forEach(function (s) { if (!suite || String(s.compat ? s.compat.read_with : s.suite_version).localeCompare(suite, undefined, { numeric: true }) > 0) suite = s.compat ? s.compat.read_with : s.suite_version; });
   return h("header", { class: "bar" },
     h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"),
     h("nav", { class: "tabs", "aria-label": "Views" }, tab("portfolio", T.portfolio), tab("project", T.project), tab("last", T.last)),
@@ -307,13 +307,14 @@ function staleBanner() {
 /* ---------- views ---------- */
 function needsAll() {
   var out = [];
-  OK.forEach(function (s) { (s.needs_you || []).forEach(function (n) { out.push({ n: n, repo: s.repo.key }); }); });
+  OK.forEach(function (s) { (s.needs_you || []).forEach(function (n) { out.push({ n: n, repo: s.repo.name }); }); });
   out.sort(function (a, b) { return ((b.n.weight.stories || 0) - (a.n.weight.stories || 0)) || ((b.n.weight.hours || 0) - (a.n.weight.hours || 0)); });
   return out;
 }
-function needsPanel(items, showRepo) {
+function needsPanel(items, showRepo, limit) {
+  var total = items.length; if (limit && total > limit) items = items.slice(0, limit);
   var box = h("section", { class: "panel needs", "aria-labelledby": "needs-h" },
-    h("div", { class: "top" }, h("h2", { id: "needs-h", text: T.needs }), h("span", { class: "count", text: items.length }), h("span", { class: "hint", text: T.needsHint })));
+    h("div", { class: "top" }, h("h2", { id: "needs-h", text: T.needs }), h("span", { class: "count", text: total }), h("span", { class: "hint", text: T.needsHint })));
   if (!items.length) box.appendChild(h("div", { class: "empty", text: T.nothingNeeds }));
   items.forEach(function (it) {
     var n = it.n; var w = [];
@@ -325,6 +326,7 @@ function needsPanel(items, showRepo) {
       showRepo ? h("span", { class: "tag", text: it.repo }) : null,
       n.command ? cmdBlock(n.command) : nodata()));
   });
+  if (total > items.length) box.appendChild(h("div", { class: "empty", text: "+" + (total - items.length) + " " + T.more }));
   return box;
 }
 
@@ -333,24 +335,24 @@ function viewPortfolio() {
   var rows = REPOS.map(function (r) {
     if (!r || !r.snapshot || r.snapshot.schema !== "sonar.v1") {
       var info = (r && r.stale) || {};
-      return h("tr", null, h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: info.key || "?" }), h("b", { text: info.name || info.path || "?" }))),
-        h("td", { colspan: "7" }, h("span", { class: "tag update", text: T.update }), info.reason ? h("span", { class: "small", text: "  " + info.reason }) : null));
+      return h("tr", null, h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: info.key || "" }), h("b", { text: info.name || info.path || "?" }))),
+        h("td", { colspan: "7" }, h("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center" }, h("span", { class: "tag update", text: T.update }), info.reason ? h("span", { class: "small", text: info.reason }) : null, info.command ? cmdBlock(info.command) : null)));
     }
     var s = r.snapshot; var sum = s.summary; var needs = (s.needs_you || []).length;
     return h("tr", null,
       h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: s.repo.key }), h("b", { text: s.repo.name }))),
-      h("td", null, phaseTag(s.project)),
+      h("td", null, h("div", { class: "stack" }, phaseTag(s.project), s.compat ? h("span", { class: "tag amber", title: s.compat.command, text: T.compat }) : null)),
       h("td", { style: "min-width:160px" }, sum.progress_pct === null ? h("span", { class: "small", text: T.noplan }) : h("div", { class: "stack" }, h("span", { class: "mono", text: sum.progress_pct + "%" }), statusBar(sum.progress_pct))),
       h("td", null, etaNote(s)),
       h("td", null, String(inProgress(s))),
       h("td", null, needs ? h("span", { class: "count", text: needs }) : "0"),
       h("td", null, levelTag(worst(s))),
-      h("td", null, h("a", { href: "#/view=project&repo=" + encodeURIComponent(s.repo.key), text: T.open, "aria-label": T.open + " " + s.repo.name })));
+      h("td", null, h("a", { href: "#/view=project&repo=" + encodeURIComponent(s.repo.path), text: T.open, "aria-label": T.open + " " + s.repo.name })));
   });
   var head = h("tr", null, [T.cProject, T.cPhase, T.cProgress, T.cEta, T.cDoing, T.cNeeds, T.cSignal, ""].map(function (c) { return h("th", { scope: "col" }, c ? c : h("span", { class: "sr", text: T.open })); }));
   return h("main", null,
     h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --all" }), h("h1", { text: T.portfolioTitle }), h("p", { class: "sub", text: T.portfolioSub })),
-    needsPanel(needsAll(), true),
+    needsPanel(needsAll(), true, 12),
     h("section", { "aria-labelledby": "proj-h", style: "display:flex;flex-direction:column;gap:12px" }, h("h2", { id: "proj-h", class: "sec", text: T.projects }),
       REPOS.length ? h("div", { class: "panel tablewrap" }, h("table", null, h("thead", null, head), h("tbody", null, rows))) : h("div", { class: "empty", text: T.noRepos })));
 }
@@ -457,7 +459,7 @@ function viewProject() {
   if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var sum = snap.summary;
   var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "" }); } } },
-    OK.map(function (s) { return h("option", { value: s.repo.key, selected: s.repo.key === snap.repo.key, text: s.repo.key }); }));
+    OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === snap.repo.path, text: s.repo.name }); }));
   var strip = h("div", { class: "strip" },
     h("div", null, h("span", { class: "k", text: T.cEta }), h("span", { class: "v", text: sum.forecast ? fmtDate(sum.forecast) : T.nodata }), sum.deadline ? h("span", { class: "small", text: T.deadline + " " + fmtDate(sum.deadline) + (sum.on_time === true ? " · " + T.onTime : sum.on_time === false ? " · " + T.late : "") }) : null),
     h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: sum.progress_pct === null ? T.noplan : sum.progress_pct + "%" }), h("span", { class: "small", text: sum.stories_done + "/" + sum.stories_total + " " + T.stories })),
@@ -474,8 +476,9 @@ function viewProject() {
       h("h1", { text: snap.repo.name }),
       h("div", { class: "meta" }, phaseTag(snap.project), snap.project.profile ? h("span", { text: snap.project.profile }) : null,
         h("label", { class: "sr", for: "repo-pick", text: T.project }), select)),
+    snap.compat ? h("div", { class: "stale", role: "status" }, T.compat + " " + snap.compat.read_with + " (" + snap.compat.installed + "). ", snap.compat.command ? cmdBlock(snap.compat.command) : null) : null,
     strip,
-    (snap.needs_you || []).length ? needsPanel(snap.needs_you.map(function (n) { return { n: n, repo: snap.repo.key }; }), false) : null,
+    (snap.needs_you || []).length ? needsPanel(snap.needs_you.map(function (n) { return { n: n, repo: snap.repo.name }; }), false, 15) : null,
     h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : h("div", { class: "empty", text: T.nothingNext })),
     h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.flow),
       h("div", { class: "legend", "aria-hidden": "true" },
@@ -491,13 +494,13 @@ function viewProject() {
 function viewLast() {
   var st = readHash(); var proj = st.proj || ""; var who = st.who || "";
   var evs = [];
-  OK.forEach(function (s) { (s.recent || []).forEach(function (r) { evs.push({ r: r, repo: s.repo.key }); }); });
+  OK.forEach(function (s) { (s.recent || []).forEach(function (r) { evs.push({ r: r, repo: s.repo.path, name: s.repo.name }); }); });
   evs = evs.filter(function (e) { return (!proj || e.repo === proj) && (!who || (e.r.actor || "unknown") === who); });
   evs.sort(function (a, b) { return String(b.r.at).localeCompare(String(a.r.at)); });
   var byDay = {}; var order = [];
   evs.forEach(function (e) { var d = String(e.r.at || "").slice(0, 10) || "?"; if (!byDay[d]) { byDay[d] = []; order.push(d); } byDay[d].push(e); });
   var projSel = h("select", { id: "f-proj", on: { change: function (ev) { go({ proj: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
-    OK.map(function (s) { return h("option", { value: s.repo.key, selected: s.repo.key === proj, text: s.repo.key }); }));
+    OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === proj, text: s.repo.name }); }));
   var whoSel = h("select", { id: "f-who", on: { change: function (ev) { go({ who: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
     [["agent", T.claude], ["human", T.you], ["gtt", T.gtt], ["unknown", T.unknown]].map(function (o) { return h("option", { value: o[0], selected: o[0] === who, text: o[1] }); }));
   var body = h("div", { class: "panel" });
@@ -508,7 +511,7 @@ function viewLast() {
       var a = e.r.actor || "unknown"; var time = String(e.r.at || "").slice(11, 16);
       body.appendChild(h("div", { class: "ev" }, h("time", { text: time }), h("span", { class: "dot " + a, "aria-hidden": "true" }),
         h("span", { class: "tag", text: a === "agent" ? T.claude : a === "human" ? T.you : a === "gtt" ? T.gtt : T.unknown }),
-        h("span", { text: e.r.text || e.r.action || "" }), e.r.ref ? h("span", { class: "mono small", text: e.r.ref }) : null, h("span", { class: "tag", text: e.repo })));
+        h("span", { text: e.r.text || e.r.action || "" }), e.r.ref ? h("span", { class: "mono small", text: e.r.ref }) : null, h("span", { class: "tag", text: e.name })));
     });
   });
   return h("main", null,

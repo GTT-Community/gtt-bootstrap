@@ -120,7 +120,7 @@ def main():
         if not chrome:
             print("  skip  headless Chrome not installed: the DOM check of criterion 3 was not run")
         else:
-            for view in ("portfolio", "project&repo=EVL&epic=EPIC-001", "last"):
+            for view in ("portfolio", "project&repo=%2Fx&epic=EPIC-001", "last"):
                 dom = sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{out}#/view={view}").stdout
                 tag = view.split("&")[0]
                 body = dom.split('id="app"', 1)[-1].split('<script', 1)[0]

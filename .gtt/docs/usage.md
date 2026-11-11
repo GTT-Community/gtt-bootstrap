@@ -211,7 +211,7 @@ with `git commit --no-verify`, so the guaranteed layer is CI: run
 ## Sonar: see everything in one page
 
 GTT Sonar is the visible face of observation. `gtt sonar` generates one HTML page from the project's own state and opens it;
-`gtt sonar --all` does the same for every repo you listed with `gtt sonar add <path>`. It is the departures board of an airport:
+run in a folder that holds your projects (`cd ~/dev && gtt sonar`) it finds every GTT project under it and shows them all, to move between them in the page; nothing to list or register. A project with an older Bootstrap is read with the newer one, without touching it. It is the departures board of an airport:
 you see what leaves, what is late and what waits for you, but nothing is launched from the screen.
 
 - **Three views:** portfolio (all your projects, and *I need you* ordered by how much each item blocks), project (what is coming, the flow line per Epic, the Stories by state, the signals) and latest (what Claude, you and GTT did, by day).

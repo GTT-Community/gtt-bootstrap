@@ -215,7 +215,7 @@ el CI: ejecuta `gtt-validate.sh` y `gtt-check-stack.sh` sobre el pull request.
 ## Sonar: todo en una página
 
 GTT Sonar es la cara visible de la observación. `gtt sonar` genera una página HTML desde el propio estado del proyecto y la abre;
-`gtt sonar --all` hace lo mismo con todos los repos que agregaste con `gtt sonar add <ruta>`. Funciona como el tablero de salidas de un aeropuerto:
+corrido en una carpeta que contiene tus proyectos (`cd ~/dev && gtt sonar`) encuentra todos los proyectos GTT de abajo y los muestra juntos, para moverte entre ellos en la página; no hay nada que listar ni registrar. Un proyecto con un Bootstrap más antiguo se lee con el más nuevo, sin tocarlo. Funciona como el tablero de salidas de un aeropuerto:
 ves qué sale, qué se atrasó y qué te espera, pero desde la pantalla no se despega nada.
 
 - **Tres vistas:** portafolio (todos tus proyectos y *te necesito*, ordenado por cuánto bloquea cada cosa), proyecto (lo que viene, la línea de flujo por Epic, las Stories por estado, las señales) y lo último (lo que hicieron Claude, tú y GTT, por día).

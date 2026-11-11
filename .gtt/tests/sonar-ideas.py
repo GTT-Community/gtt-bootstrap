@@ -64,7 +64,7 @@ def main():
         builders = [b for b in re.findall(r'"gtt [a-z]+ [a-z]+', template)]
         check(builders == ['"gtt idea add'], "no other command is assembled in the page: only `gtt idea add`", str(builders))
         blocks = re.findall(r"cmdBlock\(([^)]*\)?)\)", template)
-        allowed = {"text", "n.command", "p.command", "e.command", "ideaCommand(area.value)"}
+        allowed = {"text", "n.command", "p.command", "e.command", "info.command", "snap.compat.command", "ideaCommand(area.value)"}
         check(all(b.strip() in allowed or b.strip().startswith("ideaCommand") for b in blocks if not b.strip().startswith("text")), "every command block shows the snapshot's command or the idea command", str(blocks))
         check("command" in template and "n.command" in template and "p.command" in template and "e.command" in template, "every other act shows the snapshot's own `command`")
         node = shutil.which("node")
