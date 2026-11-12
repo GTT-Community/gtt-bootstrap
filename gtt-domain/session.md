@@ -7,15 +7,12 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-11-12T15:05:08Z
+# Generated: 2026-11-12T17:56:47Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
-CHANGED  8 files (+0 new, −0) · +145 −20 · uncommitted: 8
-IMPACT   governed: none · protected: none
-RISKS    validation not run since the last change
-VALID    11:58 · OK 27 PASS 1 SKIPPED · stale
-NEXT     bash .gtt/scripts/gtt-validate.sh
+VALID    not run
+NEXT     nothing pending
 more: gtt-review.sh --files · git diff --stat · gtt-status.sh
 
 ## Freeze state
@@ -66,19 +63,15 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.19.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v3.0)
+gtt-bootstrap 1.20.1 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v3.0)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
 identity: 78 active artifact(s), 0 retired
-technical index: STALE (run .gtt/scripts/gtt-index.sh)
+technical index: fresh
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 9
+branch: master; uncommitted paths: 1
 recent commits:
-be0368b feat: Sonar's 'I need you' holds only what holds work back - Bootstrap 1.19.0
-a0ba1e9 feat: Sonar shows a folder of projects, repos identified by path, newest suite - Bootstrap 1.19.0
-f7f0259 fix: Sonar says why a project has no Epics or activity yet
-cc9735a docs: Sonar and ideas in the readmes and the usage guide - Bootstrap 1.19.0
-e55aa45 <tu mensaje>
+ada7158 catalog

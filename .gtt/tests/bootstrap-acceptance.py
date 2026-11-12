@@ -3483,7 +3483,7 @@ def delivery_planning(project, tmp):
     check(rc == 0 and "FAILED" not in out + err, "criterion 12: `run: <command>` is evidence and a Context line without an anchor says nothing", (out + err)[-300:])
     write(os.path.join(p3, "gtt-domain", "backlog.md"), open(os.path.join(p3, "gtt-domain", "backlog.md"), encoding="utf-8").read().replace("#R-1", "#R-9"))
     check(bash(p3, ".gtt/scripts/gtt-check-backlog.sh")[0] == 1, "an Implements pointing at an anchor that does not exist still fails")
-    # Real case (OmniFarmOps): a Story under one Epic builds parts of two designs and its example belongs to the second.
+    # Real case: a Story under one Epic builds parts of two designs and its example belongs to the second.
     write(os.path.join(p3, "gtt-domain", "context", "design", "EPIC-901.md"), "# EPIC-901\n\n- **R-4** other rule\n- **E-5** other example\n")
     cross = ("# Project Backlog\n\n### EPIC-900 - Docs\n**Status:** Planned\n**Goal:** g\n**Approved:** ana - 2026-10-30\n"
              "**Design:** gtt-domain/context/design/EPIC-900.md\n\n##### STORY-901 - content\n- **Status:** In Progress\n"
