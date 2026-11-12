@@ -176,7 +176,7 @@ def main():
         cmds = [h["command"] for entry in settings["hooks"]["PostToolUse"] for h in entry["hooks"]]
         check(any("sonar-render.py" in c for c in cmds), "the hook is registered in PostToolUse")
         context = open(os.path.join(dest, ".gtt", "scripts", "gtt-session-context.sh"), encoding="utf-8").read()
-        check("gtt-sonar.sh render --quiet" in context and "|| true" in context.split("gtt-sonar.sh render --quiet")[1][:60], "the page is refreshed at session start and never fails it")
+        check("gtt-sonar.sh start" in context and "|| true" in context.split("gtt-sonar.sh start")[1][:60], "the page is refreshed at session start and never fails it")
 
         print("criterion 10 - contrast and keyboard")
         tokens = dict(re.findall(r"--([a-z-]+):(#[0-9A-Fa-f]{6})", template.split("</style>")[0]))

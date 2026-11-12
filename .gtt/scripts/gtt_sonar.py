@@ -4,6 +4,9 @@
   gtt_sonar.py snapshot [--json]    the `sonar.v1` document (read-only; writes nothing)
   gtt_sonar.py render [--quiet]     writes .gtt/local/sonar.html and sonar.json (derived, disposable, outside git)
   gtt_sonar.py render --out HTML [--fonts DIR] FILE...   a page from several snapshots (the portfolio)
+  gtt_sonar.py start                renders, then prints ONE line saying where the page is and what waits for the human
+                                    (the session start uses it); opens the page once if the human asked for it
+  gtt_sonar.py prefs [--open-on-start on|off]   the human's own preference, kept in .gtt/local/ (never versioned)
 
 This file gathers; it does not calculate. Percentages, forecasts, signals, weights and commands come from
 gtt_delivery.py, gtt_pending.py, gtt_backlog.py and gtt_change.py. A fact GTT does not yet calculate is `null`:
@@ -31,6 +34,9 @@ FONTS = ".gtt/sonar/fonts"
 LOCAL = ".gtt/local"
 LOCK = ".gtt/local/sonar.lock"
 LOCK_SECONDS = 10
+PREFS = ".gtt/local/sonar-prefs.json"
+OPENED = ".gtt/local/sonar-opened"
+OPEN_EVERY_HOURS = 12
 COLUMNS = ["Planned", "In Progress", "Done"]
 
 
@@ -88,6 +94,17 @@ def actor_kind(raw):
     return None            # unknown: Sonar never guesses who did something
 
 
+def repo_state(root):
+    """Paths with uncommitted changes, or None outside git (no data, never a guess)."""
+    try:
+        out = subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return {"uncommitted": len([l for l in out.stdout.splitlines() if l.strip()])}
+
+
 def build(root):
     import gtt_backlog
     import gtt_delivery as dl
@@ -133,7 +150,8 @@ def build(root):
             "end": day(max(closed).isoformat()) if closed and state == "done" else None,
             "stories": {"done": sum(1 for s in own if s["status"] == "Done"),
                         "in_progress": sum(1 for s in own if s["status"] == "In Progress"),
-                        "planned": sum(1 for s in own if s["status"] not in ("Done", "In Progress"))},
+                        "blocked": sum(1 for s in own if s["status"] == "Blocked"),
+                        "planned": sum(1 for s in own if s["status"] not in ("Done", "In Progress", "Blocked"))},
             "flags": flags.get(e["id"], [])})
 
     out_stories = []
@@ -149,8 +167,8 @@ def build(root):
 
     lanes = [{"id": k, "name": k} for k in sorted({e["lane"] for e in sorted_epics})]
 
-    words = {"es": {"batch": "Epics con trabajo hecho o en curso, sin aprobar", "sealed": "ya construido: falta tu sello", "open": "stories abiertas"},
-             "en": {"batch": "Epics with work done or under way, not approved", "sealed": "already built: needs your seal", "open": "open stories"}}.get(lang or "en", {})
+    words = {"es": {"batch": "Epics con trabajo hecho o en curso, sin aprobar", "sealed": "ya construido: falta tu sello", "open": "stories abiertas", "nocause": "bloqueada sin una pregunta que lo explique"},
+             "en": {"batch": "Epics with work done or under way, not approved", "sealed": "already built: needs your seal", "open": "open stories", "nocause": "blocked with no question explaining it"}}.get(lang or "en", {})
     here = os.getcwd()
 
     def at(command):
@@ -168,9 +186,12 @@ def build(root):
         wait = waits.get(r["id"], {})
         blocked = [s for s in stories if r.get("blocks") and s["id"] == r["blocks"] and is_open(s)]
         number = r["number"]
-        needs.append({"ref": r["id"], "kind": "ask", "title": r["title"],
+        # What the human must do follows the kind of question: a key or an account is handed over (`provide`); the rest is decided.
+        how = "provide" if r.get("class") in ("key", "account") else "decide"
+        choices = [{"label": o, "command": at(f"gtt answer {number} {i}")} for i, o in enumerate(r.get("options") or [], 1)][:4] if how == "decide" else []
+        needs.append({"ref": r["id"], "kind": "ask", "how": how, "title": r["title"],
                       "weight": {"stories": len(blocked), "hours": wait.get("waiting_h")}, "unblocks": [s["id"] for s in blocked][:3],
-                      "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
+                      "choices": choices, "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
     # Only a promotion set that is ready to apply is an act of the human; a folder left without its spec is not.
     proposals = safe(lambda: gtt_change.drafts(), []) or []
     nxt_props = [{"ref": p["name"], "kind": p["kind"], "title": p.get("title") or p["name"], "command": at(f"gtt promote {p['name']}")}
@@ -196,6 +217,13 @@ def build(root):
         needs.append({"ref": f"{underway[0]}…{underway[-1]}", "kind": "epic-batch", "title": f"{len(underway)} " + words.get("batch", ""),
                       "weight": {"stories": weight, "hours": None}, "unblocks": [], "refs": underway,
                       "command": at("for e in " + " ".join(underway) + "; do gtt approve $e; done")})
+    # A Blocked Story no question explains still waits on someone: say so, without inventing a command.
+    explained = {n["unblocks"][i] for n in needs for i in range(len(n.get("unblocks") or []))}
+    explained |= {r["blocks"] for r in pend.get("asks", []) if r.get("blocks")}
+    for s in stories:
+        if s["status"] == "Blocked" and s["id"] not in explained:
+            needs.append({"ref": s["id"], "kind": "blocked", "how": "blocked", "title": s.get("title") or s["id"],
+                          "weight": {"stories": 1, "hours": s["estimate_h"]}, "unblocks": [s["id"]], "note": words.get("nocause"), "command": None})
     needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), n["ref"]))
     planned = [{"ref": e["id"], "title": e.get("title"), "lane": e["lane"] or "main"} for e in epics if e["status"] == "Planned"][:3]
 
@@ -218,12 +246,13 @@ def build(root):
         "suite_version": (release.get("bootstrap") or {}).get("version"), "lang": lang,
         "project": {"phase": "DEV" if frozen else "THINK", "frozen_at": safe(lambda: open(FROZEN, encoding="utf-8").readline().strip()) if frozen else None,
                     "profile": safe(dl.profile_name)},
-        "summary": {"progress_pct": pct, "stories_done": len(done), "stories_total": len(live_stories),
+        "summary": {"progress_pct": pct, "stories_done": len(done), "stories_total": len(live_stories), "stories_blocked": sum(1 for s in live_stories if s["status"] == "Blocked"),
                     "forecast": forecast, "deadline": deadline, "on_time": report.get("fits"),
                     "calibration": {"ratio": calibration.get("ratio"), "uncalibrated": calibration.get("uncalibrated")}},
         "columns": COLUMNS, "lanes": lanes, "epics": sorted_epics, "stories": out_stories,
         "next": {"proposals": nxt_props, "epics_to_approve": to_approve, "planned_epics": planned},
         "needs_you": needs,
+        "repo_state": repo_state(root),
         "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals],
         "health": [],
         "recent": recent,
@@ -346,6 +375,75 @@ def cmd_render(args):
         return 0                                      # the hook never fails the tool
 
 
+def prefs():
+    return read_json(PREFS) or {}
+
+
+def cmd_prefs(args):
+    data = prefs()
+    if args.open_on_start:
+        data["open_on_start"] = args.open_on_start == "on"
+        os.makedirs(LOCAL, exist_ok=True)
+        write_atomic(PREFS, json.dumps(data, indent=2, sort_keys=True) + "\n")
+    print(f"gtt-sonar: open on session start: {'on' if data.get('open_on_start') else 'off'}")
+    return 0
+
+
+def can_open_here():
+    """A browser can be opened only where someone is looking: not over SSH, not without a display."""
+    if os.environ.get("SSH_CONNECTION") or os.environ.get("CI"):
+        return False
+    return sys.platform in ("darwin", "win32") or bool(os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+
+
+def open_once(uri):
+    """Opens the page at most once every OPEN_EVERY_HOURS: the page reloads itself, one tab is enough."""
+    try:
+        if time.time() - os.path.getmtime(OPENED) < OPEN_EVERY_HOURS * 3600:
+            return False
+    except OSError:
+        pass
+    if not can_open_here():
+        return False
+    import webbrowser
+    done = webbrowser.open(uri)
+    if done:
+        write_atomic(OPENED, now_utc())
+    return bool(done)
+
+
+def cmd_start(args):
+    """One line for the human, from the snapshot just written. Never fails the session and never blocks."""
+    try:
+        root = repo_root()
+        if os.path.realpath(root) != os.path.realpath(os.getcwd()) and os.path.isdir(os.path.join(root, ".gtt")):
+            os.chdir(root)
+        ns = argparse.Namespace(quiet=True, sources=[], out=None, fonts=None)
+        cmd_render(ns)
+        snap = read_json(os.path.join(LOCAL, "sonar.json"))
+        page_path = os.path.abspath(os.path.join(LOCAL, "sonar.html"))
+        if not snap or not os.path.isfile(page_path):
+            return 0
+        import pathlib
+        uri = pathlib.Path(page_path).as_uri()
+        waiting = len(snap.get("needs_you") or [])
+        blocked = (snap.get("summary") or {}).get("stories_blocked") or 0
+        if snap.get("lang") == "es":
+            head = f"{waiting} cosa(s) te esperan" if waiting else "nada te espera"
+            tail = f" · {blocked} historia(s) bloqueada(s)" if blocked else ""
+            line = f"Sonar: {head}{tail} · {uri} (también `gtt sonar`)"
+        else:
+            head = f"{waiting} thing(s) wait for you" if waiting else "nothing waits for you"
+            tail = f" · {blocked} blocked Stor{'y' if blocked == 1 else 'ies'}" if blocked else ""
+            line = f"Sonar: {head}{tail} · {uri} (also `gtt sonar`)"
+        if prefs().get("open_on_start"):
+            open_once(uri)
+        print(line)
+    except Exception:                                  # noqa: BLE001
+        pass
+    return 0
+
+
 def main(argv):
     p = argparse.ArgumentParser(prog="gtt_sonar.py")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -358,6 +456,11 @@ def main(argv):
     r.add_argument("--out")
     r.add_argument("--fonts")
     r.set_defaults(func=cmd_render)
+    st = sub.add_parser("start")
+    st.set_defaults(func=cmd_start)
+    pf = sub.add_parser("prefs")
+    pf.add_argument("--open-on-start", choices=["on", "off"])
+    pf.set_defaults(func=cmd_prefs)
     args = p.parse_args(argv[1:])
     return args.func(args)
 

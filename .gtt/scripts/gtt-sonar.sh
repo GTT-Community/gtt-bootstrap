@@ -3,7 +3,7 @@
 # A thin wrapper: the logic is in gtt_sonar.py. See that file for the usage.
 #
 # Usage (from the project root):
-#   .gtt/scripts/gtt-sonar.sh snapshot [--json] | render [--quiet]
+#   .gtt/scripts/gtt-sonar.sh snapshot [--json] | render [--quiet] | start | prefs [--open-on-start on|off]
 #
 # Exit 0 = ok, 1 = refused, 2 = cannot run.
 

@@ -104,6 +104,7 @@ td .stack{display:flex;flex-direction:column;gap:3px}
 .segs .d{background:var(--agent)}
 .segs .p{background:rgba(45,212,191,.2);box-shadow:inset 0 0 0 1px var(--agent)}
 .segs .n{box-shadow:inset 0 0 0 1px #50647C}
+.segs .b{background:var(--danger)}
 .vline{position:absolute;top:0;bottom:0;width:0;pointer-events:none}
 .vline.today{border-left:2px solid var(--text)}
 .vline.eta{border-left:2px dashed var(--agent)}
@@ -152,7 +153,7 @@ var STR = {
     uncalibrated: "sin calibrar", coming: "lo que viene", flow: "línea de flujo por epic", done: "hecho", doing: "en curso", pending: "pendiente",
     today: "hoy", etaLine: "fecha estimada", due: "plazo", detail: "detalle", signals: "señales", nothingNeeds: "Nada te espera.", nothingNext: "Nada por venir.",
     toApprove: "por aprobar", proposal: "propuesta", planned: "plan", stories: "stories", noDates: "sin fechas", update: "actualiza GTT en este repo",
-    openSt: "stories abiertas", unblocksW: "destraba", idleEpics: "Epics planificados sin movimiento (no urgen)", more: "más; el orden es por cuánto bloquea cada uno", compat: "leído con un Bootstrap más nuevo", staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
+    openSt: "stories abiertas", blockedW: "bloqueadas", unblocksW: "destraba", idleEpics: "Epics planificados sin movimiento (no urgen)", more: "más; el orden es por cuánto bloquea cada uno", compat: "leído con un Bootstrap más nuevo", staleWarn: "puede estar desactualizado: corre `gtt sonar`", generated: "generado", pause: "pausar", resume: "reanudar", all: "todos", who: "quién",
     claude: "claude", you: "tú", gtt: "gtt", unknown: "sin dato", logTitle: "Lo último", daySummary: "eventos", noEvents: "Sin actividad registrada. Se llena cuando Stories y Epics cambian de estado (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "Sin Epics en el backlog. Aparecen cuando `gtt-domain/backlog.md` los tiene: un proyecto con su diseño ratificado, no el kit del Bootstrap.", pickEpic: "Abre un Epic para ver sus stories.", columns: { "Planned": "Planificado", "In Progress": "En curso", "Done": "Hecho" },
     noRepos: "Sin repos en este portafolio.", progressWord: "avance", lateDays: "atrasado", weight: "bloquea", hours: "h",
@@ -168,7 +169,7 @@ var STR = {
     uncalibrated: "uncalibrated", coming: "what comes next", flow: "flow line by epic", done: "done", doing: "in progress", pending: "pending",
     today: "today", etaLine: "estimated date", due: "deadline", detail: "detail", signals: "signals", nothingNeeds: "Nothing waits for you.", nothingNext: "Nothing coming up.",
     toApprove: "to approve", proposal: "proposal", planned: "plan", stories: "stories", noDates: "no dates", update: "update GTT in this repo",
-    openSt: "open stories", unblocksW: "unblocks", idleEpics: "Planned Epics with no movement (not urgent)", more: "more; ordered by how much each blocks", compat: "read with a newer Bootstrap", staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
+    openSt: "open stories", blockedW: "blocked", unblocksW: "unblocks", idleEpics: "Planned Epics with no movement (not urgent)", more: "more; ordered by how much each blocks", compat: "read with a newer Bootstrap", staleWarn: "may be out of date: run `gtt sonar`", generated: "generated", pause: "pause", resume: "resume", all: "all", who: "who",
     claude: "claude", you: "you", gtt: "gtt", unknown: "no data", logTitle: "Latest", daySummary: "events", noEvents: "No recorded activity. It fills in as Stories and Epics change state (`gtt-domain/delivery-log.jsonl`).",
     noEpics: "No Epics in the backlog. They appear when `gtt-domain/backlog.md` has them: a project with its design ratified, not the Bootstrap kit itself.", pickEpic: "Open an Epic to see its stories.", columns: { "Planned": "Planned", "In Progress": "In Progress", "Done": "Done" },
     noRepos: "No repos in this portfolio.", progressWord: "progress", lateDays: "late", weight: "blocks", hours: "h",
@@ -326,9 +327,9 @@ function needsPanel(items, showRepo, limit) {
     if (n.weight && n.weight.hours) w.push(n.weight.hours + T.hours);
     box.appendChild(h("div", { class: "row" },
       h("span", { class: "ref", text: n.ref }),
-      h("div", { class: "grow2" }, h("b", { text: n.title || n.ref }), h("span", { class: "small", text: [n.kind].concat(w).join(" · ") })),
+      h("div", { class: "grow2" }, h("b", { text: n.title || n.ref }), h("span", { class: "small", text: [n.how || n.kind].concat(w).join(" · ") })),
       showRepo ? h("span", { class: "tag", text: it.repo }) : null,
-      n.command ? cmdBlock(n.command) : nodata()));
+      n.command ? h("div", { class: "grow2" }, cmdBlock(n.command), (n.choices || []).length > 1 ? h("div", { class: "small" }, n.choices.map(function (c, i) { return h("div", null, h("span", { text: (i + 1) + ". " + c.label + " " }), copyButton(c.command)); })) : null) : nodata()));
   });
   if (total > items.length) box.appendChild(h("div", { class: "empty", text: "+" + (total - items.length) + " " + T.more }));
   return box;
@@ -389,18 +390,18 @@ function flowLine(snap) {
   Object.keys(lanes).sort().forEach(function (ln) {
     inner.appendChild(h("div", { class: "lane", text: ln }));
     lanes[ln].forEach(function (e) {
-      var total = e.stories.done + e.stories.in_progress + e.stories.planned;
+      var blockedN = e.stories.blocked || 0; var total = e.stories.done + e.stories.in_progress + e.stories.planned + blockedN;
       var open = st.epic === e.ref;
       var name = h("button", { type: "button", class: "name", "aria-expanded": open ? "true" : "false", on: { click: function () { go({ epic: open ? "" : e.ref }); } } },
         h("span", { style: "font-weight:500" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""),
-        h("span", { class: "small", text: e.stories.done + "/" + total + " " + T.stories }));
+        h("span", { class: "small", text: e.stories.done + "/" + total + " " + T.stories + (blockedN ? " · " + blockedN + " " + T.blockedW : "") }));
       var track = h("div", { class: "track" });
       var s = dayNum(e.start);
       if (s === null) { track.appendChild(h("span", { class: "small", text: T.noDates, style: "position:absolute;top:5px;left:8px" })); }
       else {
         var endDay = dayNum(e.end) !== null ? dayNum(e.end) : Math.max(dayNum(snap.summary.forecast) || today, today);
         var seg = h("div", { class: "segs" }); seg.style.left = pct(s) + "%"; seg.style.width = Math.max(pct(endDay + 1) - pct(s), 1.5) + "%";
-        [["d", e.stories.done], ["p", e.stories.in_progress], ["n", e.stories.planned]].forEach(function (pair) {
+        [["d", e.stories.done], ["p", e.stories.in_progress], ["n", e.stories.planned], ["b", blockedN]].forEach(function (pair) {
           if (!pair[1] || !total) return; var seg1 = h("div", { class: pair[0] }); seg1.style.width = (pair[1] / total * 100) + "%"; seg.appendChild(seg1);
         });
         track.appendChild(seg);

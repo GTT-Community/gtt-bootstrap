@@ -414,6 +414,17 @@ def cmd_undo(args):
                     shutil.copyfile(os.path.join(folder, entry["backup"]), entry["to"])
                 elif os.path.isfile(entry["to"]):
                     os.remove(entry["to"])
+            # An artifact the promotion created leaves with its identity, as in the real undo below; without it the
+            # rehearsed freeze sees a path that "no longer exists" and refuses an undo that would work.
+            created = {e["to"] for e in last["files"] if not e["existed"]}
+            if created:
+                import gtt_artifacts
+                from gtt_bash import bash_executable
+                manifest = gtt_artifacts.load_manifest()
+                manifest["artifacts"] = [a for a in manifest.get("artifacts", []) if a.get("path") not in created]
+                gtt_artifacts.save_manifest(manifest)
+                subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-index.sh")], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace")
         if gtt_act.refuse_before_asking("gtt-change", prepare=rehearse):
             return 1
     if not args.apply:

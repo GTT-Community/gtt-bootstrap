@@ -531,7 +531,7 @@ def git_subcommand(words):
 # `gtt` CLI commands that are a human act; reading, checking and upkeep (status, validate, proposals
 # list/show, change show, check, sync, doctor...) stay the agent's.
 # Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
-CLI_HUMAN_ACTS = {("freeze",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
+CLI_HUMAN_ACTS = {("freeze",), ("approve",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("change",),
                   ("proposals", "withdraw"), ("design", "reset"), ("answer",), ("idea", "add"), ("idea", "park"), ("idea", "drop"),
                   ("sonar", "add"), ("sonar", "remove")}
 CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply

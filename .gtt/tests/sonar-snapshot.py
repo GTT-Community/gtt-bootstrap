@@ -60,7 +60,7 @@ BACKLOG = """# Backlog
 """
 
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
-       "stories", "next", "needs_you", "signals", "health", "recent", "ideas"}
+       "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas"}
 
 
 def check(cond, label, detail=""):
@@ -123,7 +123,7 @@ def main():
         check(snap["lang"] in ("es", "en") and snap["project"]["phase"] in ("THINK", "DEV"), "lang and phase are valid")
         check([e["ref"] for e in snap["epics"]] == ["EPIC-001", "EPIC-002"], "epics come from the backlog")
         check(snap["epics"][0]["title"] == "Base platform" and snap["epics"][0]["state"] == "in_progress", "an Epic carries its title and state")
-        check(snap["epics"][0]["stories"] == {"done": 1, "in_progress": 1, "planned": 1}, "an Epic counts its Stories by state", str(snap["epics"][0]["stories"]))
+        check(snap["epics"][0]["stories"] == {"done": 1, "in_progress": 1, "blocked": 0, "planned": 1}, "an Epic counts its Stories by state", str(snap["epics"][0]["stories"]))
         check(any(s["ref"] == "STORY-002" and "$HOME" in (s["title"] or "") for s in snap["stories"]), "a title is carried as raw text for the page to escape")
         check(snap["summary"]["stories_done"] == 1 and snap["summary"]["stories_total"] == 4 and snap["summary"]["progress_pct"] == 25, "summary counts", str(snap["summary"]))
         check(snap["summary"]["deadline"] is None and snap["summary"]["calibration"]["ratio"] is None and snap["summary"]["calibration"]["uncalibrated"] is True, "what GTT does not yet calculate is null")
@@ -135,7 +135,26 @@ def main():
         check(snap["next"]["epics_to_approve"][0]["command"] == f"cd '{dest}' && gtt approve EPIC-002", "its command carries the way to the project", snap["next"]["epics_to_approve"][0]["command"])
         ask_ref = next((r for r in cmds if r.startswith("ASK-")), None)
         check(ask_ref is not None and cmds[ask_ref].startswith(f"cd '{dest}' && gtt answer ") and cmds[ask_ref].endswith(" 1"), "a question brings its command with the recommended option", str(cmds))
-        check(all(n["command"] for n in snap["needs_you"]), "every act the human must do carries a command")
+        check(all(n["command"] for n in snap["needs_you"] if n["kind"] != "blocked"), "every act the human must do carries a command")
+        ask_need = next(n for n in snap["needs_you"] if n["ref"] == ask_ref)
+        check(ask_need["how"] in ("decide", "provide") and isinstance(ask_need["choices"], list), "a question says how the human unblocks it", str(ask_need))
+        check(all(c["command"].startswith(f"cd '{dest}' && gtt answer ") for c in ask_need["choices"]), "each choice carries its own command")
+        check(snap["repo_state"] is None or isinstance(snap["repo_state"]["uncommitted"], int), "repo_state is a count or no data, never a guess", str(snap["repo_state"]))
+        started = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "start"], cwd=dest, capture_output=True, text=True, timeout=60)
+        lines = [l for l in started.stdout.splitlines() if l.strip()]
+        check(started.returncode == 0 and len(lines) == 1 and lines[0].startswith("Sonar:") and "file://" in lines[0] and "sonar.html" in lines[0],
+              "`start` prints exactly one line: where the page is and what waits", started.stdout + started.stderr)
+        check(not os.path.exists(os.path.join(dest, ".gtt", "local", "sonar-opened")), "`start` opens nothing unless the human asked for it")
+        prefs_run = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "prefs", "--open-on-start", "on"], cwd=dest, capture_output=True, text=True, timeout=60)
+        prefs_file = json.load(open(os.path.join(dest, ".gtt", "local", "sonar-prefs.json"), encoding="utf-8"))
+        check(prefs_run.returncode == 0 and prefs_file == {"open_on_start": True}, "the preference is kept in .gtt/local/, outside git", str(prefs_file))
+        subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "prefs", "--open-on-start", "off"], cwd=dest, capture_output=True, text=True, timeout=60)
+        # the session start rewrites session.md: it runs on a copy so the criteria below see the project untouched
+        copy = tempfile.mkdtemp(prefix="sonar-ctx-")
+        shutil.copytree(dest, os.path.join(copy, "p"), symlinks=True)
+        context = subprocess.run(["bash", ".gtt/scripts/gtt-session-context.sh"], cwd=os.path.join(copy, "p"), capture_output=True, text=True, timeout=120)
+        shutil.rmtree(copy, ignore_errors=True)
+        check("## Sonar (say this line once" in context.stdout, "the session context carries the Sonar line", context.stderr[-200:])
         weights = [(n["weight"]["stories"] or 0) for n in snap["needs_you"]]
         check(weights == sorted(weights, reverse=True), "needs_you is ordered by weight", str(weights))
         check(all(r["actor"] in ("human", "agent", "gtt", None) for r in snap["recent"]), "actor is human, agent, gtt or unknown, never guessed")

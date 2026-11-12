@@ -7,14 +7,15 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-10-12T20:15:45Z
+# Generated: 2026-11-12T15:05:08Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
-CHANGED  1 files (+0 new, −0) · +119 −50 · uncommitted: 1
+CHANGED  8 files (+0 new, −0) · +145 −20 · uncommitted: 8
 IMPACT   governed: none · protected: none
-VALID    17:15 · OK 22 PASS 1 SKIPPED
-NEXT     nothing pending
+RISKS    validation not run since the last change
+VALID    11:58 · OK 27 PASS 1 SKIPPED · stale
+NEXT     bash .gtt/scripts/gtt-validate.sh
 more: gtt-review.sh --files · git diff --stat · gtt-status.sh
 
 ## Freeze state
@@ -34,8 +35,14 @@ not frozen: no baseline yet.
 open: BLOCKING 0, GOVERNANCE 0, WARNING 0, NOTICE 0; deferred 0; rejected and still present 0
 Governance backlog: empty.
 
+## Delivery (the plan against the declared time - computed, never a decision)
+not declared (no .gtt/delivery.json; gtt delivery set ...)
+
+## To run (gtt-domain/run/ - things only the human runs, with gtt run <n>)
+none
+
 ## Pending proposals (gtt-domain/proposals/, excluding README.md)
-apply-session-adapters.sh
+none
 
 ## Change request
 empty (still template placeholders)
@@ -59,19 +66,19 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.5.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v2.1)
+gtt-bootstrap 1.19.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v3.0)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
-identity: 58 active artifact(s), 0 retired
-technical index: fresh
+identity: 78 active artifact(s), 0 retired
+technical index: STALE (run .gtt/scripts/gtt-index.sh)
 unresolved references: 0
 
 ## Repository (resume hints)
-branch: main; uncommitted paths: 2
+branch: main; uncommitted paths: 9
 recent commits:
-0e1b86d update
-0747b93 update
-3067216 update
-7aaece0 feat(bootstrap): sources, design per Epic, review surface and Git workflow - Bootstrap 1.5.0
-29c62a6 feat(bootstrap): close governance and observation architecture in 1.3.1
+be0368b feat: Sonar's 'I need you' holds only what holds work back - Bootstrap 1.19.0
+a0ba1e9 feat: Sonar shows a folder of projects, repos identified by path, newest suite - Bootstrap 1.19.0
+f7f0259 fix: Sonar says why a project has no Epics or activity yet
+cc9735a docs: Sonar and ideas in the readmes and the usage guide - Bootstrap 1.19.0
+e55aa45 <tu mensaje>
