@@ -60,7 +60,7 @@ BACKLOG = """# Backlog
 """
 
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
-       "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas"}
+       "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs"}
 
 
 def check(cond, label, detail=""):
@@ -155,6 +155,29 @@ def main():
         context = subprocess.run(["bash", ".gtt/scripts/gtt-session-context.sh"], cwd=os.path.join(copy, "p"), capture_output=True, text=True, timeout=120)
         shutil.rmtree(copy, ignore_errors=True)
         check("## Sonar (say this line once" in context.stdout, "the session context carries the Sonar line", context.stderr[-200:])
+        # the backlog view: Epic and Story detail is in every snapshot; the documents only when asked (the portfolio stays light)
+        e1 = next(e for e in snap["epics"] if e["ref"] == "EPIC-001")
+        check(e1["goal"] == "the platform runs" and e1["approved"].startswith("human") and e1["status"] == "In Progress", "an Epic carries its goal, approval and status", str(e1))
+        check(next(s for s in snap["stories"] if s["ref"] == "STORY-001")["done_when"] == "E-1 passes" and "tests passed" in next(s for s in snap["stories"] if s["ref"] == "STORY-001")["closed"],
+              "a Story carries what makes it done and what closed it")
+        check(snap["docs"] is None, "without --docs the snapshot carries no documents (null: no data)")
+        hostile_doc = os.path.join(dest, "gtt-domain", "context", "glossary.md")
+        q_glossary_original = open(hostile_doc, encoding="utf-8").read()
+        with open(hostile_doc, "a", encoding="utf-8") as handle:
+            handle.write("\n## Hostile <script>alert(1)</script>\n\n<img src=x onerror=alert(1)> and [a link](javascript:alert(1)) and `code`\n\n| a | b |\n|---|---|\n| <b>1</b> | 2 |\n")
+        withdocs = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json", "--docs"], cwd=dest, capture_output=True, text=True, timeout=60)
+        dd = json.loads(withdocs.stdout)["docs"]
+        groups = {i["group"] for i in dd["items"]}
+        check({"context"} <= groups and all(i["blocks"] is not None for i in dd["items"]), "--docs brings the governed documents as blocks", str(groups))
+        flat = json.dumps(next(i for i in dd["items"] if i["path"].endswith("glossary.md"))["blocks"])
+        check("javascript:alert" not in flat and "alert(1)" in flat and any(b[0] == "table" for b in next(i for i in dd["items"] if i["path"].endswith("glossary.md"))["blocks"]),
+              "hostile text stays plain text, a link keeps only its label and a table stays a table")
+        tiny = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json", "--docs"], cwd=dest, capture_output=True, text=True, timeout=60,
+                              env=dict(os.environ, GTT_SONAR_DOCS_TOTAL_LIMIT="200"))
+        omitted = [i for i in json.loads(tiny.stdout)["docs"]["items"] if i["omitted"]]
+        check(omitted and all(i["blocks"] is None and i["path"] for i in omitted), "a document that does not fit is listed as omitted with its path, never dropped silently", str(len(omitted)))
+        with open(hostile_doc, "w", encoding="utf-8") as handle:                      # put the project back for the criteria below
+            handle.write(q_glossary_original)
         weights = [(n["weight"]["stories"] or 0) for n in snap["needs_you"]]
         check(weights == sorted(weights, reverse=True), "needs_you is ordered by weight", str(weights))
         check(all(r["actor"] in ("human", "agent", "gtt", None) for r in snap["recent"]), "actor is human, agent, gtt or unknown, never guessed")

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """GTT Sonar - the snapshot: one JSON, calculated by the scripts that own each fact.
 
-  gtt_sonar.py snapshot [--json]    the `sonar.v1` document (read-only; writes nothing)
+  gtt_sonar.py snapshot [--json] [--docs]   the `sonar.v1` document (read-only; writes nothing); --docs adds the
+                                    governed documents, already turned into safe blocks (the project page has them)
   gtt_sonar.py render [--quiet]     writes .gtt/local/sonar.html and sonar.json (derived, disposable, outside git)
   gtt_sonar.py render --out HTML [--fonts DIR] FILE...   a page from several snapshots (the portfolio)
   gtt_sonar.py start                renders, then prints ONE line saying where the page is and what waits for the human
@@ -34,6 +35,8 @@ FONTS = ".gtt/sonar/fonts"
 LOCAL = ".gtt/local"
 LOCK = ".gtt/local/sonar.lock"
 LOCK_SECONDS = 10
+DOC_SOURCE_LIMIT = int(os.environ.get("GTT_SONAR_DOC_SOURCE_LIMIT") or 60000)    # bytes of one document
+DOCS_TOTAL_LIMIT = int(os.environ.get("GTT_SONAR_DOCS_TOTAL_LIMIT") or 900000)  # bytes of JSON for all of them
 PREFS = ".gtt/local/sonar-prefs.json"
 OPENED = ".gtt/local/sonar-opened"
 OPEN_EVERY_HOURS = 12
@@ -105,7 +108,158 @@ def repo_state(root):
     return {"uncommitted": len([l for l in out.stdout.splitlines() if l.strip()])}
 
 
-def build(root):
+# ------------------------------------------------------------------------------------ documents as safe blocks
+# The page never interprets markdown: this turns a document into plain blocks (text only, no markup, no links that
+# lead anywhere) and the page paints them with textContent. Raw HTML in a document stays text.
+
+INLINE = re.compile(r"(`[^`]+`)|(\*\*[^*]+\*\*)|(\[[^\]]+\]\([^)]*\))")
+LIST_ITEM = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.*)$")
+TABLE_SEP = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
+
+
+def inline(text):
+    """[[kind, text]...]: kind t (text), b (bold) or c (code). A link keeps its label only."""
+    out, pos = [], 0
+    for m in INLINE.finditer(text):
+        if m.start() > pos:
+            out.append(["t", text[pos:m.start()]])
+        token = m.group(0)
+        if token.startswith("`"):
+            out.append(["c", token[1:-1]])
+        elif token.startswith("**"):
+            out.append(["b", token[2:-2]])
+        else:
+            out.append(["t", re.match(r"\[([^\]]+)\]", token).group(1)])
+        pos = m.end()
+    if pos < len(text):
+        out.append(["t", text[pos:]])
+    return out or [["t", ""]]
+
+
+def cells(line):
+    line = line.strip()
+    if line.startswith("|"):
+        line = line[1:]
+    if line.endswith("|"):
+        line = line[:-1]
+    return [c.strip() for c in re.split(r"(?<!\\)\|", line)]
+
+
+def markdown_blocks(text):
+    """Blocks: ["h", level, inl] ["p", inl] ["list", ordered, [[depth, inl]...]] ["code", text] ["quote", inl]
+    ["table", [inl...], [[inl...]...]] ["hr"]."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    blocks, i = [], 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if not stripped:
+            i += 1
+        elif stripped.startswith("<!--"):
+            while i < len(lines) and "-->" not in lines[i]:
+                i += 1
+            i += 1
+        elif stripped.startswith("```") or stripped.startswith("~~~"):
+            fence, body = stripped[:3], []
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith(fence):
+                body.append(lines[i])
+                i += 1
+            i += 1
+            blocks.append(["code", "\n".join(body)])
+        elif re.match(r"^#{1,6}\s+", stripped):
+            level = len(stripped) - len(stripped.lstrip("#"))
+            blocks.append(["h", level, inline(stripped[level:].strip().rstrip("#").strip())])
+            i += 1
+        elif re.match(r"^(-{3,}|\*{3,}|_{3,})$", stripped):
+            blocks.append(["hr"])
+            i += 1
+        elif stripped.startswith("|") and i + 1 < len(lines) and TABLE_SEP.match(lines[i + 1]):
+            head = [inline(c) for c in cells(stripped)]
+            i += 2
+            rows = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                rows.append([inline(c) for c in cells(lines[i])])
+                i += 1
+            blocks.append(["table", head, rows])
+        elif stripped.startswith(">"):
+            quote = []
+            while i < len(lines) and lines[i].strip().startswith(">"):
+                quote.append(lines[i].strip()[1:].strip())
+                i += 1
+            blocks.append(["quote", inline(" ".join(q for q in quote if q))])
+        elif LIST_ITEM.match(line):
+            items, ordered = [], bool(re.match(r"\d", LIST_ITEM.match(line).group(2)))
+            while i < len(lines) and (LIST_ITEM.match(lines[i]) or (lines[i].startswith("  ") and lines[i].strip() and items)):
+                found = LIST_ITEM.match(lines[i])
+                if found:
+                    items.append([min(len(found.group(1).replace("\t", "  ")) // 2, 4), inline(found.group(3))])
+                else:                                   # a continuation line belongs to the item above
+                    items[-1][1].append(["t", " " + lines[i].strip()])
+                i += 1
+            blocks.append(["list", ordered, items])
+        else:
+            para = []
+            while i < len(lines) and lines[i].strip() and not re.match(r"^(#{1,6}\s|```|~~~|>|\||---|\*\*\*)", lines[i].strip()) and not LIST_ITEM.match(lines[i]):
+                para.append(lines[i].strip())
+                i += 1
+            if not para:                                # a line no rule claims: never loop on it
+                para.append(lines[i].strip())
+                i += 1
+            blocks.append(["p", inline(" ".join(para))])
+    return blocks
+
+
+def short(value, limit):
+    """One line, cut at `limit`; None when empty (no data, never an empty guess)."""
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not text:
+        return None
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+
+def first_heading(text, fallback):
+    for line in text.splitlines():
+        found = re.match(r"^#\s+(.*)$", line.strip())
+        if found:
+            return found.group(1).strip()[:120]
+    return fallback
+
+
+def collect_docs():
+    """The governed documents of the project as blocks, within a size budget: context, then ADRs, then Epic designs.
+    One that does not fit is listed with `omitted` and its path, never silently dropped."""
+    import glob
+    order = ["solution-vision", "architecture", "stack", "constraints", "principles", "glossary"]
+    context = sorted(glob.glob("gtt-domain/context/*.md"), key=lambda p: (order.index(os.path.basename(p)[:-3]) if os.path.basename(p)[:-3] in order else 99, p))
+    adrs = [p for p in sorted(glob.glob("gtt-domain/adr/ADR-*.md")) if "TEMPLATE" not in p]
+    designs = sorted(glob.glob("gtt-domain/context/design/EPIC-*.md"))
+    items, used = [], 0
+    for group, paths in (("context", context), ("adr", adrs), ("design", designs)):
+        for path in paths:
+            path = path.replace("\\", "/")
+            try:
+                with open(path, encoding="utf-8", errors="replace") as handle:
+                    text = handle.read()
+            except OSError:
+                continue
+            size = len(text.encode("utf-8"))
+            truncated = size > DOC_SOURCE_LIMIT
+            if truncated:
+                text = text[:DOC_SOURCE_LIMIT].rsplit("\n", 1)[0]
+            blocks = markdown_blocks(text)
+            weight = len(json.dumps(blocks, ensure_ascii=False))
+            item = {"id": path, "group": group, "path": path, "title": first_heading(text, os.path.basename(path)), "bytes": size,
+                    "truncated": truncated, "omitted": False, "blocks": blocks}
+            if used + weight > DOCS_TOTAL_LIMIT:
+                item.update({"omitted": True, "blocks": None, "truncated": False})
+            else:
+                used += weight
+            items.append(item)
+    return {"items": items, "limit_bytes": DOCS_TOTAL_LIMIT}
+
+
+def build(root, docs=False):
     import gtt_backlog
     import gtt_delivery as dl
     import gtt_pending
@@ -119,7 +273,8 @@ def build(root):
     stories, epics = loaded if loaded else ([], [])
     times = safe(dl.timeline, {}) or {}
     # The delivery view folds `Proposed` into `Planned`; the Epic still waiting for approval is the raw status.
-    raw = {e["id"]: e["status"] for e in (safe(lambda: gtt_backlog.parse(dl.BACKLOG)[1], []) or [])}
+    raw_epics = {e["id"]: e for e in (safe(lambda: gtt_backlog.parse(dl.BACKLOG)[1], []) or [])}
+    raw = {k: v["status"] for k, v in raw_epics.items()}
     for e in epics:
         e["status"] = raw.get(e["id"]) or e["status"]
     report = safe(lambda: dl.build_plan()) or {}
@@ -152,7 +307,10 @@ def build(root):
                         "in_progress": sum(1 for s in own if s["status"] == "In Progress"),
                         "blocked": sum(1 for s in own if s["status"] == "Blocked"),
                         "planned": sum(1 for s in own if s["status"] not in ("Done", "In Progress", "Blocked"))},
-            "flags": flags.get(e["id"], [])})
+            "flags": flags.get(e["id"], []),
+            "status": e["status"], "owner": e.get("owner") or None, "estimate_h": e.get("estimate_h"), "depends": e.get("depends") or [],
+            "goal": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Goal"), 400),
+            "approved": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Approved"), 80)})
 
     out_stories = []
     for s in stories:
@@ -163,6 +321,7 @@ def build(root):
         out_stories.append({"ref": s["id"], "epic": s["epic"], "title": s.get("title"), "status": s["status"],
                             "estimate_h": s["estimate_h"], "elapsed_h": elapsed,
                             "closed_by_evidence": bool(s["closed"].strip()) if s["status"] == "Done" else False,
+                            "owner": s.get("owner") or "agent", "done_when": short(s.get("done_when"), 300), "closed": short(s.get("closed"), 200),
                             "flags": flags.get(s["id"], [])})
 
     lanes = [{"id": k, "name": k} for k in sorted({e["lane"] for e in sorted_epics})]
@@ -257,6 +416,7 @@ def build(root):
         "health": [],
         "recent": recent,
         "ideas": ideas,
+        "docs": safe(collect_docs) if docs else None,
     }
 
 
@@ -265,7 +425,7 @@ def cmd_snapshot(args):
     if os.path.realpath(root) != os.path.realpath(os.getcwd()) and os.path.isdir(os.path.join(root, ".gtt")):
         os.chdir(root)      # a linked worktree reads the repo's one state
     try:
-        data = build(os.getcwd())
+        data = build(os.getcwd(), docs=bool(getattr(args, "docs", False)))
     except Exception as exc:        # noqa: BLE001 - the page must get an answer or a clear refusal
         print(f"gtt-sonar: cannot build the snapshot: {exc}", file=sys.stderr)
         return 2
@@ -357,7 +517,7 @@ def cmd_render(args):
             write_atomic(os.path.join(LOCAL, ".gitignore"), "*\n")      # .gtt/local/ is per-user state, never versioned
         write_atomic(LOCK, str(os.getpid()))
         try:
-            snap = build(os.getcwd())
+            snap = build(os.getcwd(), docs=True)
             write_atomic(os.path.join(LOCAL, "sonar.json"), json.dumps(snap, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
             write_atomic(os.path.join(LOCAL, "sonar.html"), page([{"snapshot": snap}], "../sonar/fonts"))
         finally:
@@ -449,6 +609,7 @@ def main(argv):
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("snapshot")
     s.add_argument("--json", action="store_true")
+    s.add_argument("--docs", action="store_true")
     s.set_defaults(func=cmd_snapshot)
     r = sub.add_parser("render")
     r.add_argument("--quiet", action="store_true")

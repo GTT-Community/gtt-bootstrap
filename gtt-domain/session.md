@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-11-12T17:56:47Z
+# Generated: 2026-11-12T19:12:48Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
@@ -63,7 +63,7 @@ provenance tags in governed context: FUENTE 0, VACIO 0 (0 unclassified), PROPUES
 working agreements: team 0, user 0 (never authority; below governed context)
 
 ## Bootstrap and methodology (contracts in .gtt/contract/ - data, never authority)
-gtt-bootstrap 1.20.1 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v3.0)
+gtt-bootstrap 1.21.0 (schema 1, channel stable; scaffold layout 2; canon GTT-CANONICAL-v3.0)
 plan: not selected - the human must choose one of light, medium, hard, team (medium gates apply meanwhile); language: unset; frozen: False
 
 ## Artifact identity and technical index
@@ -74,4 +74,4 @@ unresolved references: 0
 ## Repository (resume hints)
 branch: master; uncommitted paths: 1
 recent commits:
-ada7158 catalog
+45dfc7f catalog

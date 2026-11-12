@@ -120,12 +120,12 @@ def main():
         if not chrome:
             print("  skip  headless Chrome not installed: the DOM check of criterion 3 was not run")
         else:
-            for view in ("portfolio", "project&repo=%2Fx&epic=EPIC-001", "last"):
+            for view in ("portfolio", "project&repo=%2Fx&epic=EPIC-001", "backlog&repo=%2Fx&epic=EPIC-001", "backlog&bt=design&repo=%2Fx", "last"):
                 dom = sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{out}#/view={view}").stdout
                 tag = view.split("&")[0]
                 body = dom.split('id="app"', 1)[-1].split('<script', 1)[0]
                 check("<img" not in body and "<script" not in body, f"[{tag}] no element was created from the text (no <img>, no <script> in the page body)")
-                check("&lt;img src=x" in dom or tag == "last" or "&lt;script&gt;" in dom, f"[{tag}] the hostile text is on the page as text")
+                check("&lt;img src=x" in dom or tag in ("last", "backlog") or "&lt;script&gt;" in dom, f"[{tag}] the hostile text is on the page as text")
 
         print("criterion 5 - a story closed by evidence appears at the next reload; the hook is fast")
         many_stories(os.path.join(dest, "gtt-domain", "backlog.md"), 200)
