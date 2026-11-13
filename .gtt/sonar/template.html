@@ -193,6 +193,10 @@ var STR = {
     noEpics: "Sin Epics en el backlog. Aparecen cuando `gtt-domain/backlog.md` los tiene: un proyecto con su diseño ratificado, no el kit del Bootstrap.", pickEpic: "Abre un Epic para ver sus stories.", columns: { "Planned": "Planificado", "In Progress": "En curso", "Done": "Hecho" },
     noRepos: "Sin repos en este portafolio.", progressWord: "avance", lateDays: "atrasado", weight: "bloquea", hours: "h",
     ideas: "ideas", newIdea: "nueva idea", ideaLabel: "Escribe la idea", ideaHint: "Se guarda cuando corres el comando en la carpeta del repo:",
+    working: "trabajando ahora", sinceW: "hace", inScopeW: "en alcance", excludedW: "fuera de alcance", allW: "total", hoursDone: "horas", releasesW: "por release",
+    health: "salud del proyecto", staleHealth: "desactualizado", uncommitted: "sin commit", flow14: "cerradas en 14 días", genAt: "generado", watchStopped: "el vigilante se detuvo: la página no se actualiza sola. Corre `gtt sonar`",
+    degradedTitle: "Este proyecto usa un Bootstrap más antiguo que GTT", degradedMissing: { forecast: "fecha estimada y calibración", pending: "preguntas pendientes (te necesito)", refresh: "actualización automática" },
+    degradedFix: "Se ve con lo que se puede leer. Para verlo completo:", derivedNote: "reconstruido de las líneas «Closed» del backlog",
     ideaNone: "Sin ideas todavía.", ideaStates: { "new": "nueva", "triaged": "triage", "covered": "cubierta", "converted": "convertida", "non-goal": "no-objetivo", "ask": "pregunta", "parked": "aparcada", "dropped": "descartada" }
   },
   en: {
@@ -217,6 +221,10 @@ var STR = {
     noEpics: "No Epics in the backlog. They appear when `gtt-domain/backlog.md` has them: a project with its design ratified, not the Bootstrap kit itself.", pickEpic: "Open an Epic to see its stories.", columns: { "Planned": "Planned", "In Progress": "In Progress", "Done": "Done" },
     noRepos: "No repos in this portfolio.", progressWord: "progress", lateDays: "late", weight: "blocks", hours: "h",
     ideas: "ideas", newIdea: "new idea", ideaLabel: "Write the idea", ideaHint: "It is saved when you run the command in the repo folder:",
+    working: "working now", sinceW: "for", inScopeW: "in scope", excludedW: "out of scope", allW: "all", hoursDone: "hours", releasesW: "by release",
+    health: "project health", staleHealth: "out of date", uncommitted: "uncommitted", flow14: "closed in 14 days", genAt: "generated", watchStopped: "the watcher stopped: the page no longer updates by itself. Run `gtt sonar`",
+    degradedTitle: "This project runs an older Bootstrap than GTT", degradedMissing: { forecast: "forecast and calibration", pending: "pending questions (needs you)", refresh: "automatic refresh" },
+    degradedFix: "Showing what can be read. To see it all:", derivedNote: "rebuilt from the backlog's `Closed` lines",
     ideaNone: "No ideas yet.", ideaStates: { "new": "new", "triaged": "triaged", "covered": "covered", "converted": "converted", "non-goal": "non-goal", "ask": "question", "parked": "parked", "dropped": "dropped" }
   }
 };
@@ -333,7 +341,7 @@ function topBar(view) {
     return a;
   }
   var paused = st.pause === "1";
-  var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }), paused ? T.paused : T.live);
+  var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }), paused ? T.paused : liveLabel());
   live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
   var suite = null; OK.forEach(function (s) { if (!suite || String(s.compat ? s.compat.read_with : s.suite_version).localeCompare(suite, undefined, { numeric: true }) > 0) suite = s.compat ? s.compat.read_with : s.suite_version; });
   return h("header", { class: "bar" },
@@ -342,12 +350,18 @@ function topBar(view) {
     h("div", { class: "grow" }),
     h("div", { class: "meta" }, h("span", { text: REPOS.length + " " + T.repos }), suite ? h("span", { text: T.suite + " " + suite }) : null, live));
 }
+function liveLabel() {
+  var snap = OK[0]; var gen = DATA.generated_at ? Date.parse(DATA.generated_at) : 0;
+  var time = gen ? new Date(gen).toLocaleTimeString() : "";
+  return (snap && snap.refresh === "watch" && gen && Date.now() - gen < 150000) ? T.live : T.genAt + " " + time;
+}
 function staleBanner() {
   var newest = 0; OK.forEach(function (s) { var t = Date.parse(s.generated_at); if (t > newest) newest = t; });
   var gen = DATA.generated_at ? Date.parse(DATA.generated_at) : newest;
   if (!gen) return null;
-  var old = Date.now() - gen > 120000;
-  return old ? h("div", { class: "stale", role: "status", text: T.staleWarn + " (" + T.generated + " " + new Date(gen).toLocaleTimeString() + ")" }) : null;
+  var watching = OK.some(function (s) { return s.refresh === "watch"; });
+  var old = Date.now() - gen > (watching ? 150000 : 120000);
+  return old ? h("div", { class: "stale", role: "status", text: (watching ? T.watchStopped : T.staleWarn) + " (" + T.generated + " " + new Date(gen).toLocaleTimeString() + ")" }) : null;
 }
 
 /* ---------- views ---------- */
@@ -502,6 +516,53 @@ function ideasSection(snap) {
       h("span", { class: "small", text: T.ideaHint }), h("span", { class: "mono small", text: "$ cd " + snap.repo.path }), out));
 }
 
+function progressCell(sum) {
+  var scope = sum.in_scope; var hrs = sum.hours;
+  var main = scope && scope.pct !== null ? scope.pct : sum.progress_pct;
+  var lines = [];
+  if (scope) lines.push(scope.done + "/" + scope.total + " " + T.stories + " " + T.inScopeW + " · " + scope.excluded + " " + T.excludedW + " · " + T.allW + " " + sum.progress_pct + "% (" + sum.stories_done + "/" + sum.stories_total + ")");
+  else lines.push(sum.stories_done + "/" + sum.stories_total + " " + T.stories);
+  if (hrs && hrs.pct !== null) lines.push(hrs.done + "/" + hrs.total + " " + T.hoursDone + " · " + hrs.pct + "%");
+  return h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: main === null ? T.noplan : main + "%" }), lines.map(function (l) { return h("span", { class: "small", text: l }); }));
+}
+function releasesPanel(sum) {
+  var rows = sum.releases || []; if (rows.length < 2) return null;
+  var box = h("div", { class: "panel" });
+  rows.forEach(function (r) {
+    var pct = r.total ? Math.round(100 * r.done / r.total) : 0;
+    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: r.name }),
+      h("div", { class: "grow2" }, statusBar(pct), h("span", { class: "small", text: r.done + "/" + r.total + " " + T.stories + (r.hours_total ? " · " + r.hours_done + "/" + r.hours_total + " " + T.hours : "") })),
+      r.scope === "out" ? h("span", { class: "tag", text: T.excludedW }) : null));
+  });
+  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.releasesW), box);
+}
+function workingPanel(snap) {
+  var rows = snap.working_now || []; if (!rows.length) return null;
+  var total = (snap.summary && snap.summary.in_progress) || rows.length;
+  var box = h("div", { class: "panel" });
+  rows.forEach(function (w) {
+    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: w.ref }),
+      h("div", { class: "grow2" }, h("b", { text: w.title || w.ref }), h("span", { class: "small", text: [w.epic, w.front ? "· " + w.front : null, w.since_h !== null && w.since_h !== undefined ? T.sinceW + " " + (w.since_h >= 48 ? Math.round(w.since_h / 24) + " d" : w.since_h + " h") : null, w.estimate_h ? w.estimate_h + T.hours : null].filter(Boolean).join(" ") })),
+      (w.flags || []).map(function (f) { return h("span", { class: "tag amber", text: f }); })));
+  });
+  if (total > rows.length) box.appendChild(h("div", { class: "empty", text: "+" + (total - rows.length) }));
+  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.working + " · " + total), box);
+}
+function healthPanel(snap) {
+  var rows = snap.health || []; if (!rows.length) return null;
+  var box = h("div", { class: "panel sigs" });
+  rows.forEach(function (c) {
+    box.appendChild(h("div", { class: "sig" }, h("span", { class: "tag " + (c.status === "ok" ? "ok" : c.status === "fail" ? "red" : "amber"), text: c.status }),
+      h("b", { text: c.title }), c.detail ? h("span", { text: c.detail }) : null, c.stale ? h("span", { class: "tag amber", text: T.staleHealth }) : null));
+  });
+  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), box);
+}
+function flowSpark(snap) {
+  var t = snap.throughput; if (!t || !t.total) return null;
+  var max = Math.max.apply(null, t.days.map(function (d) { return d.closed; }));
+  var bars = "▁▂▃▄▅▆▇█"; var line = t.days.map(function (d) { return d.closed ? bars[Math.min(7, Math.ceil(7 * d.closed / max))] : "·"; }).join("");
+  return h("span", { class: "small mono", title: t.days.map(function (d) { return d.day + ": " + d.closed; }).join("\n"), text: line + "  " + t.total + " " + T.flow14 });
+}
 function viewProject() {
   var st = readHash(); var snap = repoById(st.repo);
   if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
@@ -510,9 +571,9 @@ function viewProject() {
     OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === snap.repo.path, text: s.repo.name }); }));
   var strip = h("div", { class: "strip" },
     h("div", null, h("span", { class: "k", text: T.cEta }), h("span", { class: "v", text: sum.forecast ? fmtDate(sum.forecast) : T.nodata }), sum.deadline ? h("span", { class: "small", text: T.deadline + " " + fmtDate(sum.deadline) + (sum.on_time === true ? " · " + T.onTime : sum.on_time === false ? " · " + T.late : "") }) : null),
-    h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: sum.progress_pct === null ? T.noplan : sum.progress_pct + "%" }), h("span", { class: "small", text: sum.stories_done + "/" + sum.stories_total + " " + T.stories })),
+    progressCell(sum),
     h("div", null, h("span", { class: "k", text: T.calib }), h("span", { class: "v", text: sum.calibration.ratio === null ? T.uncalibrated : "x" + sum.calibration.ratio + (sum.calibration.uncalibrated ? " · " + T.uncalibrated : "") })),
-    h("div", null, h("span", { class: "k", text: T.needs }), h("span", { class: "v", text: (snap.needs_you || []).length })));
+    h("div", null, h("span", { class: "k", text: T.needs }), h("span", { class: "v", text: (snap.needs_you || []).length }), snap.repo_state && snap.repo_state.uncommitted ? h("span", { class: "small", text: snap.repo_state.uncommitted + " " + T.uncommitted }) : null, flowSpark(snap)));
   var cards = [];
   (snap.next.proposals || []).forEach(function (p) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.proposal }), h("span", { class: "t", text: p.title || p.ref }), p.command ? cmdBlock(p.command) : null)); });
   var idle = snap.next.epics_to_approve || [];
@@ -524,9 +585,12 @@ function viewProject() {
       h("h1", { text: snap.repo.name }),
       h("div", { class: "meta" }, phaseTag(snap.project), snap.project.profile ? h("span", { text: snap.project.profile }) : null,
         h("label", { class: "sr", for: "repo-pick", text: T.project }), select)),
+    snap.degraded ? h("div", { class: "stale", role: "status" }, h("b", { text: T.degradedTitle + ": " + snap.degraded.project + " → " + snap.degraded.tool + ". " }),
+      snap.degraded.missing.map(function (m) { return (T.degradedMissing[m] || m); }).join(", ") + ". " + T.degradedFix + " ", snap.degraded.command ? cmdBlock(snap.degraded.command) : null) :
     snap.compat ? h("div", { class: "stale", role: "status" }, T.compat + " " + snap.compat.read_with + " (" + snap.compat.installed + "). ", snap.compat.command ? cmdBlock(snap.compat.command) : null) : null,
     strip,
     (snap.needs_you || []).length ? needsPanel(snap.needs_you.map(function (n) { return { n: n, repo: snap.repo.name }; }), false, 15) : null,
+    workingPanel(snap), releasesPanel(sum), healthPanel(snap),
     h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : (idle.length ? null : h("div", { class: "empty", text: T.nothingNext })),
       idle.length ? h("details", { class: "panel idle" }, h("summary", { text: idle.length + " " + T.idleEpics }),
         idle.map(function (e) { return h("div", { class: "row" }, h("span", { class: "ref", text: e.ref }), h("div", { class: "grow2" }, h("b", { text: e.title || e.ref }), h("span", { class: "small", text: e.open_stories + " " + T.openSt })), e.command ? cmdBlock(e.command) : null); })) : null),
@@ -565,7 +629,7 @@ function viewLast() {
     });
   });
   return h("main", null,
-    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --log" }), h("h1", { text: T.logTitle })),
+    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --log" }), h("h1", { text: T.logTitle }), evs.some(function (e) { return e.r.derived; }) ? h("span", { class: "small", text: T.derivedNote }) : null),
     h("div", { class: "filters" }, h("label", { for: "f-proj", text: T.project }), projSel, h("label", { for: "f-who", text: T.who }), whoSel),
     body);
 }

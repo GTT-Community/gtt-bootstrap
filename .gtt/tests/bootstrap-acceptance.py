@@ -3544,6 +3544,25 @@ def skills_for_ades(project, tmp):
         check(bash(h, ".gtt/scripts/gtt-skills.sh", "check")[0] == 1, f"{ade}: a deleted mirror is detected")
         check(bash(h, ".gtt/scripts/gtt-skills.sh", "sync", "--apply")[0] == 0 and bash(h, ".gtt/scripts/gtt-skills.sh", "check")[0] == 0, f"{ade}: sync restores it from the source")
 
+    h = make_host(project, tmp, "overlay-merge")
+    rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "claude", "--primary", "claude", "--apply")
+    check(rc == 0, "overlay-merge: the Claude adapter installs", out + err)
+    newer = os.path.join(tmp, "catalog-newer")
+    shutil.copytree(project, newer, ignore=shutil.ignore_patterns(".git", "__pycache__", "local"))
+    with open(os.path.join(newer, ".claude", "CLAUDE.md"), "a", encoding="utf-8") as handle:
+        handle.write("\nA rule the newer catalog adds.\n")
+    mine = os.path.join(h, ".claude", "CLAUDE.md")
+    with open(mine, "a", encoding="utf-8") as handle:
+        handle.write("\nThe project's own execution rules.\n")
+    before = open(mine, encoding="utf-8").read()
+    rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "update", "--from", newer, "--apply")
+    check(rc == 0 and "MERGE" in out and "CONFLICT" not in out, "a file the project edited and the catalog changed no longer stops the update", out + err)
+    check(open(mine, encoding="utf-8").read() == before, "overlay-merge: the project's own file is kept exactly as it was")
+    check(os.path.isfile(mine + ".gtt-new") and "A rule the newer catalog adds." in open(mine + ".gtt-new", encoding="utf-8").read(),
+          "overlay-merge: the catalog's version is saved beside it to merge by hand")
+    rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "update", "--from", newer, "--apply")
+    check(rc == 0, "overlay-merge: running it again is not an error", out + err)
+
     h = make_host(project, tmp, "skill-conflict")
     write(os.path.join(h, ".agents", "skills", "gtt-delivery", "SKILL.md"), "the host's own skill\n")
     rc, out, err = bash(h, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "codex", "--primary", "codex", "--apply")

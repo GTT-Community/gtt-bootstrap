@@ -7,7 +7,9 @@
   gtt_sonar.py render --out HTML [--fonts DIR] FILE...   a page from several snapshots (the portfolio)
   gtt_sonar.py start                renders, then prints ONE line saying where the page is and what waits for the human
                                     (the session start uses it); opens the page once if the human asked for it
-  gtt_sonar.py prefs [--open-on-start on|off]   the human's own preference, kept in .gtt/local/ (never versioned)
+  gtt_sonar.py watch [--hours N]    keeps the page fresh: re-renders when the backlog, the pending events, the health
+                                    files or git change (and every minute), then exits by itself; one per project
+  gtt_sonar.py prefs [--open-on-start on|off] [--watch on|off]   the human's own preferences, kept in .gtt/local/ (never versioned)
 
 This file gathers; it does not calculate. Percentages, forecasts, signals, weights and commands come from
 gtt_delivery.py, gtt_pending.py, gtt_backlog.py and gtt_change.py. A fact GTT does not yet calculate is `null`:
@@ -41,6 +43,15 @@ PREFS = ".gtt/local/sonar-prefs.json"
 OPENED = ".gtt/local/sonar-opened"
 OPEN_EVERY_HOURS = 12
 COLUMNS = ["Planned", "In Progress", "Done"]
+HEALTH_DIR = ".gtt/local/health"
+WATCH_PID = ".gtt/local/sonar-watch.pid"
+WATCH_EVERY = 2            # seconds between looks at the inputs
+WATCH_BEAT = 60            # seconds: a render at least this often, so the page never looks abandoned
+WATCH_HOURS = 8
+STALE_AFTER_H = 48         # a health file older than this is reported as stale
+THROUGHPUT_DAYS = 14
+SCOPE_OUT = re.compile(r"(^|[\s(])(post-|fuera del alcance|out of scope|deferred|diferid)", re.I)
+NO_REASON = re.compile(r"^\s*([-—–]|none\b|ninguno|n/?a\b)", re.I)
 
 
 def read_json(path):
@@ -106,6 +117,117 @@ def repo_state(root):
     if out.returncode != 0:
         return None
     return {"uncommitted": len([l for l in out.stdout.splitlines() if l.strip()])}
+
+
+# ------------------------------------------------------------------------------- facts the backlog already carries
+# A Story may say which release it belongs to, which front carries it and why it is blocked. GTT keeps every field of
+# a Story; these read the ones a human manages by. Nothing is guessed: a missing field is `null`.
+
+def plain(text):
+    return re.sub(r"\s+", " ", str(text or "").replace("**", "").replace("`", "")).strip()
+
+
+def release_of(fields):
+    """(name, out_of_scope) from `Release:` / `Milestone:`. `v1 · Frente: A` is the release v1; `post-v1 (fuera del
+    alcance...)` is the release post-v1 and is marked out of scope (a name or note that says post-, out of scope, deferred)."""
+    raw = plain(fields.get("Release") or fields.get("Milestone") or "")
+    if not raw:
+        return None, False
+    name = re.split(r"\s*[;,·|—–(]|\s+-\s+", raw, maxsplit=1)[0].strip()[:30]
+    return (name or None), bool(SCOPE_OUT.search(raw))
+
+
+def front_of(fields):
+    """The front that carries a Story: `Frente:` / `Front:` / `Lane:` field, or the same word inside the Release line."""
+    for key in ("Frente", "Front", "Lane"):
+        value = plain(fields.get(key))
+        if value:
+            return re.split(r"[\s,;·(]", value, maxsplit=1)[0][:12] or None
+    found = re.search(r"(?:Frente|Front|Lane):?\s*([A-Za-z0-9_-]{1,12})", plain(fields.get("Release")))
+    return found.group(1) if found else None
+
+
+def blocked_by(fields):
+    """Why a Story waits, in the author's words (`Blocked by:`); None when empty or `—`."""
+    for key, value in fields.items():
+        if key.strip().lower() in ("blocked by", "blocked-by", "bloqueada por", "bloqueo"):
+            return None if NO_REASON.match(value or "") else short(plain(value), 220)
+    return None
+
+
+def closed_day(text):
+    found = re.match(r"\s*(\d{4}-\d{2}-\d{2})", str(text or ""))
+    return found.group(1) if found else None
+
+
+def throughput(stories, today):
+    """Stories closed per day over the last THROUGHPUT_DAYS days, from the date each `Closed:` line starts with."""
+    counts = {}
+    for s in stories:
+        if s["status"] == "Done":
+            d = closed_day(s.get("closed"))
+            if d:
+                counts[d] = counts.get(d, 0) + 1
+    days = []
+    for back in range(THROUGHPUT_DAYS - 1, -1, -1):
+        d = (today - datetime.timedelta(days=back)).isoformat()
+        days.append({"day": d, "closed": counts.get(d, 0)})
+    return {"days": days, "total": sum(x["closed"] for x in days)}
+
+
+def health_checks():
+    """Results the project's own checks leave in .gtt/local/health/<id>.json:
+    {"title": "...", "status": "ok|warn|fail", "detail": "...", "at": "2026-11-13T10:00:00Z"}. Sonar only reads them;
+    it never runs a command of the project. None when the folder does not exist (nobody reports health)."""
+    import glob
+    if not os.path.isdir(HEALTH_DIR):
+        return None
+    out = []
+    for path in sorted(glob.glob(os.path.join(HEALTH_DIR, "*.json")))[:30]:
+        data = read_json(path)
+        if not isinstance(data, dict):
+            continue
+        ident = os.path.basename(path)[:-5]
+        status = str(data.get("status") or "").lower()
+        at = data.get("at") if isinstance(data.get("at"), str) else None
+        stale = False
+        if at:
+            try:
+                then = datetime.datetime.strptime(at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+                stale = (datetime.datetime.now(datetime.timezone.utc) - then).total_seconds() > STALE_AFTER_H * 3600
+            except ValueError:
+                pass
+        out.append({"id": ident, "title": short(data.get("title"), 80) or ident, "status": status if status in ("ok", "warn", "fail") else "unknown",
+                    "detail": short(data.get("detail"), 240), "at": at, "stale": stale})
+    rank = {"fail": 0, "warn": 1, "unknown": 2, "ok": 3}
+    out.sort(key=lambda c: (rank[c["status"]], c["id"]))
+    return out
+
+
+def degraded(version):
+    """What this project's Bootstrap cannot give the page, and the act that fixes it. None when nothing is missing."""
+    missing = []
+    if not os.path.isfile(".gtt/contract/delivery.json"):
+        missing.append("forecast")
+    if not os.path.isfile(".gtt/contract/pending.json"):
+        missing.append("pending")
+    if not os.path.isfile(".gtt/scripts/gtt_sonar.py"):
+        missing.append("refresh")
+    here = read_json(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "contract", "release.json")) or {}
+    tool = (here.get("bootstrap") or {}).get("version")
+    if not missing:
+        return None
+    return {"project": version, "tool": tool, "missing": missing}
+
+
+def watcher_alive():
+    try:
+        with open(WATCH_PID, encoding="utf-8") as handle:
+            pid = int(handle.read().split()[0])
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError, IndexError):
+        return False
 
 
 # ------------------------------------------------------------------------------------ documents as safe blocks
@@ -275,6 +397,7 @@ def build(root, docs=False):
     # The delivery view folds `Proposed` into `Planned`; the Epic still waiting for approval is the raw status.
     raw_epics = {e["id"]: e for e in (safe(lambda: gtt_backlog.parse(dl.BACKLOG)[1], []) or [])}
     raw = {k: v["status"] for k, v in raw_epics.items()}
+    raw_stories = {x["id"]: x for x in (safe(lambda: gtt_backlog.parse(dl.BACKLOG)[0], []) or [])}
     for e in epics:
         e["status"] = raw.get(e["id"]) or e["status"]
     report = safe(lambda: dl.build_plan()) or {}
@@ -315,6 +438,8 @@ def build(root, docs=False):
     out_stories = []
     for s in stories:
         t = times.get(s["id"], {})
+        fields = (raw_stories.get(s["id"]) or {}).get("fields") or {}
+        rel_name, out_of_scope = release_of(fields)
         elapsed = None
         if t.get("started") and t.get("closed"):
             elapsed = round((t["closed"] - t["started"]).total_seconds() / 3600.0, 1)
@@ -322,7 +447,10 @@ def build(root, docs=False):
                             "estimate_h": s["estimate_h"], "elapsed_h": elapsed,
                             "closed_by_evidence": bool(s["closed"].strip()) if s["status"] == "Done" else False,
                             "owner": s.get("owner") or "agent", "done_when": short(s.get("done_when"), 300), "closed": short(s.get("closed"), 200),
-                            "flags": flags.get(s["id"], [])})
+                            "flags": flags.get(s["id"], []),
+                            "release": rel_name, "out_of_scope": out_of_scope, "front": front_of(fields),
+                            "blocked_by": blocked_by(fields) if s["status"] in ("Blocked", "Planned", "In Progress") else None})
+    by_id = {x["ref"]: x for x in out_stories}
 
     lanes = [{"id": k, "name": k} for k in sorted({e["lane"] for e in sorted_epics})]
 
@@ -382,7 +510,8 @@ def build(root, docs=False):
     for s in stories:
         if s["status"] == "Blocked" and s["id"] not in explained:
             needs.append({"ref": s["id"], "kind": "blocked", "how": "blocked", "title": s.get("title") or s["id"],
-                          "weight": {"stories": 1, "hours": s["estimate_h"]}, "unblocks": [s["id"]], "note": words.get("nocause"), "command": None})
+                          "weight": {"stories": 1, "hours": s["estimate_h"]}, "unblocks": [s["id"]],
+                          "note": by_id[s["id"]]["blocked_by"] or words.get("nocause"), "command": None})
     needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), n["ref"]))
     planned = [{"ref": e["id"], "title": e.get("title"), "lane": e["lane"] or "main"} for e in epics if e["status"] == "Planned"][:3]
 
@@ -390,6 +519,51 @@ def build(root, docs=False):
     for entry in reversed((safe(dl.read_log, []) or [])[-RECENT:]):
         recent.append({"at": entry.get("t"), "actor": actor_kind(entry.get("actor")), "action": f"{entry.get('kind')} {entry.get('from') or '-'} -> {entry.get('to')}",
                        "ref": entry.get("id"), "text": f"{entry.get('id')}: {entry.get('from') or 'new'} -> {entry.get('to')}"})
+
+    today = datetime.datetime.now(datetime.timezone.utc).date()
+    if not recent:        # a Bootstrap without the delivery log: the `Closed:` lines still say what was finished, and when
+        closed = sorted(((closed_day(s.get("closed")), s["id"], s) for s in stories if s["status"] == "Done" and closed_day(s.get("closed"))), reverse=True)
+        recent = [{"at": d + "T00:00:00Z", "actor": None, "action": "closed", "ref": ident, "derived": True,
+                   "text": f"{ident}: closed · {short(s.get('title'), 80) or ''}"} for d, ident, s in closed[:RECENT]]
+
+    live_out = [x for x in out_stories if x["status"] != "Cancelled"]
+    est = [x for x in live_out if x["estimate_h"]]
+    hours_total = sum(x["estimate_h"] for x in est)
+    hours_done = sum(x["estimate_h"] for x in est if x["status"] == "Done")
+    hours = {"done": round(hours_done, 1), "total": round(hours_total, 1), "estimated_stories": len(est),
+             "pct": round(100 * hours_done / hours_total) if hours_total else None}
+    releases, order = {}, []
+    for x in live_out:
+        if not x["release"]:
+            continue
+        r = releases.setdefault(x["release"], {"name": x["release"], "done": 0, "total": 0, "hours_done": 0.0, "hours_total": 0.0, "scope": "out" if x["out_of_scope"] else "in"})
+        if x["release"] not in order:
+            order.append(x["release"])
+        r["total"] += 1
+        r["hours_total"] += x["estimate_h"] or 0
+        if x["status"] == "Done":
+            r["done"] += 1
+            r["hours_done"] += x["estimate_h"] or 0
+    release_rows = [dict(releases[n], hours_done=round(releases[n]["hours_done"], 1), hours_total=round(releases[n]["hours_total"], 1)) for n in order] or None
+    in_scope = None
+    if release_rows and any(r["scope"] == "out" for r in release_rows):
+        inside = [x for x in live_out if not (x["release"] and releases[x["release"]]["scope"] == "out")]
+        n_done = sum(1 for x in inside if x["status"] == "Done")
+        in_scope = {"done": n_done, "total": len(inside), "pct": round(100 * n_done / len(inside)) if inside else None,
+                    "excluded": sum(1 for x in live_out if x["release"] and releases[x["release"]]["scope"] == "out")}
+
+    def hours_since(moment):
+        try:
+            return round((datetime.datetime.now(datetime.timezone.utc) - moment).total_seconds() / 3600.0, 1)
+        except (TypeError, ValueError):
+            return None
+    working = []
+    for x in out_stories:
+        if x["status"] == "In Progress":
+            working.append({"ref": x["ref"], "title": x["title"], "epic": x["epic"], "front": x["front"], "release": x["release"],
+                            "estimate_h": x["estimate_h"], "since_h": hours_since(times.get(x["ref"], {}).get("started")) if times.get(x["ref"], {}).get("started") else None,
+                            "flags": x["flags"]})
+    working.sort(key=lambda w: (-(w["since_h"] or 0), w["ref"]))
 
     ideas = []
     try:
@@ -407,13 +581,17 @@ def build(root, docs=False):
                     "profile": safe(dl.profile_name)},
         "summary": {"progress_pct": pct, "stories_done": len(done), "stories_total": len(live_stories), "stories_blocked": sum(1 for s in live_stories if s["status"] == "Blocked"),
                     "forecast": forecast, "deadline": deadline, "on_time": report.get("fits"),
-                    "calibration": {"ratio": calibration.get("ratio"), "uncalibrated": calibration.get("uncalibrated")}},
+                    "calibration": {"ratio": calibration.get("ratio"), "uncalibrated": calibration.get("uncalibrated")},
+                    "hours": hours, "releases": release_rows, "in_scope": in_scope, "in_progress": len(working)},
         "columns": COLUMNS, "lanes": lanes, "epics": sorted_epics, "stories": out_stories,
         "next": {"proposals": nxt_props, "epics_to_approve": to_approve, "planned_epics": planned},
         "needs_you": needs,
         "repo_state": repo_state(root),
+        "working_now": working[:15], "throughput": throughput(out_stories, today),
+        "degraded": safe(lambda: dict(degraded((release.get("bootstrap") or {}).get("version")), command=at("gtt update"))),
+        "refresh": "watch" if watcher_alive() else "hook",
         "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals],
-        "health": [],
+        "health": safe(health_checks),
         "recent": recent,
         "ideas": ideas,
         "docs": safe(collect_docs) if docs else None,
@@ -539,13 +717,93 @@ def prefs():
     return read_json(PREFS) or {}
 
 
+def fingerprint():
+    """What changes when the page should change: the backlog, the pending events, the health files, the proposals,
+    the freeze and git's HEAD and index. Names, sizes and mtimes only; nothing is read."""
+    marks = []
+    for path in ("gtt-domain/backlog.md", "gtt-domain/.frozen", "gtt-domain/delivery-log.jsonl", ".git/HEAD", ".git/index"):
+        try:
+            st = os.stat(path)
+            marks.append((path, st.st_mtime_ns, st.st_size))
+        except OSError:
+            pass
+    for folder in ("gtt-domain/pending", "gtt-domain/proposals", "gtt-domain/adr", "docs/ideas", HEALTH_DIR):
+        try:
+            for entry in os.scandir(folder):
+                st = entry.stat()
+                marks.append((entry.path, st.st_mtime_ns, st.st_size))
+        except OSError:
+            pass
+    return hash(tuple(sorted(marks)))
+
+
+def cmd_watch(args):
+    """Keeps the page fresh without tokens: one watcher per project, started by the session, gone after WATCH_HOURS."""
+    root = repo_root()
+    if os.path.realpath(root) != os.path.realpath(os.getcwd()) and os.path.isdir(os.path.join(root, ".gtt")):
+        os.chdir(root)
+    if watcher_alive():
+        return 0
+    os.makedirs(LOCAL, exist_ok=True)
+    write_atomic(WATCH_PID, f"{os.getpid()} {now_utc()}\n")
+    import signal
+    stop = []
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            signal.signal(sig, lambda *_: stop.append(1))
+        except (ValueError, OSError):
+            pass
+    me = str(os.getpid())
+    deadline = time.time() + (args.hours or WATCH_HOURS) * 3600
+    seen, last = None, 0.0
+    try:
+        while not stop and time.time() < deadline:
+            if (read_text(WATCH_PID) or "").split()[:1] != [me]:
+                break                                           # another watcher took over, or the pid file was removed
+            now = fingerprint()
+            if now != seen or time.time() - last >= WATCH_BEAT:
+                subprocess.run([sys.executable, os.path.abspath(__file__), "render", "--quiet"], stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL, timeout=120)
+                seen, last = fingerprint(), time.time()
+            time.sleep(WATCH_EVERY)
+    except Exception:                                           # noqa: BLE001 - a watcher never makes noise
+        pass
+    finally:
+        if (read_text(WATCH_PID) or "").split()[:1] == [me]:
+            try:
+                os.remove(WATCH_PID)
+            except OSError:
+                pass
+    return 0
+
+
+def read_text(path):
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
+def spawn_watcher():
+    """Starts the watcher detached unless the human turned it off (or this is CI / a test)."""
+    if os.environ.get("CI") or os.environ.get("GTT_SONAR_NO_WATCH") or prefs().get("watch") is False or watcher_alive():
+        return
+    flags = {"creationflags": 0x00000008 | 0x00000200} if sys.platform == "win32" else {"start_new_session": True}
+    subprocess.Popen([sys.executable, os.path.abspath(__file__), "watch"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, cwd=os.getcwd(), **flags)
+
+
 def cmd_prefs(args):
     data = prefs()
-    if args.open_on_start:
-        data["open_on_start"] = args.open_on_start == "on"
+    if args.open_on_start or args.watch:
+        if args.open_on_start:
+            data["open_on_start"] = args.open_on_start == "on"
+        if args.watch:
+            data["watch"] = args.watch == "on"
         os.makedirs(LOCAL, exist_ok=True)
         write_atomic(PREFS, json.dumps(data, indent=2, sort_keys=True) + "\n")
-    print(f"gtt-sonar: open on session start: {'on' if data.get('open_on_start') else 'off'}")
+    print(f"gtt-sonar: open on session start: {'on' if data.get('open_on_start') else 'off'}; keep the page fresh (watcher): {'off' if data.get('watch') is False else 'on'}")
     return 0
 
 
@@ -596,6 +854,7 @@ def cmd_start(args):
             head = f"{waiting} thing(s) wait for you" if waiting else "nothing waits for you"
             tail = f" · {blocked} blocked Stor{'y' if blocked == 1 else 'ies'}" if blocked else ""
             line = f"Sonar: {head}{tail} · {uri} (also `gtt sonar`)"
+        spawn_watcher()
         if prefs().get("open_on_start"):
             open_once(uri)
         print(line)
@@ -619,8 +878,12 @@ def main(argv):
     r.set_defaults(func=cmd_render)
     st = sub.add_parser("start")
     st.set_defaults(func=cmd_start)
+    wt = sub.add_parser("watch")
+    wt.add_argument("--hours", type=float)
+    wt.set_defaults(func=cmd_watch)
     pf = sub.add_parser("prefs")
     pf.add_argument("--open-on-start", choices=["on", "off"])
+    pf.add_argument("--watch", choices=["on", "off"])
     pf.set_defaults(func=cmd_prefs)
     args = p.parse_args(argv[1:])
     return args.func(args)

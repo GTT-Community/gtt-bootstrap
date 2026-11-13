@@ -60,7 +60,8 @@ BACKLOG = """# Backlog
 """
 
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
-       "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs"}
+       "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs",
+       "working_now", "throughput", "refresh", "degraded"}
 
 
 def check(cond, label, detail=""):
@@ -230,6 +231,71 @@ def main():
         check(batch and batch[0]["command"] == f"cd '{dest}' && for e in EPIC-010 EPIC-011 EPIC-012; do gtt approve $e; done", "the batch is one command", batch[0]["command"] if batch else "")
         props = {p["ref"]: p for p in s2["next"]["proposals"]}
         check("ready-set" in props and "leftover-folder" not in props and props["ready-set"]["command"].endswith("gtt promote ready-set"), "only a promotion set that is ready to apply is offered", str(list(props)))
+
+        print("what the backlog already says: release, front, reason, hours, health, watcher")
+        facts = """# Backlog
+
+## Epics
+
+### EPIC-020 — Facts
+**Status:** In Progress
+**Goal:** facts
+**Approved:** human — 2026-11-01
+
+#### Stories
+
+##### STORY-201 — One
+- **Status:** Done
+- **Estimate:** 2h
+- **Release:** v1 · **Frente:** A
+- **Closed:** 2026-11-02 — abc1234 — tests passed
+
+##### STORY-202 — Two
+- **Status:** In Progress
+- **Estimate:** 6h
+- **Release:** v1 · **Frente:** B
+
+##### STORY-203 — Three
+- **Status:** Blocked
+- **Estimate:** 2h
+- **Release:** v1.1; rigor
+- **Blocked by:** waits for the owner's decision on the limit (2026-11-05)
+
+##### STORY-204 — Four
+- **Status:** Planned
+- **Release:** post-v1 (fuera del alcance de v1, decidido el 2026-11-10)
+- **Blocked by:** — (nothing)
+"""
+        with open(os.path.join(dest, "gtt-domain", "backlog.md"), "w", encoding="utf-8") as handle:
+            handle.write(facts)
+        os.makedirs(os.path.join(dest, ".gtt", "local", "health"), exist_ok=True)
+        with open(os.path.join(dest, ".gtt", "local", "health", "audit.json"), "w", encoding="utf-8") as handle:
+            json.dump({"title": "Audit", "status": "warn", "detail": "22 of 24 alarms closed", "at": "2020-01-01T00:00:00Z"}, handle)
+        with open(os.path.join(dest, ".gtt", "local", "health", "broken.json"), "w", encoding="utf-8") as handle:
+            handle.write("{not json")
+        _, s3 = snapshot(dest)
+        by = {x["ref"]: x for x in s3["stories"]}
+        check(by["STORY-201"]["release"] == "v1" and by["STORY-201"]["front"] == "A", "a Story carries its release and its front", str(by["STORY-201"]))
+        check(by["STORY-203"]["release"] == "v1.1", "a release name stops at the first separator", str(by["STORY-203"]["release"]))
+        check(by["STORY-203"]["blocked_by"].startswith("waits for the owner"), "a blocked Story carries the author's reason")
+        check(by["STORY-204"]["blocked_by"] is None and by["STORY-204"]["out_of_scope"] is True, "a `—` reason is no reason; `post-` is out of scope")
+        blocked = [n for n in s3["needs_you"] if n["kind"] == "blocked"]
+        check(blocked and blocked[0]["note"].startswith("waits for the owner"), "the blocked row says why, not 'no question explains it'", str(blocked))
+        sm = s3["summary"]
+        check(sm["in_scope"] == {"done": 1, "total": 3, "pct": 33, "excluded": 1}, "progress in scope leaves out what is out of scope", str(sm["in_scope"]))
+        check(sm["hours"]["done"] == 2.0 and sm["hours"]["total"] == 10.0 and sm["hours"]["pct"] == 20, "hours done over hours estimated", str(sm["hours"]))
+        check([r["name"] for r in sm["releases"]] == ["v1", "v1.1", "post-v1"], "progress by release, in order of appearance", str(sm["releases"]))
+        check([w["ref"] for w in s3["working_now"]] == ["STORY-202"] and s3["working_now"][0]["front"] == "B", "what is in progress now is listed with its front")
+        check([h["id"] for h in s3["health"]] == ["audit"] and s3["health"][0]["status"] == "warn" and s3["health"][0]["stale"] is True, "a health file is read, an unreadable one is skipped, an old one is stale", str(s3["health"]))
+        check(any(r["ref"] == "STORY-201" and r.get("derived") for r in s3["recent"]), "without a log, the `Closed` lines say what was finished")
+        check(s3["throughput"]["days"] and len(s3["throughput"]["days"]) == 14, "throughput covers fourteen days")
+        check(s3["degraded"] is None and s3["refresh"] == "hook", "a complete Bootstrap is not degraded; no watcher means refresh by hook")
+        os.remove(os.path.join(dest, ".gtt", "contract", "pending.json"))
+        _, s4 = snapshot(dest)
+        check(s4["degraded"] and "pending" in s4["degraded"]["missing"] and s4["degraded"]["command"].endswith("gtt update"), "a Bootstrap without pending events says what is missing and the act that fixes it", str(s4["degraded"]))
+        w = run(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "watch", "--hours", "0.002", env=dict(os.environ, GTT_SONAR_NO_WATCH="1"))
+        check(w.returncode == 0 and not os.path.exists(os.path.join(dest, ".gtt", "local", "sonar-watch.pid")), "the watcher renders, ends by itself and leaves no pid file", w.stderr[-200:])
+        check(os.path.isfile(os.path.join(dest, ".gtt", "local", "sonar.html")), "the watcher wrote the page")
 
         print("budget")
         started = time.time()

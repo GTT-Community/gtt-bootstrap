@@ -3413,7 +3413,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "66ea7b066369ec9f77f8b0cf8c0f74ccc890887e7aca026eca0c96e468a089cb",
+      "sha256": "bff44baea25a5b841c956f1232b61f92f87eaf52af8b8aa3915304e886e2c79a",
       "aliases": [],
       "sections": [
         {
@@ -3422,7 +3422,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 379
+          "line_end": 389
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3494,39 +3494,39 @@
           "anchor": "backlog-in-detail",
           "path": "Working inside a governed project > Backlog in detail",
           "line_start": 300,
-          "line_end": 322
+          "line_end": 332
         },
         {
           "heading": "Delivery planning",
           "level": 2,
           "anchor": "delivery-planning",
           "path": "Working inside a governed project > Delivery planning",
-          "line_start": 323,
-          "line_end": 337
+          "line_start": 333,
+          "line_end": 347
         },
         {
           "heading": "Simple execution",
           "level": 2,
           "anchor": "simple-execution",
           "path": "Working inside a governed project > Simple execution",
-          "line_start": 338,
-          "line_end": 347
+          "line_start": 348,
+          "line_end": 357
         },
         {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
-          "line_start": 348,
-          "line_end": 360
+          "line_start": 358,
+          "line_end": 370
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 361,
-          "line_end": 379
+          "line_start": 371,
+          "line_end": 389
         }
       ],
       "references": [],

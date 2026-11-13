@@ -736,7 +736,9 @@ def cmd_update(args):
                 elif sha(src) == sha(rel):
                     actions.append(("REFRESH", ade, rel, "already equals the catalog; ledger refreshed"))
                 elif sha(src) != files[rel]:
-                    actions.append(("CONFLICT", ade, rel, "modified locally and changed in the catalog"))
+                    # Yours and the catalog's both changed. GTT never merges or overwrites your file: it keeps it, applies
+                    # everything else, and leaves the catalog's version beside it to merge when you wish.
+                    actions.append(("MERGE", ade, rel, f"kept as yours; the catalog's version is saved as {rel}.gtt-new to merge by hand"))
                 else:
                     actions.append(("KEEP", ade, rel, "modified locally; catalog unchanged"))
             elif os.path.exists(rel):
@@ -771,6 +773,8 @@ def cmd_update(args):
                 files[rel] = sha(rel)
             elif kind == "REFRESH":
                 files[rel] = sha(rel)
+            elif kind == "MERGE":
+                txn.copy(os.path.join(cat, rel), rel + ".gtt-new")      # the ledger keeps your file's baseline: it stays yours
             elif kind == "STALE":
                 txn.delete(rel)
                 files.pop(rel)

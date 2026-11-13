@@ -292,6 +292,10 @@ def cmd_log(args):
                 handle.write(json.dumps(entry, sort_keys=True, ensure_ascii=False) + "\n")
     if lines or not os.path.isfile(SNAPSHOT):
         os.makedirs(os.path.dirname(SNAPSHOT), exist_ok=True)
+        ignore = os.path.join(os.path.dirname(SNAPSHOT), ".gitignore")      # what GTT keeps in .gtt/local/ is never committed
+        if not os.path.isfile(ignore):
+            with open(ignore, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write("# Local GTT state: never committed.\n*\n")
         with open(SNAPSHOT, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(json.dumps(current, sort_keys=True) + "\n")
     if lines:

@@ -311,6 +311,16 @@ are missing from the backlog, report the gap. Never invent business Epics and
 present them as user-defined requirements: a proposed Epic stays `Proposed`
 until the human approves it.
 
+**Fields Sonar reads.** A Story may carry, besides `Status`, `Estimate`, `Done when` and `Closed`: `Release:` (which
+release it belongs to: `v1`, `v1.1`; a name or note that says `post-`, `out of scope` or `deferred` leaves it out of the
+in-scope progress), `Frente:` / `Front:` / `Lane:` (the front that carries it) and `Blocked by:` (why it waits, in one
+line, in your own words; `—` means nothing). Write them as you work: Sonar shows the progress by release and by hours, what
+is in progress by front, and the reason of each blocked Story, without anyone asking in the chat.
+
+**Project health.** A check the project already runs (an audit, a pace or coverage script) can leave its result in
+`.gtt/local/health/<id>.json` as `{"title": "...", "status": "ok|warn|fail", "detail": "...", "at": "YYYY-MM-DDTHH:MM:SSZ"}`;
+Sonar only reads these files (it never runs a command of the project) and marks one older than 48 hours as out of date.
+
 An Epic is `Completed` only when every one of its Stories is `Done` or
 `Cancelled`. `.gtt/scripts/gtt-check-backlog.sh` keeps the structure sound -
 unique ids, the status vocabulary, an Epic that is `Planned`, `In Progress` or
@@ -356,7 +366,7 @@ What waits for the human is one small file per event in `gtt-domain/pending/`, a
 - **Apply it, cite it, mark it.** When an answer exists, apply it where it belongs (the backlog, the code or a proposal), cite it there, then `gtt-pending.sh done <n> --in <where> --apply`. A decision answered «ok» is marked by the engine. The next session deletes what is marked and the decisions nobody objected to in 7 days; an answered event that is not marked is never deleted. An answer never ratifies the governed design: that stays `gtt promote`.
 - **Do not stop.** With no answer, use the recommended option and keep working on everything that does not depend on it.
 - **Tell the human once.** If something is pending, end your report with `@gtt · Needs you`: print `bash .gtt/scripts/gtt-pending.sh notice --report` (it prints nothing the second time in a turn). A decision shows as «For your information».
-- **Sonar shows the rest; the chat does not repeat it.** `gtt sonar` draws everything that waits for the human (questions with one command per option, Stories that are `Blocked`, Epics to approve) from the files, at no token cost. So: (1) whatever waits for the human is recorded where Sonar reads it, never only in the chat: a decision or a key as an event (`--blocks STORY-NNN` when it holds a Story), a Story that cannot continue as `Blocked` in the backlog; (2) after the batch has been shown once, do not list or tabulate pending items again in later reports: say in one line that `gtt sonar` has them; (3) never build a table of what the human owes in the chat; (4) the session context carries a `## Sonar` line: say it once, in your first report, as it reads (it tells where the page is and how many things wait), never again. This changes where the information lives, not who decides: Sonar only copies commands, and the answer stays the human's.
+- **Sonar shows the rest; the chat does not repeat it.** `gtt sonar` draws everything that waits for the human (questions with one command per option, Stories that are `Blocked`, Epics to approve) from the files, at no token cost. So: (1) whatever waits for the human is recorded where Sonar reads it, never only in the chat: a decision or a key as an event (`--blocks STORY-NNN` when it holds a Story), a Story that cannot continue as `Blocked` in the backlog; (2) after the batch has been shown once, do not list or tabulate pending items again in later reports: say in one line that `gtt sonar` has them; (3) never build a table of what the human owes in the chat; (4) a decision the human owes is an event the moment it appears, not a line in a later summary: what lives only in the conversation Sonar cannot show and the next session loses; (5) the session context carries a `## Sonar` line: say it once, in your first report, as it reads (it tells where the page is and how many things wait), never again. This changes where the information lives, not who decides: Sonar only copies commands, and the answer stays the human's.
 
 ## Agent roles and the evidence boundary
 
