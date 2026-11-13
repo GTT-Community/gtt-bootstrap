@@ -395,6 +395,17 @@ def check_contracts():
         for op_id, op in operations.items():
             if op.get("human_authority") and op_id not in covered:
                 add(f"operation `{op_id}` is a human act but .gtt/tests/human-acts.py does not cover it")
+    # A8: every human act is refused to an agent by the protection hook (the decision core)
+    try:
+        import gtt_protect
+    except ImportError:
+        gtt_protect = None
+    if gtt_protect is not None:
+        for op_id, op in operations.items():
+            if op.get("human_authority"):
+                command = "bash " + op["implementation"] + " " + " ".join(op["argv"]) + " X --apply"
+                if gtt_protect.decide_units(os.getcwd(), command) is None:
+                    add(f"operation `{op_id}` is a human act but the protection hook (.claude/hooks/protect-l0.py, .gtt/scripts/gtt_protect.py) does not deny an agent running it")
     # capabilities
     seen = set()
     for cap in caps["capabilities"]:

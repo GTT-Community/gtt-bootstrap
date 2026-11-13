@@ -6,6 +6,7 @@
 - Date: YYYY-MM-DD
 - Approved by:
 - Supersedes:
+- Origin: <PROP-NNN or IDEA-NNN that led to this decision, if any>
 
 ## Context
 

@@ -12,7 +12,7 @@ or a conversation:
         decide, the last validation and the next step - in at most 12 lines
   gtt_flow.py state
         a hash of the working state, for the validation cache and the checkpoint
-  gtt_flow.py stage NAME --reason TEXT SRC=DEST ...
+  gtt_flow.py stage NAME --reason TEXT [--origin PROP-n|IDEA-n] SRC=DEST ...
         prepare a promotion set under gtt-domain/proposals/staged/NAME/ (an agent may run this)
   gtt_flow.py promote NAME | promote --undo NAME
         apply a staged set, all or nothing, after the human types `apply` (the human runs this)
@@ -47,7 +47,7 @@ BACKLOG = "gtt-domain/backlog.md"
 LEDGER = "gtt-domain/governance-backlog.json"
 PROPOSALS = "gtt-domain/proposals"
 STAGED = "gtt-domain/proposals/staged"
-CHANGE_REQUEST = "gtt-domain/change-request.md"
+CHANGE_REQUEST = "gtt-domain/change-request.md"      # the retired 1.22 desk: read only to point at `gtt-inbox.sh migrate`
 STACK = "gtt-domain/context/stack.md"
 REGISTRY = ".gtt/protection/registry.yaml"
 LOCAL = ".gtt/local"
@@ -353,7 +353,7 @@ def review_facts():
         decide.append({"id": os.path.basename(path)[:-3], "level": "PROPOSAL", "what": f"proposal {os.path.basename(path)[:-3]}", "command": f"read {path}"})
     request = read(CHANGE_REQUEST)
     if request and not re.search(r"^Change: <", request, re.MULTILINE):
-        decide.append({"id": "change-request", "level": "REQUEST", "what": "a change request is waiting", "command": f"read {CHANGE_REQUEST}"})
+        decide.append({"id": "change-request", "level": "REQUEST", "what": f"a 1.22 change request is still in {CHANGE_REQUEST}", "command": "bash .gtt/scripts/gtt-inbox.sh migrate --apply"})
     try:                                    # the questions waiting in gtt-domain/pending/ are the human's too
         import gtt_pending
         for ask in gtt_pending.summary()["asks"]:
@@ -487,26 +487,107 @@ def inside(path):
     return None if os.path.isabs(path) or norm.startswith("../") or norm in ("..", ".") else norm
 
 
+UNDONE = ".gtt/local/promote-undone"
+
+
+def origin_problem(ref):
+    """(entry, c, problem): the inbox entry a set is armed for, or why it cannot be. Needs the stage `accepted` (T14)
+    or `ratify` (T17: the package is redone)."""
+    import gtt_inbox
+    c = gtt_inbox.contract()
+    canon = gtt_inbox.canon_ref(ref)
+    if not canon:
+        return None, c, f"--origin is IDEA-n or PROP-n (not `{ref}`); `legacy` is written only by the migration."
+    path = gtt_inbox.path_of(canon, c)
+    if not path:
+        return None, c, f"{canon} does not exist (gtt-inbox.sh list shows the entries)."
+    e = gtt_inbox.load(path, c)
+    if e["stage"] not in ("accepted", "ratify"):
+        names = gtt_inbox.LB(c)["stage"]
+        return e, c, (f"{canon} stands as `{names[e['stage']]}`: a package is armed only for an entry the human accepted "
+                      f"(`{names['accepted']}`), or one already packaged (T14/T17). Nothing was staged.")
+    if e["kind"] == "IDEA":
+        live = [p for p in gtt_inbox.entries(c) if p["kind"] == "PROP" and p["origin"] == e["ref"] and p["stage"] in ("accepted", "ratify")]
+        if live:
+            return e, c, f"{canon} is the idea of {live[0]['ref']}: arm the package with --origin {live[0]['ref']}."
+    return e, c, None
+
+
+def with_origin(text, origin):
+    """The ADR text with its `- Origin:` line pointing at the entry that led to it (written once, never a placeholder)."""
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if re.match(r"^[-*]\s*Origin\s*:", line, re.IGNORECASE):
+            value = line.split(":", 1)[1].strip()
+            if not value or re.fullmatch(r"<[^<>]*>.*", value):
+                lines[index] = f"- Origin: {origin}"
+            return "\n".join(lines)
+    at = next((i for i, l in enumerate(lines) if re.match(r"^[-*]\s*(Status|Supersedes|Approved by|Date)\s*:", l, re.IGNORECASE)), None)
+    if at is None:
+        return text
+    last = max(i for i, l in enumerate(lines) if re.match(r"^[-*]\s*[A-Za-z ]+:", l) and i >= at and i - at < 8)
+    lines.insert(last + 1, f"- Origin: {origin}")
+    return "\n".join(lines)
+
+
 def cmd_stage(args):
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", args.name):
         print("gtt-stage: the set name may hold letters, digits, dot, dash and underscore.", file=sys.stderr)
         return 2
     folder = os.path.join(STAGED, args.name)
-    files = []
+    pairs = []
     for pair in args.pairs:
         source, sep, dest = pair.partition("=")
         dest = inside(dest) if sep else None
         if not dest or not os.path.isfile(source):
             print(f"gtt-stage: `{pair}` must be SRC=DEST, with SRC an existing file and DEST a path inside the project.", file=sys.stderr)
             return 2
+        pairs.append((source, dest))
+    governed = any(dest.startswith(GOVERNED_DIRS) for _, dest in pairs)
+    origin, entry_ = args.origin, None
+    if os.path.isfile(FROZEN) and governed and not origin:
+        print("gtt-stage: after the freeze a set that touches gtt-domain/context/ or gtt-domain/adr/ is armed for an entry the human accepted: "
+              "add `--origin PROP-n` (or IDEA-n for an architect's ADR draft). Only a set of the instruction plane (AGENTS.md) goes without. "
+              "Nothing was staged.", file=sys.stderr)
+        return 1
+    if origin:
+        entry_, ic, problem = origin_problem(origin)
+        if problem:
+            print(f"gtt-stage: {problem}", file=sys.stderr)
+            return 1
+        origin = entry_["ref"]
+    files = []
+    for source, dest in pairs:
         staged = dest.replace("/", "__") + ".staged"
         os.makedirs(folder, exist_ok=True)
-        if os.path.abspath(source) != os.path.abspath(os.path.join(folder, staged)):
-            shutil.copyfile(source, os.path.join(folder, staged))
+        target = os.path.join(folder, staged)
+        if origin and re.match(r"^gtt-domain/adr/ADR-\d+.*\.md$", dest):
+            text = read(source) or ""
+            with open(target, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(with_origin(text, origin))
+        elif os.path.abspath(source) != os.path.abspath(target):
+            shutil.copyfile(source, target)
         files.append({"from": staged, "to": dest, "sha_before": sha256(dest)})
+    record = {"schema": 1, "name": args.name, "reason": args.reason.strip().splitlines()[0], "files": files}
+    if origin:
+        import gtt_inbox
+        record["origin"] = origin
+        record["origin_sha"] = gtt_inbox.sha_of(entry_["body"])
     with open(os.path.join(folder, "promote.json"), "w", encoding="utf-8", newline="\n") as handle:
-        json.dump({"schema": 1, "name": args.name, "reason": args.reason.strip().splitlines()[0], "files": files}, handle, indent=2)
+        json.dump(record, handle, indent=2)
         handle.write("\n")
+    try:
+        os.remove(os.path.join(UNDONE, args.name + ".json"))       # a set staged again is not an undone one
+    except OSError:
+        pass
+    if origin:
+        import gtt_inbox
+        L = gtt_inbox.LB(ic)
+        if entry_["stage"] == "accepted":
+            names = ", ".join(os.path.basename(d) for _, d in pairs[:4]) + (" ..." if len(pairs) > 4 else "")
+            gtt_inbox.add_line(entry_, ic, "package", f"{args.name} + {names}", "agent")
+        else:
+            gtt_inbox.add_line(entry_, ic, "package", f"{args.name} ({L['phrase']['package_redone']})", "agent")
     print(f"gtt-stage: {len(files)} file(s) staged in {folder}/. Nothing was applied.")
     print(f"Hand it over with: bash .gtt/scripts/gtt-handoff.sh promote {args.name}   (show its output, nothing more)")
     return 0
@@ -547,6 +628,10 @@ def restore(name, quiet=False):
         elif os.path.isfile(entry["to"]):
             os.remove(entry["to"])
     shutil.rmtree(folder, ignore_errors=True)
+    if record.get("origin"):           # what `inbox reconcile` reads to bring the entry back to `accepted` (T16)
+        os.makedirs(UNDONE, exist_ok=True)
+        with open(os.path.join(UNDONE, name + ".json"), "w", encoding="utf-8", newline="\n") as handle:
+            json.dump({"name": name, "origin": record["origin"], "at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}, handle)
     if not quiet:
         print(f"gtt-promote: `{name}` undone - {len(record['files'])} file(s) back to what they were. Nothing was staged or committed.")
     return 0
@@ -680,6 +765,8 @@ def cmd_promote(args):
     os.makedirs(backup)
     record = {"schema": 1, "name": args.name, "at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
               "froze": False, "files": []}
+    if spec.get("origin"):
+        record["origin"] = spec["origin"]
     for number, entry in enumerate(spec["files"]):
         existed = os.path.isfile(entry["to"])
         if existed:
@@ -696,7 +783,7 @@ def cmd_promote(args):
             shutil.copyfile(os.path.join(folder, entry["from"]), entry["to"])
             if mode is not None:
                 os.chmod(entry["to"], mode)
-        if change_id and not log_change(change_id, spec.get("reason", "")):
+        if change_id and not log_change(change_id, spec.get("reason", "") + (f" ({spec['origin']})" if str(spec.get("origin", "")).startswith("PROP-") else "")):
             raise OSError(f"{STACK} has no map change log (section 6) to record {change_id} in")
     except OSError as error:
         restore(args.name, quiet=True)
@@ -729,6 +816,10 @@ def cmd_promote(args):
     with open(os.path.join(backup, "backup.json"), "w", encoding="utf-8") as handle:
         json.dump(record, handle, indent=2)
     shutil.rmtree(folder, ignore_errors=True)
+    try:
+        os.remove(os.path.join(UNDONE, args.name + ".json"))
+    except OSError:
+        pass
     if os.path.isdir(STAGED) and not os.listdir(STAGED):
         os.rmdir(STAGED)
     print(f"Applied {len(spec['files'])} file(s). Nothing was staged or committed.")
@@ -849,7 +940,7 @@ def main(argv):
     p = sub.add_parser("review"); p.add_argument("--files", action="store_true"); p.add_argument("--json", action="store_true")
     p.add_argument("--gate", action="store_true"); p.set_defaults(func=cmd_review)
     p = sub.add_parser("state"); p.set_defaults(func=cmd_state)
-    p = sub.add_parser("stage"); p.add_argument("name"); p.add_argument("--reason", required=True); p.add_argument("pairs", nargs="+"); p.set_defaults(func=cmd_stage)
+    p = sub.add_parser("stage"); p.add_argument("name"); p.add_argument("--reason", required=True); p.add_argument("--origin"); p.add_argument("pairs", nargs="+"); p.set_defaults(func=cmd_stage)
     p = sub.add_parser("promote"); p.add_argument("--undo", action="store_true"); p.add_argument("name")
     p.add_argument("--confirmed", action="store_true", help="the human already confirmed through the CLI; no prompt")
     p.add_argument("--non-interactive", action="store_true", help="show the set and its diff without asking; with --confirmed, apply it")

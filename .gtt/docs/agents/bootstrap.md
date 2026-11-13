@@ -48,7 +48,6 @@ The GTT bootstrap contract is:
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
 │   ├── working-agreements.md     #   team working agreements (optional; below L0, never authority)
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   ├── governance-backlog.json   #   observations and the human decisions on them (gtt-observe.sh)
 │   └── .frozen                   #   freeze marker and governance baseline, written by gtt-freeze.sh
@@ -62,7 +61,7 @@ The scaffold has two homes and its ADE overlays, and the layout keeps them apart
 | Part | Where | Contents |
 |---|---|---|
 | GTT Engine | `.gtt/` | scripts, artifact identity and technical index, protection registry, session-adapter declarations, the scaffold manifest, and GTT's own documentation (`.gtt/docs/`) |
-| Governed domain | `gtt-domain/` | `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` |
+| Governed domain | `gtt-domain/` | `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`, `.frozen` |
 | ADE Overlay | `.claude/`, `.kiro/`, `.github/instructions/`, and GTT's own files under `.cursor/`, `.agents/` and `.openhands/` | the integration of every participating ADE (one Primary; see *Multi-ADE participation*) |
 
 `.gtt/scaffold/manifest.yaml` is the single, declarative definition of this
@@ -126,7 +125,6 @@ When an agent installs/bootstraps GTT into a **host project**, it MUST organize 
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
 │   ├── working-agreements.md     #   team working agreements (optional; below L0, never authority)
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   ├── governance-backlog.json   #   observations and the human decisions on them (gtt-observe.sh)
 │   └── .frozen                   #   freeze marker and governance baseline, written by gtt-freeze.sh
@@ -137,7 +135,7 @@ When an agent installs/bootstraps GTT into a **host project**, it MUST organize 
 
 `.gtt/` is the GTT Engine (with GTT's own documentation in `.gtt/docs/`) and
 `gtt-domain/` is the governed domain (`context/`, `adr/`, `proposals/`,
-`backlog.md`, `change-request.md`, `session.md`, `.frozen`). Each
+`backlog.md`, `session.md`, `.frozen`). Each
 artifact is generated directly at its place in the scaffold, never written
 elsewhere and moved afterward.
 
@@ -184,7 +182,7 @@ The agent MUST:
 5. Install the portable core plus only the overlays of the participating ADEs — `bash .gtt/scripts/gtt-ade.sh install --from <catalog> --participating a,b --primary a`, a dry run first and then `--apply` — and explicitly exclude the others; the source repository is a catalog, not a package to install whole.
 6. Create/organize the GTT scaffold as defined above and declared in `.gtt/scaffold/manifest.yaml`.
 7. Keep `AGENTS.md`, `readme-gtt.md`, and `readme-gtt.es.md` at the host-project root.
-8. Write `gtt-domain/change-request.md` and `gtt-domain/backlog.md` under `gtt-domain/` and `index.md` and `gtt-completion.md` under `.gtt/docs/` — directly, never generated elsewhere and then moved.
+8. Write `gtt-domain/backlog.md` under `gtt-domain/` and `index.md` and `gtt-completion.md` under `.gtt/docs/` — directly, never generated elsewhere and then moved.
 9. Install the project-facing README at `.gtt/README.md`, keep the Engine directories (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`, `docs/`) under `.gtt/`, and place `context/`, `adr/`, `proposals/` and the derived and state files under `gtt-domain/`.
 10. Preserve the original design/source brief (`SOURCE-BRIEF.*`) in the host project according to the GTT bootstrap procedure.
 11. Never move, rename, duplicate, redistribute, or silently overwrite an existing host-project file.

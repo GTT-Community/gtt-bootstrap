@@ -10,7 +10,18 @@
   "threshold": "Settle simple, reversible questions yourself: take the simplest option and continue. Ask the human only decisions that are theirs (account, key, money, legal, product, governed file) and that governed context cannot settle. Tell them a decision only when it changes scope, time, cost, security or the design. Questions reach the human in the chat, as one batch of up to four, each in the form of its event (the topic, the question, numbered options each with what you will do, the recommended one first): run `gtt-pending.sh show` and show its output. The event file is the silent record, one per event, written only through gtt-pending.sh: do not announce files; mention one only for a proposal or something to review outside the chat. Plain words, one idea per line. With no answer, use the recommended option. Apply each answer where it belongs, then mark it with `done`. Open a batch with `@gtt · Needs you (N)`. Never write the human's answer.",
   "kinds": {
     "ASK": { "labels": { "en": "Question", "es": "Pregunta" } },
-    "DEC": { "labels": { "en": "Decision", "es": "Decisión" } }
+    "DEC": { "labels": { "en": "Decision", "es": "Decisión" } },
+    "REV": { "labels": { "en": "Review", "es": "Revisión" } }
+  },
+  "rev": {
+    "no_default": true,
+    "excluded_from_ok": true,
+    "options": { "max": 5 },
+    "max_lines": 16,
+    "max_chars": 160,
+    "reminder_hours": 24,
+    "max_open": 4,
+    "note": "A review (REV) is one decision on an inbox entry (a PROP or an architect's ADR draft). It never resolves itself: there is no default and no 7 days of silence, `gtt answer ok` is for decisions only, and it keeps the sha256 of the entry it was opened on, so an answer is refused if the entry changed. It is written only by the inbox engine, through this one; the answer reaches the entry and its idea through the engine. The text of its options is inbox.json -> labels."
   },
   "ask_types": [
     { "id": "account", "en": "account", "es": "cuenta" },
@@ -40,7 +51,7 @@
   },
   "necessity": {
     "requires_blocks": ["product", "governed"],
-    "note": "A question is asked only when something cannot continue without the answer. Account, key, money and legal questions are always the human's; a product or governed one must name the Story or Epic it blocks, or the agent settles it with the recommended option."
+    "note": "A question is asked only when something cannot continue without the answer. Account, key, money and legal questions are always the human's; a product or governed one must name the Story or Epic it blocks, or the agent settles it with the recommended option. A review (REV) does not need to block a Story: it waits, weighs by the hours it would add, and is reminded every reminder_hours."
   },
   "retention": {
     "unanswered_decision_days": 7,
@@ -63,13 +74,15 @@
       "type": "Type", "topic": "Topic", "other": "Something else: write it in «Answer»", "chat": "Talk about it in the chat: say «let's talk»", "blocks": "Blocks", "created": "Created", "affects": "Affects", "why_matters": "Why it matters",
       "decided": "What I decided", "reason": "Why", "where": "Where it landed", "until": "Until you answer",
       "answer": "Answer", "answer_hint": "(ok, or tell me what to change)", "attended": "Attended", "option": "option",
-      "landed": "applied in", "recommended": "recommended", "nothing": "nothing", "option_word": "option"
+      "landed": "applied in", "recommended": "recommended", "nothing": "nothing", "option_word": "option",
+      "level": "Level", "route": "Route", "for": "For", "sha": "sha", "recommended_rev": "recommended"
     },
     "es": {
       "type": "Tipo", "topic": "Tema", "other": "Otra respuesta: escríbela en «Respuesta»", "chat": "Hablarlo en el chat: dime «hablemos»", "blocks": "Bloquea", "created": "Creada", "affects": "Afecta", "why_matters": "Por qué importa",
       "decided": "Qué decidí", "reason": "Por qué", "where": "Dónde quedó", "until": "Mientras no respondas",
       "answer": "Respuesta", "answer_hint": "(ok, o dime qué cambiar)", "attended": "Atendida", "option": "opción",
-      "landed": "quedó en", "recommended": "recomendada", "nothing": "nada", "option_word": "opción"
+      "landed": "quedó en", "recommended": "recomendada", "nothing": "nada", "option_word": "opción",
+      "level": "Nivel", "route": "Ruta", "for": "Para", "sha": "sha", "recommended_rev": "recomendado"
     }
   },
   "message": {
@@ -78,14 +91,16 @@
       "tail": "Answer here in the chat, or with gtt answer", "tail_fyi": "Say «ok» or tell me what to change",
       "applied": "Answered, not applied yet", "cleaned": "removed {n} attended or expired event(s)",
       "nothing": "Nothing pending.",
-      "batch_tail": "Answer each one with its number (e.g. «14: 1, 15: 2»), or write what you prefer."
+      "batch_tail": "Answer each one with its number (e.g. «14: 1, 15: 2»), or write what you prefer.",
+      "review_tail": "A review is answered with an option number only: «15: 1» here, or gtt answer 15 1; for anything else, say it and the agent will propose again."
     },
     "es": {
       "needs": "Te necesito", "fyi": "Para que sepas", "recommend": "recomiendo", "blocks": "bloquea",
       "tail": "Responde aquí en el chat, o con gtt answer", "tail_fyi": "Dime «ok» o qué cambiar",
       "applied": "Respondida, falta aplicar", "cleaned": "borré {n} evento(s) atendido(s) o vencido(s)",
       "nothing": "Nada pendiente.",
-      "batch_tail": "Responde cada una con su número (p. ej. «14: 1, 15: 2»), o escribe lo que prefieras."
+      "batch_tail": "Responde cada una con su número (p. ej. «14: 1, 15: 2»), o escribe lo que prefieras.",
+      "review_tail": "Una revisión se responde solo con el número de una opción: «15: 1» aquí, o gtt answer 15 1; para otra cosa, dilo y el agente propondrá de nuevo."
     }
   },
   "rules": [
@@ -96,6 +111,7 @@
     { "id": "PEN-05", "level": "fail", "statement": "an answer never looks like a key; a key goes in .env.local" },
     { "id": "PEN-06", "level": "fail", "statement": "the name, the number and the heading of an event agree, and no number repeats" },
     { "id": "PEN-08", "level": "fail", "statement": "a question is necessary: a product or governed question names the Story or Epic it blocks, no question repeats an open one, and at most max_open_asks questions are open at once (answer those first)" },
+    { "id": "PEN-09", "level": "fail", "statement": "a review (REV) names its entry, carries the sha256 of it, has 2 to 5 numbered options each with a one-line description, exactly one recommended, no closing lines, and at most rev.max_lines lines of rev.max_chars characters" },
     { "id": "PEN-07", "level": "warn", "statement": "an answered event that nobody marked is waiting to be applied" }
   ]
 }

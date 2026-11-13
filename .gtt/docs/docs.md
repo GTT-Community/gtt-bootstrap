@@ -83,7 +83,7 @@ governed territory, since L3 stays free by design.
 | The stack and architecture map | `gtt-domain/context/stack.md` | when the task needs it |
 | Architecture prose, vision, principles | `gtt-domain/context/` | when the task needs them |
 | Accepted decisions | `gtt-domain/adr/` | when the task needs them |
-| Change requests | `gtt-domain/change-request.md` | never |
+| The inbox (ideas and requests) | `docs/ideas/IDEA-NNN.md` | never |
 | Agent drafts awaiting review | `gtt-domain/proposals/` | never |
 | GTTGuard protection registry (derived, never hand-edited) | `.gtt/protection/registry.yaml` | never |
 | Session state (derived, never hand-edited) | `gtt-domain/session.md` | never |
@@ -101,7 +101,7 @@ GTT-Method separates **how the method works** from **what the method is applied 
 | | `.gtt/` — the Engine | `gtt-domain/` — the domain |
 |---|---|---|
 | Is | GTT-Method's own machinery and its documentation, plus the state it derives — none of it is architectural authority | GTT-Method's definition of the project or domain it governs |
-| Holds | `index/`, `protection/`, `scaffold/`, `scripts/`, `session-adapters/`, `.gtt/docs/` | `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` |
+| Holds | `index/`, `protection/`, `scaffold/`, `scripts/`, `session-adapters/`, `.gtt/docs/` | `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` |
 | Answers | *How do identity, protection, validation and session memory work, and how is GTT used?* | *What is this system, what was decided, and what may change?* |
 
 GTT's own documentation (this file, the installation and usage guides, the evidence and completion
@@ -140,7 +140,7 @@ therefore has exactly one entry point for change, and it is a plain markdown
 file that is always in the same place.
 
 ```
-gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  Designer reviews + runs script  ->  gtt-domain/adr/ + gtt-domain/context/
+docs/ideas/IDEA-NNN.md  ->  PROP-NNN + REV  ->  Designer reviews + runs script  ->  gtt-domain/adr/ + gtt-domain/context/
      Designer states          agent drafts a           gtt-promote.sh ADR-NNN-*          applied
      intent, 4 lines          promotion package
 ```
@@ -402,7 +402,7 @@ writes the marker only once L0 is real. From that point the project is
 governed and those paths are read-only for agents again.
 
 Governance machinery — `AGENTS.md`, `.claude/settings.json`, `.claude/hooks/`,
-`gtt-domain/change-request.md`, the Kiro equivalents, and the marker itself — has no
+the Kiro equivalents, and the marker itself — has no
 regime exception. It is denied in both regimes, always: an agent never drafts
 its own directives or its own enforcement.
 
@@ -531,7 +531,7 @@ and `Proposed` Stories are treated as `Planned`.
 **Why not just another ADR-governed file?** An ADR records a decision that,
 once made, rarely changes shape again. A Story is expected to move through
 statuses constantly as normal work happens — routing every status flip
-through `gtt-domain/change-request.md` would make the backlog too expensive to keep
+through the inbox would make the backlog too expensive to keep
 current, and a stale backlog is worse than no backlog (same failure mode as
 stale context). The bar is calibrated to what actually needs a human
 decision: *what* the project commits to building, not *how far along* it is.
@@ -614,8 +614,7 @@ reuses the existing proposal mechanism, nothing heavier.
 
 `.gtt/scripts/gtt-status.sh` derives a deterministic snapshot from
 repository artifacts — freeze state, Stories currently
-`In Progress`/`Blocked`, pending files under `gtt-domain/proposals/`, whether
-`gtt-domain/change-request.md` has been filled in, every ADR and its status, and
+`In Progress`/`Blocked`, pending files under `gtt-domain/proposals/`, what waits in the inbox, every ADR and its status, and
 the GTTGuard protected-artifact count, artifact identity/index health, and
 repository resume hints (branch, uncommitted count, recent commits) — and writes it to `gtt-domain/session.md`.
 That file is a **derived artifact**, the same trust model as

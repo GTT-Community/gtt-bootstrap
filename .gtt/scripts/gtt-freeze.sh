@@ -51,7 +51,7 @@ while IFS= read -r f; do
   if [ "$CHECK" -eq 1 ]; then added+=("$f"); continue; fi
   awk -v ref="$CANON_REF" 'NR==1 && /^# /{print; print ""; print ref; next} NR==1{print ref; print ""} {print}' "$f" > "$f.gtt-tmp" \
     && mv "$f.gtt-tmp" "$f" && added+=("$f")
-done < <(find "$CTX" gtt-domain/adr -name '*.md' 2>/dev/null | sort)
+done < <(find "$CTX" gtt-domain/adr -path gtt-domain/adr/drafts -prune -o -name '*.md' -print 2>/dev/null | sort)
 if [ "${#added[@]}" -gt 0 ]; then
   if [ "$CHECK" -eq 1 ]; then
     echo "gtt-freeze: the freeze will add the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
@@ -282,7 +282,7 @@ else
 gtt-freeze: DONE
 
 The design is now the authority: gtt-domain/context/ and gtt-domain/adr/ change
-only through gtt-domain/change-request.md -> gtt-domain/proposals/ -> you apply
+only through the inbox (gtt idea add -> a proposal in gtt-domain/proposals/) -> you apply
 -> a new freeze. The implementation stays free: the ADE works on its own inside
 these boundaries and GTT observes (bash .gtt/scripts/gtt-observe.sh observe).
 

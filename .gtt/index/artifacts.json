@@ -50,6 +50,14 @@
       "aliases": []
     },
     {
+      "id": "ART-GTT-DOMAIN-ADR-DRAFTS-README",
+      "type": "documentation",
+      "path": "gtt-domain/adr/drafts/README.md",
+      "status": "active",
+      "history": [],
+      "aliases": []
+    },
+    {
       "id": "ART-GTT-DOMAIN-PENDING-README",
       "type": "documentation",
       "path": "gtt-domain/pending/README.md",
@@ -165,7 +173,7 @@
       "id": "CHANGE-REQUEST",
       "type": "change-request",
       "path": "gtt-domain/change-request.md",
-      "status": "active",
+      "status": "retired",
       "history": [],
       "aliases": []
     },

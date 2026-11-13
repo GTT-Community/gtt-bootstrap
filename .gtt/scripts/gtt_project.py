@@ -7,7 +7,8 @@ actual project (never from an agent's recollection, never authority):
   detect                     project detection: GTT state, layout, freeze, design-source candidates
   elicitation [--next-action] Initial Design Questionnaire state (absent|pending|in-progress|complete), read-only
   think-plan [skip <step>]   the THINK stage as ordered steps computed from the files; --gate fails when context or Epics came first
-  next-action [--json]       what GTT is waiting on: an open questionnaire, then a change request to process
+  next-action [--json] [--session-start]  what GTT is waiting on: THINK, the questionnaire, the inbox (at once or at a cut point), the design
+  inbox-line                 `Bandeja: n nuevas · n en revisión · n por ratificar` for session.md
   status [--with-validation] structured status: bootstrap, ade, methodology, sources, governance, freeze, validation, session
   session                    structured session context (freeze, change request, proposals, git, operational state, artifacts)
   validation                 gtt-validate.sh as one structured result
@@ -667,9 +668,98 @@ def cmd_elicitation(args):
     return 0
 
 
-def next_action():
-    """What GTT is waiting on, or None: an open Initial Design Questionnaire first, then a change request the
-    human asked to have processed, then - in an installed project with no design yet - the design itself.
+def inbox_state():
+    """The inbox as the session sees it: counts for the status line and the refs that wait on the agent. None when this
+    Bootstrap carries no inbox. Computed from the files (gtt_inbox), never stored."""
+    try:
+        import gtt_inbox
+        import gtt_pending
+        c = gtt_inbox.contract()
+        items = gtt_inbox.entries(c)
+        asks_open = {r["id"] for r in gtt_pending.summary()["asks"]}
+    except (Exception, SystemExit):
+        return None
+    out = {"new": [], "now": [], "accepted": [], "urgent": [], "review": 0, "ratify": 0}
+    for e in items:
+        last_state = next((l for l in reversed(e["trail"]) if l["key"] not in ("priority",)), None)
+        mirrored = bool(last_state and gtt_inbox.MIRROR.search(last_state["value"]))
+        if e["stage"] == "new":
+            waiting = next((l for l in reversed(e["trail"]) if l["key"] == "triage"), None)
+            if waiting and last_state is waiting and gtt_inbox.triage_info(waiting["value"], c)["result"] == "ask":
+                ref = (gtt_inbox.triage_info(waiting["value"], c)["to"] or "")
+                if ref in asks_open:
+                    continue                                # the agent asked; the human has not answered yet
+            out["new"].append(e["ref"])
+            if e["now"]:
+                out["now"].append(e["ref"])
+        elif e["stage"] == "accepted" and e["kind"] == "PROP":
+            out["accepted"].append(e["ref"])
+            if e["priority"] == "urgent":
+                out["urgent"].append(e["ref"])
+        elif e["stage"] in ("review", "ratify") and not (e["kind"] == "IDEA" and mirrored):
+            out[e["stage"]] += 1
+    return out
+
+
+def inbox_line(triage_only=False):
+    """`Bandeja: n nuevas · n en revisión · n por ratificar` (the session's one line), or "" when the inbox is empty.
+    With triage_only, `Bandeja: n sin triage` (the notice when a Story closes), or "" when none waits."""
+    state = inbox_state()
+    if triage_only:
+        if not state or not state["new"]:
+            return ""
+        return (f"Bandeja: {len(state['new'])} sin triage" if (read_json(METHOD) or {}).get("language") == "es"
+                else f"Inbox: {len(state['new'])} without triage")
+    if not state or not (state["new"] or state["review"] or state["ratify"]):
+        return ""
+    if (read_json(METHOD) or {}).get("language") == "es":
+        return f"Bandeja: {len(state['new'])} nuevas · {state['review']} en revisión · {state['ratify']} por ratificar"
+    return f"Inbox: {len(state['new'])} new · {state['review']} in review · {state['ratify']} to ratify"
+
+
+def at_cut_point(session_start):
+    """The inbox is triaged at a cut point: when a session starts, or when no Story is In Progress, so a triage never
+    interrupts one."""
+    return bool(session_start) or os.environ.get("GTT_SESSION_START") == "1" or not stories("In Progress")
+
+
+def inbox_work(session_start=False):
+    """The next action the inbox asks for, or None. An entry written with --now, or an accepted urgent one, is the first
+    answer; the rest waits for a cut point."""
+    state = inbox_state()
+    if not state:
+        return None
+    spanish = ((read_json(METHOD) or {}).get("language") == "es")
+    urgent = state["now"] + [r for r in state["urgent"] if r not in state["now"]]
+    if urgent:
+        refs = urgent
+    elif at_cut_point(session_start):
+        refs = state["new"] + state["accepted"]
+    else:
+        return None
+    if not refs:
+        return None
+    waiting_new = [r for r in refs if r in state["new"]]
+    waiting_pkg = [r for r in refs if r in state["accepted"]]
+    parts = []
+    if waiting_new:
+        parts.append(f"triage {', '.join(waiting_new[:6])}" + (" and more" if len(waiting_new) > 6 else "") +
+                     " (skill gtt-propose-change, section Triage; `bash .gtt/scripts/gtt-inbox.sh list`)")
+    if waiting_pkg:
+        parts.append(f"prepare the package of {', '.join(waiting_pkg[:6])} (accepted: skill gtt-propose-change)")
+    text = (f"Inbox waits on you: {'; '.join(parts)}. Do it on the user's first message, whatever it says"
+            f"{' - the entry is urgent or was written with --now' if urgent else ''}; it decides nothing, the human ratifies.")
+    human = (f"Abre el proyecto en el ADE principal y escribe cualquier cosa: su primera respuesta atiende la bandeja ({', '.join(refs[:4])}). "
+             "Síguela con: gtt status" if spanish else
+             f"Open the project in the Primary ADE and write anything: its first answer works the inbox ({', '.join(refs[:4])}). "
+             "Follow it with: gtt status")
+    return {"kind": "inbox", "text": text, "human": human, "refs": refs}
+
+
+def next_action(session_start=False):
+    """What GTT is waiting on, or None: THINK, an open Initial Design Questionnaire, then the inbox (an entry with
+    --now or an urgent accepted one at once; the rest at a cut point), then - in an installed project with no design
+    yet - the design itself.
     `text` is the agent's instruction; `human` is what the person does next.
     Computed, never a decision."""
     plan = think_plan()
@@ -689,36 +779,29 @@ def next_action():
     if line:
         handoff = (read_json(os.path.join(CONTRACT, "elicitation.json")) or {}).get("handoff", {}).get("next_action")
         return {"kind": "questionnaire", "text": line, "human": handoff or line}
-    try:
-        import gtt_change
-        line = gtt_change.next_action()
-        state = gtt_change.request_state() if line else None
-    except Exception:
-        line = None
-    if not line:
-        # An installed project with no design yet and no questionnaire: the design is what GTT waits on. Every
-        # state has a next action, so an ADE that only reads it at session start still knows where to begin.
-        if os.path.isfile(".gtt/ade.json") and not os.path.isfile(FROZEN) and not glob.glob("SOURCE-BRIEF.*") \
-                and any(v != "no-placeholders" for v in context_state().values()):
-            candidates = design_candidates()
-            if candidates:
-                text = (f"No governed design yet. Design document candidates: {', '.join(candidates)}. Ask the human which one(s) "
-                        "are the design, then assess and map them (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
-            else:
-                text = ("No governed design yet and no design document. Ask the human for the design document(s) to use; if there "
-                        "is none, start the Initial Design Questionnaire: bash .gtt/scripts/gtt-template.sh materialize "
-                        "initial-design-questionnaire --apply (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
-            return {"kind": "design", "text": text,
-                    "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
-                             "from your document, or through the guided questionnaire."}
-        return None
-    return {"kind": "change-request", "text": line,
-            "human": f"Open the project in the Primary ADE and write anything: its first answer processes change request "
-                     f"{state['id']} into a proposal. Follow it with: gtt proposals"}
+    urgent = inbox_work(session_start)
+    if urgent:
+        return urgent
+    # An installed project with no design yet and no questionnaire: the design is what GTT waits on. Every
+    # state has a next action, so an ADE that only reads it at session start still knows where to begin.
+    if os.path.isfile(".gtt/ade.json") and not os.path.isfile(FROZEN) and not glob.glob("SOURCE-BRIEF.*") \
+            and any(v != "no-placeholders" for v in context_state().values()):
+        candidates = design_candidates()
+        if candidates:
+            text = (f"No governed design yet. Design document candidates: {', '.join(candidates)}. Ask the human which one(s) "
+                    "are the design, then assess and map them (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
+        else:
+            text = ("No governed design yet and no design document. Ask the human for the design document(s) to use; if there "
+                    "is none, start the Initial Design Questionnaire: bash .gtt/scripts/gtt-template.sh materialize "
+                    "initial-design-questionnaire --apply (AGENTS.md -> Bootstrap behavior; skill gtt-bootstrap).")
+        return {"kind": "design", "text": text,
+                "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
+                         "from your document, or through the guided questionnaire."}
+    return None
 
 
 def cmd_next_action(args):
-    found = next_action()
+    found = next_action(getattr(args, "session_start", False))
     if args.json:
         emit({"schema": 1, "kind": "gtt-next-action", "next_action": found, "authority": "none - what GTT is waiting on"})
     elif found:
@@ -788,7 +871,7 @@ def change_request_state():
     if not os.path.isfile(path):
         return "missing"
     with open(path, encoding="utf-8") as handle:
-        return "empty" if re.search(r"(?m)^Change: <", handle.read()) else "filled"
+        return "empty" if re.search(r"(?m)^Change: <", handle.read()) else "legacy"   # a 1.22 desk not migrated: gtt-inbox.sh migrate
 
 
 def proposals():
@@ -1112,7 +1195,9 @@ def build_parser():
     p = sub.add_parser("think-plan"); p.add_argument("action", nargs="?", choices=["show", "skip"], default="show")
     p.add_argument("step", nargs="?"); p.add_argument("--by"); p.add_argument("--reason"); p.add_argument("--json", action="store_true")
     p.add_argument("--gate", action="store_true"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_think_plan)
-    p = sub.add_parser("next-action"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_next_action)
+    p = sub.add_parser("next-action"); p.add_argument("--json", action="store_true"); p.add_argument("--session-start", action="store_true"); p.set_defaults(func=cmd_next_action)
+    p = sub.add_parser("inbox-line"); p.add_argument("--triage", action="store_true")
+    p.set_defaults(func=lambda a: (print(inbox_line(a.triage)), 0)[1])
     p = sub.add_parser("elicitation"); p.add_argument("--json", action="store_true"); p.add_argument("--next-action", action="store_true")
     p.set_defaults(func=cmd_elicitation)
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.add_argument("--with-validation", action="store_true"); p.set_defaults(func=cmd_status)

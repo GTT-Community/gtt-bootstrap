@@ -9,7 +9,7 @@ Use these skills instead of improvising the format:
 | Situation | Skill |
 |---|---|
 | First time populating `gtt-domain/context/`, or `gtt-domain/context/` still holds template placeholders | `gtt-bootstrap` |
-| "process the change request" | `gtt-propose-change` |
+| "process the change request", or an inbox entry to triage | `gtt-propose-change` (Triage) |
 | Architectural or context change needed | `gtt-propose-change` |
 | A change was approved and needs recording | `gtt-adr` |
 | Verify the governed context still matches the code | `gtt-audit` |
@@ -22,11 +22,11 @@ Use these skills instead of improvising the format:
 | Mark/unmark a file, class, or method as GTTGuard-protected | `gtt-guard` |
 | A change is requested to a GTTGuard-protected artifact | `gtt-propose-change` (form 5) |
 
-`gtt-domain/change-request.md` and `SOURCE-BRIEF.*` are always blocked, at the
+Registered proposals (`gtt-domain/proposals/PROP-*`), the text of an idea (`docs/ideas/IDEA-*`) and `SOURCE-BRIEF.*` are always blocked, at the
 permission layer and by a PreToolUse hook; `gtt-domain/context/` and
 `gtt-domain/adr/` are writable before the freeze (the `gtt-bootstrap` skill
 writes them) and blocked by the hook once `gtt-domain/.frozen` exists. A denial
-there is the system working as designed — write to `gtt-domain/proposals/` instead, and
+there is the system working as designed — write a draft to `gtt-domain/proposals/drafts/` and register it with `gtt-inbox.sh propose` instead, and
 never look for another way to reach a blocked path. `gtt-domain/backlog.md` is not
 blocked: Stories are your working plan and you edit them freely; only an Epic's
 goal and scope are the human's decision (see `AGENTS.md` → *Backlog*).
@@ -37,7 +37,7 @@ under another spelling) is caught by `governed-sentinel.py` after it runs: it is
 put back, what the command wrote is archived under
 `gtt-domain/proposals/withdrawn/`, and you are told. Take it as a denial.
 
-The `gtt` CLI's human acts (`promote`, `undo`, `freeze`, `change`, `proposals
+The `gtt` CLI's human acts (`promote`, `undo`, `freeze`, `idea add`, `change`, `adr new`, `answer`, `inbox park|reject|reopen|priority`, `proposals
 withdraw`, `clean`...) are denied to you too, `--yes` included: give the human
 the exact command; in Claude Code they can type it after `!` in the prompt.
 

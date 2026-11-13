@@ -4,8 +4,6 @@
     "deny": [
       "Edit(/AGENTS.md)",
       "Write(/AGENTS.md)",
-      "Edit(/gtt-domain/change-request.md)",
-      "Write(/gtt-domain/change-request.md)",
       "Edit(/SOURCE-BRIEF.*)",
       "Write(/SOURCE-BRIEF.*)",
       "Edit(/gtt-domain/.frozen)",
@@ -26,6 +24,14 @@
       "Write(/docs/sources/**)",
       "Edit(/docs/ideas/**)",
       "Write(/docs/ideas/**)",
+      "Edit(/gtt-domain/adr/drafts/**)",
+      "Write(/gtt-domain/adr/drafts/**)",
+      "Edit(/gtt-domain/proposals/PROP-*.md)",
+      "Write(/gtt-domain/proposals/PROP-*.md)",
+      "Edit(/gtt-domain/proposals/done/**)",
+      "Write(/gtt-domain/proposals/done/**)",
+      "Edit(/gtt-domain/proposals/withdrawn/PROP-*.md)",
+      "Write(/gtt-domain/proposals/withdrawn/PROP-*.md)",
       "Edit(/gtt-domain/pending/**)",
       "Write(/gtt-domain/pending/**)",
       "Edit(/.gtt/local/prompts.jsonl)",
@@ -114,10 +120,6 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/notify-change-request.py"
-          },
           {
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && bash .gtt/scripts/gtt-run-python.sh .claude/hooks/pending-watch.py"

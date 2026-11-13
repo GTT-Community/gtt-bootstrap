@@ -122,7 +122,7 @@ La idea es simple:
 
 **Lo que te espera.** Todo lo que te necesita es **un archivo pequeño** en `gtt-domain/pending/`, y la carpeta está vacía cuando nada te necesita. El agente resuelve solo lo que puede; te pregunta únicamente lo que es tuyo (una cuenta, una clave, dinero, un tema legal o de producto, un archivo gobernado) y te cuenta una decisión solo si cambia el alcance, el plazo, el costo, la seguridad o el diseño. Ves `@gtt · Te necesito (2)` con cada pregunta y la opción recomendada, y respondes en el chat («14: 1»), en el archivo o con `gtt answer 14 1` (`gtt answer ok` aprueba todas las decisiones). Sin respuesta, el trabajo sigue con la opción recomendada; una decisión que nadie objeta queda firme a los 7 días. El agente aplica tu respuesta, la marca y la sesión siguiente borra el archivo. `gtt pending` lista lo abierto.
 
-**Cambios durante el desarrollo.** Un cambio gobernado puede empezar desde el CLI: `gtt change` registra el pedido con un id y tu ADE recibe la orden de procesarlo como propuesta en su siguiente turno; `gtt proposals` muestra lo que redactó, `gtt promote` aplica un set preparado y `gtt undo` deshace la última promoción (una congelada se vuelve a congelar sobre el estado anterior — sigue sin existir el unfreeze). Sin el CLI: `bash .gtt/scripts/gtt-change.sh`.
+**Cambios durante el desarrollo.** Un cambio gobernado puede empezar desde el CLI: el Bandeja: escribes `gtt idea add "<texto>"`, `gtt change ...` (atajo de `gtt idea add --type solicitud`, con campos) o, como arquitecto, `gtt adr new "<título>"`; tu ADE lo triagea en el siguiente punto de corte y lo que necesita decisión llega como propuesta con un `REV` que respondes (`gtt answer 15 1`); `gtt inbox` muestra todo por etapa, `gtt promote`, `gtt approve` o `gtt run N` ratifican y `gtt undo` deshace la última promoción (una congelada se vuelve a congelar sobre el estado anterior — sigue sin existir el unfreeze). Sin el CLI: `bash .gtt/scripts/gtt-change.sh`.
 
 Para los procedimientos detallados, consulta [.gtt/docs/installation.es.md](installation.es.md) y [.gtt/docs/usage.es.md](usage.es.md).
 
@@ -189,7 +189,7 @@ algo falla. Los archivos de instrucciones y los overlays (`AGENTS.md`, `.claude/
 superficies de integración: permiten que un ADE participe en GTT y nunca se convierten
 en una autoridad propia.
 
-**Núcleo portable:** `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `SOURCE-BRIEF.*` (si existió documento fuente) en la raíz del proyecto, más el dominio gobernado (`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`) y el Motor de GTT (`.gtt/`, incluida la documentación propia de GTT en `.gtt/docs/`, declarado por `.gtt/scaffold/manifest.yaml`).
+**Núcleo portable:** `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `SOURCE-BRIEF.*` (si existió documento fuente) en la raíz del proyecto, más el dominio gobernado (`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`) y el Motor de GTT (`.gtt/`, incluida la documentación propia de GTT en `.gtt/docs/`, declarado por `.gtt/scaffold/manifest.yaml`).
 
 Qué contiene el adaptador de cada ADE — un proyecto con varios ADE participantes tiene la unión de sus filas:
 
@@ -425,7 +425,6 @@ Al realizar el bootstrap de GTT en un proyecto, **el agente de programación con
 │   ├── adr/                      #   decisiones aceptadas L1
 │   ├── proposals/                #   borradores gobernados pendientes de decisión humana
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
@@ -435,7 +434,7 @@ Al realizar el bootstrap de GTT en un proyecto, **el agente de programación con
 ### Reglas del scaffolding
 
 - `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md` y `SOURCE-BRIEF.*` (cuando existe) DEBEN permanecer en la raíz.
-- El dominio gobernado — `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` — DEBE generarse directamente bajo `gtt-domain/`, nunca en otro lugar para moverlo después. `gtt-domain/.frozen` solo lo escribe `.gtt/scripts/gtt-freeze.sh`, tras confirmación humana; `gtt-domain/session.md` es derivado y lo regenera `.gtt/scripts/gtt-status.sh`.
+- El dominio gobernado — `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` — DEBE generarse directamente bajo `gtt-domain/`, nunca en otro lugar para moverlo después. `gtt-domain/.frozen` solo lo escribe `.gtt/scripts/gtt-freeze.sh`, tras confirmación humana; `gtt-domain/session.md` es derivado y lo regenera `.gtt/scripts/gtt-status.sh`.
 - El Motor de GTT (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`) y la documentación propia de GTT (`docs/`: `index.md`, `installation.md`, `usage.md`, `method-plans.md` y sus pares `.es.md`, `gtt-completion.md`, `evidence.md`, `docs.md`, `session-adapter-contract.md`) DEBEN vivir bajo `.gtt/`, y el README de GTT Bootstrap DEBE instalarse como `.gtt/README.md`. `.gtt/scaffold/manifest.yaml` es la definición canónica y declarativa de este scaffold.
 
 - El agente NO DEBE mover, renombrar, duplicar ni redistribuir artefactos de GTT fuera de esta estructura.
@@ -458,7 +457,7 @@ maquinaria propia de GTT (scripts, identidad de artefactos e índice técnico,
 registro de protección, declaraciones de adaptadores de sesión, el manifest del
 scaffold) y la documentación propia de GTT (`.gtt/docs/`); `gtt-domain/` contiene
 el dominio gobernado por GTT-Method — `context/`, `adr/`, `proposals/`,
-`backlog.md`, `change-request.md`, `session.md`, `.frozen`. Junto a ellos la raíz
+`backlog.md`, `session.md`, `.frozen`. Junto a ellos la raíz
 solo conserva los puntos de entrada humanos (`readme-gtt.md`, `readme-gtt.es.md`,
 `SOURCE-BRIEF.*`), `AGENTS.md` y el overlay del ADE — instrucciones a agentes, en
 ninguno de los dos grupos.
@@ -476,7 +475,7 @@ maquinaria o documentación sobre GTT (`.gtt/`), o estado gobernado del proyecto
 | Parte | Dónde | Pertenece a |
 | --- | --- | --- |
 | Motor | `.gtt/` (incluido `.gtt/docs/`) | GTT |
-| Dominio gobernado | `gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` | el Solution Designer (los agentes solo redactan en `gtt-domain/proposals/`) |
+| Dominio gobernado | `gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`, `.frozen` | el Solution Designer (los agentes solo redactan en `gtt-domain/proposals/`) |
 | Overlay del ADE | `.claude/`, `.kiro/`, `.github/instructions/` | las integraciones de ADE — una por ADE participante, exactamente una Primaria (un identificador de flujo, nunca una autoridad) |
 
 
@@ -508,11 +507,11 @@ GTT convierte la arquitectura y su contexto en activos explícitos, protegidos y
 | Archivo | Qué es | Cuándo lo tocas |
 | --- | --- | --- |
 | **`SOURCE-BRIEF.*`** (raíz del proyecto) | Tu diseño original: visión, arquitectura, stack, restricciones, en tus propias palabras | Una vez, antes o durante la configuración |
-| **`gtt-domain/change-request.md`** | La puerta de entrada para solicitar un cambio | Cuando deba cambiar una decisión gobernada o la línea de desarrollo |
+| **`docs/ideas/IDEA-NNN.md`** (`gtt idea add`) | La puerta de entrada para solicitar un cambio: tus palabras, nunca reescritas | Cuando deba cambiar una decisión gobernada o la línea de desarrollo |
 
-`SOURCE-BRIEF.*` permanece en la raíz del proyecto — el único artefacto de GTT que es puramente tuyo para encontrar rápido, nunca maquinaria de gobernanza. `gtt-domain/change-request.md` está en `gtt-domain/` junto con el resto del estado gobernado, y es el único punto de entrada que usas constantemente.
+`SOURCE-BRIEF.*` permanece en la raíz del proyecto — el único artefacto de GTT que es puramente tuyo para encontrar rápido, nunca maquinaria de gobernanza. Tus ideas están en `docs/ideas/` y son el único punto de entrada que usas constantemente (`gtt idea add`).
 
-`gtt-domain/context/stack.md` es el archivo que leerás con mayor frecuencia —el mapa de una pantalla de lo que es el sistema—, pero es un resultado y no un archivo que normalmente debas editar manualmente. Los cambios aprobados llegan mediante `gtt-domain/change-request.md`.
+`gtt-domain/context/stack.md` es el archivo que leerás con mayor frecuencia —el mapa de una pantalla de lo que es el sistema—, pero es un resultado y no un archivo que normalmente debas editar manualmente. Los cambios aprobados llegan mediante el Bandeja.
 
 ---
 
@@ -540,19 +539,16 @@ Una fila de la tabla de stack sin un ADR en la columna **Locked by** es, por sí
 
 ## Cambiar algo
 
-Existe una única puerta de entrada. No necesitas buscar qué archivo gobernado modificar.
+Existe una única puerta de entrada, el **Bandeja** (Inbox). No necesitas buscar qué archivo gobernado modificar. Haces tres cosas: **escribir**, **decidir** y **ratificar**.
 
 ```text
-gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  revisas y ejecutas un script  ->  gtt-domain/adr/ + gtt-domain/context/stack.md
-      declaras intención           el agente propone      el Límite Humano de Promoción     gobernado/protegido
-      siempre escribible           escribible por agente
+docs/ideas/IDEA-NNN.md  ->  triage + PROP + REV  ->  respondes  ->  paquete  ->  ejecutas un comando  ->  adr/ + context/ (nuevo freeze)
+   escribes (gtt idea add)   agente (gtt-inbox.sh)   gtt answer N k   agente      el Límite Humano de Promoción   gobernado
 ```
 
-Completa el bloque de solicitud en `gtt-domain/change-request.md`: qué debe cambiar, por qué, qué lo desencadenó, alcance, impacto, riesgo y prioridad.
+Cada entrada tiene una etapa: `new` → `review` → `accepted` → `ratify` → `work` → `closed` (o `parked`, `rejected`); la etapa es la última línea del rastro de la entrada, con fecha y autor, y `gtt inbox` y Sonar la muestran. Escribe `gtt idea add "<texto>"` o `gtt change --change "..." --reason "..."` (una solicitud con campos de disparador, alcance, impacto, riesgo y prioridad); el arquitecto que redacta el ADR a mano usa `gtt adr new "<título>"`, y `gtt adr adopt <archivo>` recoge uno escrito a mano. El agente la clasifica por nivel: `work` (una Story, sin preguntarte), `spec` (un CHANGE del diseño de una Epic), `scope` (una Epic) o `arch` (un ADR). Solo el nivel `work` no te pide nada; el resto espera tu respuesta en un `REV` con la prioridad (urgente, normal, baja). Detalle: `.gtt/docs/agents/operations.md` → *Inbox*.
 
-Después solicita al agente que procese la solicitud.
-
-El agente devuelve una propuesta completa con:
+Para una propuesta, el agente devuelve una propuesta completa con:
 
 - decisión actual
 - cambio sugerido
@@ -561,7 +557,7 @@ El agente devuelve una propuesta completa con:
 - alternativas
 - filas exactas del mapa que cambian
 
-Tú apruebas la propuesta. El agente entonces prepara un **paquete de promoción** en `gtt-domain/proposals/`: el borrador del ADR, el texto completo de cada archivo afectado bajo `gtt-domain/context/`, y un script ejecutable:
+Tú aceptas la propuesta (`gtt answer N 1`). El agente entonces prepara un **paquete de promoción** en `gtt-domain/proposals/`: el borrador del ADR, el texto completo de cada archivo afectado bajo `gtt-domain/context/`, y un script ejecutable:
 
 ```bash
 bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
@@ -569,9 +565,9 @@ bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
 
 Revisa la propuesta, el ADR y el script, y ejecuta tú mismo ese único comando desde la raíz del proyecto. El script te deja `view` (ver) el texto del ADR y el diff exacto contra el contexto actual, y solo aplica todos los archivos afectados juntos cuando respondes `yes`; nunca lo ejecuta el agente — ver [Límite Humano de Promoción](#límite-humano-de-promoción).
 
-**`gtt-domain/proposals/` es el único directorio gobernado donde el agente puede escribir como parte del flujo de cambios gobernados.**
+**El agente escribe sus borradores en `gtt-domain/proposals/drafts/` y los registra con `gtt-inbox.sh propose`; desde ahí la propuesta (`PROP-NNN`) es del motor. Tras el freeze, `gtt-stage.sh` se niega a preparar un set que toque contexto o ADR sin `--origin` de una entrada que aceptaste.**
 
-El trabajo rutinario de implementación no necesita entrar en este flujo. Si las tareas normales requieren solicitudes de cambio repetidamente, probablemente las restricciones están escritas de forma demasiado amplia.
+El trabajo rutinario de implementación no necesita entrar en este flujo. Si las tareas normales requieren propuestas repetidamente, probablemente las restricciones están escritas de forma demasiado amplia.
 
 ---
 
@@ -888,7 +884,6 @@ gtt-domain/                     # EL DOMINIO GOBERNADO POR GTT-METHOD
 ├── adr/                        # L1 — decisiones aceptadas
 ├── proposals/                  # borradores gobernados pendientes de decisión humana
 ├── backlog.md                  # línea de desarrollo — Epics, Stories, foco actual
-├── change-request.md           # puerta de entrada para cambios
 ├── session.md                  # estado operativo derivado — nunca autoridad
 └── .frozen                     # marcador de freeze, escrito por gtt-freeze.sh
 │
@@ -942,7 +937,7 @@ El dominio gobernado está en `gtt-domain/`, aparte del Motor, porque es el esta
 
 ## Primeros pasos
 
-1. Copia el núcleo portable — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (el Motor, incluyendo `.gtt/scripts/`, `.gtt/docs/` y `.gtt/scaffold/manifest.yaml`) y el esqueleto del dominio gobernado (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`) — en la raíz del proyecto, más únicamente el adaptador correspondiente a tu ADE: `.claude/` (incluyendo `.claude/CLAUDE.md`) para Claude Code, `.kiro/` para Kiro, `.github/instructions/gtt.instructions.md` para GitHub Copilot, o nada adicional para Codex. Ver [Adaptadores de ADE](#adaptadores-de-ade); no copies los demás adaptadores "por las dudas".
+1. Copia el núcleo portable — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (el Motor, incluyendo `.gtt/scripts/`, `.gtt/docs/` y `.gtt/scaffold/manifest.yaml`) y el esqueleto del dominio gobernado (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`) — en la raíz del proyecto, más únicamente el adaptador correspondiente a tu ADE: `.claude/` (incluyendo `.claude/CLAUDE.md`) para Claude Code, `.kiro/` para Kiro, `.github/instructions/gtt.instructions.md` para GitHub Copilot, o nada adicional para Codex. Ver [Adaptadores de ADE](#adaptadores-de-ade); no copies los demás adaptadores "por las dudas".
 2. Nada que agregar a tu `.gitignore`: GTT ignora su propio estado local (`gtt-domain/.gitignore`, `.gtt/local/.gitignore`).
 3. Ejecuta la skill `gtt-bootstrap` (por ejemplo, “bootstrap GTT” o “set up GTT”) en lugar de completar `gtt-domain/context/` manualmente — realiza el paso 1 anterior por ti, de forma determinista.
 4. Si prefieres crear el contexto manualmente, comienza con `gtt-domain/context/stack.md`. Deja una celda vacía en vez de adivinar; un dato desconocido explícito es mejor que una decisión inventada.
@@ -1020,8 +1015,8 @@ infra/AGENTS.md
 ## Lo que mantienes
 
 - `gtt-domain/context/` y `gtt-domain/adr/`: se aplican mediante el proceso gobernado y, una vez congelados, no deben ser escritos directamente por un agente.
-- `gtt-domain/backlog.md`: el objetivo y el alcance de una Epic cambian vía `gtt-domain/change-request.md` (tu decisión); las Stories son el plan de trabajo del agente y cambian libremente, sin aprobación.
-- `gtt-domain/change-request.md`: tu puerta de entrada cuando deba cambiar una decisión gobernada o la línea de desarrollo comprometida.
+- `gtt-domain/backlog.md`: el objetivo y el alcance de una Epic cambian vía el Bandeja (tu decisión; Epics y Stories llevan `Origin`, las Epics `Priority`); las Stories son el plan de trabajo del agente y cambian libremente, sin aprobación.
+- `docs/ideas/` (`gtt idea add`): tu puerta de entrada cuando deba cambiar una decisión gobernada o la línea de desarrollo comprometida.
 - `SOURCE-BRIEF.*`: se escribe una vez durante el bootstrap y se conserva como fuente original, en la raíz del proyecto.
 - Los adaptadores de tus ADE participantes (`.claude/`, `.kiro/`, `.github/instructions/gtt.instructions.md`), `.gtt/ade.json` (escrito solo por `gtt-ade.sh`) y `.gtt/scripts/`: activos de runtime/integración de GTT que normalmente requieren pocos cambios, aparte de la configuración de rutas.
 - `.gtt/protection/registry.yaml`: nunca se mantiene a mano — se regenera desde los marcadores `@GTTGuard` en el código mediante `.gtt/scripts/gtt-guard-sync.sh`. Tu parte es poner/quitar el marcador; el registro sigue.

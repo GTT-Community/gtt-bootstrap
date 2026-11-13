@@ -113,14 +113,19 @@ def match(path, glob):
 
 # ----------------------------------------------------------------- governed state
 
-def governed_digest():
-    """One hash of everything under the governed directories: the reference the baseline records."""
+def governed_digest(skip=()):
+    """One hash of everything under the governed directories: the reference the baseline records. The ADR drafts of the
+    architect (gtt-domain/adr/drafts/) are not governed: they are entries of the inbox, and `skip` leaves out files by path."""
     acc = hashlib.sha256()
     for base in GOVERNED_DIRS:
         for dirpath, dirnames, filenames in os.walk(base):
+            if base == "gtt-domain/adr" and dirpath.replace("\\", "/") == base:
+                dirnames[:] = [d for d in dirnames if d != "drafts"]
             dirnames.sort()
             for name in sorted(filenames):
                 full = os.path.join(dirpath, name)
+                if full.replace("\\", "/") in skip:
+                    continue
                 acc.update(full.replace("\\", "/").encode())
                 with open(full, "rb") as handle:
                     acc.update(handle.read().replace(b"\r\n", b"\n"))
@@ -297,17 +302,38 @@ def observe_governed(base):
     """The governed state moved outside the change flow. A promotion re-freezes by itself (gtt-promote.sh),
     so on the governed path the digest never differs from the freeze: when it does, someone wrote the
     frozen design directly. That is BLOCKING until it is reverted or the human ratifies it with a new
-    freeze - the freeze itself is never refused for it (`check --for-freeze`)."""
+    freeze - the freeze itself is never refused for it (`check --for-freeze`).
+
+    One exception: a NEW ADR written by hand in gtt-domain/adr/ (F5). It is a NOTICE, GTT-ADR-HAND, with the command that
+    adopts it (`gtt adr adopt`); anything else that moved - the context, an ADR that already existed - is still BLOCKING."""
     if not base.get("digest") or governed_digest() == base["digest"]:
         return []
+    hand = []
+    try:
+        import gtt_inbox_reconcile
+        hand = gtt_inbox_reconcile.adr_hand()
+    except Exception:
+        hand = []
+    out = []
+    for item in hand:
+        rule = {"id": "GTT-ADR-HAND", "kind": "governed", "level": "NOTICE",
+                "guards": "a new ADR written by hand after the freeze is not part of the frozen design: the human adopts it as a draft (gtt adr adopt) "
+                          "and it goes on as the architect's own, or ratifies it with a new freeze"}
+        sig = signal(rule, item["path"], f"an ADR written by hand after the freeze - `{item['command']}` moves it to gtt-domain/adr/drafts/ "
+                     "and leaves adr/ as the freeze left it", digest(item["path"])[:16])
+        sig["command"] = item["command"]
+        out.append(sig)
+    if governed_digest(skip={h["path"] for h in hand}) == base["digest"]:
+        return out
     changed = changed_since(base.get("commit")) or []
-    which = [p for p in changed if p.startswith(tuple(d + "/" for d in GOVERNED_DIRS))]
+    which = [p for p in changed if p.startswith(tuple(d + "/" for d in GOVERNED_DIRS)) and p not in {h["path"] for h in hand}
+             and not p.startswith("gtt-domain/adr/drafts/")]
     rule = {"id": "GTT-GOVERNED", "kind": "governed", "level": "BLOCKING",
             "guards": "the frozen governed state (gtt-domain/.frozen): it changes only through the change flow, "
                       "whose promotion records a new freeze"}
-    return [signal(rule, "gtt-domain/context+adr", "governed context or ADRs changed outside the change flow"
-                   + (": " + ", ".join(which[:6]) if which else "")
-                   + " - revert it, or the human ratifies it with a new freeze (gtt freeze)", governed_digest()[:16])]
+    return out + [signal(rule, "gtt-domain/context+adr", "governed context or ADRs changed outside the change flow"
+                         + (": " + ", ".join(which[:6]) if which else "")
+                         + " - revert it, or the human ratifies it with a new freeze (gtt freeze)", governed_digest(skip={h["path"] for h in hand})[:16])]
 
 
 # Backbone technologies a dependency manifest can bring in, by the stack row that governs them. A new
@@ -762,7 +788,7 @@ def cmd_decide(args):
     print(f"{item['id']} {item['level']} {item['rule']} {item['artifact']}: {item['status']} -> {status} (by {args.by})")
     if status == "accepted":
         print("  accepted: this deviation stands. If it means the governed design itself changes, that still goes\n"
-              "  through gtt-domain/change-request.md and a new freeze - accepting an observation ratifies nothing.")
+              "  through a request to the inbox (`gtt idea add`) and a new freeze - accepting an observation ratifies nothing.")
     elif status == "rejected":
         print("  rejected: `check` fails for as long as this is still observed.")
     if not args.apply:

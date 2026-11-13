@@ -48,14 +48,14 @@ version, a missing schema declaration or a missing required capability is a refu
 | 14, 15 Initial sources / authority | selected source (path, type, version, selection metadata) is **not** a governed authority; authority and precedence are declared by a human in `gtt-domain/context/sources.md` | `.gtt/selected-sources.json` | `source.select`, `source.list` |
 | 16, 24 Export / clean | GTT-owned static patterns + ADE overlays from the ownership ledger; `export --clean` (separate artifact) vs `clean` (this project) | `export-policy.json` | `export-policy`, `clean.plan` |
 | 17 Recovery | snapshot schema (bootstrap identity, compatibility, ADE, Primary, profile, language, selected sources, operational state, recovery metadata) and restore rules | `recovery.json` | `recovery.snapshot`, `recovery.restore` |
-| 18 Session | structured session context derived from the project (freeze, change request, proposals, validation, git, operational state, artifacts) | `gtt_project.py` | `session-context` |
+| 18 Session | structured session context derived from the project (freeze, inbox, proposals, validation, git, operational state, artifacts) | `gtt_project.py` | `session-context` |
 | 19 Validation | one entry point; `gtt-validate.sh` and its checks stay internal | `gtt_project.py` | `validation.run` |
 | 20 Status | `bootstrap, ade, methodology, sources, governance, freeze, validation, session` | `gtt_project.py` | `status` |
 | 21 Freeze | the existing freeze; human authority; **no unfreeze operation exists** and the contract check fails if one is declared | `gtt-freeze.sh` | `freeze` |
 | 22 GTTGuard | protection validation and registry sync | existing scripts | `guard.validate`, `guard.sync` |
 | 23 Index / reconcile / query | existing scripts, exposed as stable operations (not a second retrieval implementation) | existing scripts | `index`, `reconcile`, `query`, `query.governance` |
 | — Method Governance | the two setup questions (texts from the Method Packs), the setup answer, the Method Lock, its freeze check and the neutral rules for a language adapter; no operation changes a ratified method | `methods.json`, `.gtt/methods/`, state `.gtt/development-method.json` | `method.list`, `method.show`, `method.select`, `method.get`, `method.lock`, `method.check`, `method.rules`, `method.catalog` |
-| — Change flow | a change request with an id and its state, the session's next action, the proposals and staged sets, promote, withdraw, undo the last promotion (never an unfreeze) | `gtt-change.sh`, `gtt-promote.sh` | `change.request`, `change.state`, `session.next-action`, `proposal.list`, `proposal.show`, `proposal.withdraw`, `promotion.apply`, `promotion.last`, `promotion.undo` |
+| — Change flow (Inbox) | ideas, requests, proposals and ADR drafts with their stage and trail, the session's next action, the REV, the staged sets, promote, withdraw, undo the last promotion (never an unfreeze) | `gtt-inbox.sh`, `gtt-change.sh`, `gtt-promote.sh` | `inbox.*`, `adr.new`, `adr.adopt`, `session.next-action`, `proposal.list`, `proposal.show`, `proposal.withdraw`, `promotion.apply`, `promotion.last`, `promotion.undo`, `pending.answer` |
 | 29 Versioning | every consumed contract carries an integer version | `release.json` → `contracts` | `check` |
 | 30 Acceptance | tests that drive the contracts as a CLI would, on disposable copies | `.gtt/tests/bootstrap-acceptance.py` | `python .gtt/tests/bootstrap-acceptance.py` |
 
@@ -102,24 +102,31 @@ renders them. The formats are `.gtt/methods/README.md`.
 | `gtt init`, question 1 and 2 | render `questions[]` as returned - prompt, options (name, `what_it_is`, `fits_when`, `recommended`), `extra_options` - in the project's language; never a text of its own. A new pack is a new option with no CLI change | `method.list lang=es` |
 | record the answer | `style=<ids>` or `style=help`; `start=<id>`, `start=direct` or `start=help`; a dry run, then `apply=true`. Exit 1 refuses an incompatible pair (say it, ask again) or a frozen project | `method.select` |
 | non-interactive | `gtt init --dev-method <ids\|help> --start <id\|direct\|help>`; without them nothing is recorded: the method is `OPEN`. Never pass the recommended packs as a default | — |
-| a frozen project | do not ask again: say that the method changes through a change request | `method.get` (`frozen: true`) |
+| a frozen project | do not ask again: say that the method changes through a proposal (form 6) | `method.get` (`frozen: true`) |
 | `gtt dev-method` | show the method in force, its status, the ADR that locks it and its verification level; `gtt dev-method list` shows the packs with their short text. Read-only (`gtt autonomy` is the Autonomy Profile) | `method.get`, `method.list` |
 | `gtt check` | read the Method Lock and the rules; for each `dependency` rule turn its materialized rows (`module`, `must_not_depend_on`) into the configuration of the language's own tool through an adapter; without an adapter report `declared-only`; a violation is a conflict (rule, source file, forbidden dependency), never a correction | `method.lock`, `method.rules`, `method.check` |
 
 `method.check` is the freeze gate as data; `gtt-freeze.sh` runs it with `--pre-freeze`. The Bootstrap implements no
 import analyser: verifying the code is the adapters' job.
 
-## The change flow — request, follow, promote, step back
+## The change flow — the Inbox, promote, step back
 
 | CLI | What it does | Operation |
 |---|---|---|
-| `gtt change` | collect the change and its reason (flags or questions), show the dry run, ask the human, apply; then offer to open the Primary ADE - the session's next action tells it to process the request into a proposal citing its id | `change.request` (human authority), `change.state` |
-| `gtt proposals` | list the drafts, ADR drafts and staged sets with their kind, state and the request they answer; `show`, `withdraw` (archived, never deleted) | `proposal.list`, `proposal.show`, `proposal.withdraw` |
+| `gtt idea add "<text>"` | write an idea exactly as the human wrote it (`IDEA-NNN`, stage `new`); `--now` asks for triage in the first answer | `inbox.add` (human authority) |
+| `gtt idea add --type solicitud --change ... --reason ...`, `gtt change ...` | a request with fields; `gtt change` is a shortcut for the former and `gtt-domain/change-request.md` is retired (`gtt update` migrates a leftover one) | `inbox.add` |
+| `gtt adr new "<title>"`, `gtt adr adopt <file>` | the architect's ADR draft in `gtt-domain/adr/drafts/`, or a hand-written ADR taken in | `adr.new`, `adr.adopt` (human authority) |
+| `gtt inbox [--all] [--origin human\|agent]`, `gtt inbox show REF` | every entry by stage, or one with its trail; `gtt proposals` is an alias of `--origin agent` | `inbox.list`, `inbox.show`, `proposal.list`, `proposal.show` |
+| `gtt inbox park\|reject\|reopen\|priority REF`, `gtt idea drop REF` | the human sets an entry aside, reopens it or sets `urgent\|normal\|low` | `inbox.park`, `inbox.reject`, `inbox.reopen`, `inbox.priority`, `inbox.drop` (human authority) |
+| (the agent) `gtt-inbox.sh propose`, `supersede`, `triage` | register a proposal (opens a REV), replace it, give a triage result; never accept, reject or ratify | `inbox.propose`, `inbox.supersede`, `inbox.triage` (agent) |
+| `gtt answer N k` | answer a REV (accept, park, reject, or close a non-goal) or an ASK; `gtt answer ok` is only for DEC | `pending.answer` (human authority) |
+| `gtt proposals withdraw` | archive a proposal set (never deleted) | `proposal.withdraw` |
 | `gtt promote <set>` | the dry run prints the set and its diff; after the human confirms, apply it (a frozen project gets its new freeze) | `promotion.apply` (human authority) |
 | `gtt undo` | the last promotion only, and only while its files are as it left them; a promotion that froze is re-frozen over the earlier state | `promotion.last`, `promotion.undo` (human authority) |
 
-`session.next-action` is what the CLI shows as *Next*: an open questionnaire first, then a change request waiting
-to be processed. Nothing in this flow lets an agent decide: the agent drafts, the human requests, promotes and undoes.
+`session.next-action` is what the CLI shows as *Next*: THINK, then the questionnaire, then an inbox entry with `--now` (or an accepted urgent one without a package),
+then entries without triage at a cut point. Nothing in this flow lets an agent decide: the agent triages and drafts, the human writes, decides, ratifies and undoes.
+`gtt-stage.sh` takes `--origin REF` and after the freeze refuses a set that touches context or ADRs without an accepted origin.
 
 ## Developer experience — minimum friction, full governance
 

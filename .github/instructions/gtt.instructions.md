@@ -29,7 +29,7 @@ should never become one.
 
 ## What Copilot must not do
 
-`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/change-request.md`, and `SOURCE-BRIEF.*`
+`gtt-domain/context/`, `gtt-domain/adr/`, registered `gtt-domain/proposals/PROP-*`, and `SOURCE-BRIEF.*`
 are governed paths owned by the Solution Designer. GTT ships a pre-tool hook
 for the Copilot cloud agent and the Copilot CLI
 (`.github/hooks/gtt-protect.json`), built from GitHub's documented contract
@@ -87,4 +87,4 @@ Git history belongs to the human. Follow `gtt-domain/workflow.md`; without it th
 - Proposing is not executing: releases, tags, destructive operations and workflow changes wait for an explicit request.
 - A GTT checkpoint regenerates `gtt-domain/session.md`. It is never a commit.
 
-**What counts as truth, highest first:** governed context → ADRs → approved Epics → the change request → proposals → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.
+**What counts as truth, highest first:** governed context → ADRs → approved Epics → the inbox (ideas, then proposals) → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.

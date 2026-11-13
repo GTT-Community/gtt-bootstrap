@@ -344,7 +344,7 @@ def cmd_source_add(args, adopt=False):
     print(f"  {'in place' if not copy else 'copy to'} {path}  sha256 {digest[:12]}  authority {authority}  precedence {precedence or '-'}")
     previous = active_version(source_id)
     if frozen():
-        print(f"  the project is frozen: {SOURCES_MD} is not touched; a change request lists the citations to re-check")
+        print(f"  the project is frozen: {SOURCES_MD} is not touched; the request that follows lists the citations to re-check")
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")
         return 0
@@ -363,8 +363,8 @@ def cmd_source_add(args, adopt=False):
     if frozen():
         note = f"{PROPOSALS}/CHANGE-REQUEST-source-{source_id}-v{version}.md"
         body = [f"# Change request - new version of source `{source_id}` (v{version})", "", CANON, "",
-                f"`{path}` was registered on {today()}. The governed context was not changed. Copy the block below into",
-                "`gtt-domain/change-request.md` to start the change: THINK, then a specification change or an ADR, then a new freeze.", "",
+                f"`{path}` was registered on {today()}. The governed context was not changed. Give the block below to",
+                "`gtt idea add --type solicitud` (the inbox) to start the change: THINK, then a specification change or an ADR, then a new freeze.", "",
                 "```text", f"Change: adopt version v{version} of source {source_id} ({path}); declare it in {SOURCES_MD} and re-check the citations below.",
                 f"Reason: the source changed; {len(affected)} citation(s) that do not pin a version point at sections that changed or are gone.",
                 "Trigger: a new version of a design source.", "Scope: the citations listed here, and the parts of the governed context they support.",
@@ -665,6 +665,8 @@ def cmd_design_scaffold(args):
     print(f"gtt-design: scaffold {args.epic} -> {target}")
     if frozen():
         print(f"  the project is frozen: the draft goes to {PROPOSALS}/ and reaches {design_path(args.epic)} through a promotion set")
+        print(f"  then: bash .gtt/scripts/gtt-stage.sh <set> --origin PROP-n --reason \"...\" {PROPOSALS}/design-{args.epic}.md={design_path(args.epic)}"
+              f" and bash .gtt/scripts/gtt-run.sh new <slug> --origin PROP-n --set <set> --epic {args.epic} --apply (a run with the promotion and the approval)")
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")
         return 0

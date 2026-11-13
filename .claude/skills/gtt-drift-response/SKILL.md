@@ -1,6 +1,6 @@
 ---
 name: gtt-drift-response
-description: Use when observation reports drift (an `@gtt · Observation` at WARNING or above, a GOVERNANCE or BLOCKING item in the governance backlog), when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Decides whether the governed design itself must change and, only then, produces a proposal under gtt-domain/proposals/ plus a promotion script the human runs. Never a reason to stop work that is not BLOCKING.
+description: Use when observation reports drift (an `@gtt · Observation` at WARNING or above, a GOVERNANCE or BLOCKING item in the governance backlog), when gtt-audit reports a divergence, or when the user asks whether a change under src/, infra/, or a dependency manifest contradicts ratified architecture. Decides whether the governed design itself must change and, only then, registers a proposal (PROP, with gtt-inbox.sh propose) that the human decides in a REV, then stages the promotion package the human runs. Never a reason to stop work that is not BLOCKING.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
@@ -50,11 +50,13 @@ Three outcomes:
 
 ## Step 2 — Draft
 
-Write to `gtt-domain/proposals/PROPOSAL-<short-kebab-summary>.md`. No numbers:
-numbering belongs to ADRs, which are the permanent record, and choosing an ADR
-number would mean reserving ratified identity for your own draft.
-
-`gtt-domain/proposals/` is the only writable governed path.
+Write the draft to `gtt-domain/proposals/drafts/<short-kebab-summary>.md` and register it:
+`bash .gtt/scripts/gtt-inbox.sh propose --file <draft> --level arch|spec|scope --form <n> --origin OBS-NNNN`
+(the observation that raised it; `--origin STORY-n` when you saw it while working, `sesión` otherwise). The engine
+assigns `PROP-NNN`, opens a `REV-NNN` for the human and stores the sha of what they will see. Draft numbers are
+not yours: the PROP number is the engine's and the ADR number is taken when you stage the package. The
+registered PROP is the engine's: to correct it use `gtt-inbox.sh supersede PROP-n --file <draft>`. The level
+follows `gtt-propose-change` (when in doubt, the higher one).
 
 **Fast track** — minimum viable delta:
 
@@ -66,12 +68,12 @@ number would mean reserving ratified identity for your own draft.
 **Full track** — follow `gtt-domain/adr/ADR-TEMPLATE.md`: context, decision,
 alternatives considered with why each loses, consequences, risks.
 
-Status line: `Status: Requires Architect approval`. Only the human accepts.
+Status line: `Status: Requires Architect approval`. Only the human accepts, answering the REV (`gtt answer N k`).
+The work continues while the REV waits.
 
 ## Step 3 — Stage the promotion package, never execute it
 
-If the proposal is accepted (or once you know it will need to be — ask if
-unclear), stage the same promotion package the `gtt-adr` skill produces,
+Only when the PROP is `accepted` (`gtt-inbox.sh show PROP-n`), stage the same promotion package the `gtt-adr` skill produces,
 using the same shape it defines:
 
 - `gtt-domain/proposals/ADR-DRAFT-<slug>.md` — the ADR, following
@@ -79,7 +81,7 @@ using the same shape it defines:
   delta promoted into the same template shape
 - `gtt-domain/proposals/context-<basename>.md` for every affected file (`stack.md`
   at minimum, changelog row included)
-- the promotion set, staged with `bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --reason "..." <draft>=<destination> ...`
+- the promotion set, staged with `bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --origin PROP-n --reason "..." <draft>=<destination> ...`
   (never an application script written by hand); the human applies it with `bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>`
 
 Take the ADR number from `bash .gtt/scripts/gtt-project.sh next-id --kind adr` - do not ask for it; the

@@ -13,7 +13,7 @@ Before editing a file, check whether it (or a class/method inside it)
 carries a `@GTTGuard` / `[GTTGuard]` / `// @GTTGuard` / `# @GTTGuard`
 marker, or is listed with `protection: HUMAN_APPROVAL` in
 `.gtt/protection/registry.yaml`. If so, do not edit it directly — draft a
-proposal instead (`gtt-domain/change-request.md`-style flow, form 5 in the
+proposal instead (a registered `PROP` through the inbox, form 5 in the
 `gtt-propose-change` procedure described in `AGENTS.md`).
 
 **The real-time block on Kiro is unverified.** `.kiro/hooks/gtt-protect.json`

@@ -54,7 +54,7 @@ PROPOSE = "Draft a proposal (AGENTS.md -> Protected artifacts) instead of editin
 #
 # It stops a call only where the governed state says so, and every denial names its rule:
 #
-#   governed paths     AGENTS.md, change-request.md, SOURCE-BRIEF.* - always; gtt-domain/context/
+#   governed paths     AGENTS.md, SOURCE-BRIEF.* - always (and a 1.22 change-request.md until `gtt-inbox.sh migrate` removes it); gtt-domain/context/
 #                      and gtt-domain/adr/ - once frozen; gtt-domain/proposals/ is always writable
 #   machinery          the hook configuration and engine that carry this protection
 #   instruction plane  only in an installed project (.gtt/ade.json exists): the GTT engine
@@ -99,9 +99,9 @@ BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remo
 GIT_HOOK_MARK = "# gtt-git-hook: installed by .gtt/scripts/gtt-git-hook.sh"
 
 # Matched against the project-relative path of a write target: the contract and the source brief at
-# the project root, and the change-request front door. A nested AGENTS.md - scoped rules for Codex or
+# the project root, and the 1.22 change-request desk, retired in 1.23 and protected only until the migration reads it. A nested AGENTS.md - scoped rules for Codex or
 # Copilot - is the project's own file.
-ROOT_FILES = re.compile(r"^(?:AGENTS\.md|(?:gtt-domain/)?change-request\.md|SOURCE-BRIEF\.[^/]*)[*?]*$", re.IGNORECASE)
+ROOT_FILES = re.compile(r"^(?:AGENTS\.md|gtt-domain/change-request\.md|SOURCE-BRIEF\.[^/]*)[*?]*$", re.IGNORECASE)
 MACHINERY = re.compile(
     r"\.claude/settings(\.local)?\.json|\.claude/hooks/|\.cursor/hooks\.json|\.openhands/hooks\.json"
     r"|\.agents/hooks\.json|\.kiro/hooks/|\.github/hooks/gtt-protect\.json|\.gtt/scripts/gtt_protect\.py",
@@ -132,7 +132,7 @@ MUTATING_SHELL = re.compile(
     r"|move-item|copy-item|rename-item|clear-content)\b"
     # A redirect counts only when it lands on a governed target: `> /tmp/out.txt` is not a mutation
     # of anything GTT governs, whatever the command reads.
-    r"|>>?\s*\S*(gtt-domain/|AGENTS\.md|change-request\.md|SOURCE-BRIEF\."
+    r"|>>?\s*\S*(gtt-domain/|AGENTS\.md|SOURCE-BRIEF\."
     r"|\.claude/settings(\.local)?\.json|\.claude/hooks/|\.cursor/hooks\.json|\.openhands/hooks\.json"
     r"|\.agents/hooks\.json|gtt_protect\.py|\.git/hooks/|\.kiro/|\.github/hooks/|\.github/instructions/"
     r"|\.gtt/scripts/|\.gtt/contract/|\.gtt/ade\.json|\.claude/skills/|\.claude/rules/|CLAUDE\.md"
@@ -147,7 +147,7 @@ READ_ONLY_APPLY = {"--check", "--stat", "--numstat", "--summary"}
 OBSERVE_DECISIONS = {"accept", "reject", "defer"}
 
 GOVERNED = ("GTT governance (governed paths): AGENTS.md, gtt-domain/context/, gtt-domain/adr/, "
-            "gtt-domain/change-request.md, SOURCE-BRIEF.* and the hook configuration that protects them are owned "
+            "SOURCE-BRIEF.* and the hook configuration that protects them are owned "
             "by the Solution Designer. Write your draft to gtt-domain/proposals/ instead - that directory is yours - "
             "and follow the change process in AGENTS.md.")
 FREEZE = ("GTT governance (freeze-semantics): gtt-domain/.frozen is the freeze marker and its history. The human "
@@ -201,8 +201,17 @@ IDEAS_DIR = "docs/ideas"
 IDEAS_OWNED = ("GTT governance (human-decision-authority): docs/ideas/ holds the human's ideas, and the text of an idea is never an agent's to "
                "write. The only thing an agent adds is one triage line, through the engine: `bash .gtt/scripts/gtt-idea.sh triage IDEA-NNN "
                "--result covered|converted|non-goal|ask --to <ref> --apply`.")
-IDEAS_ACT = ("GTT governance (human-decision-authority): adding, parking or dropping an idea is the human's act, never an agent's. Tell them the "
-             "command (`gtt idea add '<text>'`, `gtt idea park IDEA-NNN`, `gtt idea drop IDEA-NNN`) and continue with the work.")
+IDEAS_ACT = ("GTT governance (human-decision-authority): adding, parking, reopening, rejecting or dropping an entry of the inbox, changing its "
+             "priority, and writing or adopting an ADR draft are the human's acts, never an agent's. Tell them the command (`gtt idea add '<text>'`, "
+             "`gtt inbox park|reopen|reject|drop|priority REF`, `gtt adr new '<title>'`, `gtt adr adopt <file>`) and continue with the work.")
+ADR_DRAFTS_DIR = "gtt-domain/adr/drafts"
+ADR_DRAFTS_OWNED = ("GTT governance (human-decision-authority): gtt-domain/adr/drafts/ holds the architect's ADR drafts, in every regime. The words are "
+                    "theirs: an agent reads a draft and never writes it. The engine appends its trail; to change a word, tell the architect.")
+PROPS_OWNED = ("GTT governance (deterministic-first): a registered proposal (gtt-domain/proposals/PROP-NNN-*.md) is written only by the inbox engine. "
+               "To correct one, write a new draft under gtt-domain/proposals/drafts/ and run `bash .gtt/scripts/gtt-inbox.sh supersede PROP-NNN "
+               "--file <draft> --level L --form N --apply`.")
+PROP_FILES = re.compile(r"^gtt-domain/proposals/(?:(?:done|withdrawn)/)?(?:\d{4}-\d{2}-\d{2}-)?prop-\d+-[^/]*$")
+INBOX_ACTS = {"add", "park", "reopen", "reject", "drop", "priority", "adr-new", "adr-adopt", "migrate"}
 PENDING_DIR = "gtt-domain/pending"
 PENDING_OWNED = ("GTT governance (deterministic-first): gtt-domain/pending/ is written only by gtt-pending.sh, and the human's answers "
                  "are never an agent's to write. Create an event with `bash .gtt/scripts/gtt-pending.sh ask|decide ... --apply`, write down "
@@ -309,6 +318,10 @@ def protected_token(root, token, shell=False):
         return IDEAS_OWNED
     if under(low, PENDING_DIR) and installed(root):
         return PENDING_OWNED
+    if installed(root) and (under(low, ADR_DRAFTS_DIR) or (shell and low == "gtt-domain/adr" and os.path.isdir(os.path.join(root, ADR_DRAFTS_DIR)))):
+        return ADR_DRAFTS_OWNED
+    if PROP_FILES.match(low) and installed(root):
+        return PROPS_OWNED
     if (under(low, RUN_DIR + "/done") or (under(low, RUN_DIR) and low.endswith(".sh"))) and installed(root):
         return RUN_OWNED
     if low in SETUP_RECORDS and installed(root):
@@ -466,7 +479,8 @@ def git_subcommand(words):
 # Recording a choice the human just made (autonomy set, config primary-ade, design add...) is not one.
 CLI_HUMAN_ACTS = {("freeze",), ("approve",), ("promote",), ("undo",), ("clean",), ("init",), ("update",), ("upgrade",), ("change",),
                   ("proposals", "withdraw"), ("design", "reset"), ("answer",), ("idea", "add"), ("idea", "park"), ("idea", "drop"),
-                  ("sonar", "add"), ("sonar", "remove")}
+                  ("inbox", "park"), ("inbox", "reopen"), ("inbox", "reject"), ("inbox", "drop"), ("inbox", "priority"),
+                  ("adr", "new"), ("adr", "adopt"), ("sonar", "add"), ("sonar", "remove")}
 CHANGE_ACTS = ("request", "withdraw", "undo")               # gtt-change.sh / gtt_change.py, with --apply
 CLI_READS = {"show", "list", "check", "--help", "-h", "help"}
 CLI_NAME = re.compile(r"(gtt(\.exe)?|gtt-cli([@=].*)?)$")
@@ -599,6 +613,9 @@ def decide_units(root, command):
             if base(word) in ("gtt-observe.sh", "gtt_observe.py") and follow and follow[0] in OBSERVE_DECISIONS:
                 return HUMAN_ACT
             if base(word) in ("gtt-idea.sh", "gtt_idea.py") and follow and follow[0] in ("add", "park", "drop") and not syntax_only:
+                return IDEAS_ACT
+            if base(word) in ("gtt-inbox.sh", "gtt_inbox.py") and not syntax_only and \
+                    next((x for x in follow if not x.startswith("-")), None) in INBOX_ACTS:
                 return IDEAS_ACT
             if base(word) in ("gtt-pending.sh", "gtt_pending.py") and follow and follow[0] == "answer" and not syntax_only:
                 return PENDING_ANSWER

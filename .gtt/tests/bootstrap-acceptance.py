@@ -46,6 +46,27 @@ def bash(cwd, *cmd):
     return p.returncode, p.stdout, p.stderr
 
 
+def accepted_prop(p, level="spec", slug="change", idea_text=None):
+    """A PROP the human accepted, by the real route of the inbox (idea, propose, triage, answer in the chat): returns its ref.
+    After the freeze `gtt-stage.sh` arms a governed set only for such an entry (`--origin PROP-n`)."""
+    CANON = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
+    forms = {"spec": ("2", "Proposed Context Change\n\nFile: gtt-domain/context/glossary.md\nCurrent statement: order\nSuggested change: add a term\nReason: new word\nImpact: low\nRisk: low\n"),
+             "arch": ("1", "Proposed Architecture Change\n\nCurrent decision: sessions live in memory\nSuggested change: sessions live in Redis\nReason: horizontal scaling\n"
+                           "Impact: one new service\nRisk: operational\nAffected files: gtt-domain/context/architecture.md\nAlternatives considered: sticky sessions\n")}
+    form, body = forms[level]
+    first, _, rest = body.partition("\n")
+    write(os.path.join(p, "gtt-domain", "proposals", "drafts", slug + ".md"), f"{first}\n\n{CANON}\n{rest}")
+    rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "add", idea_text or f"Change for {slug}", "--apply")
+    idea = re.search(r"IDEA-\d+", o).group(0)
+    rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "propose", "--file", f"gtt-domain/proposals/drafts/{slug}.md", "--level", level, "--form", form,
+                    "--origin", idea, "--slug", slug, "--apply")
+    rev, prop = re.search(r"REV-(\d+)", o).group(1), re.search(r"proposals/(PROP-\d+)", o).group(1)
+    bash(p, ".gtt/scripts/gtt-inbox.sh", "triage", idea, "--result", level, "--to", prop, "--apply")
+    rc, o, e = bash(p, ".gtt/scripts/gtt-pending.sh", "answer", rev, "1", "--confirmed-by-human")
+    check(rc == 0, f"{prop} accepted by the human ({level}) through the real route", o + e)
+    return prop
+
+
 def contract(cwd, *args):
     return bash(cwd, ".gtt/scripts/gtt-contract.sh", *args)
 
@@ -112,6 +133,8 @@ def make_host(project, tmp, name):
         shutil.copy2(os.path.join(project, item), host)
     for item in (".gtt", "gtt-domain"):
         shutil.copytree(os.path.join(project, item), os.path.join(host, item), ignore=shutil.ignore_patterns("__pycache__"))
+    os.makedirs(os.path.join(host, "docs", "ideas"))                  # the inbox's README is part of the scaffold (manifest.yaml)
+    shutil.copy2(os.path.join(project, "docs", "ideas", "README.md"), os.path.join(host, "docs", "ideas"))
     staged = os.environ.get("GTT_TEST_PORTABLE_ENGINE")
     if staged:
         shutil.copy2(os.path.abspath(staged), os.path.join(host, ".gtt", "scripts", "gtt_protect.py"))
@@ -768,7 +791,7 @@ def session_status_validation(project, tmp):
     check(rc == 0 and need <= set(s), "the session contract identifies freeze, change request, proposals, validation, git, operational state and artifacts", str(need - set(s)))
     check(s["authority"] == "none" and s["operational_only"] and "NOT authority" in s["markers"], "it declares itself non-authoritative")
     check(s["git"]["available"] and s["git"]["uncommitted_paths"] >= 1 and s["git"]["recent_commits"][0].endswith("test commit"), "git state comes from the repository")
-    check(s["change_request"] == "empty" and s["freeze"]["frozen"] is False, "freeze and change request come from the actual files")
+    check(s["change_request"] == "missing" and s["freeze"]["frozen"] is False, "freeze and the retired change request come from the actual files")
     rc, env, _ = op(p, "status")
     st = data(env)
     need = {"bootstrap", "ade", "methodology", "sources", "governance", "freeze", "validation", "session"}
@@ -2869,7 +2892,7 @@ def design_sources(project, tmp):
     changed = DESIGN_ORDERS.replace("**Status:** Draft", "**Status:** Approved — Ana — 2026-10-08").replace(
         "- **R-2** A paid order cannot be cancelled. [FUENTE: D:§2.2]\n", "- **R-2** A paid order cannot be cancelled. [FUENTE: D:§2.2]\n- **R-3** An order on hold can be cancelled. (D-1)\n").replace("(R-2, F-1)", "(R-2, R-3, F-1)")
     write(os.path.join(f, "draft-design.md"), changed)
-    bash(f, ".gtt/scripts/gtt-stage.sh", "orders-on-hold", "--reason", "orders on hold can be cancelled", "draft-design.md=gtt-domain/context/design/EPIC-001.md")
+    bash(f, ".gtt/scripts/gtt-stage.sh", "orders-on-hold", "--reason", "orders on hold can be cancelled", "--origin", accepted_prop(f, "spec", "orders"), "draft-design.md=gtt-domain/context/design/EPIC-001.md")
 
     def promote(name):
         proc = subprocess.run(["bash", ".gtt/scripts/gtt-promote.sh", name], cwd=f, input="apply\n", capture_output=True, text=True, encoding="utf-8", errors="replace")
@@ -2877,7 +2900,7 @@ def design_sources(project, tmp):
 
     rc, out, err = promote("orders-on-hold")
     stack_text, after = open(os.path.join(f, "gtt-domain", "context", "stack.md"), encoding="utf-8").read(), open(marker, encoding="utf-8").read()
-    change_row = re.search(r"\| \d{4}-\d{2}-\d{2} \| (CHANGE-\d{8}-orders-on-hold) \| orders on hold can be cancelled \|", stack_text)
+    change_row = re.search(r"\| \d{4}-\d{2}-\d{2} \| (CHANGE-\d{8}-orders-on-hold) \| orders on hold can be cancelled \(PROP-\d+\) \|", stack_text)
     check("R-3" in open(design_file, encoding="utf-8").read() and change_row and "Specification change recorded as CHANGE-" in out
           and after != baseline and "# earlier freezes" in after and not glob.glob(os.path.join(f, "gtt-domain", "adr", "ADR-0[1-9][0-9]*")) and "ADR-002" not in stack_text,
           "a specification change is promoted with one confirmation and no ADR: the design changes, the map change log gets its CHANGE row, a new freeze is recorded",
@@ -2895,7 +2918,7 @@ def design_sources(project, tmp):
     arch = os.path.join(f, "gtt-domain", "context", "architecture.md")
     architecture = open(arch, encoding="utf-8").read()
     write(os.path.join(f, "draft-arch.md"), architecture + "a new module boundary\n")
-    bash(f, ".gtt/scripts/gtt-stage.sh", "new-boundary", "--reason", "a new module boundary", "draft-arch.md=gtt-domain/context/architecture.md")
+    bash(f, ".gtt/scripts/gtt-stage.sh", "new-boundary", "--reason", "a new module boundary", "--origin", accepted_prop(f, "arch", "boundary"), "draft-arch.md=gtt-domain/context/architecture.md")
     frozen_now = open(marker, encoding="utf-8").read()
     rc, out, err = promote("new-boundary")
     check(rc == 1 and "changes the architecture (architecture.md) and carries no ADR" in err and open(arch, encoding="utf-8").read() == architecture
@@ -3259,34 +3282,31 @@ def method_governance(project, tmp):
 
 
 def change_flow(project, tmp):
-    print("[change] a request written by the human is processed by the agent, never applied by it")
+    print("[change] a request is an IDEA of the inbox: the agent triages it, never applies it")
     p = fresh(project, tmp, "change-flow")
-    req = os.path.join(p, "gtt-domain", "change-request.md")
-    before = open(req, encoding="utf-8").read()
+    check(not os.path.exists(os.path.join(p, "gtt-domain", "change-request.md")), "there is no change-request.md desk any more")
+    before = tree_hash(p)
     rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling")
     check(rc == 4, "writing a change request is the human's act (confirmed_by_human)")
     rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling", confirmed_by_human=True)
-    check(rc == 0 and open(req, encoding="utf-8").read() == before, "it is a dry run without apply")
+    check(rc == 0 and tree_hash(p) == before, "it is a dry run without apply")
     rc, env, _ = op(p, "change.request", change="Move sessions to Redis", reason="Horizontal scaling", priority="high", apply=True, confirmed_by_human=True)
-    state = data(op(p, "change.state")[1]) or {}
-    cid = state.get("id") or ""
-    check(rc == 0 and state.get("state") == "pending" and re.fullmatch(r"CR-\d{8}-\d{6}", cid) and state["fields"].get("Priority") == "high",
-          "the request is written with its id and is pending", str(state)[:300])
+    idea = os.path.join(p, "docs", "ideas", "IDEA-001.md")
+    body = open(idea, encoding="utf-8").read() if os.path.isfile(idea) else ""
+    check(rc == 0 and "Change: Move sessions to Redis" in body and "Priority: high" in body and re.search(r"(Now|Ahora): (yes|sí)", body),
+          "the request is an IDEA with its fields, written with --now", body[:300] + env.get("stderr", ""))
     nxt = data(op(p, "session.next-action")[1]) or {}
-    check((nxt.get("next_action") or {}).get("kind") == "change-request" and cid in nxt["next_action"]["text"]
-          and "never apply" in nxt["next_action"]["text"], "the session's next action tells the agent to process it", str(nxt)[:300])
+    check((nxt.get("next_action") or {}).get("kind") == "inbox" and "IDEA-001" in nxt["next_action"]["text"]
+          and "decides nothing" in nxt["next_action"]["text"], "the session's next action tells the agent to triage it", str(nxt)[:300])
     session = bash(p, ".gtt/scripts/gtt-status.sh")
-    check(cid in open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8").read(), "the next action reaches the session context")
+    check("IDEA-001" in open(os.path.join(p, "gtt-domain", "session.md"), encoding="utf-8").read(), "the next action reaches the session context")
     rc, out, err = bash(p, ".gtt/scripts/gtt-change.sh", "request", "--change", "Another", "--reason", "x", "--apply")
-    check(rc == 1 and "still pending" in err, "a pending request is never overwritten in silence", out + err)
+    check(rc == 0 and os.path.isfile(os.path.join(p, "docs", "ideas", "IDEA-002.md")), "two requests can wait at once: nothing is overwritten", out + err)
     write(os.path.join(p, "gtt-domain", "proposals", "PROPOSAL-redis.md"),
-          f"# PROPOSAL - Redis sessions\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md\n\nRequest: {cid}\n")
-    state = data(op(p, "change.state")[1]) or {}
-    check(state.get("state") == "processed" and not (data(op(p, "session.next-action")[1]) or {}).get("next_action"),
-          "a proposal citing the id answers it: no next action is left")
+          "# PROPOSAL - Redis sessions\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v2.1.md\n\nRequest: CR-20261001-101500\n")
     listed = {i["name"]: i for i in (data(op(p, "proposal.list")[1]) or {}).get("proposals", [])}
-    check(listed.get("PROPOSAL-redis.md", {}).get("request") == cid and listed["PROPOSAL-redis.md"]["kind"] == "proposal",
-          "the proposals are listed with their kind and the request they answer", str(listed)[:300])
+    check(listed.get("PROPOSAL-redis.md", {}).get("request") == "CR-20261001-101500" and listed["PROPOSAL-redis.md"]["kind"] == "proposal",
+          "the proposals are listed with their kind and the request they cite", str(listed)[:300])
     rc, env, _ = op(p, "proposal.withdraw", proposal="PROPOSAL-redis.md", apply=True, confirmed_by_human=True)
     archived = glob.glob(os.path.join(p, "gtt-domain", "proposals", "withdrawn", "*PROPOSAL-redis.md"))
     check(rc == 0 and archived and not os.path.exists(os.path.join(p, "gtt-domain", "proposals", "PROPOSAL-redis.md"))
@@ -3302,7 +3322,7 @@ def change_flow(project, tmp):
     glossary = os.path.join(p, "gtt-domain", "context", "glossary.md")
     original = open(glossary, encoding="utf-8").read()
     write(os.path.join(p, "new-glossary.md"), original + "decided term\n")
-    bash(p, ".gtt/scripts/gtt-stage.sh", "term", "--reason", "a glossary term", "new-glossary.md=gtt-domain/context/glossary.md")
+    bash(p, ".gtt/scripts/gtt-stage.sh", "term", "--reason", "a glossary term", "--origin", accepted_prop(p, "spec", "term"), "new-glossary.md=gtt-domain/context/glossary.md")
     rc, env, _ = op(p, "promotion.apply", set="term", confirmed_by_human=True)
     check(rc == 0 and open(glossary, encoding="utf-8").read() == original and "dry run" in env.get("stdout", ""),
           "promoting through the contract is a dry run that shows the diff until the human confirms", env.get("stdout", "")[-300:])
@@ -3319,7 +3339,7 @@ def change_flow(project, tmp):
           env.get("stdout", "")[-300:] + env.get("stderr", "")[-300:])
     check(os.path.isfile(marker), "there is still no unfreeze: the project stays frozen")
     write(os.path.join(p, "new-glossary.md"), original + "second\n")
-    bash(p, ".gtt/scripts/gtt-stage.sh", "term2", "--reason", "another term", "new-glossary.md=gtt-domain/context/glossary.md")
+    bash(p, ".gtt/scripts/gtt-stage.sh", "term2", "--reason", "another term", "--origin", accepted_prop(p, "spec", "term2"), "new-glossary.md=gtt-domain/context/glossary.md")
     op(p, "promotion.apply", set="term2", apply=True, confirmed_by_human=True)
     with open(glossary, "a", encoding="utf-8") as handle:
         handle.write("edited later\n")
@@ -3338,7 +3358,7 @@ def change_flow(project, tmp):
     q_original = open(q_glossary, encoding="utf-8").read()
     write(os.path.join(q, "gtt-domain", "proposals", "glossary-cache.md"), q_original + "cache: the session cache\n")
     bash(q, ".gtt/scripts/gtt-index.sh")
-    bash(q, ".gtt/scripts/gtt-stage.sh", "cache", "--reason", "a session cache",
+    bash(q, ".gtt/scripts/gtt-stage.sh", "cache", "--reason", "a session cache", "--origin", accepted_prop(q, "arch", "cache"),
          "gtt-domain/proposals/ADR-DRAFT-cache.md=gtt-domain/adr/ADR-002-cache.md", "gtt-domain/proposals/glossary-cache.md=gtt-domain/context/glossary.md")
     rc, env, _ = op(q, "promotion.apply", set="cache", apply=True, confirmed_by_human=True)
     adr = os.path.join(q, "gtt-domain", "adr", "ADR-002-cache.md")
@@ -3618,7 +3638,7 @@ def human_handoff(project, tmp):
     rc, out, err = hand("run", "7")
     check(rc == 1 and "no pending run" in err, "a run that does not exist is never handed over", out + err)
     write(os.path.join(p, "ctx.md"), "# ctx\n")
-    rc, out, err = bash(p, ".gtt/scripts/gtt-stage.sh", "adr-x", "--reason", "Use Postgres", "ctx.md=gtt-domain/context/stack.md")
+    rc, out, err = bash(p, ".gtt/scripts/gtt-stage.sh", "adr-x", "--reason", "Use Postgres", "--origin", accepted_prop(p, "arch", "pg"), "ctx.md=gtt-domain/context/stack.md")
     check(rc == 0 and "gtt-handoff.sh promote adr-x" in out, "gtt-stage points to the hand-over, not to a command to retype", out + err)
     rc, out, err = hand("promote", "adr-x")
     check(rc == 0 and "Use Postgres" in out and "gtt-domain/context/stack.md" in out and "promote adr-x" in out,

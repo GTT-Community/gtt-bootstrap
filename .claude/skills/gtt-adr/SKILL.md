@@ -1,6 +1,6 @@
 ---
 name: gtt-adr
-description: Draft an Architecture Decision Record — and its promotion package — for a change the Solution Designer has already approved. Use when the user says a proposal is approved, asks to record or document a decision, asks to write an ADR, or asks to update the ADR index. Do not use for proposing changes that are not yet approved.
+description: Draft an Architecture Decision Record — and its promotion package — for a change the Solution Designer has already approved, or package an ADR the architect wrote in gtt-domain/adr/drafts/. Use when the user says a proposal is approved (a PROP in stage accepted), asks to record or document a decision, asks to write an ADR, or asks to update the ADR index. Do not use for proposing changes that are not yet approved.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
@@ -24,8 +24,23 @@ Human Promotion Boundary (`AGENTS.md`): you prepare, they promote. Generating
 this package is not itself approval, and approving one change never carries
 over to the next.
 
-If a proposal for this change exists in `gtt-domain/proposals/`, base the ADR on it
-rather than restating the reasoning from scratch.
+If a proposal for this change exists in `gtt-domain/proposals/` (`PROP-NNN-<slug>.md`), base the ADR on it
+rather than restating the reasoning from scratch. After the freeze, the human's acceptance is a REV answered
+(`gtt inbox show PROP-n` must say `accepted`); `gtt-stage.sh` refuses to stage a set that touches
+`gtt-domain/context/` or `gtt-domain/adr/` without `--origin REF` of an entry in `accepted`.
+
+## Two sources of an ADR
+
+- **You draft it (R4)**, from an accepted PROP: the rest of this skill. The ADR carries `- Origin: PROP-n`.
+- **The architect wrote it (F4/F5)**: `gtt adr new "<title>"` created `gtt-domain/adr/drafts/IDEA-NNN-<slug>.md`
+  from `ADR-TEMPLATE.md` (`Tipo: adr`, `Nivel: arquitectura`), or the human adopted a hand-written file with
+  `gtt adr adopt`. You can read it but never write it. When it is complete (no `<...>` markers, Context, Decision and
+  Consequences filled in) GTT moves it to `accepted` by itself: the architect already decided, so there is no REV
+  (in the Team profile a draft by someone who is not the `architecture` role gets a REV first). Package it
+  **as written**: copy the text unchanged as `ADR-NNN-<slug>.md` (with `- Origin: IDEA-NNN`), add the stack map
+  delta, the change log row and the full affected context files, plus a "Clashes" section if it contradicts another
+  ADR, a constraint or the code. Never touch the decision. If the architect edits the draft after you staged, GTT
+  reports `Paquete: desactualizado` and you redo the package.
 
 ## First: does this change need an ADR?
 
@@ -35,7 +50,7 @@ An ADR is for architecture only. Apply the rule before drafting anything - it is
   `BLOCKING` gap → it is **architectural**: draft the ADR, as below.
 - It touches only an Epic's design (`gtt-domain/context/design/`), `glossary.md`, `solution-vision.md` or
   another detail → it is a **specification change**: stage the set **without an ADR**
-  (`bash .gtt/scripts/gtt-stage.sh <name> --reason "…" <draft>=<destination> …`) and say so in one line. The
+  (`bash .gtt/scripts/gtt-stage.sh <name> --origin PROP-n --reason "…" <draft>=<destination> …`) and say so in one line. The
   promotion records it as `CHANGE-<date>-<name>` in the map change log and takes the new freeze in the
   same confirmation.
 
@@ -60,6 +75,7 @@ Target filename: `ADR-NNN-short-kebab-title.md`. Write the draft itself to
 - Date: YYYY-MM-DD
 - Approved by: <Solution Designer>
 - Supersedes: <ADR-NNN, or none>
+- Origin: <PROP-NNN or IDEA-NNN that led here>
 
 ## Context
 
@@ -124,7 +140,7 @@ Never write an application script by hand. Stage the ADR draft and every affecte
 context file as one set, named after the ADR:
 
 ```bash
-bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --reason "<what the decision changes, one line>" \
+bash .gtt/scripts/gtt-stage.sh ADR-NNN-<slug> --origin PROP-n|IDEA-n --reason "<what the decision changes, one line>" \
   gtt-domain/proposals/ADR-DRAFT-<slug>.md=gtt-domain/adr/ADR-NNN-<slug>.md \
   gtt-domain/proposals/context-stack.md=gtt-domain/context/stack.md
 ```
@@ -140,4 +156,6 @@ Run `bash .gtt/scripts/gtt-handoff.sh promote ADR-NNN-<slug>` and show its outpu
 
 The promotion shows the reason, the files and the diff before it asks for `apply`,
 applies everything or nothing, prints its undo and validates the result. A governed
-change is then completed by a new freeze, which is also the human's.
+change is then completed by a new freeze, which is also the human's. Packaging adds a `Paquete:` line to the
+entry; the promotion adds `Ratificada:` by itself. If the decision brings derived work, write it as Stories (or
+an Epic) with `Origin: PROP-n`/`IDEA-n`; with none, the entry closes as done.

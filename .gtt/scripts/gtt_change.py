@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """GTT - the change flow during development (engine): request a change, follow its proposals, step back.
 
-    gtt-domain/change-request.md     the front door: one request at a time, written by the human
+    the inbox (gtt_inbox.py)         the front door since 1.23: a request is an IDEA of type `solicitud`; the old
+                                     gtt-domain/change-request.md desk is retired (gtt-inbox.sh migrate moves it)
     gtt-domain/proposals/            what the agent drafted: proposals, ADR drafts, staged promotion sets
     gtt-domain/proposals/withdrawn/  what the human withdrew - archived, never deleted
     .gtt/local/promote-backup/       what a promotion replaced - the way back
 
   gtt_change.py request --change TEXT --reason TEXT [--trigger --scope --impact --risk --priority] [--by NAME]
-                        [--replace] [--apply]     write the request (the human's act); the agent is told to process it
-  gtt_change.py state [--json]                    the request: absent | empty | pending | processed
-  gtt_change.py next-action                       the one line the session context shows while a request waits
+                        [--apply]                 the shortcut of `gtt-inbox.sh add --type solicitud --now` (the human's act)
+  gtt_change.py state [--json]                    the 1.22 desk, if one is left: absent | empty | legacy (to migrate)
+  gtt_change.py next-action                       nothing: the inbox gives the next action (kept so old callers still run)
   gtt_change.py proposals [--json]                every draft under gtt-domain/proposals/, with its kind and state
   gtt_change.py show NAME [--json]                one of them
   gtt_change.py withdraw NAME [--by NAME] [--apply]   archive a draft nobody will promote (the human's act)
@@ -88,102 +89,56 @@ def one_line(text):
 
 # ------------------------------------------------------------------------------- the request
 
-def request_block():
-    """(fields, raw block or None)."""
-    found = BLOCK.search(read(REQUEST) or "")
+def has_request():
+    """Does the retired desk still hold a request nobody migrated? (the fields of the block, or None)"""
+    text = read(REQUEST)
+    if text is None:
+        return None
+    found = BLOCK.search(text)
     if not found:
-        return {}, None
+        return None
     fields = {}
     for line in found.group(2).split("\n"):
         m = re.match(r"^([A-Z][A-Za-z ]*):\s*(.*)$", line)
         if m:
             fields[m.group(1).strip()] = m.group(2).strip()
-    return fields, found.group(2)
-
-
-def drafts_citing(request_id):
-    out = []
-    for path in sorted(glob.glob(os.path.join(PROPOSALS, "**", "*"), recursive=True)):
-        path = path.replace("\\", "/")  # Windows globs with backslashes
-        if os.path.isfile(path) and not path.startswith(WITHDRAWN + "/") and request_id in (read(path) or ""):
-            out.append(path)
-    for path in sorted(glob.glob(os.path.join(ADR_DIR, "ADR-*.md"))):
-        if request_id in (read(path) or ""):
-            out.append(path.replace("\\", "/"))
-    return out
+    if not fields.get("Change") or PLACEHOLDER.search(fields.get("Change", "")):
+        return None
+    return fields
 
 
 def request_state():
-    fields, raw = request_block()
+    """The state of the retired 1.22 desk: the inbox is the front door now. `legacy` = it still holds a request that
+    `gtt-inbox.sh migrate` has not moved."""
     out = {"schema": 1, "kind": "gtt-change-request", "file": REQUEST, "state": "absent", "id": None, "fields": {},
-           "proposals": [], "authority": "none - the human's intent; a proposal answers it and the human decides"}
+           "proposals": [], "authority": "none - the front door is the inbox (gtt-inbox.sh); this is only the 1.22 desk, if one is left"}
     if read(REQUEST) is None:
         return out
-    if raw is None or not fields.get("Change") or PLACEHOLDER.search(fields.get("Change", "")):
+    fields = has_request()
+    if fields is None:
         out["state"] = "empty"
         return out
     out["fields"] = {k: v for k, v in fields.items() if k in FIELDS or k in ("Id", "Requested")}
     found = REQUEST_ID.search(fields.get("Id", ""))
     out["id"] = found.group(0) if found else None
-    out["proposals"] = drafts_citing(out["id"]) if out["id"] else []
-    out["state"] = "processed" if out["proposals"] else "pending"
+    out["state"] = "legacy"
     return out
 
 
 def next_action():
-    state = request_state()
-    if state["state"] != "pending":
-        return None
-    cid = state["id"] or "the request"
-    return (f"Change request {cid} pending ({one_line(state['fields'].get('Change'))[:90]}) -> {REQUEST}. "
-            f"The human asked for it to be processed: on the user's first message, whatever it says, run "
-            f"gtt-propose-change on it and write `Request: {cid}` in the proposal. Process it; never apply it.")
+    return None                                         # the inbox has its own (gtt_project.next_action)
 
 
 def cmd_request(args):
-    values = {"Change": args.change, "Reason": args.reason, "Trigger": args.trigger, "Scope": args.scope,
-              "Impact": args.impact, "Risk": args.risk, "Priority": args.priority}
-    values = {k: one_line(v) for k, v in values.items() if v and one_line(v)}
-    for required in ("Change", "Reason"):
-        if not values.get(required):
-            print(f"gtt-change: REFUSED - `{required}` is required: a request says what should change and why.", file=sys.stderr)
-            return 1
-    if values.get("Priority") and values["Priority"].lower() not in PRIORITIES:
-        print(f"gtt-change: REFUSED - priority must be one of {', '.join(PRIORITIES)}.", file=sys.stderr)
-        return 1
-    if any(PLACEHOLDER.search(v) for v in values.values()):
-        print("gtt-change: REFUSED - a field still holds template text (`<...>`).", file=sys.stderr)
-        return 1
-    text = read(REQUEST)
-    if text is None or not BLOCK.search(text):
-        print(f"gtt-change: cannot run - {REQUEST} has no `## GTT Request` block to write to.", file=sys.stderr)
-        return 2
-    current = request_state()
-    if current["state"] == "pending" and not args.replace:
-        print(f"gtt-change: REFUSED - request {current['id'] or ''} is still pending (no proposal answers it yet): "
-              f"\"{one_line(current['fields'].get('Change'))[:80]}\". Let the agent process it, or pass --replace "
-              "to discard it. Nothing was written.", file=sys.stderr)
-        return 1
-    stamp = datetime.datetime.now(datetime.timezone.utc)
-    cid = os.environ.get("GTT_CHANGE_ID") or f"CR-{stamp.strftime('%Y%m%d')}-{stamp.strftime('%H%M%S')}"
-    lines = [f"Id: {cid}", f"Requested: {now()} by {one_line(args.by) or 'the Solution Designer'}"]
-    for name in FIELDS:
-        lines.append(f"{name}: {values.get(name, '')}".rstrip())
-    block = "\n".join(lines)
-    print(f"gtt-change: request {cid}")
-    for line in lines[2:]:
-        print(f"  {line}")
-    if current["state"] == "processed":
-        print(f"  replaces the processed request {current['id']} (its proposals stay where they are)")
-    elif current["state"] == "pending":
-        print(f"  discards the pending request {current['id']} (--replace)")
-    if not args.apply:
-        print("(dry run - nothing written; re-run with --apply)")
-        return 0
-    write(REQUEST, BLOCK.sub(lambda m: m.group(1) + block + m.group(3), text, count=1))
-    print(f"gtt-change: written to {REQUEST}. The agent is told to process it at the start of its next session "
-          "(the session context's Next action); it drafts a proposal and decides nothing.")
-    return 0
+    """The shortcut `gtt change`: a request is an IDEA of type `solicitud`, written now (F2)."""
+    import gtt_inbox
+    argv = ["add", "--type", "solicitud", "--now"]
+    for name in ("change", "reason", "trigger", "scope", "impact", "risk", "priority", "by"):
+        if getattr(args, name, None):
+            argv += [f"--{name}", getattr(args, name)]
+    if args.apply:
+        argv.append("--apply")
+    return gtt_inbox.main(argv)
 
 
 def cmd_state(args):
@@ -191,16 +146,13 @@ def cmd_state(args):
     if args.json:
         emit(state)
     else:
-        print(f"change request: {state['state']}" + (f" {state['id']}" if state["id"] else "")
+        print(f"change request desk: {state['state']}" + (f" {state['id']}" if state["id"] else "")
               + (f" - {one_line(state['fields'].get('Change'))[:100]}" if state["fields"] else "")
-              + (f"; answered by {', '.join(state['proposals'])}" if state["proposals"] else ""))
+              + ("; run: bash .gtt/scripts/gtt-inbox.sh migrate --apply" if state["state"] == "legacy" else ""))
     return 0
 
 
 def cmd_next_action(args):
-    line = next_action()
-    if line:
-        print(line)
     return 0
 
 
@@ -209,7 +161,7 @@ def cmd_next_action(args):
 def kind_of(name, is_dir):
     if is_dir:
         return "promotion-set"
-    if re.match(r"^PROPOSAL-", name):
+    if re.match(r"^(PROPOSAL|PROP)-", name):
         return "proposal"
     if re.match(r"^(ADR-DRAFT|ADR-\d+)", name):
         return "adr-draft"
@@ -241,9 +193,19 @@ def drafts():
         if is_dir:
             continue                                    # adapter catalogs and other folders are not drafts
         text = read(path) or ""
-        out.append({"name": name, "path": path.replace("\\", "/"), "kind": kind_of(name, False), "title": title_of(path),
-                    "request": (REQUEST_ID.search(text).group(0) if REQUEST_ID.search(text) else None),
-                    "state": "draft"})
+        item = {"name": name, "path": path.replace("\\", "/"), "kind": kind_of(name, False), "title": title_of(path),
+                "request": (REQUEST_ID.search(text).group(0) if REQUEST_ID.search(text) else None),
+                "state": "draft"}
+        if re.match(r"^PROP-\d+-", name):                          # a registered proposal of the inbox: its own fields
+            try:
+                import gtt_inbox
+                entry = gtt_inbox.load(path, gtt_inbox.contract())
+                item.update({"ref": entry["ref"], "author": entry["author_kind"], "created": entry["created"], "level": entry["route"],
+                             "idea": entry["origin"] if (entry["origin"] or "").startswith("IDEA-") else None, "origin": entry["origin"],
+                             "priority": entry["priority"], "stage": entry["stage"], "state": entry["stage"], "event": entry["rev"]})
+            except (SystemExit, Exception):
+                pass
+        out.append(item)
     for folder in sorted(glob.glob(os.path.join(STAGED, "*"))):
         spec = None
         try:

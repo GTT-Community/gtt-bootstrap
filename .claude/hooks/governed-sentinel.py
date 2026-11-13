@@ -37,6 +37,7 @@ session: unexpected input exits 0, and a file it cannot restore is reported.
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -172,6 +173,57 @@ def restore(root, where, before, now):
     return changed, archive, missed
 
 
+DRAFTS = "gtt-domain/adr/drafts/"
+ENGINE_COMMAND = re.compile(r"gtt-stage\.sh|gtt_flow\.py\s+stage|gtt-inbox\.sh\s+reconcile|gtt_inbox_reconcile\.py|gtt_inbox\.py\s+reconcile|gtt-run\.sh")
+TRAIL_LINE = re.compile(r"^[^:\n\u00b7]{2,24}: .* \u00b7 \d{4}-\d{2}-\d{2} \u00b7 (?:gtt|agent|agente)(?: \(.*\))?$")
+
+
+def read_text(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            return handle.read().replace("\r\n", "\n")
+    except OSError:
+        return None
+
+
+def only_trail_added(old, new):
+    """True when `new` is `old` plus trail lines of the inbox (the engine's own writes under an entry): the architect's text never changes."""
+    if old is None or new is None:
+        return False
+    head = old.rstrip("\n")
+    if not new.startswith(head):
+        return False
+    extra = [l for l in new[len(head):].split("\n") if l.strip() and l.strip() != "---"]
+    return bool(extra) and all(TRAIL_LINE.match(l) for l in extra)
+
+
+def engine_writes(root, where, before, now, event):
+    """The paths under the ADR drafts that the inbox engine itself changed in this command (`gtt-stage.sh`, `reconcile`): a
+    line added to the trail of an entry, or the entry moved to drafts/done/ with only such lines added. A command that is not
+    the engine's, or any change to the architect's text, is not in this set and is put back as before."""
+    tool_input = event.get("tool_input") or {}
+    command = str(tool_input.get("command") or "")
+    backlog_edit = event.get("tool_name") in ("Write", "Edit", "MultiEdit") and os.path.basename(str(tool_input.get("file_path") or "")) == "backlog.md"
+    # Only a SIMPLE command of the engine counts: one that chains, redirects or substitutes (`;`, `&`, `|`, `<`, `>`, a backtick,
+    # `$(`, a newline) could carry a write of its own, and a forged trail line moves an entry's stage. Such a command is put back.
+    simple = re.fullmatch(r"[^;&|<>`$\n]*", command.strip()) is not None
+    if not ((ENGINE_COMMAND.search(command) and simple) or backlog_edit):         # a backlog edit makes delivery-log.py run `reconcile`
+        return set()
+    tree = os.path.join(where, "tree")
+    ok = set()
+    for rel in now:
+        if not rel.startswith(DRAFTS):
+            continue
+        if rel in before and before[rel] != now[rel]:
+            if only_trail_added(read_text(os.path.join(tree, rel)), read_text(os.path.join(root, rel))):
+                ok.add(rel)
+        elif rel not in before and rel.startswith(DRAFTS + "done/"):
+            old = DRAFTS + os.path.basename(rel)
+            if old in before and old not in now and only_trail_added(read_text(os.path.join(tree, old)), read_text(os.path.join(root, rel))):
+                ok.update({rel, old})
+    return ok
+
+
 def post(root, event):
     where = shadow(root)
     saved = load(where) or {}
@@ -182,6 +234,14 @@ def post(root, event):
     if now == before:
         return None
     commit = head(root)
+    for rel in engine_writes(root, where, before, now, event):
+        if rel in now:
+            before[rel] = now[rel]
+        else:
+            before.pop(rel, None)
+    if now == before:
+        keep(root, where, now, commit)
+        return None
     try:
         with open(os.path.join(where, "call.json"), encoding="utf-8") as handle:
             call = json.load(handle)

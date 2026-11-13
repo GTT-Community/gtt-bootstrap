@@ -381,6 +381,210 @@ def collect_docs():
     return {"items": items, "limit_bytes": DOCS_TOTAL_LIMIT}
 
 
+# ------------------------------------------------------------------------------------------- the inbox (the Bandeja)
+# Every fact comes from gtt_inbox.py (the entries and their trail), gtt_pending.py (the REV) and the registries (ADR,
+# the map change log). The page only paints what is here; what is not known is `null`.
+
+CLOSED_DAYS = 7            # a closed entry stays in the Bandeja this many days
+REJECTED_DAYS = 30
+INBOX_LIMIT = 200
+TEXT_LIMIT = 4000
+KIND_RANK = {"review": 1, "ratify": 2, "adr-hand": 3}      # at equal weight, what holds work back comes first
+PRIORITIES = ("urgent", "normal", "low")
+
+
+def origin_of(value):
+    """The entry an Epic came from (`Origin:`), its first word; None when empty or `—`."""
+    text = plain(value)
+    return None if not text or NO_REASON.match(text) else short(text.split(" ")[0], 40)
+
+
+def priority_of(value):
+    """urgent | normal | low as written in the Epic; anything else is shown as the author wrote it; None when empty."""
+    text = plain(value).lower()
+    return (text if text in PRIORITIES else short(text, 20)) if text else None
+
+
+def git_user():
+    try:
+        out = subprocess.run(["git", "config", "user.name"], capture_output=True, text=True, timeout=5)
+        return out.stdout.strip() or None if out.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def ratify_command(e, engine):
+    """The act that ratifies a ready package: its staged set (`gtt promote`), else its run (`gtt run n`), else the Epic
+    to approve (`gtt approve EPIC-n`). None when the `Package` line names nothing the human can run."""
+    names = engine.set_names(e)
+    if names:
+        return f"gtt promote {names[0]}"
+    value = " ".join(l["value"] for l in e["trail"] if l["key"] == "package")
+    run = re.search(r"\bRUN-0*(\d+)", value)
+    if run:
+        return f"gtt run {int(run.group(1))}"
+    epic = re.search(r"gtt approve (EPIC-\d+)", value) or re.search(r"\b(EPIC-\d+)\b", value)
+    return f"gtt approve {epic.group(1)}" if epic else None
+
+
+def staged_sets():
+    """Promotion sets that are ready and say where they come from (`origin` in promote.json): {name: (origin, reason)}."""
+    import glob
+    out = {}
+    for path in sorted(glob.glob("gtt-domain/proposals/staged/*/promote.json")):
+        spec = read_json(path)
+        if isinstance(spec, dict) and isinstance(spec.get("origin"), str) and spec["origin"].strip():
+            out[os.path.basename(os.path.dirname(path))] = (spec["origin"].strip(), short(spec.get("reason"), 120))
+    return out
+
+
+def adr_hand_items():
+    """ADRs written by hand straight into adr/ that wait for `gtt adr adopt`: the reconcile module says which (it is
+    written apart); without it, none. Accepts paths or {path, title}."""
+    try:
+        import gtt_inbox_reconcile as rec
+    except (Exception, SystemExit):
+        return []
+    fn = getattr(rec, "adr_hand", None)
+    if not callable(fn):
+        return []
+    try:
+        found = fn()
+    except TypeError:
+        try:
+            import gtt_inbox
+            found = fn(gtt_inbox.contract())
+        except (Exception, SystemExit):
+            return []
+    except (Exception, SystemExit):
+        return []
+    out = []
+    for item in found or []:
+        path = item if isinstance(item, str) else (item.get("path") or item.get("file")) if isinstance(item, dict) else None
+        if not path:
+            continue
+        title = item.get("title") if isinstance(item, dict) else None
+        if not title:
+            try:
+                with open(path, encoding="utf-8") as handle:
+                    title = first_heading(handle.read(), os.path.basename(path))
+            except OSError:
+                title = os.path.basename(path)
+        out.append({"path": path.replace("\\", "/"), "title": title})
+    return out
+
+
+def inbox_section(at, pend):
+    """(inbox rows, counts, needs, me) from the engine. rows is None when this Bootstrap has no inbox (no data)."""
+    import gtt_inbox
+    c = gtt_inbox.contract()
+    L = gtt_inbox.LB(c)
+    ents = gtt_inbox.entries(c)
+    by_ref = {e["ref"]: e for e in ents}
+    revs = {r["entry"]: r for r in pend.get("reviews", []) if r.get("entry")}
+    # An idea that became a proposal is that proposal: its card carries `de IDEA-n`, so the idea is not listed twice.
+    converted = {e["origin"] for e in ents if e["kind"] == "PROP" and (e["origin"] or "").startswith("IDEA-")}
+    rows, ratify_names = [], set()
+    needs = []
+    for e in ents:
+        shown = e["ref"] not in converted
+        command = None
+        rev = revs.get(e["ref"])
+        if e["stage"] == "review" and rev:
+            command = at(f"gtt answer {rev['number']} {rev.get('recommended') or 1}")
+        elif e["stage"] == "ratify":
+            raw = ratify_command(e, gtt_inbox)
+            command = at(raw) if raw else None
+            if raw and raw.startswith("gtt promote "):
+                ratify_names.add(raw.split()[-1])
+            if raw and shown:
+                needs.append({"ref": e["ref"], "kind": "ratify", "how": "ratify", "title": e["title"], "weight": {"stories": 0, "hours": None}, "unblocks": [],
+                              "note": None, "for": None, "entry": e["ref"], "command": command})
+        age = gtt_inbox.days_since(e["since"])
+        if not shown:
+            continue
+        if e["stage"] == "closed" and (age is None or age > CLOSED_DAYS):
+            continue
+        if e["stage"] == "rejected" and age is not None and age > REJECTED_DAYS:
+            continue
+        rows.append({"ref": e["ref"], "type": e["type"], "origin": e["author_kind"],
+                     "from": e["origin"] if (e["origin"] or "").startswith("IDEA-") else None,
+                     "title": short(e["title"], 160) or e["ref"], "level": e["route"], "stage": e["stage"], "priority": e["priority"],
+                     "days_in_stage": age, "event": e["rev"], "for": rev.get("for") if rev and e["stage"] == "review" else None,
+                     "command": command, "path": e["path"],
+                     "trail": [{"key": l["key"], "label": (L.get("trail") or {}).get(l["key"], l["key"]), "value": l["value"], "at": l["at"], "actor": l["actor"], "detail": l["detail"]} for l in e["trail"]],
+                     "text": (e["body"] or "")[:TEXT_LIMIT]})
+    order = {s: i for i, s in enumerate(c["stages"])}
+    rank = {p: i for i, p in enumerate(PRIORITIES)}
+    rows.sort(key=lambda r: (order.get(r["stage"], 99), rank.get(r["priority"], 1), r["days_in_stage"] if r["days_in_stage"] is not None else 0, r["ref"]))
+    rows = rows[:INBOX_LIMIT]
+    counts = {s: sum(1 for r in rows if r["stage"] == s) for s in c["stages"]}
+    # One decision per open REV, with an act per option.
+    for r in pend.get("reviews", []):
+        options = r.get("options") or []
+        choices = [{"label": o, "command": at(f"gtt answer {r['number']} {i}")} for i, o in enumerate(options, 1)]
+        best = r.get("recommended") or 1
+        needs.append({"ref": r["id"], "kind": "review", "how": "decide", "title": r["title"], "weight": {"stories": 0, "hours": None}, "unblocks": [],
+                      "note": by_ref[r["entry"]]["route"] if r.get("entry") in by_ref else None, "for": r.get("for"), "entry": r.get("entry"),
+                      "choices": choices, "command": at(f"gtt answer {r['number']} {best}")})
+    # A ready package that names its origin but whose entry is not (yet) in `ratify` still waits for the human.
+    for name, (origin, reason) in staged_sets().items():
+        if name not in ratify_names:
+            needs.append({"ref": name, "kind": "ratify", "how": "ratify", "title": reason or name, "weight": {"stories": 0, "hours": None}, "unblocks": [],
+                          "note": origin, "for": None, "entry": origin if origin in by_ref else None, "command": at(f"gtt promote {name}")})
+    import shlex
+    for item in adr_hand_items():
+        needs.append({"ref": os.path.basename(item["path"])[:-3] if item["path"].endswith(".md") else item["path"], "kind": "adr-hand", "how": "adopt", "title": item["title"],
+                      "weight": {"stories": 0, "hours": None}, "unblocks": [], "note": None, "for": None, "entry": None,
+                      "command": at("gtt adr adopt " + shlex.quote(item["path"]))})
+    return rows, counts, needs, by_ref
+
+
+def decisions_list(by_ref, limit=10):
+    """The last ADRs and CHANGEs: ADR files plus the rows of the map change log, newest first, each with the entry
+    that produced it when the registry says so."""
+    import glob
+    items, seen = [], {}
+    for path in sorted(glob.glob("gtt-domain/adr/ADR-*.md")):
+        base = os.path.basename(path)
+        if "TEMPLATE" in base:
+            continue
+        found = re.match(r"(ADR-\d+)", base)
+        text = read_text(path) or ""
+        if not found:
+            continue
+        title = re.sub(r"^ADR-\d+\s*[-—–:·.]*\s*", "", first_heading(text, base)).strip() or found.group(1)
+        date = re.search(r"^[-*]\s*Date:\s*(\d{4}-\d{2}-\d{2})", text, re.M)
+        origin = re.search(r"^[-*]\s*Origin:\s*([A-Za-z0-9-]+)", text, re.M)
+        item = {"ref": found.group(1), "kind": "adr", "at": date.group(1) if date else None, "title": short(title, 160),
+                "origin": origin.group(1) if origin else None}
+        seen[item["ref"]] = item
+        items.append(item)
+    rows = safe(lambda: __import__("gtt_method").change_log_rows(), []) or []
+    for cells in rows:
+        if len(cells) < 3 or not (cells[1] or "").strip():
+            continue
+        ident = re.sub(r"[`*]", "", cells[1]).strip().split()[0]
+        what = cells[2].strip()
+        tail = re.search(r"\(((?:PROP|IDEA)-\d+)\)\s*$", what)
+        origin = tail.group(1) if tail else None
+        day_ = re.match(r"\d{4}-\d{2}-\d{2}", cells[0].strip())
+        if ident in seen:
+            if not seen[ident]["origin"] and origin:
+                seen[ident]["origin"] = origin
+            if not seen[ident]["at"] and day_:
+                seen[ident]["at"] = day_.group(0)
+            continue
+        item = {"ref": ident, "kind": "adr" if ident.upper().startswith("ADR-") else "change", "at": day_.group(0) if day_ else None,
+                "title": short(re.sub(r"\s*\((?:PROP|IDEA)-\d+\)\s*$", "", what), 160) or ident, "origin": origin}
+        seen[ident] = item
+        items.append(item)
+    for item in items:
+        item["entry"] = item["origin"] if item["origin"] in by_ref else None
+    items.sort(key=lambda i: (i["at"] or "", i["ref"]), reverse=True)
+    return items[:limit]
+
+
 def build(root, docs=False):
     import gtt_backlog
     import gtt_delivery as dl
@@ -433,7 +637,9 @@ def build(root, docs=False):
             "flags": flags.get(e["id"], []),
             "status": e["status"], "owner": e.get("owner") or None, "estimate_h": e.get("estimate_h"), "depends": e.get("depends") or [],
             "goal": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Goal"), 400),
-            "approved": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Approved"), 80)})
+            "approved": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Approved"), 80),
+            "origin": origin_of((raw_epics.get(e["id"], {}).get("fields") or {}).get("Origin")),
+            "priority": priority_of((raw_epics.get(e["id"], {}).get("fields") or {}).get("Priority"))})
 
     out_stories = []
     for s in stories:
@@ -512,7 +718,13 @@ def build(root, docs=False):
             needs.append({"ref": s["id"], "kind": "blocked", "how": "blocked", "title": s.get("title") or s["id"],
                           "weight": {"stories": 1, "hours": s["estimate_h"]}, "unblocks": [s["id"]],
                           "note": by_id[s["id"]]["blocked_by"] or words.get("nocause"), "command": None})
-    needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), n["ref"]))
+    inbox, inbox_counts, by_ref = None, None, {}
+    try:
+        inbox, inbox_counts, inbox_needs, by_ref = inbox_section(at, pend)
+        needs.extend(inbox_needs)
+    except (Exception, SystemExit):
+        inbox = inbox_counts = None             # a Bootstrap without the inbox: no data, never an empty guess
+    needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), KIND_RANK.get(n["kind"], 0), n["ref"]))
     planned = [{"ref": e["id"], "title": e.get("title"), "lane": e["lane"] or "main"} for e in epics if e["status"] == "Planned"][:3]
 
     recent = []
@@ -594,6 +806,7 @@ def build(root, docs=False):
         "health": safe(health_checks),
         "recent": recent,
         "ideas": ideas,
+        "inbox": inbox, "inbox_counts": inbox_counts, "decisions": safe(lambda: decisions_list(by_ref)), "me": git_user(),
         "docs": safe(collect_docs) if docs else None,
     }
 
@@ -660,6 +873,18 @@ def lock_taken():
         return False
 
 
+def reconcile_quietly():
+    """The inbox reconcile runs at the render (order 6.1): it files what arrived by hand. If this Bootstrap has no such
+    subcommand, or it fails, the page is drawn all the same and nothing is said. The snapshot itself never calls it."""
+    script = os.path.join(".gtt", "scripts", "gtt-inbox.sh")
+    if not os.path.isfile(script):
+        return
+    try:
+        subprocess.run(["bash", script, "reconcile", "--apply"], stdin=subprocess.DEVNULL, capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
 def cmd_render(args):
     quiet = args.quiet
     try:
@@ -695,6 +920,7 @@ def cmd_render(args):
             write_atomic(os.path.join(LOCAL, ".gitignore"), "*\n")      # .gtt/local/ is per-user state, never versioned
         write_atomic(LOCK, str(os.getpid()))
         try:
+            reconcile_quietly()
             snap = build(os.getcwd(), docs=True)
             write_atomic(os.path.join(LOCAL, "sonar.json"), json.dumps(snap, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
             write_atomic(os.path.join(LOCAL, "sonar.html"), page([{"snapshot": snap}], "../sonar/fonts"))

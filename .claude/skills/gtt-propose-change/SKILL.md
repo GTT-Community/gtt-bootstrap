@@ -1,6 +1,6 @@
 ---
 name: gtt-propose-change
-description: Produce a GTT change proposal instead of applying a governance change directly. Use when the user says to process the change request, when an architectural change is required, when a governed context file under gtt-domain/context/ is wrong or outdated, when implementation code conflicts with the governed context, when an Epic must be added, removed or its goal or scope materially changed, when the ratified development method (the Method Lock) must change, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change an Epic, and whenever a permission denial points at gtt-domain/context/, gtt-domain/adr/, gtt-domain/change-request.md, or a GTTGuard-protected artifact. NOT for ordinary work - implementing, refactoring, testing, or writing and closing Stories needs no proposal and no approval.
+description: Produce a GTT change proposal instead of applying a governance change directly. Use to triage the inbox (ideas and requests the human wrote), when the user says to process a request, when an architectural change is required, when a governed context file under gtt-domain/context/ is wrong or outdated, when implementation code conflicts with the governed context, when an Epic must be added, removed or its goal or scope materially changed, when the ratified development method (the Method Lock) must change, or when a change is requested to a GTTGuard-protected file/class/method. Triggers on any request to change architecture, paradigm, module boundaries, frameworks, cloud services, or infrastructure tooling, on any request to change an Epic, and whenever a permission denial points at gtt-domain/context/, gtt-domain/adr/, gtt-domain/proposals/, or a GTTGuard-protected artifact, and when the session's Next action says there are untriaged inbox entries (IDEA-NNN). NOT for ordinary work - implementing, refactoring, testing, or writing and closing Stories needs no proposal and no approval.
 ---
 
 > **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md
@@ -15,6 +15,55 @@ description: Produce a GTT change proposal instead of applying a governance chan
 Governed context is owned by the Solution Designer. You produce proposals; a
 human decides. Do not implement the change, do not partially apply it, and do
 not create the ADR yourself.
+
+## Triage (the first thing to do with an inbox entry)
+
+The human writes `IDEA-NNN` (an idea, or a request with fields) in `docs/ideas/`; you write `PROP-NNN`.
+Triage is yours: you read each entry that is in stage `new` and give it one result. Do it at a cut point
+(the session start, or when you have no Story of your own `In Progress`), never in the middle of a Story;
+an entry written with `--now`, or an accepted urgent one without a package, goes in your first answer.
+List them with `bash .gtt/scripts/gtt-inbox.sh list` and read one with `gtt-inbox.sh show IDEA-n`.
+
+| Result | When | What you do | REV? |
+|---|---|---|---|
+| `work` | It fits in an approved Epic and does not touch the design | Write the Story (with `- **Origin:** IDEA-n`), then `gtt-inbox.sh triage IDEA-n --result work --to STORY-m` | No |
+| `covered` | An Epic, idea or proposal already covers it | Cite the ref: `triage --result covered --to EPIC-n\|IDEA-n\|PROP-n` (opens an informative DEC) | No |
+| `scope` | It asks for a new Epic, removing one, or changing an Epic's goal | Write a PROP with Form 4 | Yes |
+| `spec` | It changes an Epic's design, the glossary, the vision or the principles | Write a PROP with Form 2 or 4 | Yes |
+| `arch` | It touches architecture, constraints, the map or a technology | Write a PROP with Form 1, 2, 3, 6 or 7 | Yes |
+| `non-goal` | It clashes with a non-goal of `solution-vision.md` | Write a closing PROP | Yes |
+| `ask` | A fact only the human has is missing | Open an ASK, then `triage --result ask --to ASK-n` | No |
+| `incorporated` | Before the freeze | Carry it into the design draft: `triage --result incorporated --to <file>` | No |
+
+**Level rule:** when two levels are plausible, choose the higher one. The engine corrects it at the end
+(it records a CHANGE, not an ADR, when no architecture file is touched). The human confirms the level in the REV.
+
+A level `work` entry needs no proposal and no question. For `scope`, `spec`, `arch` and `non-goal`,
+write the proposal (below) and register it; the triage line is added by `propose` itself.
+
+## Registering a proposal
+
+1. Write your draft in `gtt-domain/proposals/drafts/<slug>.md`, in the form of this skill that fits.
+2. Register it:
+
+   ```bash
+   bash .gtt/scripts/gtt-inbox.sh propose --file gtt-domain/proposals/drafts/<slug>.md \
+     --level arch|spec|scope|work --form <1-7> [--origin IDEA-n|OBS-n|STORY-n]
+   ```
+
+   The engine validates the form, writes `gtt-domain/proposals/PROP-NNN-<slug>.md`, opens the `REV-NNN`
+   in `gtt-domain/pending/` and stores the sha256 of what the human will see. From then on the PROP is the
+   engine's: you cannot edit it.
+3. To correct it, or to re-triage after the human answers "this is architecture, not spec", write a new draft
+   and run `gtt-inbox.sh supersede PROP-n --file <draft>`: it closes the open REV and opens another.
+4. State the REV in chat as the session asks (`@gtt · Necesito tu decisión`), and stop. You never accept,
+   reject, park, reopen or change the priority of an entry: those are the human's (`gtt answer`,
+   `gtt inbox park|reopen|reject|priority`). When the human answers in chat ("15: 1"), record their exact words
+   with `gtt-pending.sh record --quote`.
+
+Once accepted, build the package (see the end of this skill) with `gtt-stage.sh ... --origin PROP-n`; after the
+freeze it refuses to stage a set that touches `gtt-domain/context/` or `gtt-domain/adr/` without an `--origin`
+that is in stage `accepted`.
 
 ## First: is this governance at all?
 
@@ -32,31 +81,21 @@ putting the human back into the loop of ordinary work.
 
 ## Where the request comes from
 
-If the user says "process the change request", read `gtt-domain/change-request.md`
-first. It holds the Solution Designer's stated intent. If
-the request block is empty or unchanged from the template, say so and stop —
-do not invent one.
+The Solution Designer's intent reaches you as an inbox entry: `IDEA-NNN` in `docs/ideas/` (`Tipo: idea`, or
+`Tipo: solicitud` when it carries the fields Change, Reason, Trigger, Scope, Impact, Risk and Priority), or
+whatever the user just described. `gtt-domain/change-request.md` is retired as a desk: `gtt change` is a shortcut
+for `gtt idea add --type solicitud`, and a leftover request is migrated into an `IDEA` by `gtt update`
+(`gtt-inbox.sh migrate`). Read the entry for what it actually decides; a raw pasted paragraph is valid input, do
+not ask for the fields first. An empty one is not a request: say so and stop, do not invent one.
 
-The request block may be filled in tersely or as a raw paragraph pasted
-straight from the Solution Designer's own document — both are valid input.
-Read a pasted excerpt for what it actually decides; do not ask them to
-compress it into the template's fields first.
-
-A request written with `gtt change` (or `gtt-change.sh request`) carries an `Id: CR-...` and a
-`Requested:` line: the human asked for it to be processed, and the session's `## Next action` says so.
-Process it in your first answer, whatever the first message says. Write `Request: CR-...` near the top
-of every proposal that answers it - that line is how GTT knows the request was processed
-(`gtt-change.sh state`). Processing is drafting; the decision stays the human's.
-
-Otherwise the request is whatever the user just described.
+Several requests can wait at once. A `--now` one is processed in your first answer, whatever the first message
+says. Processing is triage and drafting; the decision stays the human's. Never edit the text of an `IDEA`.
 
 ## Where the output goes
 
-Write the proposal to `gtt-domain/proposals/PROPOSAL-<short-kebab-summary>.md`. That
-directory is the only governed place you may write.
-
-Do not edit `gtt-domain/change-request.md` — not to clear it, not to mark it
-processed, not to tidy it. It is the Solution Designer's desk.
+Your drafts go to `gtt-domain/proposals/drafts/<slug>.md` (free). The registered `PROP-NNN-<slug>.md` is written
+only by `gtt-inbox.sh propose`. Before the freeze there are no proposals: write the governed context directly
+(`proposals/bootstrap/`, as THINK does) and triage ideas as `incorporated`.
 
 ## Before writing
 
@@ -305,18 +344,16 @@ A proposal is only useful if it can be decided without a follow-up question.
 
 ## After writing
 
-State the file path you wrote and summarize the proposal in two or three lines
-in chat, so the decision can be made without opening the file. Then stop.
+Register the proposal (`gtt-inbox.sh propose`), then summarize it in two or three lines in chat, with the REV the
+engine opened, so the decision can be made without opening the file. Then stop.
 
-Once an architecture, context, conflict or development method proposal (forms 1-3, 6 and 7) is approved,
-the decision is recorded with the `gtt-adr` skill, which stages the ADR, the
-affected context files, and an executable promotion script together (the governed
-change is then completed by a new freeze, which the human runs) — the
-Solution Designer reviews and runs it; the agent never applies the change
-itself (the Human Promotion Boundary, `AGENTS.md`). An Epic proposal (form 4)
-is not an architectural decision: once approved it is written straight into
-`gtt-domain/backlog.md`, no script and no ADR unless it also happens to touch
-governed context. A protected-artifact proposal (form 5) is approved in conversation
-— once the Solution Designer says so, implement it directly, update the
-marker, and re-sync the registry; no ADR, no script, and never treat it as
-approval for a different protected artifact.
+Once the human accepts (`gtt answer N 1`, or "N: 1" in chat), you build the package. For architecture, context,
+conflict, method and autonomy proposals (forms 1-3, 6 and 7) the decision is recorded with the `gtt-adr` skill, which
+stages the ADR, the affected context files and an executable promotion script together, with
+`--origin PROP-n`; the human runs `gtt promote` (a new freeze follows), and the agent never applies the change itself
+(the Human Promotion Boundary, `AGENTS.md`). A specification change (an Epic's design) is staged the same way,
+without an ADR: the engine records a CHANGE. An Epic proposal (form 4) is accepted by the human, who then approves it
+with `gtt approve EPIC-n` (after the freeze, `gtt run n` carries both the design promotion and the approval). A
+protected-artifact proposal (form 5) is approved in conversation - once the Solution Designer says so, implement it
+directly, update the marker, and re-sync the registry; no ADR, no script, and never treat it as approval for a
+different protected artifact. Work derived from an accepted entry is written as Stories with `- **Origin:** PROP-n`.

@@ -60,7 +60,12 @@ if [ -f .gtt/scripts/gtt-pending.sh ] && [ -f .gtt/contract/pending.json ]; then
   bash .gtt/scripts/gtt-pending.sh clean --apply >/dev/null 2>&1 || true
 fi
 
-STATUS_ERR="$(bash .gtt/scripts/gtt-status.sh 2>&1 >/dev/null)" \
+# The inbox writes down what happened since the last session (a promotion, a closed Story): deterministic, never fails the session.
+if [ -f .gtt/scripts/gtt-inbox.sh ] && [ -f .gtt/contract/inbox.json ]; then
+  bash .gtt/scripts/gtt-inbox.sh reconcile --session >/dev/null 2>&1 || true
+fi
+
+STATUS_ERR="$(GTT_SESSION_START=1 bash .gtt/scripts/gtt-status.sh 2>&1 >/dev/null)" \
   || fail "gtt-status.sh failed: ${STATUS_ERR}"
 
 [ -s gtt-domain/session.md ] || fail "gtt-domain/session.md is missing or empty after gtt-status.sh."

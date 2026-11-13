@@ -127,6 +127,68 @@ def main():
                 check("<img" not in body and "<script" not in body, f"[{tag}] no element was created from the text (no <img>, no <script> in the page body)")
                 check("&lt;img src=x" in dom or tag in ("last", "backlog") or "&lt;script&gt;" in dom, f"[{tag}] the hostile text is on the page as text")
 
+        print("criterion 24 - the Bandeja, Te necesito, Decisiones, the portfolio column and the Backlog fields, with test data")
+        sh(dest, "git", "config", "user.name", "Ana")
+        snap_tests.inbox_scenario(dest)
+        shutil.copyfile(os.path.join(os.path.abspath(args.project), ".gtt", "contract", "pending.json"), os.path.join(dest, ".gtt", "contract", "pending.json"))
+        recon = os.path.join(dest, ".gtt", "scripts", "gtt_inbox_reconcile.py")
+        if True:     # the real reconcile lists nothing before a freeze: a stub, in the disposable copy, says which ADR was written by hand (same shape: path, name, command)
+            with open(recon, "w", encoding="utf-8") as handle:
+                handle.write('def adr_hand():\n    return [{"path": "gtt-domain/adr/ADR-003-hand.md", "name": "ADR-003-hand.md", "command": "gtt adr adopt gtt-domain/adr/ADR-003-hand.md"}]\n')
+        with open(os.path.join(dest, "gtt-domain", "backlog.md"), "w", encoding="utf-8") as handle:
+            handle.write("# Backlog\n\n## Epics\n\n### EPIC-030 — With origin\n**Status:** Proposed\n**Origin:** PROP-005\n**Priority:** urgent\n\n#### Stories\n\n##### STORY-300 — s\n- **Status:** Planned\n")
+        snap24 = os.path.join(tmp, "snap24.json")
+        proc = sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json")
+        open(snap24, "w", encoding="utf-8").write(proc.stdout)
+        page24 = os.path.join(tmp, "page24.html")
+        made = sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", page24, snap24)
+        check(proc.returncode == 0 and made.returncode == 0, "a page can be drawn from the Bandeja test data", made.stderr[-200:])
+        text24 = open(page24, encoding="utf-8").read()
+        check("</script" not in re.search(r'id="sonar-data">(.*?)</script>', text24, re.S).group(1).lower(), "the hostile titles and trail lines leave no `</script` in the embedded data")
+        # the render files the inbox first (order 6.1) when the subcommand exists, and never fails when it does not or breaks
+        stub = os.path.join(dest, ".gtt", "scripts", "gtt-inbox.sh")
+        original = open(stub, encoding="utf-8").read()
+        marker = os.path.join(dest, "reconciled.txt")
+        open(stub, "w", encoding="utf-8").write('#!/usr/bin/env bash\n[ "$1 $2" = "reconcile --apply" ] && echo ran >> "$(dirname "$0")/../../reconciled.txt"\nexit 1\n')
+        sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json")
+        check(not os.path.exists(marker), "the snapshot never runs the reconcile (it writes nothing)")
+        r = sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--quiet")
+        check(r.returncode == 0 and r.stdout == "" and r.stderr == "" and os.path.exists(marker), "the render runs `gtt-inbox.sh reconcile --apply` in silence, and a failing one does not break it", f"rc={r.returncode} {r.stderr[:80]}")
+        r = sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "render")
+        check(r.returncode == 0, "the render of a project works with a failing reconcile")
+        open(stub, "w", encoding="utf-8").write(original)
+        if not chrome:
+            print("  skip  headless Chrome not installed: the DOM checks of criterion 24 were not run")
+        else:
+            def dom_of(frag):
+                return sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{page24}#/view={frag}").stdout
+            def body_of(dom):
+                return dom.split('id="app"', 1)[-1].split("<script", 1)[0]
+            dom = dom_of("project&card=PROP-006")
+            body = body_of(dom)
+            check("<img" not in body and "<script" not in body, "[bandeja] no element was created from a title, a text or a trail line")
+            check("&lt;img src=x" in dom and "PWNED=9" in dom, "[bandeja] the hostile text is on the page as text")
+            for word in ("New", "In review", "To ratify", "In work", "Closed (7 days)"):
+                check(f">{word}<" in re.sub(r"<span[^>]*>\d+</span>", "", body), f"[bandeja] the column `{word}` is there")
+            check(">Parked<" not in body and ">Rejected<" not in body, "[bandeja] parked and rejected are not on the board until `all`")
+            check('class="icard agent"' in body and 'class="icard"' in body, "[bandeja] a card of the agent and a card of a person differ (dashed / solid)")
+            check("border:1px dashed var(--agent)" in template and ".icard{background:var(--surface);border:1px solid" in template, "[bandeja] the template gives the agent a dashed border and a person a solid one")
+            for ref in ("IDEA-001", "IDEA-002", "IDEA-003", "PROP-001", "PROP-002", "PROP-003", "PROP-006", "PROP-007"):
+                check(f'id="card-{ref}"' in body, f"[bandeja] the card of {ref} is drawn")
+            check("from IDEA-004" in body and "your move" in body and "gtt promote ready-set" in body, "[bandeja] a card says where it came from and the act that is yours")
+            check("trail" in body and "Work: EPIC-011" in body, "[bandeja] an open card shows the trail")
+            alldom = body_of(dom_of("project&ia=1"))
+            check(">Parked<" in re.sub(r"<span[^>]*>\d+</span>", "", alldom) and ">Rejected<" in re.sub(r"<span[^>]*>\d+</span>", "", alldom) and 'id="card-IDEA-010"' in alldom and 'id="card-PROP-009"' in alldom, "[bandeja] `all` adds the parked and the rejected")
+            check("decide" in body and "answer" in body and "REV-" in body and "ratify" in body and "adopt" in body, "[te necesito] review, ratify and adr-hand are drawn")
+            check("gtt adr adopt" in body and "gtt run 4" in body and "gtt approve EPIC-010" in body, "[te necesito] each act brings its command")
+            mine = body_of(dom_of("project&mine=1"))
+            check("for Ana" in mine and "for Luis" not in mine and "REV-" in mine, "[para mí] the filter keeps what is for the git user (and what has no owner)")
+            check("decisions" in body and "CHANGE-0001" in body and "ADR-002" in body and "produced by PROP-001" in body, "[decisiones] the list shows ADR and CHANGE with their origin")
+            port = body_of(dom_of("portfolio"))
+            check("3 new · 1 to review · 3 to ratify" in port and ">inbox<" in port, "[portafolio] the column `inbox` says what waits", re.sub(r"<[^>]+>", " ", port)[:300])
+            back = body_of(dom_of("backlog"))
+            check("origin: PROP-005" in back and "priority: urgent" in back, "[backlog] each Epic shows its Origin and Priority")
+
         print("criterion 5 - a story closed by evidence appears at the next reload; the hook is fast")
         many_stories(os.path.join(dest, "gtt-domain", "backlog.md"), 200)
         event = json.dumps({"tool_name": "Edit", "tool_input": {"file_path": os.path.join(dest, "gtt-domain", "backlog.md")}})

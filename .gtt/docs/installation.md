@@ -41,7 +41,7 @@ Identify:
 - existing `AGENTS.md`
 - existing `readme-gtt.md` / `readme-gtt.es.md`
 - existing `.gtt/` (the Engine)
-- existing `gtt-domain/` (the governed domain: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`)
+- existing `gtt-domain/` (the governed domain: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`, `.frozen`)
 - existing `.claude/`
 - existing `.kiro/`
 - existing `.github/instructions/gtt.instructions.md`
@@ -81,7 +81,6 @@ The resulting workspace must contain:
 │   ├── adr/                      #   L1 accepted decisions
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │
@@ -357,7 +356,6 @@ When an agent deploys GTT into a host project, it MUST reorganize the installed 
 │   ├── adr/                      #   L1 accepted decisions
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │

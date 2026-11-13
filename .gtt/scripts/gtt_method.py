@@ -407,7 +407,7 @@ def validate_choice(style, start, all_packs):
 def cmd_select(args):
     if frozen():
         print("gtt-method: REFUSED - the project is frozen. The development method was ratified with the design; changing it "
-              "is a change request with an impact analysis (gtt-domain/change-request.md -> gtt-propose-change), never a new "
+              "is a change request with an impact analysis (a request to the inbox: `gtt idea add` -> gtt-propose-change), never a new "
               "questionnaire. Nothing was written.", file=sys.stderr)
         return 1
     if args.style is None and args.start is None:

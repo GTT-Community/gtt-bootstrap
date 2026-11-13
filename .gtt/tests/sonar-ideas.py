@@ -64,7 +64,7 @@ def main():
         builders = [b for b in re.findall(r'"gtt [a-z]+ [a-z]+', template)]
         check(builders == ['"gtt idea add'], "no other command is assembled in the page: only `gtt idea add`", str(builders))
         blocks = re.findall(r"cmdBlock\(([^)]*\)?)\)", template)
-        allowed = {"text", "n.command", "p.command", "e.command", "info.command", "snap.compat.command", "snap.degraded.command", "ideaCommand(area.value)"}
+        allowed = {"text", "n.command", "p.command", "e.command", "info.command", "snap.compat.command", "snap.degraded.command", "ideaCommand(area.value)", "r.command)"}
         check(all(b.strip() in allowed or b.strip().startswith("ideaCommand") for b in blocks if not b.strip().startswith("text")), "every command block shows the snapshot's command or the idea command", str(blocks))
         check("command" in template and "n.command" in template and "p.command" in template and "e.command" in template, "every other act shows the snapshot's own `command`")
         node = shutil.which("node")
@@ -89,12 +89,12 @@ def main():
         print("criterion 9 - the human adds; the agent only triages, through the engine")
         gi = lambda *a: sh(dest, "bash", ".gtt/scripts/gtt-idea.sh", *a)
         r = gi("add", "Sincronizar parcelas\nsin señal con 'comillas' y $HOME")
-        check(r.returncode == 0 and not os.path.exists(os.path.join(dest, "docs", "ideas")), "add is a dry run: nothing is written without --apply", r.stderr)
+        check(r.returncode == 0 and not [n for n in (os.listdir(os.path.join(dest, "docs", "ideas")) if os.path.isdir(os.path.join(dest, "docs", "ideas")) else []) if n.startswith("IDEA-")], "add is a dry run: nothing is written without --apply", r.stderr)
         r = gi("add", "Sincronizar parcelas\nsin señal con 'comillas' y $HOME", "--apply")
         path = os.path.join(dest, "docs", "ideas", "IDEA-001.md")
         check(r.returncode == 0 and os.path.exists(path), "idea.add creates docs/ideas/IDEA-001.md", r.stderr)
         text = open(path, encoding="utf-8").read() if os.path.exists(path) else ""
-        check(re.match(r"# IDEA-001 · Sincronizar parcelas\n\n(Author|Autor): (human|humano) · (Created|Creada): \d{4}-\d{2}-\d{2}\n\n", text) is not None, "the file has the format of the design, author human", text[:120])
+        check(re.match(r"# IDEA-001 · Sincronizar parcelas\n\n> \*\*Canonical reference:\*\* \S+\n\n(Author|Autor): (human|humano)(?: \([^)]*\))? · (Created|Creada): \d{4}-\d{2}-\d{2} · (Type|Tipo): idea\n\n", text) is not None, "the file has the format of the design, author human", text[:120])
         check(text.endswith("Sincronizar parcelas\nsin señal con 'comillas' y $HOME\n"), "the text is kept exactly as written")
         gi("add", "segunda idea", "--apply")
         check(os.path.exists(os.path.join(dest, "docs", "ideas", "IDEA-002.md")), "numbers go up and are never reused")
@@ -103,7 +103,7 @@ def main():
         check(r.returncode == 0 and digest(path) == before, "triage is a dry run without --apply")
         r = gi("triage", "IDEA-001", "--result", "converted", "--to", "PROP-007", "--apply")
         after = open(path, encoding="utf-8").read()
-        check(r.returncode == 0 and after.startswith(text.rstrip("\n")) and re.search(r"\n---\nTriage: (converted into|convertida en) PROP-007 · \d{4}-\d{2}-\d{2}\n$", after), "triage adds one line after a rule and leaves the text untouched", after[len(text) - 20:])
+        check(r.returncode == 0 and after.startswith(text.rstrip("\n")) and re.search(r"\n---\nTriage: (converted into|convertida en) PROP-007 · \d{4}-\d{2}-\d{2} · (agent|agente)\n$", after), "triage adds one line after a rule and leaves the text untouched", after[len(text) - 20:])
         check(gi("triage", "IDEA-001", "--result", "covered", "--to", "EPIC-001", "--apply").returncode == 1, "an idea is triaged once")
         check(gi("triage", "IDEA-002", "--result", "nonsense", "--to", "x", "--apply").returncode == 1, "an unknown triage result is refused")
         check(gi("triage", "IDEA-002", "--result", "covered", "--to", "not-an-epic", "--apply").returncode == 1, "the target must be the right kind of reference")
@@ -139,10 +139,10 @@ def main():
         gi("add", "una idea nueva sin triage", "--apply")
         status = sh(dest, "bash", ".gtt/scripts/gtt-status.sh")
         session = open(os.path.join(dest, "gtt-domain", "session.md"), encoding="utf-8").read()
-        check(status.returncode == 0 and re.search(r"## New ideas \(1\)", session) and "una idea nueva sin triage" in session and "IDEA-001" not in session.split("## New ideas")[1].split("##")[0],
-              "session.md shows `New ideas (n)`, only the untriaged ones", session[-600:])
+        check(status.returncode == 0 and re.search(r"## Inbox[^\n]*\n(Inbox|Bandeja): 1 (new|nuevas?)", session),
+              "session.md shows the `Inbox` section counting the new idea (the section the inbox engine writes since 1.23)", session[-600:])
         audit = open(os.path.join(dest, ".claude", "skills", "gtt-audit", "SKILL.md"), encoding="utf-8").read()
-        check("docs/ideas/" in audit and "gtt-idea.sh triage" in audit, "the audit skill that contrasts the docs with the backlog includes the ideas")
+        check(("docs/ideas/" in audit or "IDEA-NNN" in audit) and ("gtt-idea.sh triage" in audit or "gtt-inbox.sh triage" in audit), "the audit skill that contrasts the docs with the backlog includes the ideas")
         snap = json.loads(sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json").stdout)
         refs = {i["ref"]: i for i in snap["ideas"]}
         check(refs.get("IDEA-001", {}).get("state") == "converted" and refs["IDEA-001"]["to"] == "PROP-007" and "IDEA-002" not in refs and refs.get("IDEA-003", {}).get("state") == "new",

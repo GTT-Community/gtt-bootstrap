@@ -35,11 +35,21 @@ result, continue. If it does not: name the decision, explain it briefly, ask onc
 - continuing to the next planned task after a step succeeded;
 - a policy the plan or a working agreement already defines.
 
+**Ask yes or no, not for a command.** A decision the human owes (a REV, an approval, a
+confirmation) is put in the chat as one question with a recommended answer that «yes» accepts
+(`@gtt · …`, the one-line effect, «yes / no»). Never make the human type a command to answer it. When they
+reply, record their exact words with `gtt-pending.sh record --quote`: the engine writes the `Decision:` and the trail.
+«No» is not guessed: ask once what to do instead (park or reject). An answer that is neither («this is architecture»)
+goes back to triage. The commands (`gtt answer`, `gtt promote`) stay as the fallback and for the acts the
+protection reserves to the human's own terminal (promote, freeze, undo): there the agent says plainly what the one
+command is and why it is theirs. A «yes» in the chat answers a decision; it never promotes, freezes or approves
+anything else, and never carries over to the next decision.
+
 **Protected and governed operations use one promotion, never a recipe.** When an operation
 needs human authorization (approve, promote, advance a governed stage, copy, move,
 delete, overwrite, modify a governed or protected artifact), stage the full content of
 every file it touches as one promotion set - `bash .gtt/scripts/gtt-stage.sh <name>
---reason "<one line>" <staged file>=<destination> ...` - and give the one command the
+--origin PROP-n --reason "<one line>" <staged file>=<destination> ...` - and give the one command the
 human runs: `bash .gtt/scripts/gtt-promote.sh <name>`. **Never write an application
 script by hand**, and never ask the human to reconstruct a command. You never run the
 promotion: see *Human Promotion Boundary*. Once the human has run it, it has already
@@ -217,7 +227,7 @@ report them from the governed artifacts themselves. A project that has adopted n
   (section 8). A **BLOCKING** gap must be decided before freeze: freeze is refused while one is pending, and a
   frozen design cannot carry one. An **OPEN** gap is known, undecided and not needed for the current design: it
   has an explicit `scope:`, crosses freeze, stays visible in status and query, and is **never an authorisation**
-  — resolving it, or changing anything outside its scope, follows the normal path (change request → proposal →
+  — resolving it, or changing anything outside its scope, follows the normal path (inbox entry → proposal →
   human decision → promotion → new freeze). A resolved gap is not deleted: it becomes an append-only
   `RESOLVED` line citing the ADR that resolved it.
 - **Sources.** When there is more than one design source, or a provenance policy is wanted, they are declared in
@@ -230,21 +240,58 @@ report them from the governed artifacts themselves. A project that has adopted n
   context, are not Session Memory, never override a governed decision (the gate rejects one that tries), and no
   agent authors its own.
 
-## The change flow during development
+## Inbox
 
-The human can drive a governed change from the CLI as well as by editing files; both reach the same
-artifacts, through `.gtt/scripts/gtt-change.sh` (operations `change.*`, `proposal.*`, `promotion.*`).
+One pipeline for every change that enters. What a person writes is an `IDEA-NNN` (`docs/ideas/`: an idea, a request
+with fields, or an architect's ADR draft in `gtt-domain/adr/drafts/`); what you write is a `PROP-NNN`
+(`gtt-domain/proposals/`). Entries decide nothing; the **records** they produce are an ADR, a CHANGE, an Epic or a
+Story. The human does three things: **write** (`gtt idea add`, `gtt change`, `gtt adr new`), **decide** (`gtt answer N k`
+or "N: k" in the chat) and **ratify** (`gtt promote`, `gtt approve`, `gtt run N`). Park, reopen, reject, priority, drop and
+`gtt adr adopt` are also only theirs. State is the **last line of the entry's trail** (below the `---`); the engine only
+appends lines, and the author's text never changes. `gtt-domain/change-request.md` is retired as a desk: `gtt change` is a
+shortcut for `gtt idea add --type solicitud` and `gtt update` migrates a leftover request (`gtt-inbox.sh migrate`).
 
-- **Request.** `gtt change` writes `gtt-domain/change-request.md` with an `Id: CR-...`. While no proposal
-  cites that id, the session's `## Next action` tells every ADE to process it on the first turn:
-  `gtt-propose-change`, with `Request: CR-...` in the proposal. You draft; you never apply.
-- **Proposals.** `gtt proposals` lists the drafts, ADR drafts and staged promotion sets, with their state.
-  A draft the human withdraws is archived in `gtt-domain/proposals/withdrawn/`, never deleted; do not
-  revive it unless the human asks.
-- **Promotion.** `gtt promote <set>` is the human's act, exactly as `gtt-promote.sh`.
-- **One step back.** `gtt undo` puts back what the last promotion replaced, only while its files are as it
-  left them. If that promotion recorded a freeze, a new freeze records the earlier state: there is still
-  no unfreeze, and the history keeps every baseline. Anything older is a change request.
+| Stage | Meaning | Moves on when |
+|---|---|---|
+| `new` | Written, not triaged (or an ADR draft being written) | You triage it (`gtt-inbox.sh triage`); a complete ADR draft becomes `accepted` by itself |
+| `review` | Has a level and a route; its `REV-NNN` waits | The human answers: accept (with priority), park, reject (or close, for a `non-goal`) |
+| `accepted` | The human said yes | You build the package: `gtt-stage.sh ... --origin REF` (or `gtt-run.sh new` for two acts) |
+| `ratify` | Package ready, waits for the human's command | `gtt promote`, `gtt approve` or `gtt run N` |
+| `work` | Lives as an open Epic or Story | Everything it produced is `Done` / `Completed` |
+| `closed` | Reason: done, covered, non-goal, cancelled, replaced, incorporated | - |
+| `parked`, `rejected` | The human set it aside | `gtt inbox reopen` (parked) |
+
+GTT (not you) records `Ratificada`, `Trabajo`, `Cerrada` and `Deshecha` lines with the free `gtt-inbox.sh reconcile`
+(session start, after each human act, in Sonar's render); `gtt undo` returns the entry to `accepted`.
+
+**Your part is triage** (`gtt-propose-change`, section *Triage*), at a **cut point**: the session start, or when you have no Story
+of your own `In Progress`; a `--now` entry, or an accepted urgent one without a package, in your first answer. Results: `work`
+(write the Story with `Origin: IDEA-n`, `triage --result work --to STORY-m`), `covered` (cite it, informative DEC), `ask`, `incorporated`
+(before the freeze), or `spec` / `arch` / `scope` / `non-goal`: write a draft in `gtt-domain/proposals/drafts/`, then
+`gtt-inbox.sh propose --file F --level arch|spec|scope --form N [--origin IDEA-n|OBS-n|STORY-n]` (opens the REV). To correct a
+registered PROP, `gtt-inbox.sh supersede PROP-n --file F`. When in doubt between two levels, the higher one. Before the freeze there
+are no proposals and no REV: ideas are `incorporated` into the design draft and the freeze ratifies it all.
+
+**Routes** (the level decides; the engine decides ADR or CHANGE by the files touched):
+
+- **R1 work → Story.** No REV, no ratification. If no approved Epic contains it, it is scope (R2).
+- **R2 scope → Epic.** Write the Epic `Proposed` with `Origin: PROP-n` and `Priority`; after the freeze stage its design with
+  `--origin PROP-n` and a `RUN-n` of two steps (`gtt promote <set>`, `gtt approve EPIC-n`); the human runs `gtt run n`.
+- **R3 spec → CHANGE.** Stage the changed design with `--origin PROP-n`; `gtt promote <set>` records `CHANGE-...` and a new freeze;
+  then add the Stories (`Origin: PROP-n`).
+- **R4 arch → ADR.** `gtt-adr` stages the ADR (`Origin: PROP-n`), the full context files and the map row; `gtt promote ADR-NNN-<slug>`.
+- **F4/F5 the architect's ADR.** `gtt adr new` creates `gtt-domain/adr/drafts/IDEA-NNN-<slug>.md`, you never write it; when complete it is
+  `accepted` (the architect already decided) and you package it **as written**, with a "Clashes" section if it contradicts an ADR, a
+  constraint or the code. After the freeze, a hand-written file in `gtt-domain/adr/` shows in Sonar as "ADR written by hand": the human
+  runs `gtt adr adopt <file>` or reverts it.
+- **R5 closures.** Covered (informative DEC), non-goal (a closing PROP with a REV), replaced (`supersede`), parked or rejected (the human).
+- **R6 undo.** `gtt undo` as before; the entry returns to `accepted` and you may rebuild the package.
+
+**Priority** is `urgent`, `normal` or `low` (the human's, chosen in the REV or with `gtt inbox priority REF P`). `gtt_backlog.py reorder`
+orders each lane by it without moving what is `In Progress`; `low` leaves the plan's date. **`gtt-stage.sh` control:** after the freeze it refuses a set
+that touches `gtt-domain/context/` or `gtt-domain/adr/` without `--origin REF` of an entry in `accepted` (sets that only touch the instruction plane, or that
+predate the update, `"origin": "legacy"`, are exempt). You never accept, reject, park, reopen, change a priority or ratify, and the hook denies those acts to you.
+Commands: `gtt inbox [--all] [--origin human|agent]`, `gtt inbox show REF`, `gtt proposals` (alias of `gtt inbox --origin agent`), `gtt promote`, `gtt undo`.
 
 ## Observation
 
@@ -361,6 +408,7 @@ What waits for the human is one small file per event in `gtt-domain/pending/`, a
 
 - **Settle it yourself first.** (1) If governed context, the design or a project rule settles it, decide and continue. (2) If it is a simple, reversible question, take the simplest option and continue, with no event. (3) Only a decision that is the human's (an account, a key, money, a legal matter, a product matter, a governed file) and that cannot be undone easily becomes an event.
 - **Two kinds.** A question (`ASK`) is a decision only the human can take, and it is rare: it is asked only when something cannot continue without the answer (a product or governed question must name the Story or Epic it blocks with `--blocks`; at most 4 are open at once; never the same one twice). Questions reach the human in the chat, never as a pointer to a file: show the open ones as one batch (up to four) by running `bash .gtt/scripts/gtt-pending.sh show` and pasting its output under `@gtt · Needs you (N)`; the event file is the silent record, so do not announce files and mention one only for a proposal or something to review outside the chat. Its form is always the same, exactly as the file reads: `--header` (the topic, up to 24 characters), the question with what the answer closes, 2 or 3 `--option "short answer | what I will do if you choose it"` with the recommended one first, and the engine adds the two closing lines (something else, talk about it in the chat). `gtt-pending.sh ask --type <account|key|money|legal|product|governed> --question "...?" --why "..." --option "..." --option "..." --recommended N [--blocks STORY-NNN] --apply`. A decision (`DEC`) is something you decided that changes scope, time, cost, security or the design: `gtt-pending.sh decide --affects <scope|time|cost|security|design> --title "..." --what "..." --why "..." --where <path|STORY-NNN|ADR-NNN> --apply`. Anything else is not an event: ordinary technical detail goes in the code, an agreement between fronts in the contract, a change of the governed design through `gtt promote`.
+- **REV (a review).** A third kind, `REV-NNN`, written only by the inbox engine when a `PROP` (or an ADR draft in the Team profile) needs the human's decision: it shows the level, the route, the hours and the sha of what they accept, with up to 5 options (accept normal / urgent / low, park, reject; for a `non-goal`: close, park, reject the closure). It shares the counter and `gtt answer N k` with ASK and DEC, up to 4 per batch and 16 lines. It is **never resolved by itself** (no recommended-option timeout, no "no objection" in 7 days) and never blocks work. If the human answers in the chat («15: 1»), record it with `gtt-pending.sh record <n> <answer> --quote "..."`; if they answer something else («15: this is architecture»), triage again and `supersede`. The answer is refused if the entry changed after the REV opened. `gtt answer ok` is only for DEC.
 - **Plain words.** At most 12 lines per file and 120 characters per line; the question is one line ending in «?»; 2 or 3 options, one recommended; the type or `Affects` is one of the list. The engine refuses a file that does not fit: shorten it, split it in two events, or put the detail in the code.
 - **The answer is the human's.** They answer in the chat («14: 1», «ok to all»), in the file after `Answer:` or with `gtt answer 14 1`. You never write it. If they answered in the chat, write it down with `gtt-pending.sh record <n> <answer> --quote "<their exact words>" --apply` (`record all ok` for «ok» to every decision); the engine checks the quote against their last 10 messages and refuses anything else. An answer that looks like a key is refused: keys go in `.env.local`. `gtt answer` and `gtt-pending.sh answer` are denied to you.
 - **Apply it, cite it, mark it.** When an answer exists, apply it where it belongs (the backlog, the code or a proposal), cite it there, then `gtt-pending.sh done <n> --in <where> --apply`. A decision answered «ok» is marked by the engine. The next session deletes what is marked and the decisions nobody objected to in 7 days; an answered event that is not marked is never deleted. An answer never ratifies the governed design: that stays `gtt promote`.

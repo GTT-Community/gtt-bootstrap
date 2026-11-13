@@ -64,7 +64,7 @@ Human Promotion Boundary
 Governed regime
 Protected context
 Conflict policy
-Change requests
+The inbox
 SECTIONS
 
 while IFS= read -r pointed; do

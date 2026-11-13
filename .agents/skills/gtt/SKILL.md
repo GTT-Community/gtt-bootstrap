@@ -27,7 +27,7 @@ of authority.
 
 ## What OpenHands must not do
 
-`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/change-request.md`,
+`gtt-domain/context/`, `gtt-domain/adr/`, registered `gtt-domain/proposals/PROP-*`,
 `SOURCE-BRIEF.*` and `AGENTS.md` are governed paths owned by the Solution
 Designer. `.openhands/hooks.json` denies a write or a command that reaches
 them, but that hook has not been verified inside OpenHands and it is not what
@@ -55,7 +55,7 @@ Never answer a pending event (`gtt answer`, `gtt-pending.sh answer`) and never w
 | Situation | Where it is defined in `AGENTS.md` |
 |---|---|
 | Set up GTT, or `gtt-domain/context/` still holds placeholders | *Bootstrap behavior*, *Design assessment*, *Initial Design Questionnaire* |
-| An architectural or context change is needed | *Change requests*, *Human Promotion Boundary* |
+| An architectural or context change is needed | *The inbox*, *Human Promotion Boundary* |
 | Ordinary work: implementing, refactoring, testing, writing and closing Stories | *The two planes* — do it; nobody approves it |
 | An Epic must be added, removed, or its goal or scope changed | *Backlog* — the human decides |
 | Observation printed something | *The two planes* → *Observation* — say it in one line and continue, unless it says STOP |
@@ -79,4 +79,4 @@ Git history belongs to the human. Follow `gtt-domain/workflow.md`; without it th
 - Proposing is not executing: releases, tags, destructive operations and workflow changes wait for an explicit request.
 - A GTT checkpoint regenerates `gtt-domain/session.md`. It is never a commit.
 
-**What counts as truth, highest first:** governed context → ADRs → approved Epics → the change request → proposals → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.
+**What counts as truth, highest first:** governed context → ADRs → approved Epics → the inbox (ideas, then proposals) → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.

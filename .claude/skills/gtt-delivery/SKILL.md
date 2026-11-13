@@ -33,7 +33,7 @@ Until three Stories have been measured the plan is *uncalibrated*: say it.
      depends on the other through an interface (I-n) of its design.
    - **Vertical slice**: the first flow that delivers value, and what stays outside it.
    - **Pending decisions**: what is undecided, what each blocks, your recommended option - so the human decides all in one session.
-3. Write the Epic fields as suggestions (`Estimate`, `Depends on`, `Lane`, `Touches`, `Build`, `Budget`); the human approves them with the Epic.
+3. Write the Epic fields as suggestions (`Estimate`, `Depends on`, `Lane`, `Touches`, `Build`, `Budget`, and `Origin` when it came from an inbox entry); the human approves them with the Epic. Before the freeze, ideas in the inbox are triaged as `incorporated` into this draft: carry each one in and cite it.
 4. Run `bash .gtt/scripts/gtt-delivery.sh plan` and give the human the summary it computes, e.g. "With 3 fronts: ~N h of agent,
    finish X, deadline Y -> does not fit. To fit: integrate identity (-5 Stories), cut EPIC-008 (-4 Stories)". Every lever is a `[PROPUESTA]`.
 
@@ -51,6 +51,16 @@ pass, make it fuller (`DLV-UNDER-TARGET`: detail, split and estimate: your work)
 ## After the freeze
 
 When observation opens a `DLV-*` signal (`bash .gtt/scripts/gtt-observe.sh backlog`), say it in one line and keep working. For
-`GOVERNANCE` signals propose, in `gtt-domain/proposals/`, which lever to use (split, integrate, cut, add a front, accept) and how many
-hours it saves, from `gtt-delivery.sh plan` and `report`. The human decides. Work only inside the `Touches` of your front; if you need
+`GOVERNANCE` signals propose, as a registered PROP (`gtt-inbox.sh propose`, see `gtt-propose-change`), which lever to use (split, integrate, cut, add a front, accept) and how many
+hours it saves, from `gtt-delivery.sh plan` and `report`. The human decides in the REV. Work only inside the `Touches` of your front; if you need
 another front's paths, report it.
+
+## Origin, Priority and the cut point
+
+An Epic written from an inbox entry carries `**Origin:** PROP-n` (a Story, `- **Origin:** IDEA-n`) and, the Epic, `**Priority:** urgent|normal|low`.
+The human sets the priority when answering the REV, or later with `gtt inbox priority REF urgent|normal|low`; you never change it. The engine orders
+the backlog by it (`gtt_backlog.py reorder`): an `urgent` Epic goes first among the `Planned` and `Proposed` of its lane, after the `In Progress`;
+`normal` goes last; `low` goes last too and `gtt-delivery.sh plan` leaves it out of the estimated date ("no date"). Never move an `In Progress` Epic.
+When a REV for an urgent option asks what it displaces, run `gtt-delivery.sh plan` and say which Epic moves and by how many days, or only the hours
+when the plan cannot simulate it. Delivery signals and inbox triage share one cut point: at the session start, or when you have no Story of your own
+`In Progress`; never interrupt a Story to triage or to propose a plan.

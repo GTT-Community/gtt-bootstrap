@@ -17,6 +17,33 @@ import subprocess
 import sys
 
 BACKLOG = "backlog.md"
+LOG = "gtt-domain/delivery-log.jsonl"
+
+
+def log_size():
+    try:
+        return os.path.getsize(LOG)
+    except OSError:
+        return 0
+
+
+def notice(before):
+    """A Story that just moved to Done is a cut point: one line says what waits for triage in the inbox. Nothing is
+    printed when nothing is new, so it costs no tokens; the agent decides what to do with it."""
+    try:
+        with open(LOG, encoding="utf-8") as handle:
+            handle.seek(before)
+            rows = [json.loads(line) for line in handle.read().splitlines() if line.strip()]
+        if not any(r.get("kind") == "story" and r.get("to") == "Done" for r in rows):
+            return
+        if not os.path.isfile(".gtt/scripts/gtt-project.sh") or not os.path.isfile(".gtt/contract/inbox.json"):
+            return
+        done = subprocess.run(["bash", ".gtt/scripts/gtt-project.sh", "inbox-line", "--triage"], capture_output=True, text=True, timeout=20)
+        line = done.stdout.strip()
+        if line:
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": line}}))
+    except Exception:
+        pass
 
 
 def main():
@@ -30,10 +57,18 @@ def main():
         return 0
     if not os.path.isfile(".gtt/scripts/gtt-delivery.sh") or not os.path.isfile("gtt-domain/backlog.md"):
         return 0
+    before = log_size()
     try:
         subprocess.run(["bash", ".gtt/scripts/gtt-delivery.sh", "log"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
     except Exception:
         pass
+    if log_size() > before and os.path.isfile(".gtt/scripts/gtt-inbox.sh") and os.path.isfile(".gtt/contract/inbox.json"):
+        # A Story or an Epic changed state: the inbox writes down what that closes (deterministic, no model, no tokens).
+        try:
+            subprocess.run(["bash", ".gtt/scripts/gtt-inbox.sh", "reconcile"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+        except Exception:
+            pass
+    notice(before)
     return 0
 
 

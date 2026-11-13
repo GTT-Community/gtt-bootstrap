@@ -30,25 +30,25 @@ El trabajo rutinario pertenece a la capa de implementación.
 
 El agente puede modificar código, pruebas, pipelines e infraestructura según las reglas del proyecto.
 
-El trabajo rutinario no requiere un `gtt-domain/change-request.md`.
+El trabajo rutinario no necesita una entrada en la bandeja.
 
 ### 3. Detectar un cambio arquitectónico
 
 Si una solicitud afecta una decisión arquitectónica, una tecnología, una regla de dependencias, la topología de despliegue, la observabilidad u otra decisión gobernada, no se debe modificar silenciosamente el mapa.
 
-Utiliza:
+Escríbelo en la bandeja:
 
-```text
-gtt-domain/change-request.md
+```bash
+gtt idea add "<tus palabras>"            # una idea, en texto libre
+gtt change --change "..." --reason "..."   # una solicitud con campos (atajo de gtt idea add --type solicitud)
+gtt adr new "<título>"                    # el arquitecto redacta un borrador de ADR en gtt-domain/adr/drafts/
 ```
+
+`gtt-domain/change-request.md` se retiró. Tu texto se guarda tal cual; el agente solo agrega líneas de rastro.
 
 ### 4. Proponer el cambio
 
-El agente crea una propuesta revisable en:
-
-```text
-gtt-domain/proposals/
-```
+El agente triagea la entrada (al iniciar la sesión, o cuando no tiene una Story en curso; una con `--now`, de inmediato) y, cuando el cambio necesita tu decisión, registra una propuesta (`PROP-NNN` en `gtt-domain/proposals/`) y un `REV` para ti. El nivel `work` se vuelve una Story sin preguntarte.
 
 Debe explicar:
 
@@ -62,11 +62,11 @@ Debe explicar:
 - alternativas
 - filas afectadas del mapa arquitectónico
 
-### 5. Aprobar
+### 5. Decidir
 
-La persona responsable revisa la propuesta.
+La persona responsable revisa la propuesta y responde su `REV`: aceptar (prioridad normal, urgente o baja), aparcar o rechazar. En el chat («15: 1») o con `gtt answer 15 1`.
 
-La aprobación es una decisión de gobernanza, no un detalle de implementación.
+La aprobación es una decisión de gobernanza, no un detalle de implementación. El REV nunca se resuelve solo ni bloquea el trabajo. `gtt inbox` muestra cada entrada por etapa (`new`, `review`, `accepted`, `ratify`, `work`, `closed`, `parked`, `rejected`); `gtt inbox park|reopen|reject|priority REF` son tuyos.
 
 ### 6. Registrar la decisión
 
@@ -197,7 +197,7 @@ bash .gtt/scripts/gtt-observe.sh defer  OBS-0003 --by <tú> --apply   # más ade
 
 Aceptar una observación no cambia el diseño. Si el diseño mismo tiene que
 cambiar — el bus de eventos ahora sí es parte de la arquitectura — eso es una
-solicitud de cambio, un ADR y después un **nuevo freeze**:
+una entrada de la bandeja, un ADR y después un **nuevo freeze**:
 `bash .gtt/scripts/gtt-freeze.sh` registra una nueva línea base y conserva la
 anterior como historial. No existe el unfreeze.
 
@@ -228,8 +228,9 @@ ves qué sale, qué se atrasó y qué te espera, pero desde la pantalla no se de
 ### Ideas
 
 Una idea son tus propias palabras en `docs/ideas/IDEA-NNN.md`. Escríbela desde la página (el cuadro *nueva idea* arma el comando) o con `gtt idea add '<texto>'`.
-GTT guarda el texto tal cual. El agente solo puede agregar una línea después diciendo qué fue de ella: cubierta por un Epic, convertida en propuesta, no-objetivo
-o pregunta. Aparcarla (`gtt idea park`) y descartarla (`gtt idea drop`) es tuyo. `session.md` le dice al agente cuántas ideas nuevas esperan.
+GTT guarda el texto tal cual. Cada entrada tiene una etapa y un rastro de líneas con fecha que dice qué fue de ella: triage, cubierta por un Epic, convertida en propuesta
+con un REV, aceptada, ratificada, en trabajo, cerrada. Aparcarla (`gtt inbox park`), reabrirla, rechazarla, fijar la prioridad (`gtt inbox priority REF urgente|normal|baja`)
+y descartarla (`gtt idea drop`) es tuyo. Sonar muestra el panel Bandeja; `session.md` le dice al agente cuántas entradas esperan (`Bandeja: n nuevas · n en revisión · n por ratificar`).
 
 ---
 
@@ -277,7 +278,7 @@ condición de dos regímenes de `gtt-domain/context/`/`gtt-domain/adr/`.
 
 ---
 
-## Ejemplo de solicitud de cambio
+## Ejemplo de solicitud (`gtt change`)
 
 La solicitud debe comunicar intención, no imponer ciegamente una implementación.
 
@@ -369,7 +370,7 @@ gtt-domain/.frozen
 
 el contexto gobernado queda protegido.
 
-Los cambios arquitectónicos deben seguir el flujo de solicitud/propuesta/ADR.
+Los cambios arquitectónicos deben seguir el flujo bandeja/propuesta/ADR.
 
 ---
 
@@ -417,7 +418,7 @@ Antes de implementar:
 - [ ] Leer el contexto gobernado aplicable.
 - [ ] Determinar si la tarea es trabajo ordinario o un cambio al diseño gobernado.
 - [ ] Trabajo ordinario: hacerlo. Ninguna Story necesita aprobación previa.
-- [ ] Un cambio al diseño gobernado, o una Epic nueva/modificada: crear/procesar una solicitud de cambio.
+- [ ] Un cambio al diseño gobernado, o una Epic nueva/modificada: escribirlo en la bandeja (`gtt idea add`).
 
 Durante la implementación:
 
@@ -479,7 +480,6 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
 │   ├── adr/                      #   decisiones aceptadas L1
 │   ├── proposals/                #   borradores gobernados pendientes de decisión humana
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │

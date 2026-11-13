@@ -67,15 +67,6 @@ fi
 
 PENDING_PROPOSALS="$(cd gtt-domain/proposals 2>/dev/null && find . -maxdepth 1 -type f ! -name 'README.md' | sed 's|^\./||' || true)"
 
-CR_STATE="no gtt-domain/change-request.md found"
-if [ -f "gtt-domain/change-request.md" ]; then
-  if grep -qE '^Change: <' gtt-domain/change-request.md 2>/dev/null; then
-    CR_STATE="empty (still template placeholders)"
-  else
-    CR_STATE="FILLED IN - review it, a change request is waiting"
-  fi
-fi
-
 ADRS=""
 if [ -d "gtt-domain/adr" ]; then
   ADRS="$(grep -H '^- Status:' gtt-domain/adr/ADR-[0-9]*.md 2>/dev/null | sed -E 's#gtt-domain/adr/##; s#:- Status:# - Status:#' || true)"
@@ -113,11 +104,11 @@ $(bash .gtt/scripts/gtt-project.sh profile get 2>&1 || true)"
 fi
 
 # The next action GTT itself is waiting on: an Initial Design Questionnaire that is pending or in progress
-# in a project that is not frozen, then a change request the human asked to have processed (gtt-change.sh). Computed by gtt_project.py (elicitation); empty in every other case, and
+# in a project that is not frozen, then the inbox (gtt-inbox.sh). Computed by gtt_project.py (elicitation); empty in every other case, and
 # then the section is not written at all.
 NEXT_ACTION=""
 if [ -f ".gtt/scripts/gtt-project.sh" ]; then
-  NEXT_ACTION="$(bash .gtt/scripts/gtt-project.sh next-action 2>/dev/null || true)"
+  NEXT_ACTION="$(bash .gtt/scripts/gtt-project.sh next-action $([ "${GTT_SESSION_START:-}" = "1" ] && echo --session-start) 2>/dev/null || true)"
 fi
 
 # The review surface: what changed, what it touches, what the human must decide. One
@@ -144,14 +135,11 @@ if [ -f ".gtt/scripts/gtt-run.sh" ] && [ -f ".gtt/contract/run.json" ]; then
   if [ -z "$RUN_STATE" ] || [ "$RUN_STATE" = "No pending runs." ]; then RUN_STATE="none"; fi
 fi
 
-# New ideas: the human's loose ideas in docs/ideas/ that nobody has triaged yet (empty when there are none).
-IDEAS_STATE=""
-if [ -f ".gtt/scripts/gtt-idea.sh" ] && [ -f ".gtt/contract/ideas.json" ]; then
-  IDEAS_NEW="$(bash .gtt/scripts/gtt-idea.sh list 2>/dev/null | grep -E '^IDEA-[0-9]+ +new ' || true)"
-  if [ -n "${IDEAS_NEW}" ]; then
-    IDEAS_STATE="$(printf '%s\n' "${IDEAS_NEW}" | sed -E 's/^(IDEA-[0-9]+) +new +/\1 /')"
-    IDEAS_COUNT="$(printf '%s\n' "${IDEAS_NEW}" | wc -l | tr -d ' ')"
-  fi
+# The inbox: one line with what waits (new, in review, to ratify); empty when nothing does. What the agent must do
+# about it is the Next action above, which keeps the cut points: a triage never interrupts a Story.
+INBOX_STATE=""
+if [ -f ".gtt/scripts/gtt-project.sh" ] && [ -f ".gtt/contract/inbox.json" ]; then
+  INBOX_STATE="$(bash .gtt/scripts/gtt-project.sh inbox-line 2>/dev/null || true)"
 fi
 
 # Pending events: what waits for the human in gtt-domain/pending/ (empty when nothing does).
@@ -216,9 +204,9 @@ CONTENT="$({
   echo "## Delivery (the plan against the declared time - computed, never a decision)"
   echo "${DELIVERY_STATE}"
   echo
-  if [ -n "${IDEAS_STATE}" ]; then
-    echo "## New ideas (${IDEAS_COUNT}) (docs/ideas/ - the human's own words; triage each once: bash .gtt/scripts/gtt-idea.sh triage IDEA-NNN --result covered|converted|non-goal|ask --to <ref> --apply)"
-    echo "${IDEAS_STATE}"
+  if [ -n "${INBOX_STATE}" ]; then
+    echo "## Inbox (docs/ideas/, gtt-domain/proposals/ - the agent triages new entries at a cut point; the human decides: gtt answer <n> <k>)"
+    echo "${INBOX_STATE}"
     echo
   fi
   if [ -n "${PENDING_STATE}" ]; then
@@ -231,9 +219,6 @@ CONTENT="$({
   echo
   echo "## Pending proposals (gtt-domain/proposals/, excluding README.md)"
   if [ -n "$PENDING_PROPOSALS" ]; then echo "$PENDING_PROPOSALS"; else echo "none"; fi
-  echo
-  echo "## Change request"
-  echo "${CR_STATE}"
   echo
   echo "## ADRs"
   if [ -n "$ADRS" ]; then echo "$ADRS"; else echo "none"; fi

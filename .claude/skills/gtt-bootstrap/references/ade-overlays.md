@@ -10,7 +10,7 @@ to govern (participation), and which one is the Primary.
 
 GTT Bootstrap ships a portable core — `AGENTS.md` and `SOURCE-BRIEF.*` (if a
 source document exists) at the project root, plus the governed domain
-(`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`) and
+(`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`) and
 the Engine (`.gtt/`, including its documentation in `.gtt/docs/`, defined by
 `.gtt/scaffold/manifest.yaml`) — plus one adapter per
 supported ADE. The source repository carries every adapter — it is a

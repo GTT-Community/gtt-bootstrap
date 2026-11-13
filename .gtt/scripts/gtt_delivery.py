@@ -199,7 +199,7 @@ def backlog():
         out_stories.append({"id": story["id"], "epic": story["epic"], "line": story["line"], "title": story.get("title"),
                             "status": gtt_backlog.normal(story["status"]), "estimate_h": hours_of(f.get("Estimate", "")),
                             "owner": (f.get("Owner", "agent").strip().lower() or "agent"), "done_when": f.get("Done when", ""),
-                            "closed": f.get("Closed", "")})
+                            "closed": f.get("Closed", ""), "priority": gtt_backlog.priority_of(story)})
     for epic in epics:
         f = epic["fields"]
         out_epics.append({"id": epic["id"], "line": epic["line"], "title": epic.get("title"), "status": gtt_backlog.normal(epic.get("status", "")),
@@ -208,7 +208,7 @@ def backlog():
                           "depends": EPIC_ID.findall(f.get("Depends on", "")), "touches": split_list(f.get("Touches", "")),
                           "build": f.get("Build", "").strip(), "budget": f.get("Budget", "").strip(),
                           "estimate_text": f.get("Estimate", ""), "estimate_h": hours_of(f.get("Estimate", "")),
-                          "decisions": decisions_of(f.get("Estimate", "")),
+                          "decisions": decisions_of(f.get("Estimate", "")), "priority": gtt_backlog.priority_of(epic),
                           "declared": [k for k in FIELDS if not blank(f.get(k, ""))]})
     return out_stories, out_epics
 
@@ -238,11 +238,21 @@ def progress(epic, stories):
     return sum(1 for s in own if s["status"] == "Done") / len(own), "stories"
 
 
+def low_h(epic, stories):
+    """Hours of the Stories of this Epic that wait with `Priority: low`: the plan leaves them out of the estimated date."""
+    return sum(s["estimate_h"] or 0.0 for s in stories if s["epic"] == epic["id"] and s["priority"] == "low" and s["status"] == "Planned")
+
+
+def undated(epic):
+    """An Epic with `Priority: low` that nobody has started: it has no date ("sin fecha")."""
+    return epic["priority"] == "low" and epic["status"] != "In Progress"
+
+
 def remaining_h(epic, stories):
     hours = epic_hours(epic, stories)
     if hours is None:
         return 0.0
-    return hours * (1.0 - progress(epic, stories)[0])
+    return max(hours * (1.0 - progress(epic, stories)[0]) - low_h(epic, stories), 0.0)
 
 
 # ----------------------------------------------------------------------------------------------- the log
@@ -346,9 +356,9 @@ def calibration(stories, times):
 def schedule(epics, stories, ratio):
     """Finish time (agent hours from now) of every live Epic: its front works one Epic at a time in backlog order,
     and an Epic starts after the Epics it depends on. Returns (finish, chain, cycles)."""
-    todo = {e["id"]: e for e in live(epics)}
+    todo = {e["id"]: e for e in live(epics) if not undated(e)}
     finish, lane_free, cycles, visiting = {}, {}, [], set()
-    order = [e["id"] for e in live(epics)]
+    order = [e["id"] for e in live(epics) if e["id"] in todo]
     lane_of = lambda e: e["lane"] or "main"
 
     def run(ident):
@@ -408,6 +418,8 @@ def build_plan():
     lanes = {}
     for epic in live(epics):
         lanes.setdefault(epic["lane"] or "main", []).append(epic["id"])
+    no_date = [e["id"] for e in live(epics) if undated(e)] + [s["id"] for s in stories if s["priority"] == "low" and s["status"] == "Planned"
+                                                                and s["epic"] in {e["id"] for e in live(epics)}]
     unestimated = [e["id"] for e in live(epics) if e["status"] in ("Planned", "In Progress") and epic_hours(e, stories) is None]
     over = [e["id"] for e in live(epics) if (epic_hours(e, stories) or 0) > th["epic_cap_h"]]
     fits = None if limit is None or not finish else eta <= limit
@@ -424,8 +436,44 @@ def build_plan():
     return {"schema": 1, "kind": "gtt-delivery-plan", "profile": profile_name(), "calibration": cal,
             "lanes": lanes, "chain": chain, "chain_hours": round(total_h, 1), "days": days, "eta": eta.isoformat() if finish else None,
             "deadline": limit.isoformat() if limit else None, "fits": fits, "late": late, "levers": levers,
-            "unestimated": unestimated, "over_cap": over, "cycles": cycles,
+            "unestimated": unestimated, "over_cap": over, "cycles": cycles, "no_date": no_date,
             "waiting_on_you": human_waits(stories, times)}
+
+
+def urgent_effect(epic_id, c=None):
+    """What making an Epic urgent does to the plan, or None when the plan cannot simulate it. {epic, hours, moves:
+    [{epic, days}]}: `moves` is empty when there is nothing to simulate (no lane order, no estimate), and the caller then
+    says only the hours. Deterministic: the same schedule, with the Epic first in its lane after what is In Progress."""
+    loaded = backlog()
+    if loaded is None or not epic_id:
+        return None
+    stories, epics = loaded
+    target = next((e for e in live(epics) if e["id"] == epic_id), None)
+    if target is None:
+        return None
+    hours = epic_hours(target, stories)
+    if hours is None:
+        return None
+    times = timeline()
+    cal = calibration(stories, times)
+    ratio = cal["ratio"] if not cal["uncalibrated"] and cal["ratio"] else 1.0
+    base, _, _ = schedule(epics, stories, ratio)
+    lane = target["lane"] or "main"
+    last = max([i for i, e in enumerate(epics) if (e["lane"] or "main") == lane and e["status"] == "In Progress"] + [-1])
+    first = next((i for i, e in enumerate(epics) if i > last and (e["lane"] or "main") == lane and e["status"] in ("Planned", "Proposed")), None)
+    reordered = [e for e in epics if e["id"] != epic_id]
+    spot = next((i for i, e in enumerate(reordered) if first is not None and e["id"] == epics[first]["id"]), len(reordered))
+    reordered.insert(spot, dict(target, priority="urgent"))
+    after, _, _ = schedule(reordered, stories, ratio)
+    per_day = thresholds()["hours_per_day"]
+    moves = []
+    for ident, finish in after.items():
+        if ident == epic_id or ident not in base:
+            continue
+        days = math.ceil((finish - base[ident]) / per_day) if finish - base[ident] > 1e-9 else 0
+        if days:
+            moves.append({"epic": ident, "days": days})
+    return {"epic": epic_id, "hours": round(hours, 1), "moves": sorted(moves, key=lambda m: -m["days"])}
 
 
 def human_waits(stories, times):
@@ -485,6 +533,8 @@ def cmd_plan(args):
                   + f" - {lever['lever']}")
     else:
         print("  no deadline declared (gtt delivery set --horizon ...)")
+    if plan.get("no_date"):
+        print(f"  no date (priority low, outside the estimate): {', '.join(plan['no_date'])}")
     if plan["unestimated"]:
         print(f"  without Estimate: {', '.join(plan['unestimated'])}")
     if plan["over_cap"]:
@@ -687,7 +737,7 @@ def stale_statuses(stories):
 
 
 def drift_paths():
-    skip = ("gtt-domain/session.md", "gtt-domain/change-request.md", "gtt-domain/delivery-log.jsonl")
+    skip = ("gtt-domain/session.md", "gtt-domain/delivery-log.jsonl")
     paths = glob.glob("gtt-domain/*.md") + glob.glob("docs/**/*.md", recursive=True) + glob.glob("*.md")
     return sorted(p.replace(os.sep, "/") for p in set(paths) if p.replace(os.sep, "/") not in skip)
 

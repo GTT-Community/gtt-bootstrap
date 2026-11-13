@@ -555,22 +555,52 @@ def cmd_new(args):
         return 1
     number = max(taken(c), default=0) + 1
     path = f"{folder(c)}/{rid(number)}-{args.slug}.md"
+    origin = getattr(args, "origin", None)
+    entry_ = ic = None
+    if origin:                                  # a package of two acts (T14): a promotion and an approval, armed for an entry the human accepted
+        entry_, ic, problem = gtt_flow.origin_problem(origin)
+        if problem:
+            print(f"gtt-run: {problem}", file=sys.stderr)
+            return 1
+    what, why, steps = "<one line: what running this does>", "<the Story or reason, e.g. STORY-007>", "step: <title> | <one command>\n"
+    changes = "none   <!-- none | environment | data | code -->"
+    if origin and getattr(args, "set", None) and getattr(args, "epic", None):
+        what = f"Promote the design of {args.epic} and approve the Epic"
+        why = f"{entry_['ref']}: {entry_['title']}"
+        changes = "data   <!-- none | environment | data | code -->"
+        steps = f"step: Promote the design | gtt promote {args.set}\nstep: Approve the Epic | gtt approve {args.epic}\n"
     text = (f"# {rid(number)} — {args.slug.replace('-', ' ').capitalize()}\n\n"
             f"{canonical_line(c)}\n\n"
-            "- **What it does:** <one line: what running this does>\n"
-            "- **Why:** <the Story or reason, e.g. STORY-007>\n"
-            "- **Changes:** none   <!-- none | environment | data | code -->\n\n"
+            f"- **What it does:** {what}\n"
+            f"- **Why:** {why}\n"
+            f"- **Changes:** {changes}\n"
+            + (f"- **Origin:** {entry_['ref']}\n" if origin else "") + "\n"
             "```gtt-run\n"
-            "check: <a tool that must exist, e.g. docker --version>\n"
-            "step: <title> | <one command>\n"
-            "next: <what the human does after it ends>\n"
-            "```\n")
+            + ("check: <a tool that must exist, e.g. docker --version>\n" if not (origin and getattr(args, "set", None) and getattr(args, "epic", None)) else "")
+            + steps
+            + ("next: <what the human does after it ends>\n" if not (origin and getattr(args, "set", None) and getattr(args, "epic", None))
+               else f"next: {args.epic} is Planned; the work follows its Stories.\n")
+            + "```\n")
     out = {"schema": 1, "id": rid(number), "number": number, "path": path, "applied": bool(args.apply)}
     if args.apply:
         os.makedirs(folder(c), exist_ok=True)
         with open(path, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
         register_artifacts()
+        if origin:
+            import gtt_inbox
+            sets, _runs = [], []
+            try:
+                import gtt_inbox_reconcile
+                sets, _runs = gtt_inbox_reconcile.package_tokens(entry_)
+            except Exception:
+                pass
+            set_name = getattr(args, "set", None) or (sets[-1] if sets else "")
+            value = rid(number) + (f" + {set_name}" if set_name else "")
+            if entry_["stage"] == "accepted":
+                gtt_inbox.add_line(entry_, ic, "package", value, "agent")
+            else:
+                gtt_inbox.add_line(entry_, ic, "package", f"{value} ({gtt_inbox.LB(ic)['phrase']['package_redone']})", "agent")
     if args.json:
         emit(out)
     else:
@@ -754,6 +784,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description="GTT simple execution")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("new"); p.add_argument("slug"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
+    p.add_argument("--origin"); p.add_argument("--set"); p.add_argument("--epic")
     p = sub.add_parser("generate"); p.add_argument("run"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("check"); p.add_argument("run", nargs="?"); p.add_argument("--all", action="store_true"); p.add_argument("--rehearse", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("list"); p.add_argument("--json", action="store_true")

@@ -55,6 +55,8 @@ disagree*, at the end).
 | `Owner` | The person who owns the front (Team profile) | You |
 | `Touches` | The paths or modules it may change; two fronts never share them unless one depends on the other | Same as `Estimate` |
 | `Build` | `own`, or `integrate (ADR-NNN)` when a service is bought instead of built (needs that ADR) | Same |
+| `Origin` | The inbox entry that led to this Epic, e.g. `PROP-007`. Optional; the assistant writes it, never a placeholder | The assistant, from the accepted entry |
+| `Priority` | `urgent`, `normal` or `low`. The engine orders the lane by it (urgent first among the `Planned` and `Proposed`, never ahead of what is `In Progress`); `low` stays out of the estimated date | You, when you answer the review or with `gtt inbox priority` |
 | `Budget` | `ok`, `over - accepted: <reason> - <who> - <date>`, or `over - split \| cut \| integrate` | You decide; the assistant only proposes |
 
 ### What a Story says
@@ -66,6 +68,7 @@ disagree*, at the end).
 | `Context` | Optional, and best left out: the design is the source and a copy is drift that costs tokens on every read. Over five lines it warns |
 | `Done when` | The example from the design that must work, and the executable evidence: a test file, or `run: <command>` for work without tests (content, an audit, a measurement) |
 | `Estimate` | Agent hours, e.g. `1.5h`. Optional |
+| `Origin` | Optional: the inbox entry the Story came from, e.g. `IDEA-012` (written as `- **Origin:** IDEA-012`) |
 | `Owner` | `agent` (default) or `human` for an action only you can do |
 | `Closed` | Once finished: the date, the commit or pull request, and the tests that passed |
 

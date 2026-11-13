@@ -37,8 +37,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.dont_write_bytecode = True
 
 CONTRACT = ".gtt/contract/pending.json"
-FILE_NAME = re.compile(r"^(ASK|DEC)-(\d+)\.md$")
-HEADING = re.compile(r"^# (ASK|DEC)-(\d+) · (.+)$")
+FILE_NAME = re.compile(r"^(ASK|DEC|REV)-(\d+)\.md$")
+HEADING = re.compile(r"^# (ASK|DEC|REV)-(\d+) · (.+)$")
+ENTRY_REF = re.compile(r"\b((?:PROP|IDEA)-\d+)\b")
 OPTION = re.compile(r"^(\d)\. (.+)$")
 OK_WORD = re.compile(r"^\s*(?:ok|okay)\b", re.IGNORECASE)
 WHERE_ID = re.compile(r"^(?:STORY|EPIC)-\d+$")
@@ -160,7 +161,7 @@ def key_shaped(text, c):
 # ----------------------------------------------------------------------------- reading an event
 
 def ref_number(ref):
-    found = re.fullmatch(r"(?:ASK|DEC)?[- ]?0*(\d+)", str(ref).strip(), re.IGNORECASE)
+    found = re.fullmatch(r"(?:ASK|DEC|REV)?[- ]?0*(\d+)", str(ref).strip(), re.IGNORECASE)
     return int(found.group(1)) if found else None
 
 
@@ -182,13 +183,13 @@ def parse_text(path, text, c):
     name = FILE_NAME.match(ev["name"])
     head = HEADING.match(lines[0]) if lines else None
     if not name:
-        ev["problems"].append(("PEN-06", f"`{ev['name']}` is not ASK-NNN.md or DEC-NNN.md"))
+        ev["problems"].append(("PEN-06", f"`{ev['name']}` is not ASK-NNN.md, DEC-NNN.md or REV-NNN.md"))
     if head:
         ev["kind"], ev["number"], ev["title"] = head.group(1), int(head.group(2)), head.group(3).strip()
         if name and (name.group(1), int(name.group(2))) != (ev["kind"], ev["number"]):
             ev["problems"].append(("PEN-06", f"the heading `{ev['kind']}-{ev['number']:03d}` does not match the file name"))
     else:
-        ev["problems"].append(("PEN-06", "the first line is not `# ASK-NNN · text` or `# DEC-NNN · text`"))
+        ev["problems"].append(("PEN-06", "the first line is not `# ASK-NNN · text`, `# DEC-NNN · text` or `# REV-NNN · text`"))
         if name:
             ev["kind"], ev["number"] = name.group(1), int(name.group(2))
     answer_label = None
@@ -214,7 +215,7 @@ def parse_text(path, text, c):
         if option:
             last_option = int(option.group(1))
             body, recommended = option.group(2), False
-            for word in {t["recommended"] for t in c["labels"].values()}:
+            for word in {t["recommended"] for t in c["labels"].values()} | {t["recommended_rev"] for t in c["labels"].values()}:
                 if body.endswith(f" ({word})"):
                     body, recommended = body[: -len(word) - 3], True
             ev["options"].append((int(option.group(1)), body))
@@ -223,7 +224,7 @@ def parse_text(path, text, c):
             continue
         if not found or not key:
             continue
-        if key in ("type", "affects"):                 # the meta line: `Type: x · Blocks: y · Created: z`
+        if key in ("type", "affects", "level"):        # the meta line: `Type: x · Blocks: y · Created: z`
             for part in line.split(" · "):
                 sub = re.match(r"^([^:]{2,30}):\s*(.*)$", part.strip())
                 subkey = names.get(sub.group(1).strip().lower()) if sub else None
@@ -231,6 +232,10 @@ def parse_text(path, text, c):
                     ev["fields"][subkey] = sub.group(2).strip()
         else:
             ev["fields"][key] = found.group("rest").strip()
+    if ev["kind"] == "REV":
+        found = ENTRY_REF.search(ev["title"])
+        ev["fields"]["entry"] = found.group(1) if found else ""
+        ev["subject"] = next((l.strip() for l in lines[1:] if l.strip()), "")
     ev["engine_lines"] = lines[: answer_label + 1] if answer_label is not None else lines
     if answer_label is None:
         ev["problems"].append(("PEN-01", "there is no answer line"))
@@ -273,7 +278,7 @@ def state_of(ev):
 
 def option_chosen(ev):
     found = re.match(r"^\s*(?:option|opci[oó]n)?\s*(\d)\b", ev["answer"], re.IGNORECASE)
-    return int(found.group(1)) if found and ev["kind"] == "ASK" else None
+    return int(found.group(1)) if found and ev["kind"] in ("ASK", "REV") else None
 
 
 def is_ok(ev):
@@ -287,8 +292,12 @@ def created(ev):
 def row(ev, c):
     table = c["ask_types"] if ev["kind"] == "ASK" else c["dec_affects"]
     raw = ev["fields"].get("type") or ev["fields"].get("affects") or ""
-    return {"id": f"{ev['kind']}-{ev['number']:03d}", "number": ev["number"], "kind": ev["kind"], "title": ev["title"],
-            "class": type_id(raw, table) or raw, "created": created(ev), "state": state_of(ev), "answer": ev["answer"],
+    is_rev = ev["kind"] == "REV"
+    return {"id": f"{ev['kind']}-{ev['number']:03d}", "number": ev["number"], "kind": ev["kind"],
+            "title": f"{ev['fields'].get('entry')} · {ev.get('subject', '')}" if is_rev else ev["title"],
+            "entry": ev["fields"].get("entry") if is_rev else None, "sha": ev["fields"].get("sha") if is_rev else None,
+            "for": ev["fields"].get("for") if is_rev else None, "route": ev["fields"].get("route") if is_rev else None,
+            "class": (ev["fields"].get("route") or "") if is_rev else (type_id(raw, table) or raw), "created": created(ev), "state": state_of(ev), "answer": ev["answer"],
             "blocks": blocks_of(ev, c), "recommended": (ev["recommended"] or [None])[0], "options": [o[1] for o in ev["options"]], "notes": ev["notes"], "topic": ev["fields"].get("topic"), "discuss": ev["discuss"],
             "closing": [labels(c)["other"], labels(c)["chat"]],
             "path": ev["path"], "problems": [{"rule": r, "message": m} for r, m in ev["problems"]]}
@@ -326,12 +335,14 @@ def review(ev, c, strict_where=True):
     out = [(r, "fail", m) for r, m in ev["problems"]]
     lim = c["limits"]
     engine = ev.get("engine_lines", [])
-    max_lines = lim["ask_max_lines"] if ev.get("kind") == "ASK" else lim["max_lines"]
+    rev_lim = c.get("rev", {})
+    max_lines = rev_lim.get("max_lines", lim["max_lines"]) if ev.get("kind") == "REV" else (lim["ask_max_lines"] if ev.get("kind") == "ASK" else lim["max_lines"])
+    max_chars = rev_lim.get("max_chars", lim["max_chars"]) if ev.get("kind") == "REV" else lim["max_chars"]
     if len(engine) > max_lines:
         out.append(("PEN-01", "fail", f"{len(engine)} lines; the limit is {max_lines}"))
     for number, line in enumerate(engine, 1):
-        if len(line) > lim["max_chars"]:
-            out.append(("PEN-01", "fail", f"line {number} has {len(line)} characters; the limit is {lim['max_chars']}"))
+        if len(line) > max_chars:
+            out.append(("PEN-01", "fail", f"line {number} has {len(line)} characters; the limit is {max_chars}"))
     for number, line in enumerate(ev.get("answer_lines", []), 1):
         if len(line) > lim["answer_chars"]:
             out.append(("PEN-01", "fail", f"the answer's line {number} has {len(line)} characters; the limit is {lim['answer_chars']}"))
@@ -339,7 +350,24 @@ def review(ev, c, strict_where=True):
         return out
     if not created(ev):
         out.append(("PEN-06", "fail", "there is no creation date"))
-    if ev["kind"] == "ASK":
+    if ev["kind"] == "REV":
+        count = len(ev["options"])
+        if not 2 <= count <= rev_lim.get("options", {}).get("max", 5):
+            out.append(("PEN-09", "fail", f"{count} options; a review has 2 to {rev_lim.get('options', {}).get('max', 5)}"))
+        if [n for n, _ in ev["options"]] != list(range(1, count + 1)):
+            out.append(("PEN-09", "fail", "the options are not numbered 1, 2, 3 in order"))
+        if len(ev["recommended"] or []) != 1:
+            out.append(("PEN-09", "fail", "exactly one option must be recommended"))
+        if ev["fixed"]:
+            out.append(("PEN-09", "fail", "a review has no closing lines: it is answered with an option"))
+        for n, _ in ev["options"]:
+            if not ev["notes"].get(n):
+                out.append(("PEN-09", "fail", f"option {n} has no description line"))
+        if not ev["fields"].get("entry"):
+            out.append(("PEN-09", "fail", "the heading does not name its entry (PROP-NNN or IDEA-NNN)"))
+        if not re.fullmatch(r"[0-9a-f]{64}", ev["fields"].get("sha", "")):
+            out.append(("PEN-09", "fail", "a review carries the sha256 of its entry"))
+    elif ev["kind"] == "ASK":
         if not ev["title"].endswith("?"):
             out.append(("PEN-02", "fail", "the question does not end in «?»"))
         count = len(ev["options"])
@@ -433,7 +461,7 @@ def render_dec(number, d, c):
 
 def create(text, number, c, apply):
     """Check what would be written; write it only with apply. Returns (ok, path)."""
-    kind = "ASK" if text.startswith("# ASK") else "DEC"
+    kind = "ASK" if text.startswith("# ASK") else ("REV" if text.startswith("# REV") else "DEC")
     path = os.path.join(folder(c), f"{kind}-{number:03d}.md").replace(os.sep, "/")
     problems = [p for p in review(parse_text(path, text, c), c) if p[1] == "fail"]
     if problems:
@@ -525,6 +553,91 @@ def cmd_decide(args):
     return 0
 
 
+def render_rev(number, spec, c, ic):
+    """The text of a REV: one decision on one inbox entry. The texts of the options are inbox.json -> labels."""
+    t, L = labels(c), ic["labels"][language()]
+    route = spec["level"]
+    key = "non-goal" if route == "non-goal" else "default"
+    ids = ic["rev"]["options"][key]
+    best = ic["rev"]["recommended"][key]
+    word = "de" if language() == "es" else "from"
+    subject = one_line(spec["title"]) + (f"   ({word} {spec['origin']})" if spec.get("origin") else "")
+    meta = f"{t['level']}: {L['levelword'][route]} · {t['route']}: {route} · {t['created']}: {today()} · {t['sha']}: {spec['sha']}"
+    out = [f"# REV-{number:03d} · {L['rev']['title']} · {spec['ref']}", "", subject, meta]
+    if spec.get("for"):
+        out.append(f"{t['for']}: {spec['for']}")
+    for index, ident in enumerate(ids, 1):
+        mark_ = f" ({t['recommended_rev']})" if ident == best else ""
+        described = spec.get("effect") if ident == "accept-urgent" and spec.get("effect") else L['describe'][route if route in L['describe'] else 'scope'][ident]
+        out += [f"{index}. {L['options'][ident]}{mark_}", f"   {described}"]
+    out.append(f"{t['answer']}:")
+    return "\n".join(out) + "\n"
+
+
+def open_rev(c, spec, apply):
+    """Open the REV of an inbox entry (the inbox engine calls this; nothing else writes a REV). spec: ref, title, level,
+    sha, origin, for. Returns the number of the REV (the next free one in a dry run), or None when it does not meet the limits."""
+    import gtt_inbox
+    number = next_number(c)
+    text = render_rev(number, spec, c, gtt_inbox.contract())
+    ok, _path = create(text, number, c, apply)
+    return number if ok else None
+
+
+def rev_for(ref, c):
+    """The open REV (not answered-and-applied, not attended) on an inbox entry, or None."""
+    for ev in reversed(events(c)):
+        if ev["kind"] == "REV" and ev["fields"].get("entry") == ref and not ev["attended"]:
+            return ev
+    return None
+
+
+def close_rev(c, ref, where, note=""):
+    """Mark the open REV of `ref` attended without an answer (the entry was replaced, parked or rejected another way)."""
+    ev = rev_for(ref, c)
+    if ev:
+        mark(ev, c, where, what=note or labels(c)["attended"].lower())
+    return ev
+
+
+BY = None      # who answers (`--by`); without it, GTT_BY or `git config user.name`
+
+
+def answer_rev(ev, reply, c, how, apply=True):
+    """The human's answer to a REV (or the agent's record of it): validate it against the entry, write the Decision
+    line on the entry and on its idea, then answer and mark the event. Returns an exit code."""
+    import gtt_inbox
+    text, error = clean_answer(reply, ev, c)
+    if error:
+        print(f"gtt-pending: {ev['kind']}-{ev['number']:03d}: {error}.", file=sys.stderr)
+        return 1
+    ic = gtt_inbox.contract()
+    target = (ev["fields"].get("for") or "").strip()
+    if target and gtt_inbox.roles():                  # Team: the REV is for a person; another one may answer unless the team said `strict`
+        who = gtt_inbox.human_name(BY)
+        if who.strip().lower() != target.lower():
+            ph = ic["labels"][language()]["phrase"]
+            if (gtt_inbox.roles() or {}).get("roles", "").lower() == "strict":
+                print(f"gtt-pending: REV-{ev['number']:03d}: " + ph["role_refused"].format(role=target, kind=gtt_inbox.role_name(ev["fields"].get("route")), who=who or "?") + ".", file=sys.stderr)
+                return 1
+            how = f"{how}; " + ph["role_answered"].format(who=who or "?", role=target)
+    ids = ic["rev"]["options"]["non-goal" if ev["fields"].get("route") == "non-goal" else "default"]
+    if len(ids) != len(ev["options"]):
+        print(f"gtt-pending: REV-{ev['number']:03d} does not match the inbox options.", file=sys.stderr)
+        return 1
+    if not apply:
+        print(f"gtt-pending: dry run - would answer REV-{ev['number']:03d} <- option {text} ({ids[int(text) - 1]})")
+        return 0
+    ok, message, where = gtt_inbox.decide(ic, ev["fields"].get("entry", ""), ids[int(text) - 1], ev["fields"].get("sha", ""), how)
+    if not ok:
+        print(f"gtt-pending: REV-{ev['number']:03d}: {message}", file=sys.stderr)
+        return 1
+    write_answer(ev, text, c, f" ({how})" if how.startswith("chat") else "")
+    mark(parse(ev["path"], c), c, where)
+    print(f"REV-{ev['number']:03d} · {ev['fields'].get('entry')}  <-  option {text}: {message}")
+    return 0
+
+
 # ----------------------------------------------------------------------------- answering
 
 def find(ref, c):
@@ -553,6 +666,13 @@ def clean_answer(reply, ev, c):
         return None, f"the answer has {len(text)} characters; the limit is {c['limits']['answer_chars']}"
     if key_shaped(text, c):
         return None, "the answer looks like a key; put keys in .env.local and answer where they are"
+    if ev["kind"] == "REV":
+        found = re.fullmatch(r"\s*(?:option|opci[oó]n)?\s*(\d)\s*", text, re.IGNORECASE)
+        if not found:
+            return None, messages(c)["review_tail"].rstrip(".")
+        if not 1 <= int(found.group(1)) <= len(ev["options"]):
+            return None, f"{ev['kind']}-{ev['number']:03d} has options 1 to {len(ev['options'])}, not {found.group(1)}"
+        return found.group(1), None
     if ev["kind"] == "ASK":
         found = re.match(r"^\s*(?:option|opci[oó]n)?\s*(\d)\b", text, re.IGNORECASE)
         if found and not 1 <= int(found.group(1)) <= len(ev["options"]):
@@ -566,9 +686,9 @@ def write_answer(ev, text, c, suffix=""):
     write_atomic(ev["path"], "\n".join(lines) + "\n")
 
 
-def mark(ev, c, where):
+def mark(ev, c, where, what=None):
     t = labels(c)
-    what = f"{t['option']} {option_chosen(ev)}" if option_chosen(ev) else ("ok" if is_ok(ev) else t["answer"].lower())
+    what = what or (f"{t['option']} {option_chosen(ev)}" if option_chosen(ev) else ("ok" if is_ok(ev) else t["answer"].lower()))
     lines = [l for l in ev["lines"] if not re.match(r"^(Attended|Atendida):", l)]
     lines.append(f"{t['attended']}: {today()} · {what} · {t['landed']}: {one_line(where)}")
     write_atomic(ev["path"], "\n".join(lines) + "\n")
@@ -636,6 +756,9 @@ def cmd_record(args):
         if error:
             print(f"gtt-pending: {error}.", file=sys.stderr)
             return 1
+        if ev["kind"] == "REV" and ev["attended"]:
+            print(f"gtt-pending: REV-{ev['number']:03d} is already attended.", file=sys.stderr)
+            return 1
         if not quote_is_theirs(args.quote or "", text, created(ev), c):
             print("gtt-pending: that quote is not in the human's last messages, or it does not say that answer. "
                   "Nothing was recorded: ask them to answer with `gtt answer`, or in the file.", file=sys.stderr)
@@ -643,6 +766,11 @@ def cmd_record(args):
         done.append((ev, text))
     for ev, text in done:
         quote = one_line(args.quote).strip("«»\"")
+        if ev["kind"] == "REV":
+            code = answer_rev(ev, text, c, f"chat: «{quote[:60]}»", apply=args.apply)
+            if code:
+                return code
+            continue
         if args.apply:
             write_answer(ev, text, c, f" (chat: «{quote[:60]}»)")
             settle(ev, c)
@@ -673,6 +801,14 @@ def cmd_answer(args):
             return 1
         targets, reply = [ev], args.reply
     for ev in targets:
+        if ev["kind"] == "REV":
+            if ev["attended"]:
+                print(f"gtt-pending: REV-{ev['number']:03d} is already attended.", file=sys.stderr)
+                return 1
+            code = answer_rev(ev, reply, c, f"gtt answer {ev['number']} {one_line(reply)}")
+            if code:
+                return code
+            continue
         text, error = clean_answer(reply, ev, c)
         if error:
             print(f"gtt-pending: {ev['kind']}-{ev['number']:03d}: {error}.", file=sys.stderr)
@@ -778,7 +914,8 @@ def summary(c=None):
     c = c or contract()
     rows = pending_rows(c)
     opened = [r for r in rows if r["kind"] == "ASK" and r["state"] == "open"]
-    return {"asks": opened, "decisions": [r for r in rows if r["kind"] == "DEC" and r["state"] == "open"],
+    return {"asks": opened, "reviews": [r for r in rows if r["kind"] == "REV" and r["state"] == "open"],
+            "decisions": [r for r in rows if r["kind"] == "DEC" and r["state"] == "open"],
             "to_apply": [r for r in rows if r["state"] == "answered"],
             "blocking": [r for r in opened if r["blocks"]]}
 
@@ -786,24 +923,27 @@ def summary(c=None):
 def notice_text(c):
     s, m = summary(c), messages(c)
     lines = []
-    if s["asks"]:
-        lines.append(f"@gtt · {m['needs']} ({len(s['asks'])})")
+    asking = s["asks"] + s["reviews"]
+    if asking:
+        lines.append(f"@gtt · {m['needs']} ({len(asking)})")
         for r in s["asks"]:
             tail = f" → {m['recommend']} {r['recommended']}" + (f" · {m['blocks']} {r['blocks']}" if r["blocks"] else "")
             lines.append(f"{r['number']} {r['title']}{tail}")
+        for r in s["reviews"]:
+            lines.append(f"{r['number']} {r['title']} → {m['recommend']} {r['recommended']}")
     elif s["decisions"]:
         lines.append(f"@gtt · {m['fyi']}")
     for r in s["decisions"]:
-        lines.append(f"{m['fyi']}: {r['number']} {r['title']}" if s["asks"] else f"{r['number']} {r['title']}")
+        lines.append(f"{m['fyi']}: {r['number']} {r['title']}" if asking else f"{r['number']} {r['title']}")
     if lines:
-        lines.append(m["tail"] if s["asks"] else m["tail_fyi"])
+        lines.append(m["tail"] if asking else m["tail_fyi"])
     return "\n".join(lines)
 
 
 def batch_text(c):
     """The open questions as one batch for the chat, each in the form of its event, then the decisions to tell."""
     m = messages(c)
-    asks = [ev for ev in events(c) if ev["kind"] == "ASK" and not ev["attended"] and not ev["answered"]]
+    asks = [ev for ev in events(c) if ev["kind"] in ("ASK", "REV") and not ev["attended"] and not ev["answered"]]
     decisions = [ev for ev in events(c) if ev["kind"] == "DEC" and not ev["attended"]]
     if not asks and not decisions:
         return ""
@@ -812,8 +952,11 @@ def batch_text(c):
         out.append(f"@gtt · {m['needs']} ({len(asks)})")
         for index, ev in enumerate(asks, 1):
             body = ev["engine_lines"][:-1] if ev.get("engine_lines") else ev["lines"]
-            out += ["", f"── {index}/{len(asks)} · {ev['fields'].get('topic', ev['title'][:24])} · {ev['kind']}-{ev['number']:03d} ──"] + [l for l in body[:1]] + [l for l in body[2:] if l.strip()]
-        out += ["", m["batch_tail"]]
+            if ev["kind"] == "REV":                         # the entry's sha is for the engine; the human sees its first 12 characters
+                body = [re.sub(r"(sha: [0-9a-f]{12})[0-9a-f]{52}", r"\1…", l) for l in body]
+            topic = ev["fields"].get("entry") if ev["kind"] == "REV" else ev["fields"].get("topic", ev["title"][:24])
+            out += ["", f"── {index}/{len(asks)} · {topic} · {ev['kind']}-{ev['number']:03d} ──"] + [l for l in body[:1]] + [l for l in body[2:] if l.strip()]
+        out += ["", m["batch_tail"]] + ([m["review_tail"]] if any(e["kind"] == "REV" for e in asks) else [])
     for ev in decisions:
         out.append(f"{m['fyi']}: {ev['number']} {ev['title']}")
     return "\n".join(out)
@@ -849,7 +992,8 @@ def hours_since(iso):
 def reminder_due(c, state=None):
     """True when something blocks and the notice was last shown more than reminder_hours ago."""
     state = state if state is not None else load_state(c)
-    if not summary(c)["blocking"]:
+    now = summary(c)
+    if not now["blocking"] and not now["reviews"]:
         return False
     waited = hours_since(state.get("last_shown"))
     return waited is None or waited >= c["retention"]["reminder_hours"]
@@ -907,9 +1051,9 @@ def main(argv):
     p.add_argument("--apply", action="store_true")
     p = sub.add_parser("list"); p.add_argument("--json", action="store_true"); p.add_argument("--all", action="store_true")
     p = sub.add_parser("record"); p.add_argument("ref"); p.add_argument("answer"); p.add_argument("--quote", required=True)
-    p.add_argument("--apply", action="store_true")
+    p.add_argument("--apply", action="store_true"); p.add_argument("--by")
     p = sub.add_parser("answer"); p.add_argument("ref"); p.add_argument("reply", nargs="?"); p.add_argument("--confirmed-by-human", action="store_true")
-    p.add_argument("--confirmed", action="store_true")
+    p.add_argument("--confirmed", action="store_true"); p.add_argument("--by")
     p = sub.add_parser("done"); p.add_argument("ref"); p.add_argument("--in", dest="where", required=True); p.add_argument("--apply", action="store_true")
     p = sub.add_parser("clean"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("check"); p.add_argument("--json", action="store_true")
@@ -917,6 +1061,8 @@ def main(argv):
     p = sub.add_parser("notice"); p.add_argument("--report", action="store_true"); p.add_argument("--due", action="store_true")
     p.add_argument("--session", action="store_true"); p.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+    global BY
+    BY = getattr(args, "by", None)
     return {"ask": cmd_ask, "decide": cmd_decide, "list": cmd_list, "record": cmd_record, "answer": cmd_answer, "done": cmd_done,
             "clean": cmd_clean, "check": cmd_check, "notice": cmd_notice, "show": cmd_show}[args.cmd](args)
 

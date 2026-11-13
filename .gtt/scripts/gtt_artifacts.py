@@ -167,7 +167,8 @@ def derive(path):
     if path.startswith("gtt-domain/context/"):
         return "CTX-" + slug_id(stem), "governed-context"
     if path.startswith("gtt-domain/proposals/"):
-        return "PROP-" + slug_id(stem), "proposal"
+        entry = re.match(r"(PROP-\d+)(?:-|$)", stem, re.IGNORECASE)   # an inbox proposal is cited by its ref: PROP-001, not PROP-PROP-001-X
+        return (entry.group(1).upper() if entry else "PROP-" + slug_id(stem)), "proposal"
     if path == "gtt-domain/backlog.md":
         return "BACKLOG", "backlog"
     if path == "gtt-domain/change-request.md":

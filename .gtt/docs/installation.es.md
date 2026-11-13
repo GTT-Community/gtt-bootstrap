@@ -41,7 +41,7 @@ Identifica:
 - `AGENTS.md` existente
 - `readme-gtt.md` / `readme-gtt.es.md` existente
 - `.gtt/` existente (el Motor)
-- `gtt-domain/` existente (el dominio gobernado: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen`)
+- `gtt-domain/` existente (el dominio gobernado: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`, `.frozen`)
 - `.claude/` existente
 - `.kiro/` existente
 - `.github/instructions/gtt.instructions.md` existente
@@ -81,7 +81,6 @@ El workspace final debe contener:
 │   ├── adr/                      #   decisiones aceptadas L1
 │   ├── proposals/                #   borradores gobernados pendientes de decisión humana
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │
@@ -325,7 +324,6 @@ Cuando un agente despliega GTT dentro de un proyecto anfitrión, DEBE reorganiza
 │   ├── adr/                      #   decisiones aceptadas L1
 │   ├── proposals/                #   borradores gobernados pendientes de decisión humana
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   estado operativo derivado (nunca autoridad)
 │   └── .frozen                   #   marcador de freeze, escrito por gtt-freeze.sh
 │

@@ -29,25 +29,26 @@ Routine implementation belongs to the implementation layer.
 
 The agent may modify source code, tests, pipelines, and infrastructure according to the project's rules.
 
-Routine implementation does not require a `gtt-domain/change-request.md`.
+Routine implementation needs no inbox entry.
 
 ### 3. Detect an architectural change
 
 If a requested change affects an architectural decision, technology choice, dependency rule, deployment topology, observability design, or another governed decision, do not silently modify the governed map.
 
-Use:
+Write it in the inbox:
 
-```text
-gtt-domain/change-request.md
+```bash
+gtt idea add "<your words>"            # an idea, as free text
+gtt change --change "..." --reason "..."   # a request with fields (shortcut for gtt idea add --type solicitud)
+gtt adr new "<title>"                    # the architect writes an ADR draft in gtt-domain/adr/drafts/
 ```
+
+`gtt-domain/change-request.md` is retired. Your text is kept exactly as written; the agent only appends trail lines.
 
 ### 4. Propose the change
 
-The agent creates a reviewable proposal under:
-
-```text
-gtt-domain/proposals/
-```
+The agent triages the entry (at the session start, or when it has no Story in progress; a `--now` one right away) and, when the
+change needs your decision, registers a proposal (`PROP-NNN` in `gtt-domain/proposals/`) and a `REV` for you. Level `work` becomes a Story with no question.
 
 The proposal should explain:
 
@@ -61,15 +62,15 @@ The proposal should explain:
 - alternatives
 - affected architecture-map rows
 
-### 5. Approve
+### 5. Decide
 
-The human reviews the proposal.
+The human reviews the proposal and answers its `REV`: accept (normal, urgent or low priority), park or reject. In the chat («15: 1») or with `gtt answer 15 1`.
 
-Approval is a governance decision, not an implementation detail.
+Approval is a governance decision, not an implementation detail. The REV is never resolved by itself and never blocks work. `gtt inbox` shows every entry by stage (`new`, `review`, `accepted`, `ratify`, `work`, `closed`, `parked`, `rejected`); `gtt inbox park|reopen|reject|priority REF` are yours.
 
 ### 6. Record the decision
 
-The approved change becomes a **promotion package**, staged under:
+The accepted entry becomes a **promotion package** (`gtt-stage.sh ... --origin PROP-n`; after the freeze it is refused without an accepted origin), staged under:
 
 ```text
 gtt-domain/proposals/
@@ -193,7 +194,7 @@ bash .gtt/scripts/gtt-observe.sh defer  OBS-0003 --by <you> --apply   # later
 
 Accepting an observation does not change the design. If the design itself
 must change — the event bus really is part of the architecture now — that is
-a change request, an ADR, and then a **new freeze**:
+an inbox entry, an ADR, and then a **new freeze**:
 `bash .gtt/scripts/gtt-freeze.sh` records a new baseline and keeps the earlier
 one as history. There is no unfreeze.
 
@@ -224,8 +225,9 @@ you see what leaves, what is late and what waits for you, but nothing is launche
 ### Ideas
 
 An idea is your own words in `docs/ideas/IDEA-NNN.md`. Write one from the page (the box *new idea* builds the command) or with `gtt idea add '<text>'`.
-GTT keeps the text exactly as written. The agent can only add one line after it saying what became of it: covered by an Epic, turned into a proposal, a
-non-goal or a question. Parking (`gtt idea park`) and dropping (`gtt idea drop`) are yours. `session.md` tells the agent how many new ideas wait.
+GTT keeps the text exactly as written. Each entry has a stage and a trail of dated lines saying what became of it: triaged, covered by an Epic, turned into a proposal
+with a REV, accepted, ratified, in work, closed. Parking (`gtt inbox park`), reopening, rejecting, setting the priority (`gtt inbox priority REF urgent|normal|low`)
+and dropping (`gtt idea drop`) are yours. Sonar shows the Inbox panel; `session.md` tells the agent how many entries wait (`Bandeja: n new · n in review · n to ratify`).
 
 ---
 
@@ -269,7 +271,7 @@ instruction-plane note, the same honest fallback the two-regime
 
 ---
 
-## Change request example
+## Request example (`gtt change`)
 
 A request should communicate intent rather than prescribe an implementation blindly.
 
@@ -363,7 +365,7 @@ gtt-domain/.frozen
 
 the governed context is protected.
 
-Architectural changes must follow the change-request/proposal/ADR process.
+Architectural changes must follow the inbox/proposal/ADR process.
 
 ---
 
@@ -411,7 +413,7 @@ Before implementation:
 - [ ] Read applicable governed context.
 - [ ] Determine whether the task is ordinary work or a change to the governed design.
 - [ ] Ordinary work: do it. No Story has to be approved first.
-- [ ] A change to the governed design, or a new/changed Epic: create/process a change request.
+- [ ] A change to the governed design, or a new/changed Epic: write it in the inbox (`gtt idea add`).
 
 During implementation:
 
@@ -473,7 +475,6 @@ When an agent deploys GTT into a host project, it MUST reorganize the installed 
 │   ├── adr/                      #   L1 accepted decisions
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │

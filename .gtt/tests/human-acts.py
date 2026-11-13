@@ -27,7 +27,8 @@ check, bash, write, git, commit, tree_hash = acc.check, acc.bash, acc.write, acc
 # Every act the bench covers, by operation id. A human act declared in operations.json and missing here fails A8.
 COVERED = {"freeze", "epic.approve", "promotion.apply", "promotion.undo", "governance.accept", "governance.reject",
            "governance.defer", "change.request", "proposal.withdraw", "pending.answer", "run.execute",
-           "idea.add", "idea.park", "idea.drop"}
+           "idea.add", "idea.park", "idea.drop", "inbox.add", "inbox.park", "inbox.reopen", "inbox.reject", "inbox.drop",
+           "inbox.priority", "adr.new", "adr.adopt", "inbox.migrate"}
 
 
 def human_acts(project):
@@ -158,6 +159,55 @@ def ideas_rule(project, tmp):
         check(label.startswith("add") or rc == 1, f"A2 {label}: refused with 1", (o + e)[-200:])
 
 
+def inbox_rule(project, tmp):
+    print("[inbox] A5/A7 a refused inbox act leaves every file as it was; every act is a dry run without --apply")
+    p, rc, out = design_project(project, tmp, "ib")
+    inbox = ".gtt/scripts/gtt-inbox.sh"
+    before = tree_hash(p)
+    for label, cmd in (("add without --apply", ("add", "an idea")),
+                       ("add a request without its reason", ("add", "--type", "solicitud", "--change", "x", "--apply")),
+                       ("add an empty idea", ("add", "   ", "--apply")),
+                       ("add a request as free text", ("add", "--type", "solicitud", "text", "--change", "x", "--reason", "y", "--apply")),
+                       ("park an entry that does not exist", ("park", "IDEA-999", "--apply")),
+                       ("drop an entry that does not exist", ("drop", "IDEA-999", "--apply")),
+                       ("reject an entry that does not exist", ("reject", "PROP-999", "--apply")),
+                       ("reopen an entry that does not exist", ("reopen", "IDEA-999", "--apply")),
+                       ("prioritise an entry that does not exist", ("priority", "IDEA-999", "urgent", "--apply")),
+                       ("adr-new without a title", ("adr-new", "", "--apply")),
+                       ("adr-adopt a file that does not exist", ("adr-adopt", "gtt-domain/adr/ADR-077-nope.md", "--apply")),
+                       ("adr-adopt a file outside adr/", ("adr-adopt", "gtt-domain/backlog.md", "--apply")),
+                       ("propose a draft that does not exist", ("propose", "--file", "gtt-domain/proposals/drafts/none.md", "--level", "spec", "--form", "2", "--apply"))):
+        rc, o, e = bash(p, inbox, *cmd)
+        check(tree_hash(p) == before, f"A5 {label}: nothing changes", (o + e)[-200:])
+        check(label.startswith("add without") or rc in (1, 2), f"A2 {label}: refused ({rc})", (o + e)[-200:])
+    for label, cmd in (("migrate, dry run", ("migrate",)), ("migrate --apply with nothing to migrate", ("migrate", "--apply"))):
+        rc, o, e = bash(p, inbox, *cmd)
+        check(rc == 0 and tree_hash(p) == before, f"A3/A5 {label}: nothing changes", (o + e)[-200:])
+    rc, o, e = bash(p, inbox, "add", "a first idea", "--apply")
+    created = os.path.join(p, "docs", "ideas", "IDEA-001.md")
+    check(rc == 0 and os.path.isfile(created), "an idea is added with --apply", (o + e)[-200:])
+    for label, cmd in (("reopen an idea that is not parked", ("reopen", "IDEA-001", "--apply")),
+                       ("prioritise an idea that is only new", ("priority", "IDEA-001", "urgent", "--apply")),
+                       ("reject an idea (it is dropped)", ("reject", "IDEA-001", "--apply")),
+                       ("adopt an ADR before the freeze or that is not new", ("adr-adopt", "gtt-domain/adr/ADR-001-context-governance.md", "--apply"))):
+        h = tree_hash(p)
+        rc, o, e = bash(p, inbox, *cmd)
+        check(rc == 1 and tree_hash(p) == h, f"A5 {label}: refused and nothing changes", (o + e)[-200:])
+    rc, o, e = bash(p, inbox, "park", "IDEA-001", "--apply")
+    parked = tree_hash(p)
+    check(rc == 0, "an idea is parked", (o + e)[-200:])
+    rc, o, e = bash(p, inbox, "park", "IDEA-001", "--apply")
+    check(rc == 1 and tree_hash(p) == parked, "A3 parking a parked idea is refused and changes nothing", (o + e)[-200:])
+    rc, o, e = bash(p, inbox, "reopen", "IDEA-001", "--apply")
+    check(rc == 0, "a parked idea is reopened", (o + e)[-200:])
+    rc, o, e = bash(p, inbox, "adr-new", "Use a queue for the sync", "--apply")
+    draft = [n for n in os.listdir(os.path.join(p, "gtt-domain", "adr", "drafts")) if n.startswith("IDEA-")] if os.path.isdir(os.path.join(p, "gtt-domain", "adr", "drafts")) else []
+    check(rc == 0 and len(draft) == 1 and draft[0].startswith("IDEA-002-"), "an ADR draft is created in adr/drafts/, numbered after the idea", (o + e)[-200:])
+    h = tree_hash(p)
+    rc, o, e = bash(p, inbox, "adr-new", "Use a queue for the sync", "--apply")
+    check(rc == 1 and tree_hash(p) == h, "A5 a second draft with the same title is refused", (o + e)[-200:])
+
+
 def refusals_change_nothing(project, tmp):
     print("[acts] a refused act leaves every file as it was")
     p, rc, out = design_project(project, tmp, "rf")
@@ -179,7 +229,7 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-human-acts-")
     try:
-        for scenario in (declared_acts, freeze_rule, approve_rule, promote_and_undo, ideas_rule, refusals_change_nothing):
+        for scenario in (declared_acts, freeze_rule, approve_rule, promote_and_undo, ideas_rule, inbox_rule, refusals_change_nothing):
             scenario(project, tmp)
     finally:
         if args.keep:

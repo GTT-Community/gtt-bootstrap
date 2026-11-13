@@ -21,7 +21,6 @@ rules:
   - capability: fs_write
     match:
       - "AGENTS.md"
-      - "gtt-domain/change-request.md"
       - "SOURCE-BRIEF.*"
       - "gtt-domain/.frozen"
       - "gtt-domain/governance-backlog.json"

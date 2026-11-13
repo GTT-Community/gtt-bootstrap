@@ -10,6 +10,7 @@ Exit 0 = every check held, 1 = at least one failed.
 """
 
 import argparse
+import datetime
 import json
 import os
 import shutil
@@ -61,7 +62,9 @@ BACKLOG = """# Backlog
 
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
        "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs",
-       "working_now", "throughput", "refresh", "degraded"}
+       "working_now", "throughput", "refresh", "degraded", "inbox", "inbox_counts", "decisions", "me"}
+HOSTILE = '<img src=x onerror="window.PWNED=9"> & <script>window.PWNED=8</script>'
+
 
 
 def check(cond, label, detail=""):
@@ -103,6 +106,73 @@ def make_project(project):
               "--why", "it changes the deploy", "--option", "Server | I use your server", "--option", "Cloud | I use the cloud",
               "--recommended", "1", "--blocks", "STORY-002", "--header", "PowerSync", "--apply")
     return tmp, dest, ask
+
+
+def ago(days):
+    return (datetime.date.today() - datetime.timedelta(days=days)).isoformat()
+
+
+def write(dest, path, text):
+    full = os.path.join(dest, path)
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    with open(full, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
+
+
+def entry_text(ref, title, header, body, trail):
+    return (f"# {ref} · {title}\n\n> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md\n\n"
+            f"{header}\n\n{body}\n" + ("\n---\n" + "\n".join(trail) + "\n" if trail else ""))
+
+
+def inbox_scenario(dest, hostile=True):
+    """Every stage and every type of the Bandeja, on a project that speaks English: an idea, a request and an ADR draft
+    written by a person; proposals of the agent in review, accepted, ready to ratify (a staged set, a run, an approval), in
+    work, closed, parked and rejected; two REV (one for a person of the team); a hand-written ADR; decisions in the registries.
+    With `hostile`, titles, bodies and trail lines carry markup that must stay text."""
+    evil = HOSTILE if hostile else "plain"
+    d = ago
+    H = lambda who, day, kind: f"Author: {who} · Created: {day}" + (f" · Type: {kind}" if kind else "")
+    P = lambda day, level, origin, extra="": f"Author: agent (claude) · Created: {day} · Level: {level} · Route: {({'specification': 'spec', 'architecture': 'arch', 'scope': 'scope'})[level]} · Origin: {origin}{extra}"
+    files = {
+        "docs/ideas/IDEA-001-new.md": entry_text("IDEA-001", "Sync plots without signal " + evil, H("human (Ana)", d(1), "idea"), "Plain idea text.\n" + evil, []),
+        "docs/ideas/IDEA-002-request.md": entry_text("IDEA-002", "Offline orders request", H("human (Ana)", d(2), "request"), "Change: queue orders\nReason: no signal\nPriority: high", []),
+        "gtt-domain/adr/drafts/IDEA-003-adr.md": entry_text("IDEA-003", "Use PowerSync for sync", H("human (Luis)", d(3), "adr") + " · Level: architecture", "## Context\n\nDraft of an ADR.", []),
+        "docs/ideas/IDEA-004-review.md": entry_text("IDEA-004", "Split the billing module", H("human (Ana)", d(4), "idea"), "Body", [f"Triage: specification → PROP-001 · {d(3)} · agent"]),
+        "gtt-domain/proposals/PROP-001-billing.md": entry_text("PROP-001", "Split the billing module " + evil, P(d(3), "specification", "IDEA-004", "\nForm: 4"), "Proposal body.\n" + evil,
+                                                                [f"Review: REV-001 · {d(2)} · gtt"]),
+        "gtt-domain/proposals/PROP-002-accepted.md": entry_text("PROP-002", "Cache the catalog", P(d(5), "scope", "OBS-1"), "Body", [f"Review: REV-009 · {d(4)} · gtt", f"Decision: accepted, priority urgent · {d(1)} · human (gtt answer 9 2)"]),
+        "gtt-domain/proposals/PROP-003-set.md": entry_text("PROP-003", "Add audit trail", P(d(6), "specification", "session"), "Body",
+                                                            [f"Review: REV-010 · {d(5)} · gtt", f"Decision: accepted, priority normal · {d(4)} · human", f"Package: ready-set · {d(1)} · agent"]),
+        "gtt-domain/proposals/PROP-004-run.md": entry_text("PROP-004", "Offline mode epic", P(d(7), "scope", "STORY-001"), "Body",
+                                                            [f"Review: REV-011 · {d(6)} · gtt", f"Decision: accepted, priority normal · {d(5)} · human", f"Package: RUN-004 (design-EPIC-009 + gtt approve EPIC-009) · {d(2)} · agent"]),
+        "gtt-domain/proposals/PROP-005-approve.md": entry_text("PROP-005", "A new Epic to approve", P(d(7), "scope", "IDEA-009"), "Body",
+                                                                [f"Decision: accepted, priority low · {d(5)} · human", f"Package: gtt approve EPIC-010 · {d(2)} · agent"]),
+        "gtt-domain/proposals/PROP-006-work.md": entry_text("PROP-006", "Reports Epic in work", P(d(9), "scope", "IDEA-005"), "Body",
+                                                             [f"Decision: accepted, priority normal · {d(8)} · human", f"Package: gtt approve EPIC-011 · {d(6)} · agent", f"Ratified: gtt approve EPIC-011 · {d(3)} · human", f"Work: EPIC-011 {evil} · {d(3)} · gtt"]),
+        "gtt-domain/proposals/done/PROP-007-closed.md": entry_text("PROP-007", "Closed this week", P(d(12), "specification", "IDEA-006"), "Body", [f"Decision: accepted, priority normal · {d(10)} · human", f"Ratified: gtt promote x · {d(4)} · human", f"Closed: done (CHANGE-0001 recorded) · {d(2)} · gtt"]),
+        "gtt-domain/proposals/done/PROP-008-oldclosed.md": entry_text("PROP-008", "Closed long ago", P(d(40), "specification", "IDEA-007"), "Body", [f"Decision: accepted, priority normal · {d(39)} · human", f"Closed: done · {d(30)} · gtt"]),
+        "docs/ideas/IDEA-010-parked.md": entry_text("IDEA-010", "Parked idea", H("human (Ana)", d(20), "idea"), "Body", [f"Parked: {d(15)}"]),
+        "gtt-domain/proposals/withdrawn/PROP-009-rejected.md": entry_text("PROP-009", "Rejected proposal", P(d(8), "scope", "IDEA-011"), "Body", [f"Review: REV-012 · {d(7)} · gtt", f"Rejected: no · {d(5)} · human"]),
+    }
+    for path, text in files.items():
+        write(dest, path, text)
+    os.makedirs(os.path.join(dest, "gtt-domain", "proposals", "staged", "ready-set"), exist_ok=True)
+    json.dump({"reason": "Add the audit trail", "origin": "PROP-003", "files": []}, open(os.path.join(dest, "gtt-domain", "proposals", "staged", "ready-set", "promote.json"), "w"))
+    os.makedirs(os.path.join(dest, "gtt-domain", "proposals", "staged", "orphan-set"), exist_ok=True)
+    json.dump({"reason": "A set that names its origin", "origin": "IDEA-004", "files": []}, open(os.path.join(dest, "gtt-domain", "proposals", "staged", "orphan-set", "promote.json"), "w"))
+    # two reviews: one for a person of the team
+    code = ("import sys; sys.path.insert(0, '.gtt/scripts'); import gtt_pending as p; c = p.contract()\n"
+            "for ref, title, level, who in (('PROP-001', %r, 'spec', 'Ana'), ('IDEA-001', 'Sync plots without signal', 'scope', 'Luis')):\n"
+            "    p.open_rev(c, {'ref': ref, 'title': title, 'level': level, 'sha': '3f9a' * 16, 'origin': 'IDEA-004' if ref == 'PROP-001' else None, 'for': who}, True)\n") % ("Split billing " + evil[:40],)
+    made = run(dest, sys.executable, "-c", code)
+    # a hand-written ADR, and the registries
+    write(dest, "gtt-domain/adr/ADR-002-queues.md", f"# ADR-002 — Use a queue for sync\n\n- Status: Accepted\n- Date: {d(3)}\n- Origin: PROP-001\n- Approved by: Solution Designer\n\n## Context\n\nc\n")
+    write(dest, "gtt-domain/adr/ADR-003-" + "hand.md", f"# ADR-003 — Written by hand " + evil + f"\n\n- Status: Accepted\n- Date: {d(1)}\n- Approved by: Solution Designer\n")
+    stack = os.path.join(dest, "gtt-domain", "context", "stack.md")
+    text = open(stack, encoding="utf-8").read()
+    text = text.replace("| Date | ADR or CHANGE | What changed |\n|---|---|---|\n| | | |\n", f"| Date | ADR or CHANGE | What changed |\n|---|---|---|\n| {d(2)} | CHANGE-0001 | the catalog gets a cache (PROP-007) |\n| {d(8)} | ADR-002 | queue for sync (PROP-001) |\n", 1)
+    open(stack, "w", encoding="utf-8").write(text)
+    return made
 
 
 def main():
@@ -296,6 +366,72 @@ def main():
         w = run(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "watch", "--hours", "0.002", env=dict(os.environ, GTT_SONAR_NO_WATCH="1"))
         check(w.returncode == 0 and not os.path.exists(os.path.join(dest, ".gtt", "local", "sonar-watch.pid")), "the watcher renders, ends by itself and leaves no pid file", w.stderr[-200:])
         check(os.path.isfile(os.path.join(dest, ".gtt", "local", "sonar.html")), "the watcher wrote the page")
+
+        print("criterion 24 - the Bandeja in the snapshot")
+        before_inbox = {n: os.path.getmtime(os.path.join(dest, "gtt-domain", "proposals", n)) for n in os.listdir(os.path.join(dest, "gtt-domain", "proposals")) if n.endswith(".md")}
+        _, empty = snapshot(dest)
+        check(empty["inbox"] == [] and empty["decisions"] is not None and set(empty["inbox_counts"]) >= {"new", "review", "accepted", "ratify", "work"}, "an empty inbox is a list, not null", str(empty["inbox"]))
+        shutil.copyfile(os.path.join(os.path.abspath(args.project), ".gtt", "contract", "pending.json"), os.path.join(dest, ".gtt", "contract", "pending.json"))   # the degraded scenario removed it
+        made = inbox_scenario(dest)
+        check(made.returncode == 0, "the scenario can open its reviews", made.stderr[-300:])
+        recon = os.path.join(dest, ".gtt", "scripts", "gtt_inbox_reconcile.py")
+        if True:     # the real reconcile lists nothing before a freeze: a stub, in the disposable copy, says which ADR was written by hand (same shape: path, name, command)
+            with open(recon, "w", encoding="utf-8") as handle:
+                handle.write('def adr_hand():\n    return [{"path": "gtt-domain/adr/ADR-003-hand.md", "name": "ADR-003-hand.md", "command": "gtt adr adopt gtt-domain/adr/ADR-003-hand.md"}]\n')
+        proc, s24 = snapshot(dest)
+        check(proc.returncode == 0 and s24 is not None and "inbox" in s24, "the snapshot carries inbox, inbox_counts and decisions", proc.stderr[-300:])
+        rows = {r["ref"]: r for r in s24["inbox"]}
+        check({"IDEA-001", "IDEA-002", "IDEA-003", "PROP-001", "PROP-002", "PROP-003", "PROP-006", "PROP-007", "IDEA-010", "PROP-009"} <= set(rows), "every stage and type is listed", str(sorted(rows)))
+        check({r["type"] for r in rows.values()} == {"idea", "solicitud", "adr", "proposal"}, "the four types appear", str({r["type"] for r in rows.values()}))
+        check({r["stage"] for r in rows.values()} == {"new", "review", "accepted", "ratify", "work", "closed", "parked", "rejected"}, "the eight stages appear", str({r["stage"] for r in rows.values()}))
+        check("IDEA-004" not in rows and rows["PROP-001"]["from"] == "IDEA-004", "an idea that became a proposal is not listed twice: the card says `from IDEA-n`")
+        check("PROP-008" not in rows, "a proposal closed long ago leaves the board")
+        want = {"ref", "type", "origin", "from", "title", "level", "stage", "priority", "days_in_stage", "event", "for", "command", "trail"}
+        check(all(want <= set(r) for r in rows.values()), "every card has the fields of section 11.5")
+        check(rows["IDEA-001"]["origin"] == "human" and rows["PROP-001"]["origin"] == "agent", "origin says who wrote it: human or agent")
+        check(rows["PROP-002"]["priority"] == "urgent" and rows["PROP-001"]["priority"] is None, "priority comes from the trail, null when none")
+        check((rows["PROP-001"]["event"] or "").startswith("REV-") and rows["PROP-001"]["for"] == "Ana" and " gtt answer " in rows["PROP-001"]["command"] and rows["PROP-001"]["command"].endswith(" 1"), "a card in review names its REV, who it is for and the act", str(rows["PROP-001"]))
+        check(rows["PROP-001"]["days_in_stage"] == 2 and rows["IDEA-010"]["days_in_stage"] == 15, "days in the stage count from the last change", str((rows["PROP-001"]["days_in_stage"], rows["IDEA-010"]["days_in_stage"])))
+        check(rows["PROP-003"]["command"].endswith("gtt promote ready-set") and rows["PROP-004"]["command"].endswith("gtt run 4") and rows["PROP-005"]["command"].endswith("gtt approve EPIC-010"),
+              "a package to ratify brings promote, run or approve", str([rows[k]["command"] for k in ("PROP-003", "PROP-004", "PROP-005")]))
+        check(rows["IDEA-001"]["command"] is None and rows["PROP-006"]["command"] is None, "what asks nothing of the human has no command")
+        check(len(rows["PROP-006"]["trail"]) == 4 and rows["PROP-006"]["trail"][0]["key"] == "decision" and rows["PROP-006"]["trail"][0]["label"] == "Decision", "the full trail travels, with the label of the project's language")
+        check("<img" in rows["IDEA-001"]["title"] and "<script>" in rows["IDEA-001"]["text"], "titles and texts travel raw: the page escapes them")
+        c24 = s24["inbox_counts"]
+        check(c24["new"] == 3 and c24["review"] == 1 and c24["accepted"] == 1 and c24["ratify"] == 3 and c24["work"] == 1 and c24["closed"] == 1, "inbox_counts counts each stage", str(c24))
+        by_kind = {}
+        for n in s24["needs_you"]:
+            by_kind.setdefault(n["kind"], []).append(n)
+        revs = by_kind.get("review", [])
+        check(len(revs) == 2 and all(len(n["choices"]) == 5 and n["choices"][0]["command"].endswith(f" gtt answer {int(n['ref'][4:])} 1") for n in revs), "needs_you: a review brings one `gtt answer N k` per option", str(revs[:1]))
+        check({n["for"] for n in revs} == {"Ana", "Luis"}, "a review says who it is for")
+        rat = {n["ref"]: n for n in by_kind.get("ratify", [])}
+        check({"PROP-003", "PROP-004", "PROP-005", "orphan-set"} <= set(rat), "needs_you: a package ready to ratify waits for the human, also a set that names its origin", str(list(rat)))
+        check(rat["PROP-003"]["command"].endswith("gtt promote ready-set") and rat["PROP-004"]["command"].endswith("gtt run 4") and rat["PROP-005"]["command"].endswith("gtt approve EPIC-010"), "ratify commands: promote <set>, run n, approve EPIC-n")
+        hand = by_kind.get("adr-hand", [])
+        check(len(hand) == 1 and hand[0]["command"].endswith("gtt adr adopt gtt-domain/adr/ADR-003-hand.md"), "needs_you: an ADR written by hand brings `gtt adr adopt <file>`", str(hand))
+        order24 = [n["kind"] for n in s24["needs_you"]]
+        check(order24.index("review") < order24.index("ratify") < order24.index("adr-hand"), "at equal weight: reviews, then ratify, then hand-written ADRs", str(order24))
+        dec = {d["ref"]: d for d in s24["decisions"]}
+        check({"ADR-002", "ADR-003", "CHANGE-0001"} <= set(dec) and list(dec.values()) == sorted(dec.values(), key=lambda d: (d["at"] or "", d["ref"]), reverse=True), "decisions: ADR and CHANGE, newest first", str(list(dec)))
+        check(dec["ADR-002"]["origin"] == "PROP-001" and dec["ADR-002"]["entry"] == "PROP-001" and dec["CHANGE-0001"]["origin"] == "PROP-007" and dec["CHANGE-0001"]["kind"] == "change", "a decision names its origin and links the entry that produced it", str(dec["CHANGE-0001"]))
+        check(dec["ADR-003"]["origin"] is None and dec["ADR-003"]["entry"] is None, "an ADR with no origin says null")
+        check(len(s24["decisions"]) <= 10, "decisions are at most 10")
+        check(isinstance(s24["me"], (str, type(None))), "`me` is the git user name or null")
+        check(all(k in s24 for k in TOP), "sonar.v1 keeps every field of before (`ideas` among them)")
+        after_inbox = {n: os.path.getmtime(os.path.join(dest, "gtt-domain", "proposals", n)) for n in os.listdir(os.path.join(dest, "gtt-domain", "proposals")) if n.endswith(".md") and n in before_inbox}
+        check(after_inbox == before_inbox, "the snapshot writes nothing")
+        # an Epic carries its Origin and Priority
+        with open(os.path.join(dest, "gtt-domain", "backlog.md"), "w", encoding="utf-8") as handle:
+            handle.write("# Backlog\n\n## Epics\n\n### EPIC-030 — With origin\n**Status:** Proposed\n**Origin:** PROP-005\n**Priority:** urgent\n\n### EPIC-031 — Without\n**Status:** Proposed\n**Origin:** —\n")
+        _, s25 = snapshot(dest)
+        e30, e31 = s25["epics"][0], s25["epics"][1]
+        check(e30["origin"] == "PROP-005" and e30["priority"] == "urgent" and e31["origin"] is None and e31["priority"] is None, "each Epic carries Origin and Priority, null when absent", str((e30, e31)))
+        # a Bootstrap without the inbox: no data, never a guess
+        os.rename(os.path.join(dest, ".gtt", "contract", "inbox.json"), os.path.join(dest, ".gtt", "contract", "inbox.json.off"))
+        _, s26 = snapshot(dest)
+        check(s26 is not None and s26["inbox"] is None and s26["inbox_counts"] is None and not [n for n in s26["needs_you"] if n["kind"] in ("review", "ratify")], "without the inbox contract: null, and the rest still comes", str(s26 and s26["inbox"]))
+        os.rename(os.path.join(dest, ".gtt", "contract", "inbox.json.off"), os.path.join(dest, ".gtt", "contract", "inbox.json"))
 
         print("budget")
         started = time.time()

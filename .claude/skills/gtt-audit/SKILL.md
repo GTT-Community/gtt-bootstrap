@@ -105,7 +105,9 @@ are written. Then check what only judgment can catch:
 | An Epic whose goal or scope no longer matches what is being built | Compare the Epic's `Goal` / `Scope` with the Stories closed under it and with the code; scope that grew without a decision is a finding |
 | Closure that the repository does not support | Open each `Done` Story's `Closed`: the commit or PR exists and the tests it names pass; a closure nobody can trace is a finding |
 | Story contradicting governed context or an ADR | Report it; what it means and who acts is *Precedence* in `AGENTS.md` → *Backlog* |
-| An idea (`docs/ideas/IDEA-NNN.md`) with no triage | `bash .gtt/scripts/gtt-idea.sh list` shows the `new` ones. Compare each with the Epics and the proposals; when one is covered, converted into a proposal, a non-goal in `solution-vision.md` or a question, add the one triage line with `gtt-idea.sh triage IDEA-NNN --result ... --to <ref> --apply`. Never edit an idea's text, and park or drop nothing: those are the human's |
+| An inbox entry with no triage, or stalled (`IDEA-NNN` in `new`, a `PROP-NNN` in `review` with an old REV, `accepted` with no package, `ratify` that nobody ran) | `bash .gtt/scripts/gtt-inbox.sh list --all` shows every entry by stage. Triage the `new` ones as `gtt-propose-change` says (`gtt-inbox.sh triage IDEA-NNN --result ... --to <ref>`). Report the stalled ones; never accept, reject, park, reopen or re-prioritise: those are the human's. Never edit an idea's text |
+| Work and Epics that cite no origin, or cite one that does not exist | Compare the `Origin` of Epics, Stories and ADRs with the inbox: an Epic `Planned` after the freeze with no `Origin: PROP-n`, an `Origin` pointing at a missing entry (`gtt-check-backlog.sh` warns), or an entry `closed` as done whose output is not `Done` is a finding. Likewise a closed `covered` entry whose Epic does not really cover it, and a `parked` entry that has become urgent |
+| ADR written by hand (`adr-hand`) | A new file in `gtt-domain/adr/` that did not come from a promotion: report it and say the human adopts it with `gtt adr adopt <file>` or reverts it |
 
 Report findings. An Epic is governed: do not add, remove or "fix" one
 yourself — a correction to an Epic's goal, scope or approval goes through
@@ -162,6 +164,10 @@ Backlog
   Defined but missing from backlog: <list>
   In backlog but no defined requirement: <list>
   Stale / contradicts governed context: <list, with evidence>
+
+Inbox
+  gtt-inbox.sh list: <n new · n in review · n accepted · n to ratify · n in work · n parked>
+  Untriaged, stalled or without a traceable origin: <list, with ref and age>
 
 Recommended action
   <per finding: update context, revert code, open an ADR, or process a

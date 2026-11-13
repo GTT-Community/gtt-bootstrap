@@ -43,6 +43,6 @@ Part of the agent contract: these rules bind exactly as `AGENTS.md`, which state
 - Never let an Epic or a Story in `gtt-domain/backlog.md` silently override governed context or an accepted ADR.
 - Never copy governed context into the backlog, and never treat the backlog as a source of architecture.
 - Never write a Story's closure you did not verify, and never mark an Epic `Completed` while one of its Stories is open.
-- Never generate a scaffold artifact (`gtt-domain/change-request.md`, `gtt-domain/backlog.md`, `gtt-domain/session.md`, or the files under `.gtt/docs/`) at a temporary location and move it into place afterward — write it where `.gtt/scaffold/manifest.yaml` places it, directly.
+- Never generate a scaffold artifact (`gtt-domain/backlog.md`, `gtt-domain/session.md`, or the files under `.gtt/docs/`) at a temporary location and move it into place afterward — write it where `.gtt/scaffold/manifest.yaml` places it, directly.
 - Never bypass a GTTGuard-protected artifact's approval requirement — not by renaming or removing its marker without authorization, not by editing around the enforcing hook, and not by hand-editing `.gtt/protection/registry.yaml`.
 - Never treat approval of one GTTGuard proposal as authorization for a different protected artifact, and never confuse its lightweight, in-conversation promotion with the L0/L1 Human Promotion Boundary.

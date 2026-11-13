@@ -21,7 +21,8 @@ con libertad dentro de ese diseño; GTT mantiene separadas las dos cosas.
 5. **Observación** - GTT compara el trabajo con el diseño congelado. Un datastore, framework o módulo nuevo
    que el diseño no declara, o una regla de dependencias rota, se reporta; solo se detiene lo que tú
    declaraste BLOCKING.
-6. **Cambio** - escribe lo que quieres cambiar en `gtt-domain/change-request.md`; el agente propone;
+6. **Cambio** - la Bandeja: escribe lo que quieres cambiar (`gtt idea add "<texto>"`; el arquitecto, `gtt adr new`);
+   el agente lo triagea y, si necesita tu decisión, propone con una revisión que respondes (`gtt answer 15 1`);
    `gtt promote <set>` aplica tu decisión y vuelve a congelar. `gtt undo` lo revierte.
 
 ## Los comandos que usas
@@ -31,11 +32,12 @@ con libertad dentro de ese diseño; GTT mantiene separadas las dos cosas.
 | `gtt status` | Dónde está el proyecto: freeze, observaciones, qué espera GTT |
 | `gtt validate` | Todos los chequeos deterministas de gobierno (también en CI) |
 | `gtt freeze` | Ratificar el diseño (solo una persona, en una terminal) |
-| `gtt change`, `gtt proposals`, `gtt promote`, `gtt undo` | El flujo de cambios |
+| `gtt inbox`, `gtt answer`, `gtt promote`, `gtt approve`, `gtt run`, `gtt undo` | El flujo de cambios: ver la Bandeja, decidir, ratificar (`gtt change` y `gtt proposals` siguen funcionando) |
 | `gtt check` | ¿El código respeta las reglas de dependencias del método? |
 | `gtt autonomy` | Ver o cambiar el perfil de autonomía |
 | `gtt sonar`, `gtt sonar --all` | Una página de solo lectura con todo lo que está en marcha y lo que viene (ver *Sonar* en `.gtt/docs/usage.es.md`) |
-| `gtt idea add '<texto>'` | Anotar una idea para el proyecto, tal como la escribiste |
+| `gtt idea add '<texto>'`, `gtt change ...`, `gtt adr new '<título>'` | Anotar una idea, una solicitud o un borrador de ADR, tal como lo escribiste |
+| `gtt inbox park\|reopen\|reject\|priority REF` | Dejar a un lado una entrada, reabrirla o fijar prioridad urgente, normal o baja |
 
 ## Dónde está cada cosa
 
@@ -43,8 +45,9 @@ con libertad dentro de ese diseño; GTT mantiene separadas las dos cosas.
 |---|---|
 | `gtt-domain/context/` | El diseño gobernado (visión, arquitectura, stack, restricciones...) - solo tú lo cambias |
 | `gtt-domain/backlog.md` | Epics (tuyos) y Stories (el plan de trabajo del agente) |
-| `gtt-domain/change-request.md` | Lo que quieres cambiar |
-| `gtt-domain/proposals/` | Lo que propone el agente |
+| `docs/ideas/` | Lo que quieres cambiar: tus ideas y solicitudes, nunca reescritas |
+| `gtt-domain/adr/drafts/` | Los ADR que el arquitecto escribe a mano |
+| `gtt-domain/proposals/` | Lo que propone el agente (`PROP-NNN`) |
 | `AGENTS.md` | El contrato que lee todo agente (unido al tuyo si ya tenías uno) |
 | `.gtt/` | El motor: scripts, contratos, documentación |
 | `.claude/`, `.kiro/`, `.cursor/`, `.agents/`, `.openhands/`, `.github/instructions/` | La integración GTT de cada ADE participante, en la ruta que ese ADE lee (el punto es convención del ADE, no de GTT). Tú puedes editarla a mano; el agente no. Qué archivos: [Adaptadores de ADE](.gtt/docs/guide.es.md#adaptadores-de-ade) |

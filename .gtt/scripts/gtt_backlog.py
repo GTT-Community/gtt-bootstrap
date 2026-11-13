@@ -11,6 +11,8 @@ The backlog has two kinds of entry and they are not governed alike (AGENTS.md ->
   check   [backlog.md]   the structural rules below
   summary [backlog.md]   one line: Stories by status, and the Epics still waiting for approval
   json    [backlog.md]   the same, structured
+  reorder [backlog.md] [--apply]   order Epics (per lane) and Stories (per Epic) by `Priority`: urgent first, then normal, then low;
+                         stable, never past what is In Progress (section 5.7 of the change-flow order). A dry run until --apply.
 
 What fails (structure that tooling and people rely on, never a judgment):
 
@@ -159,7 +161,41 @@ def cmd_check(path):
             print(f"gtt-check-backlog: NOTE - {story['id']} is `Done` without `Closed` (a YYYY-MM-DD date and what "
                   f"closed it: commit or PR, tests passed) ({path}:{story['line']})")
     failed += check_trace(path, stories, epics)
+    inbox_notes(stories, epics)
     return 1 if failed else 0
+
+
+PRIORITIES = {"urgent": "urgent", "urgente": "urgent", "normal": "normal", "low": "low", "baja": "low"}
+RANK = {"urgent": 0, "normal": 1, "low": 2}
+ORIGIN_REF = re.compile(r"\b(?:IDEA|PROP)-\d+\b")
+
+
+def priority_of(item):
+    """urgent | normal | low, from the `Priority` field (the Spanish words are read too). Without one: normal."""
+    raw = (item["fields"].get("Priority") or "").strip().strip("`").split(" ")[0].lower()
+    return PRIORITIES.get(raw, "normal")
+
+
+def inbox_notes(stories, epics):
+    """`Origin` pointing at an entry of the inbox that does not exist, and a `Priority` outside the vocabulary: a note,
+    never a failure (section 8.5 of the change-flow order)."""
+    try:
+        import gtt_inbox
+        c = gtt_inbox.contract() if os.path.isfile(gtt_inbox.CONTRACT) else None
+    except SystemExit:
+        c = None
+    except Exception:
+        c = None
+    for kind, items in (("Epic", epics), ("Story", stories)):
+        for item in items:
+            origin = item["fields"].get("Origin", "")
+            if c is not None:
+                for ref in ORIGIN_REF.findall(origin):
+                    if not gtt_inbox.path_of(ref, c):
+                        print(f"gtt-check-backlog: NOTE - {item['id']} cites `Origin: {ref}`, which is not in the inbox ({DEFAULT}:{item['line']})")
+            value = (item["fields"].get("Priority") or "").strip().strip("`")
+            if value and not blank(value) and value.split(" ")[0].lower() not in PRIORITIES:
+                print(f"gtt-check-backlog: NOTE - {item['id']} has `Priority: {value}`; it is urgent, normal or low ({DEFAULT}:{item['line']})")
 
 
 DESIGN_DIR = "gtt-domain/context/design"
@@ -275,6 +311,154 @@ def check_trace(path, stories, epics):
     return failed
 
 
+# ----------------------------------------------------------------------------------------------- order by priority (5.7)
+
+BLOCK_END = re.compile(r"^(#{1,3}\s|---)")
+
+
+def _span(lines, start, stop_pattern):
+    end = start + 1
+    while end < len(lines) and not stop_pattern.match(lines[end]):
+        end += 1
+    return start, end
+
+
+def _split_tail(block):
+    body = list(block)
+    tail = []
+    while body and not body[-1].strip():
+        tail.insert(0, body.pop())
+    return body, tail
+
+
+def _ordered(items, status_of, movable_status, prio_of):
+    """The stable order of `items` (in file order): what is still waiting, after the last one In Progress, goes by
+    priority; nothing else moves. Returns (movable positions, their new order) over the list indexes."""
+    last = max([i for i, it in enumerate(items) if status_of(it) == "In Progress"] + [-1])
+    slots = [i for i, it in enumerate(items) if i > last and status_of(it) in movable_status]
+    order = sorted(slots, key=lambda i: RANK[prio_of(items[i])])      # sorted is stable: a tie keeps the file order
+    return slots, order
+
+
+def reorder_text(text):
+    """(new text, [(id, moved from, to)]) after ordering Epics by priority inside each lane and Stories inside each
+    Epic. Never moves what is In Progress, Blocked, Done, Completed or Cancelled; stable."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    moved = []
+    for level in ("epic", "story"):
+        stories, epics = parse_lines(lines)
+        if level == "epic":
+            items, groups = epics, {}
+            for epic in epics:
+                groups.setdefault((epic["fields"].get("Lane") or "main").strip().strip("`") or "main", []).append(epic)
+            stop = re.compile(r"^(#{1,3}\s|---)")
+            status_of = lambda e: e["status"]
+            movable = ("Planned", "Proposed")
+        else:
+            groups = {}
+            for story in stories:
+                groups.setdefault(story["epic"], []).append(story)
+            stop = re.compile(r"^(#|---)")
+            status_of = lambda s: normal(s["status"])
+            movable = ("Planned",)
+        spans = {}
+        for group in groups.values():
+            for item in group:
+                spans[item["id"]] = _span(lines, item["line"] - 1, stop)
+        replace = {}
+        for group in groups.values():
+            slots, order = _ordered(group, status_of, movable, priority_of)
+            if order == slots:
+                continue
+            blocks = []
+            for i in order:
+                start, end = spans[group[i]["id"]]
+                blocks.append(_split_tail(lines[start:end])[0])
+            for slot, body in zip(slots, blocks):
+                start, end = spans[group[slot]["id"]]
+                replace[start] = (end, body + _split_tail(lines[start:end])[1])
+            for slot, i in zip(slots, order):
+                if slot != i:
+                    moved.append((group[i]["id"], group[slot]["id"]))
+        if replace:
+            out, index = [], 0
+            while index < len(lines):
+                if index in replace:
+                    end, block = replace[index]
+                    out.extend(block)
+                    index = end
+                else:
+                    out.append(lines[index])
+                    index += 1
+            lines = out
+    return "\n".join(lines), moved
+
+
+def parse_lines(lines):
+    import tempfile
+    handle = tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8", newline="\n")
+    try:
+        handle.write("\n".join(lines))
+        handle.close()
+        return parse(handle.name)
+    finally:
+        try:
+            os.unlink(handle.name)
+        except OSError:
+            pass
+
+
+def cmd_reorder(path, apply=False):
+    try:
+        with open(path, encoding="utf-8", newline="") as handle:
+            text = handle.read()
+    except OSError as error:
+        print(f"gtt-backlog: cannot read {path}: {error}", file=sys.stderr)
+        return 2
+    new, moved = reorder_text(text)
+    if not moved:
+        print("gtt-backlog: the order already follows the priorities; nothing to move")
+        return 0
+    for ident, before in moved:
+        print(f"  {ident} goes where {before} stood")
+    if not apply:
+        print("(dry run - nothing written; re-run with --apply)")
+        return 0
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(new)
+    print(f"gtt-backlog: {len(moved)} entr{'y' if len(moved) == 1 else 'ies'} moved by priority")
+    return 0
+
+
+def set_field(path, ident, name, value):
+    """Write `Priority`-like field of one Epic or Story: replace its line, or add it after `Status`. True when the file changed."""
+    with open(path, encoding="utf-8", newline="") as handle:
+        text = handle.read().replace("\r\n", "\n")
+    lines = text.split("\n")
+    stories, epics = parse_lines(lines)
+    item = next((i for i in stories + epics if i["id"] == ident), None)
+    if item is None:
+        return False
+    is_story = ident.startswith("STORY-")
+    end = _span(lines, item["line"] - 1, re.compile(r"^(#|---)") if is_story else re.compile(r"^(#{1,3}\s|---|####\s)"))[1]
+    pattern = re.compile((r"^- \*\*" if is_story else r"^\*\*") + re.escape(name) + r":\*\*")
+    new = (f"- **{name}:** {value}" if is_story else f"**{name}:** {value}")
+    for index in range(item["line"], end):
+        if pattern.match(lines[index]):
+            if lines[index] == new:
+                return False
+            lines[index] = new
+            break
+    else:
+        at = next((i for i in range(item["line"], end) if re.match((r"^- \*\*" if is_story else r"^\*\*") + r"Status:\*\*", lines[i])), None)
+        if at is None:
+            return False
+        lines.insert(at + 1, new)
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write("\n".join(lines))
+    return True
+
+
 def facts(path):
     loaded = load(path)
     if loaded is None:
@@ -309,8 +493,11 @@ def cmd_json(path):
 
 def main(argv):
     commands = {"check": cmd_check, "summary": cmd_summary, "json": cmd_json}
+    if len(argv) >= 2 and argv[1] == "reorder":
+        rest = [a for a in argv[2:] if a != "--apply"]
+        return cmd_reorder(rest[0] if rest else DEFAULT, "--apply" in argv[2:])
     if len(argv) < 2 or argv[1] not in commands:
-        print("usage: gtt_backlog.py check|summary|json [backlog.md]", file=sys.stderr)
+        print("usage: gtt_backlog.py check|summary|json [backlog.md] | reorder [backlog.md] [--apply]", file=sys.stderr)
         return 2
     return commands[argv[1]](argv[2] if len(argv) > 2 else DEFAULT)
 

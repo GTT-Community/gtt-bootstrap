@@ -1,0 +1,1022 @@
+{
+  "schema": 1,
+  "notice": "Inbox contract: the one pipeline every change enters. What a person writes is an IDEA-NNN (an idea, a change request or an architect's ADR draft); what the agent writes is a PROP-NNN. Each entry moves through the stages below and every step leaves one line under the final `---` of its own file: the state is the last line, never stored apart. The engine (.gtt/scripts/gtt_inbox.py) carries no transition of its own: it reads them here, and refuses any other with exit 1 and nothing written. Absorbs ideas.json, which stays one version as a read-only alias. Data only.",
+  "entries": {
+    "IDEA": {
+      "dirs": [
+        "docs/ideas",
+        "gtt-domain/adr/drafts"
+      ],
+      "archive_dirs": [
+        "gtt-domain/adr/drafts/done"
+      ],
+      "pattern": "IDEA-{number}"
+    },
+    "PROP": {
+      "dirs": [
+        "gtt-domain/proposals"
+      ],
+      "pattern": "PROP-{number}-{slug}",
+      "archive": {
+        "closed": "gtt-domain/proposals/done",
+        "rejected": "gtt-domain/proposals/withdrawn"
+      }
+    }
+  },
+  "drafts_dir": "gtt-domain/proposals/drafts",
+  "adr_template": "gtt-domain/adr/ADR-TEMPLATE.md",
+  "types": [
+    "idea",
+    "solicitud",
+    "adr"
+  ],
+  "levels": [
+    "arch",
+    "spec",
+    "scope",
+    "work"
+  ],
+  "route_levels": [
+    "arch",
+    "spec",
+    "scope",
+    "non-goal"
+  ],
+  "stages": [
+    "new",
+    "review",
+    "accepted",
+    "ratify",
+    "work",
+    "closed",
+    "parked",
+    "rejected"
+  ],
+  "priorities": [
+    "urgent",
+    "normal",
+    "low"
+  ],
+  "request_fields": [
+    "change",
+    "reason",
+    "trigger",
+    "scope",
+    "impact",
+    "risk",
+    "priority"
+  ],
+  "max_chars": 4000,
+  "title_chars": 80,
+  "actors": [
+    "human",
+    "agent",
+    "gtt"
+  ],
+  "transitions": [
+    {
+      "id": "T1",
+      "from": null,
+      "to": "new",
+      "op": [
+        "inbox.add"
+      ],
+      "actor": "human",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "not empty, at most max_chars; a request carries change and reason",
+      "line": null
+    },
+    {
+      "id": "T2",
+      "from": null,
+      "to": "new",
+      "op": [
+        "adr.new",
+        "adr.adopt"
+      ],
+      "actor": "human",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "unique title; adopt only an ADR written by hand after the freeze that did not come from a promotion",
+      "line": null
+    },
+    {
+      "id": "T3",
+      "from": [
+        "new"
+      ],
+      "to": "work",
+      "op": [
+        "inbox.triage"
+      ],
+      "variant": [
+        "work"
+      ],
+      "actor": "agent",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "STORY-m exists and cites `Origin: IDEA-n`",
+      "line": "triage"
+    },
+    {
+      "id": "T4",
+      "from": [
+        "new"
+      ],
+      "to": "closed",
+      "op": [
+        "inbox.triage"
+      ],
+      "variant": [
+        "covered"
+      ],
+      "actor": "agent",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "the reference exists; an informative DEC is opened",
+      "line": "triage"
+    },
+    {
+      "id": "T5",
+      "from": [
+        "new"
+      ],
+      "to": "review",
+      "op": [
+        "inbox.triage"
+      ],
+      "variant": [
+        "spec",
+        "arch",
+        "scope",
+        "non-goal"
+      ],
+      "actor": "agent",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "PROP-n is registered with `Origen: IDEA-n` and in review",
+      "line": "triage"
+    },
+    {
+      "id": "T6",
+      "from": [
+        "new"
+      ],
+      "to": "new",
+      "op": [
+        "inbox.triage"
+      ],
+      "variant": [
+        "ask"
+      ],
+      "actor": "agent",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "the ASK exists",
+      "line": "triage"
+    },
+    {
+      "id": "T7",
+      "from": [
+        "new"
+      ],
+      "to": [
+        "accepted",
+        "review"
+      ],
+      "op": [
+        "inbox.reconcile"
+      ],
+      "actor": "gtt",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "an ADR draft is complete: no markers, Context, Decision and Consequences filled",
+      "line": "ready",
+      "owner": "reconcile"
+    },
+    {
+      "id": "T8",
+      "from": [
+        "new"
+      ],
+      "to": "closed",
+      "op": [
+        "inbox.triage"
+      ],
+      "variant": [
+        "incorporated"
+      ],
+      "actor": "agent",
+      "entry": [
+        "IDEA"
+      ],
+      "guard": "the project is not frozen",
+      "line": "triage"
+    },
+    {
+      "id": "T9",
+      "from": null,
+      "to": "review",
+      "op": [
+        "inbox.propose"
+      ],
+      "actor": "agent",
+      "entry": [
+        "PROP"
+      ],
+      "guard": "complete form; valid level; a cited idea is in `new`",
+      "line": "review"
+    },
+    {
+      "id": "T10",
+      "from": [
+        "review"
+      ],
+      "to": "accepted",
+      "op": [
+        "pending.answer"
+      ],
+      "variant": [
+        "accept",
+        "accept-urgent",
+        "accept-low"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "the entry did not change since the REV was opened (sha256)",
+      "line": "decision"
+    },
+    {
+      "id": "T11",
+      "from": [
+        "review"
+      ],
+      "to": "parked",
+      "op": [
+        "pending.answer"
+      ],
+      "variant": [
+        "park"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "same as T10",
+      "line": "decision"
+    },
+    {
+      "id": "T12",
+      "from": [
+        "review"
+      ],
+      "to": "rejected",
+      "op": [
+        "pending.answer"
+      ],
+      "variant": [
+        "reject"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "same as T10; a rejected closure returns its idea to `new`",
+      "line": "decision"
+    },
+    {
+      "id": "T13",
+      "from": [
+        "review"
+      ],
+      "to": "closed",
+      "op": [
+        "inbox.supersede"
+      ],
+      "actor": "agent",
+      "entry": [
+        "PROP"
+      ],
+      "guard": "closes the open REV and opens another for the new one",
+      "line": "closed"
+    },
+    {
+      "id": "T14",
+      "from": [
+        "accepted"
+      ],
+      "to": "ratify",
+      "op": [
+        "stage.package"
+      ],
+      "actor": "agent",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "the reference is in `accepted` (gtt-stage.sh --origin)",
+      "line": "package",
+      "owner": "stage"
+    },
+    {
+      "id": "T15",
+      "from": [
+        "ratify"
+      ],
+      "to": [
+        "work",
+        "closed"
+      ],
+      "op": [
+        "inbox.reconcile"
+      ],
+      "actor": "gtt",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "the set was applied or the Epic is Planned",
+      "line": "ratified",
+      "owner": "reconcile"
+    },
+    {
+      "id": "T16",
+      "from": [
+        "ratify",
+        "work"
+      ],
+      "to": "accepted",
+      "op": [
+        "inbox.reconcile"
+      ],
+      "actor": "gtt",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "there is an undo record",
+      "line": "undone",
+      "owner": "reconcile"
+    },
+    {
+      "id": "T17",
+      "from": [
+        "ratify"
+      ],
+      "to": "ratify",
+      "op": [
+        "stage.package"
+      ],
+      "actor": "agent",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "the draft or a destination changed",
+      "line": "package",
+      "owner": "stage"
+    },
+    {
+      "id": "T18",
+      "from": [
+        "work"
+      ],
+      "to": "closed",
+      "op": [
+        "inbox.reconcile"
+      ],
+      "actor": "gtt",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "everything it produced is finished",
+      "line": "closed",
+      "owner": "reconcile"
+    },
+    {
+      "id": "T19",
+      "from": [
+        "work"
+      ],
+      "to": "closed",
+      "op": [
+        "inbox.reconcile"
+      ],
+      "actor": "gtt",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "what it produced was cancelled",
+      "line": "closed",
+      "owner": "reconcile"
+    },
+    {
+      "id": "T20",
+      "from": [
+        "parked"
+      ],
+      "to": [
+        "new",
+        "review"
+      ],
+      "op": [
+        "inbox.reopen"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "an idea returns to `new`; a proposal opens a new REV",
+      "line": "reopened"
+    },
+    {
+      "id": "T21",
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "an open REV is marked attended; a ready set is archived in proposals/withdrawn/",
+      "alts": [
+        {
+          "from": [
+            "new",
+            "review",
+            "accepted",
+            "ratify"
+          ],
+          "to": "parked",
+          "op": [
+            "inbox.park"
+          ],
+          "line": "parked"
+        },
+        {
+          "from": [
+            "new",
+            "review",
+            "accepted",
+            "ratify",
+            "parked"
+          ],
+          "to": "rejected",
+          "op": [
+            "inbox.drop"
+          ],
+          "entry": [
+            "IDEA"
+          ],
+          "line": "dropped"
+        },
+        {
+          "from": [
+            "new",
+            "review",
+            "accepted",
+            "ratify",
+            "parked"
+          ],
+          "to": "rejected",
+          "op": [
+            "inbox.reject"
+          ],
+          "entry": [
+            "PROP"
+          ],
+          "line": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "T22",
+      "from": [
+        "accepted",
+        "ratify",
+        "work"
+      ],
+      "to": "same",
+      "op": [
+        "inbox.priority"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP",
+        "IDEA"
+      ],
+      "guard": "in `work` only while its Epic or Story is not In Progress",
+      "line": "priority"
+    },
+    {
+      "id": "T23",
+      "from": [
+        "review"
+      ],
+      "to": "closed",
+      "op": [
+        "pending.answer"
+      ],
+      "variant": [
+        "close"
+      ],
+      "actor": "human",
+      "entry": [
+        "PROP"
+      ],
+      "guard": "same as T10; only a closure proposal (`non-goal`)",
+      "line": "decision"
+    }
+  ],
+  "triage_results": {
+    "work": {},
+    "covered": {},
+    "scope": {},
+    "spec": {},
+    "arch": {},
+    "non-goal": {},
+    "ask": {},
+    "incorporated": {},
+    "converted": {
+      "legacy": true,
+      "to": "[A-Za-z0-9._-]+"
+    }
+  },
+  "triage_targets": {
+    "work": "STORY-\\d+",
+    "covered": "(?:EPIC|IDEA|PROP)-\\d+",
+    "scope": "PROP-\\d+",
+    "spec": "PROP-\\d+",
+    "arch": "PROP-\\d+",
+    "non-goal": "PROP-\\d+",
+    "ask": "ASK-\\d+",
+    "incorporated": "[A-Za-z0-9._/-]+",
+    "converted": "[A-Za-z0-9._-]+"
+  },
+  "forms": {
+    "1": {
+      "title": "Proposed Architecture Change",
+      "name": "Architecture change",
+      "levels": [
+        "arch"
+      ],
+      "fields": [
+        "Current decision",
+        "Suggested change",
+        "Reason",
+        "Impact",
+        "Risk",
+        "Affected files",
+        "Alternatives considered"
+      ]
+    },
+    "2": {
+      "title": "Proposed Context Change",
+      "name": "Context change",
+      "levels": [
+        "spec",
+        "arch"
+      ],
+      "fields": [
+        "File",
+        "Current statement",
+        "Suggested change",
+        "Reason",
+        "Impact",
+        "Risk"
+      ]
+    },
+    "3": {
+      "title": "Context Conflict Detected",
+      "name": "Context conflict",
+      "levels": [
+        "arch"
+      ],
+      "fields": [
+        "Context file",
+        "What the context says",
+        "What the implementation does",
+        "Where they diverge",
+        "Possible resolutions"
+      ]
+    },
+    "4": {
+      "title": "Proposed Epic Change",
+      "name": "Epic change",
+      "levels": [
+        "scope",
+        "spec"
+      ],
+      "fields": [
+        "Kind",
+        "Epic ID",
+        "Current state",
+        "Goal",
+        "Scope",
+        "Out of Scope",
+        "Reason",
+        "Contradicts governed context or an ADR?",
+        "Impact",
+        "Risk"
+      ]
+    },
+    "6": {
+      "title": "Proposed Development Method Change",
+      "name": "Method change",
+      "levels": [
+        "arch"
+      ],
+      "fields": [
+        "Current method",
+        "Proposed method",
+        "Reason",
+        "Incompatibilities",
+        "Verification level",
+        "Risk",
+        "Alternatives considered"
+      ]
+    },
+    "7": {
+      "title": "Proposed Autonomy Profile Change",
+      "name": "Autonomy Profile change",
+      "levels": [
+        "arch"
+      ],
+      "fields": [
+        "Current plan",
+        "Proposed plan",
+        "Reason",
+        "Controls that relax",
+        "Risk",
+        "Alternatives considered"
+      ]
+    },
+    "closure": {
+      "title": "Closure proposal",
+      "name": "Closure",
+      "levels": [
+        "non-goal"
+      ],
+      "fields": [
+        "Non-goal",
+        "Reason"
+      ]
+    }
+  },
+  "refused_forms": {
+    "5": "form 5 (a GTTGuard artifact) is approved in the conversation and never enters the inbox"
+  },
+  "state_keys": {
+    "triage": "by value",
+    "review": "review",
+    "decision": "by value",
+    "ready": "accepted",
+    "package": "ratify",
+    "ratified": "work",
+    "work": "work",
+    "undone": "accepted",
+    "priority": "same",
+    "reopened": "new",
+    "closed": "closed",
+    "parked": "parked",
+    "dropped": "rejected",
+    "rejected": "rejected"
+  },
+  "mirror_keys": [
+    "decision",
+    "package",
+    "ratified",
+    "work",
+    "undone",
+    "closed",
+    "parked",
+    "dropped",
+    "rejected"
+  ],
+  "rev": {
+    "options": {
+      "default": [
+        "accept",
+        "accept-urgent",
+        "accept-low",
+        "park",
+        "reject"
+      ],
+      "non-goal": [
+        "close",
+        "park",
+        "reject"
+      ]
+    },
+    "recommended": {
+      "default": "accept",
+      "non-goal": "close"
+    },
+    "priority_of": {
+      "accept": "normal",
+      "accept-urgent": "urgent",
+      "accept-low": "low"
+    },
+    "max": 5,
+    "max_lines": 16,
+    "max_chars": 160
+  },
+  "labels": {
+    "es": {
+      "empty": "Sin entradas en la bandeja.",
+      "header": {
+        "author": "Autor",
+        "created": "Creada",
+        "type": "Tipo",
+        "level": "Nivel",
+        "route": "Ruta",
+        "origin": "Origen",
+        "form": "Forma",
+        "request": "Solicitud",
+        "now": "Ahora",
+        "adopted": "Adoptada"
+      },
+      "actor": {
+        "human": "humano",
+        "agent": "agente",
+        "gtt": "gtt"
+      },
+      "type": {
+        "idea": "idea",
+        "solicitud": "solicitud",
+        "adr": "adr",
+        "proposal": "propuesta"
+      },
+      "levelword": {
+        "arch": "arquitectura",
+        "spec": "especificación",
+        "scope": "alcance",
+        "work": "trabajo",
+        "non-goal": "no-objetivo"
+      },
+      "stage": {
+        "new": "nueva",
+        "review": "en revisión",
+        "accepted": "aceptada",
+        "ratify": "por ratificar",
+        "work": "en trabajo",
+        "closed": "cerrada",
+        "parked": "aparcada",
+        "rejected": "rechazada"
+      },
+      "priority": {
+        "urgent": "urgente",
+        "normal": "normal",
+        "low": "baja"
+      },
+      "trail": {
+        "triage": "Triage",
+        "review": "Revisión",
+        "decision": "Decisión",
+        "ready": "Lista",
+        "package": "Paquete",
+        "ratified": "Ratificada",
+        "work": "Trabajo",
+        "undone": "Deshecha",
+        "priority": "Prioridad",
+        "reopened": "Reabierta",
+        "closed": "Cerrada",
+        "parked": "Aparcada",
+        "dropped": "Descartada",
+        "rejected": "Rechazada"
+      },
+      "phrase": {
+        "covered_by": "cubierta por",
+        "question": "pregunta",
+        "incorporated_in": "incorporada en",
+        "converted_into": "convertida en",
+        "nongoal_in": "no-objetivo en",
+        "accepted": "aceptada, prioridad {p}",
+        "parked": "aparcada",
+        "rejected": "rechazada",
+        "closed_nongoal": "cerrada, no-objetivo",
+        "superseded_by": "reemplazada por {r}",
+        "nongoal_reopened": "no-objetivo rechazado",
+        "from_stage": "desde {s}",
+        "package_redone": "rehecho",
+        "package_stale": "desactualizado",
+        "ready_draft": "borrador completo",
+        "ready_review": "borrador completo, espera revisión",
+        "done": "hecha",
+        "cancelled": "cancelada",
+        "role_answered": "contestó {who} por {role}",
+        "role_refused": "responde {role} ({kind}); {who} no es esa persona y el equipo declaró roles: strict"
+      },
+      "effect": {
+        "moves": "Entra antes en la cola: {epic} se retrasa {days} día(s){more}.",
+        "more": " y {n} más",
+        "hours": "Entra antes en la cola ({hours} h de agente; el plan no puede simular el cambio)."
+      },
+      "rev": {
+        "title": "Revisión",
+        "for": "Para",
+        "recommended": "recomendado",
+        "sha": "sha",
+        "answer": "Respuesta"
+      },
+      "options": {
+        "accept": "Aceptar, prioridad normal",
+        "accept-urgent": "Aceptar urgente",
+        "accept-low": "Aceptar con prioridad baja",
+        "park": "Aparcar",
+        "reject": "Rechazar",
+        "close": "Cerrar: es no-objetivo"
+      },
+      "describe": {
+        "scope": {
+          "accept": "Escribo el Epic y su diseño; tú corres gtt run.",
+          "accept-urgent": "Igual, pero entra antes en la cola.",
+          "accept-low": "Queda en el backlog, sin fecha.",
+          "park": "No decido ahora; la puedes reabrir.",
+          "reject": "Se archiva en proposals/withdrawn/."
+        },
+        "spec": {
+          "accept": "Armo el paquete del cambio; tú corres gtt promote.",
+          "accept-urgent": "Igual, pero entra antes en la cola.",
+          "accept-low": "Queda en el backlog, sin fecha.",
+          "park": "No decido ahora; la puedes reabrir.",
+          "reject": "Se archiva en proposals/withdrawn/."
+        },
+        "arch": {
+          "accept": "Redacto el ADR y armo el paquete; tú corres gtt promote.",
+          "accept-urgent": "Igual, pero entra antes en la cola.",
+          "accept-low": "Queda en el backlog, sin fecha.",
+          "park": "No decido ahora; la puedes reabrir.",
+          "reject": "Se archiva en proposals/withdrawn/."
+        },
+        "non-goal": {
+          "close": "Se cierra la idea: choca con un no-objetivo.",
+          "park": "No decido ahora; la puedes reabrir.",
+          "reject": "La idea vuelve al triage; lo normal es proponer un cambio de solution-vision.md."
+        }
+      },
+      "msg": {
+        "dry": "simulacro - escribiría",
+        "none": "(no se escribió nada; repite con --apply)",
+        "created": "creada",
+        "wrote": "escrito"
+      },
+      "yes": "sí"
+    },
+    "en": {
+      "empty": "The inbox is empty.",
+      "header": {
+        "author": "Author",
+        "created": "Created",
+        "type": "Type",
+        "level": "Level",
+        "route": "Route",
+        "origin": "Origin",
+        "form": "Form",
+        "request": "Request",
+        "now": "Now",
+        "adopted": "Adopted"
+      },
+      "actor": {
+        "human": "human",
+        "agent": "agent",
+        "gtt": "gtt"
+      },
+      "type": {
+        "idea": "idea",
+        "solicitud": "request",
+        "adr": "adr",
+        "proposal": "proposal"
+      },
+      "levelword": {
+        "arch": "architecture",
+        "spec": "specification",
+        "scope": "scope",
+        "work": "work",
+        "non-goal": "non-goal"
+      },
+      "stage": {
+        "new": "new",
+        "review": "in review",
+        "accepted": "accepted",
+        "ratify": "to ratify",
+        "work": "in work",
+        "closed": "closed",
+        "parked": "parked",
+        "rejected": "rejected"
+      },
+      "priority": {
+        "urgent": "urgent",
+        "normal": "normal",
+        "low": "low"
+      },
+      "trail": {
+        "triage": "Triage",
+        "review": "Review",
+        "decision": "Decision",
+        "ready": "Ready",
+        "package": "Package",
+        "ratified": "Ratified",
+        "work": "Work",
+        "undone": "Undone",
+        "priority": "Priority",
+        "reopened": "Reopened",
+        "closed": "Closed",
+        "parked": "Parked",
+        "dropped": "Dropped",
+        "rejected": "Rejected"
+      },
+      "phrase": {
+        "covered_by": "covered by",
+        "question": "question",
+        "incorporated_in": "incorporated in",
+        "converted_into": "converted into",
+        "nongoal_in": "non-goal in",
+        "accepted": "accepted, priority {p}",
+        "parked": "parked",
+        "rejected": "rejected",
+        "closed_nongoal": "closed, non-goal",
+        "superseded_by": "superseded by {r}",
+        "nongoal_reopened": "non-goal rejected",
+        "from_stage": "from {s}",
+        "package_redone": "redone",
+        "package_stale": "stale",
+        "ready_draft": "complete draft",
+        "ready_review": "complete draft, waits for review",
+        "done": "done",
+        "cancelled": "cancelled",
+        "role_answered": "answered by {who} for {role}",
+        "role_refused": "{role} answers ({kind}); {who} is not that person and the team declared roles: strict"
+      },
+      "effect": {
+        "moves": "It goes earlier in the queue: {epic} slips {days} day(s){more}.",
+        "more": " and {n} more",
+        "hours": "It goes earlier in the queue ({hours} agent h; the plan cannot simulate the change)."
+      },
+      "rev": {
+        "title": "Review",
+        "for": "For",
+        "recommended": "recommended",
+        "sha": "sha",
+        "answer": "Answer"
+      },
+      "options": {
+        "accept": "Accept, normal priority",
+        "accept-urgent": "Accept as urgent",
+        "accept-low": "Accept with low priority",
+        "park": "Park",
+        "reject": "Reject",
+        "close": "Close: it is a non-goal"
+      },
+      "describe": {
+        "scope": {
+          "accept": "I write the Epic and its design; you run gtt run.",
+          "accept-urgent": "Same, but it goes earlier in the queue.",
+          "accept-low": "It stays in the backlog, with no date.",
+          "park": "I do not decide now; you can reopen it.",
+          "reject": "It is archived in proposals/withdrawn/."
+        },
+        "spec": {
+          "accept": "I stage the change; you run gtt promote.",
+          "accept-urgent": "Same, but it goes earlier in the queue.",
+          "accept-low": "It stays in the backlog, with no date.",
+          "park": "I do not decide now; you can reopen it.",
+          "reject": "It is archived in proposals/withdrawn/."
+        },
+        "arch": {
+          "accept": "I draft the ADR and stage the package; you run gtt promote.",
+          "accept-urgent": "Same, but it goes earlier in the queue.",
+          "accept-low": "It stays in the backlog, with no date.",
+          "park": "I do not decide now; you can reopen it.",
+          "reject": "It is archived in proposals/withdrawn/."
+        },
+        "non-goal": {
+          "close": "The idea is closed: it hits a non-goal.",
+          "park": "I do not decide now; you can reopen it.",
+          "reject": "The idea goes back to triage; usually a change to solution-vision.md is proposed."
+        }
+      },
+      "msg": {
+        "dry": "dry run - would write",
+        "none": "(nothing written; re-run with --apply)",
+        "created": "created",
+        "wrote": "written"
+      },
+      "yes": "yes"
+    }
+  }
+}

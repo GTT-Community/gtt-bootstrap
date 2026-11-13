@@ -23,7 +23,7 @@ Ten invariants. Each is stated rule by rule in `.gtt/docs/agents/rules.md`, whic
 2. **Never guess architecture.** Never write a stack option as a decision, never map a design below the minimum
    floor (stack and datastore decided), never rewrite the human's design documents, never invent Epics.
 3. **The frozen design changes only through the change flow.** After freeze never write `gtt-domain/context/`,
-   `gtt-domain/adr/`, `gtt-domain/change-request.md` or `SOURCE-BRIEF.*` - not by renaming, copying, an
+   `gtt-domain/adr/`, a registered `gtt-domain/proposals/PROP-*`, the text of an `IDEA-*` or `SOURCE-BRIEF.*` - not by renaming, copying, an
    interpreter, `git checkout` or a disabled guardrail. There is no unfreeze.
 4. **Provenance stays honest.** Never write `[PROPUESTA]` inside governed context, never leave a `[VACÍO]`
    unclassified, never hide a `[CONFLICTO]`, never use an OPEN gap or a source's precedence as authorisation.
@@ -59,7 +59,7 @@ GTT has two planes, and an agent always knows which one it is standing in.
 adding tests, optimising a query, reorganising internal code, improving error
 handling, writing and closing Stories: that is ordinary work. Do it without
 asking, and keep going until the requested work is complete. Never turn it into a
-proposal, a confirmation or a change request.
+proposal, a confirmation or a request.
 
 **A governance change is something else.** A new architectural component, a moved
 system boundary, a replaced governed technology, a changed API contract, a changed
@@ -88,7 +88,7 @@ Git history belongs to the human. Follow `gtt-domain/workflow.md`; without it th
 - Proposing is not executing: releases, tags, destructive operations and workflow changes wait for an explicit request.
 - A GTT checkpoint regenerates `gtt-domain/session.md`. It is never a commit.
 
-**What counts as truth, highest first:** governed context → ADRs → approved Epics → the change request → proposals → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.
+**What counts as truth, highest first:** governed context → ADRs → approved Epics → the inbox (ideas, then proposals) → `gtt-domain/session.md` (derived) → this conversation. A lower layer never overrides a higher one, and nothing said in a conversation, yours or another ADE's, is project authority. Your ADE's resume restores the conversation; `gtt review` restores the project.
 
 ## Human Promotion Boundary
 
@@ -96,7 +96,7 @@ Preparing a governed change and promoting it are different acts. The agent
 does the first; only the human does the second.
 
 ```text
-PROPOSAL
+PROPOSAL               (PROP, registered with gtt-inbox.sh propose; the human accepts it in a REV)
     ↓
 PROMOTION PACKAGE      (ADR draft + affected files, staged as one promotion set)
     ↓
@@ -110,11 +110,12 @@ GOVERNED CHANGE
 > **AI may prepare the change. AI may not autonomously promote the change.**
 
 Once a proposal (forms 1-3 of `gtt-propose-change`, or a `gtt-drift-response`
-full/fast track) is approved, the agent's job is not to edit `gtt-domain/adr/` or
+full/fast track) is accepted (`gtt answer`), the agent's job is not to edit `gtt-domain/adr/` or
 `gtt-domain/context/` — those stay write-protected regardless. Instead it stages a
 **promotion package** under `gtt-domain/proposals/`: the ADR draft and the full text
 of every affected file, prepared as one promotion set with
-`bash .gtt/scripts/gtt-stage.sh <name> --reason "<one line>" <staged file>=<destination> ...`.
+`bash .gtt/scripts/gtt-stage.sh <name> --origin PROP-n --reason "<one line>" <staged file>=<destination> ...`;
+after the freeze it refuses a set that touches context or ADRs without an `--origin` in stage `accepted`.
 
 The human applies the set with one generic, tested command,
 `bash .gtt/scripts/gtt-promote.sh <name>`: it shows the reason, the files and the
@@ -156,9 +157,11 @@ design the authority, it does not stop the code from changing.
 Architectural changes must go through:
 
 ```text
-gtt-domain/change-request.md
+docs/ideas/IDEA-NNN.md          (the human writes: gtt idea add / gtt change; the architect: gtt adr new)
         ↓
-gtt-domain/proposals/               (proposal, then ADR draft + promotion script)
+triage (you) → PROP-NNN + REV   (gtt-inbox.sh propose; the human answers the REV)
+        ↓
+gtt-domain/proposals/               (promotion package: ADR draft + promotion set, --origin)
         ↓
 Human Promotion Boundary      (review, then explicit human execution)
         ↓
@@ -202,11 +205,14 @@ An ADE path that already exists in the host — its own `.claude/settings.json`,
 it never merges or overwrites, and it never records as GTT's a file GTT did not
 install.
 
-## Change requests
+## The inbox
 
-Routine implementation does not require a change request, and neither does a Story.
-
-Use `gtt-domain/change-request.md` when a requested change affects a governed decision.
+Routine implementation needs no request, and neither does a Story. The change flow is the **inbox**: the human puts things on the table as `IDEA-NNN`
+(`docs/ideas/`: an idea or a request; an architect's ADR draft is in `gtt-domain/adr/drafts/`); you triage them and
+register yours as `PROP-NNN` with `bash .gtt/scripts/gtt-inbox.sh propose`. Triage and routes: the `gtt-propose-change` skill
+and `.gtt/docs/agents/operations.md` → *Inbox*. Triage at a cut point (session start, or no Story of yours `In Progress`),
+never mid-Story. You never accept, reject, park, reopen or re-prioritise an entry, and never edit an idea's text.
+`gtt-domain/change-request.md` is retired; `gtt change` is a shortcut for `gtt idea add --type solicitud`.
 
 A proposal should identify:
 
@@ -229,10 +235,10 @@ It holds two kinds of entry, and they are not governed alike.
 **Precedence:** Governed Context / L0 -> ADR -> Epics -> Stories -> implementation.
 The backlog never silently overrides architecture. A Story that contradicts
 governed context or an accepted ADR is a mistake in your own plan: correct the
-Story and keep working, and escalate through `gtt-domain/change-request.md` only
+Story and keep working, and escalate through the inbox (a registered proposal) only
 when the work itself cannot be done without changing governed context or an ADR.
 An Epic that contradicts them is a finding, not a resolution - its goal and scope
-are the human's, so surface it through `gtt-domain/change-request.md`.
+are the human's, so surface it as a proposal in the inbox.
 
 **Where the detail lives.** Each Epic's design (`gtt-domain/context/design/EPIC-NNN.md`) is its complete specification: data, rules, flows, interfaces and examples, carried over in full from the sources and cited. A Story's `Implements:` points to the parts of the design it builds. Build from the Story and the design; open a source in `docs/sources/` only to verify a citation, and never search `docs/` by folder. Never write a design decision in the backlog: if the design lacks something, it is a `[VACÍO]` - ask, or raise a change request. Write Stories so they can be built without guessing: a Story is `Implements:` (the anchors of the design it builds) and `Done when:` (an example of the design and its executable evidence); copy nothing from the design into it.
 
@@ -298,7 +304,7 @@ In `.gtt/docs/agents/ades.md` → *Multi-ADE participation*.
 
 In `.gtt/docs/agents/bootstrap.md` → *Bootstrap behavior*.
 
-Whatever a session's first message says: if `## Next action` in the session context (or `bash .gtt/scripts/gtt-project.sh next-action`) names the Initial Design Questionnaire or a change request to process, your first answer starts or resumes it; so does `/gtt`. See *Initial Design Questionnaire* → *Start and resume*.
+Whatever a session's first message says: if `## Next action` in the session context (or `bash .gtt/scripts/gtt-project.sh next-action`) names the Initial Design Questionnaire or inbox entries to triage (`--now`), your first answer starts or resumes it; so does `/gtt`. See *Initial Design Questionnaire* → *Start and resume*.
 
 ## Autonomy Profiles
 

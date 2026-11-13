@@ -104,7 +104,7 @@ The idea is simple:
 
 **Autonomy Profile.** During bootstrap you are asked how much operational work to delegate to GTT — one choice among **Light**, **Medium**, **Hard** and **Team**. It is an operating profile, not a quality level; GTT derives the technical policies from it and never picks one for you. No plan turns governance off. What each plan does without asking, what it asks you, and what it requires is spelled out in [.gtt/docs/method-plans.md](method-plans.md).
 
-**Development method (Method Governance).** You are also asked how you want to develop the solution — **Vertical Slice** (recommended), **DDD**, **Hexagonal**, **Layered**, **Event-First**, which may be combined where their packs allow it — and how to start — **Walking Skeleton** (recommended) or straight to the main functionality. "I am not sure, help me choose" decides nothing: the agent proposes a method with its reason and you confirm; unconfirmed, it stays `OPEN`, and nothing is ever applied by default. The method guides how THINK cuts your Epics and writes their designs, the freeze ratifies it as the **Method Lock** in `architecture.md` (with the ADR that locks it and its dependency rules in `stack.md`), and `gtt-method.sh check` verifies it — at the freeze, in `gtt-validate.sh`, and in the code through a language adapter where one exists (otherwise the method is reported `declared-only`). After the freeze it changes only through a change request. The methods and their formats: [.gtt/methods/README.md](../methods/README.md).
+**Development method (Method Governance).** You are also asked how you want to develop the solution — **Vertical Slice** (recommended), **DDD**, **Hexagonal**, **Layered**, **Event-First**, which may be combined where their packs allow it — and how to start — **Walking Skeleton** (recommended) or straight to the main functionality. "I am not sure, help me choose" decides nothing: the agent proposes a method with its reason and you confirm; unconfirmed, it stays `OPEN`, and nothing is ever applied by default. The method guides how THINK cuts your Epics and writes their designs, the freeze ratifies it as the **Method Lock** in `architecture.md` (with the ADR that locks it and its dependency rules in `stack.md`), and `gtt-method.sh check` verifies it — at the freeze, in `gtt-validate.sh`, and in the code through a language adapter where one exists (otherwise the method is reported `declared-only`). After the freeze it changes only through a proposal (inbox, form 6). The methods and their formats: [.gtt/methods/README.md](../methods/README.md).
 
 **Delivery planning.** GTT also looks at **how long it takes and with how many hands**. At the start you are asked who builds (you with one agent, with several in parallel, or a team), how many parallel fronts you can sustain and when you need a first usable version; the questionnaire then asks what you prioritise, whether third-party services are allowed and the cap per Epic (8 agent hours by default). "I do not know yet" is valid and nothing is invented. During THINK the agent estimates in agent hours, compares buying with building (dated sources, an ADR to integrate) and splits the Epics into fronts that do not touch the same paths. Before the freeze `gtt plan` tells you if the plan fits the deadline and which levers would make it fit; while you work, `gtt report` compares real time with the estimate and observation warns when something runs long. All of it is computed by scripts (no tokens) and every lever is a proposal: you decide. See `.gtt/docs/delivery.md`.
 
@@ -112,7 +112,7 @@ The idea is simple:
 
 **What waits for you.** Anything that needs you is **one small file** in `gtt-domain/pending/`, and the folder is empty when nothing does. The agent settles by itself what it can; it asks you only what is yours (an account, a key, money, a legal or product matter, a governed file) and tells you a decision only when it changes scope, time, cost, security or the design. You see `@gtt · Needs you (2)` with each question and the recommended option, and you answer in the chat («14: 1»), in the file, or with `gtt answer 14 1` (`gtt answer ok` approves every decision). Without an answer the work continues with the recommended option; a decision nobody objects to stands after 7 days. The agent applies your answer, marks it and the next session deletes the file. `gtt pending` lists what is open.
 
-**Change during development.** A governed change can start from the CLI: `gtt change` records the request with an id and your ADE is told to process it into a proposal on its next turn; `gtt proposals` shows what it drafted, `gtt promote` applies a staged set, and `gtt undo` steps back the last promotion (a frozen one is re-frozen over the earlier state — there is still no unfreeze). Without the CLI: `bash .gtt/scripts/gtt-change.sh`.
+**Change during development (the Inbox).** Everything you want changed enters one pipeline. You write: `gtt idea add "<text>"` (an idea), `gtt change ...` (a shortcut for `gtt idea add --type solicitud`, with fields) or, as the architect, `gtt adr new "<title>"` (an ADR draft in `gtt-domain/adr/drafts/`). Your ADE triages it at the next cut point, and anything that needs a decision becomes a proposal with a `REV` you answer (`gtt answer 15 1`, or «15: 1» in the chat). Then it prepares the package and you ratify with `gtt promote`, `gtt approve` or `gtt run N`. `gtt inbox` shows every entry by stage; `gtt inbox park|reopen|reject|priority` and `gtt idea drop` are yours; `gtt undo` steps back the last promotion (there is still no unfreeze). `gtt-domain/change-request.md` is retired. Without the CLI: `bash .gtt/scripts/gtt-inbox.sh`.
 
 For the detailed procedures, see [.gtt/docs/installation.md](installation.md) and [.gtt/docs/usage.md](usage.md).
 
@@ -177,7 +177,7 @@ failure. Instruction files and overlays (`AGENTS.md`, `.claude/`, `.kiro/`,
 `.github/instructions/`, `.codex/`, an ADE's memory or session history) are integration surfaces:
 they let an ADE take part in GTT and never become an authority of their own.
 
-**Portable core:** `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `SOURCE-BRIEF.*` (if a source document existed) at the project root, plus the governed domain (`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`) and the GTT Engine (`.gtt/`, including GTT's own documentation in `.gtt/docs/`, declared by `.gtt/scaffold/manifest.yaml`).
+**Portable core:** `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `SOURCE-BRIEF.*` (if a source document existed) at the project root, plus the governed domain (`gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`) and the GTT Engine (`.gtt/`, including GTT's own documentation in `.gtt/docs/`, declared by `.gtt/scaffold/manifest.yaml`).
 
 What each ADE's adapter contains — a project with several participating ADEs has the union of their rows:
 
@@ -406,7 +406,6 @@ When bootstrapping GTT into a project, **the AI coding agent/ADE MUST create and
 │   ├── adr/                      #   L1 accepted decisions
 │   ├── proposals/                #   governed drafts awaiting a human decision
 │   ├── backlog.md
-│   ├── change-request.md
 │   ├── session.md                #   derived operational state (never authority)
 │   └── .frozen                   #   freeze marker, written by gtt-freeze.sh
 │
@@ -416,7 +415,7 @@ When bootstrapping GTT into a project, **the AI coding agent/ADE MUST create and
 ### Scaffolding rules
 
 - `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, and `SOURCE-BRIEF.*` (when one exists) MUST remain at the project root.
-- The governed domain — `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` — MUST be generated directly under `gtt-domain/`, never elsewhere and moved afterward. `gtt-domain/.frozen` is written only by `.gtt/scripts/gtt-freeze.sh`, after human confirmation; `gtt-domain/session.md` is derived and regenerated by `.gtt/scripts/gtt-status.sh`.
+- The governed domain — `gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/session.md`, `gtt-domain/.frozen` — MUST be generated directly under `gtt-domain/`, never elsewhere and moved afterward. `gtt-domain/.frozen` is written only by `.gtt/scripts/gtt-freeze.sh`, after human confirmation; `gtt-domain/session.md` is derived and regenerated by `.gtt/scripts/gtt-status.sh`.
 - The GTT Engine (`scaffold/`, `scripts/`, `index/`, `protection/`, `session-adapters/`) and GTT's own documentation (`docs/`: `index.md`, `installation.md`, `usage.md`, `method-plans.md` and their `.es.md` pairs, `gtt-completion.md`, `evidence.md`, `docs.md`, `session-adapter-contract.md`) MUST live under `.gtt/`, and the GTT bootstrap README MUST be installed as `.gtt/README.md`. `.gtt/scaffold/manifest.yaml` is the canonical, declarative definition of this scaffold.
 
 - The agent MUST NOT move, rename, duplicate, or redistribute GTT artifacts outside this structure.
@@ -438,7 +437,7 @@ of it, both namespaced so that they cannot collide with the project's own
 (scripts, artifact identity and technical index, protection registry,
 session-adapter declarations, the scaffold manifest) and GTT's own
 documentation (`.gtt/docs/`); `gtt-domain/` holds the domain governed by
-GTT-Method — `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`,
+GTT-Method — `context/`, `adr/`, `proposals/`, `backlog.md`,
 `session.md`, `.frozen`. Beside them the root keeps only the human-facing entry
 points (`readme-gtt.md`, `readme-gtt.es.md`, `SOURCE-BRIEF.*`), `AGENTS.md` and
 the ADE overlay — instructions to agents, in neither group.
@@ -455,7 +454,7 @@ machinery or documentation about GTT (`.gtt/`), or the project's governed state
 | Part | Where | Owned by |
 | --- | --- | --- |
 | Engine | `.gtt/` (including `.gtt/docs/`) | GTT |
-| Governed domain | `gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `change-request.md`, `session.md`, `.frozen` | the Solution Designer (agents draft in `gtt-domain/proposals/` only) |
+| Governed domain | `gtt-domain/`: `context/`, `adr/`, `proposals/`, `backlog.md`, `session.md`, `.frozen` | the Solution Designer (agents draft in `gtt-domain/proposals/` only) |
 | ADE overlay | `.claude/`, `.kiro/`, `.github/instructions/` | the ADE integrations — one per participating ADE, exactly one of them Primary (a workflow identifier, never an authority) |
 
 
@@ -486,14 +485,13 @@ GTT makes architecture and its surrounding context explicit, protected, and mach
 | File | What it is | When you touch it |
 | --- | --- | --- |
 | **`SOURCE-BRIEF.*`** (project root) | Your original design: vision, architecture, stack, constraints, in your own words | Once, before or during setup |
-| **`gtt-domain/change-request.md`** | The front door for a requested change | Whenever a governed decision or the development line needs to change |
+| **`docs/ideas/IDEA-NNN.md`** (`gtt idea add`) | The front door for a requested change: your words, never rewritten | Whenever a governed decision or the development line needs to change |
 
 `SOURCE-BRIEF.*` stays at the project root — the one GTT artifact that is
-purely yours to find quickly, never governance machinery. `gtt-domain/change-request.md`
-sits in `gtt-domain/` with the rest of the governed state, and is the
-single entry point you use constantly.
+purely yours to find quickly, never governance machinery. Your ideas sit in `docs/ideas/`,
+and are the single entry point you use constantly (`gtt idea add`).
 
-`gtt-domain/context/stack.md` is the file you will read most often — the one-screen map of what the system is — but it is an output, not a file you should normally edit by hand. Approved changes reach it through `gtt-domain/change-request.md`, never by silently editing the governed map.
+`gtt-domain/context/stack.md` is the file you will read most often — the one-screen map of what the system is — but it is an output, not a file you should normally edit by hand. Approved changes reach it through the inbox, never by silently editing the governed map.
 
 ---
 
@@ -521,19 +519,16 @@ A stack-table row without an ADR in its **Locked by** column is itself a finding
 
 ## Changing something
 
-There is one entry point. You do not hunt for the right governed file.
+There is one entry point, the **Inbox**. You do not hunt for the right governed file. You do three things: **write**, **decide**, **ratify**.
 
 ```text
-gtt-domain/change-request.md  ->  gtt-domain/proposals/  ->  you review + run one script  ->  gtt-domain/adr/ + gtt-domain/context/stack.md
-      you state intent          agent drafts           the Human Promotion Boundary       governed/protected
-      always writable           agent writable
+docs/ideas/IDEA-NNN.md  ->  triage + PROP + REV  ->  you answer  ->  package  ->  you run one command  ->  adr/ + context/ (new freeze)
+   you write (gtt idea add)   agent (gtt-inbox.sh)   gtt answer N k   agent        the Human Promotion Boundary   governed
 ```
 
-Fill in the request block in `gtt-domain/change-request.md` with what needs to change, why, trigger, scope, impact, risk, and priority.
+Every entry has a stage: `new` → `review` → `accepted` → `ratify` → `work` → `closed` (or `parked`, `rejected`); the stage is the last line of the entry's trail, with date and author, and `gtt inbox` and Sonar show it. Write `gtt idea add "<text>"`, or `gtt change --change "..." --reason "..."` (a request with trigger, scope, impact, risk and priority fields); an architect who writes the ADR by hand uses `gtt adr new "<title>"`, and `gtt adr adopt <file>` takes in one written by hand. The agent classifies it by level: `work` (a Story, no question), `spec` (a CHANGE to an Epic's design), `scope` (an Epic) or `arch` (an ADR). Only level `work` needs nothing from you; the rest wait for your answer in a `REV` with the priority (urgent, normal, low). Details: `.gtt/docs/agents/operations.md` → *Inbox*.
 
-Then ask the agent to process the change request.
-
-The agent returns a complete proposal covering:
+For a proposal the agent returns a complete text covering:
 
 - current decision
 - suggested change
@@ -542,7 +537,7 @@ The agent returns a complete proposal covering:
 - alternatives
 - exact stack-map rows that change
 
-You approve the proposal. The agent then stages a **promotion package** in `gtt-domain/proposals/`: the ADR draft, the full text of every affected `gtt-domain/context/` file, and an executable script:
+You accept the proposal (`gtt answer N 1`). The agent then stages a **promotion package** in `gtt-domain/proposals/`: the ADR draft, the full text of every affected `gtt-domain/context/` file, and an executable script:
 
 ```bash
 bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
@@ -550,9 +545,9 @@ bash .gtt/scripts/gtt-promote.sh ADR-NNN-<slug>
 
 Review the proposal, the ADR, and the script, then run that one command yourself from the project root. The script lets you `view` the ADR text and the exact diff against current context, applies every affected file together only once you say `yes`, and is never executed by the agent — see [Human Promotion Boundary](#human-promotion-boundary).
 
-**`gtt-domain/proposals/` is the only governed directory that an agent may write to as part of the governed change workflow.**
+**An agent writes its drafts in `gtt-domain/proposals/drafts/` and registers them with `gtt-inbox.sh propose`; from then on the proposal (`PROP-NNN`) is the engine's. After the freeze `gtt-stage.sh` refuses a set that touches context or ADRs without `--origin` of an entry you accepted.**
 
-Routine implementation work does not need to enter this flow. If ordinary implementation repeatedly requires change requests, the constraints may be written too broadly and should be narrowed.
+Routine implementation work does not need to enter this flow. If ordinary implementation repeatedly requires proposals, the constraints may be written too broadly and should be narrowed.
 
 ---
 
@@ -863,7 +858,6 @@ gtt-domain/                     # THE DOMAIN GOVERNED BY GTT-METHOD
 ├── adr/                        # L1 — accepted decisions
 ├── proposals/                  # governed drafts awaiting a human decision
 ├── backlog.md                  # development line — Epics, Stories, current focus
-├── change-request.md           # front door for change intent
 ├── session.md                  # derived operational state — never authority
 └── .frozen                     # freeze marker, written by gtt-freeze.sh
 │
@@ -917,7 +911,7 @@ The governed domain sits in `gtt-domain/`, apart from the Engine, because it is 
 
 ## Getting started
 
-1. Copy the portable core — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (the Engine, including `.gtt/scripts/`, `.gtt/docs/` and `.gtt/scaffold/manifest.yaml`), and the governed-domain skeleton (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`, `gtt-domain/change-request.md`) — into the project root, plus only the adapter matching your ADE: `.claude/` (including `.claude/CLAUDE.md`) for Claude Code, `.kiro/` for Kiro, `.github/instructions/gtt.instructions.md` for GitHub Copilot, or nothing extra for Codex. See [ADE adapters](#ade-adapters); do not copy the other adapters in "just in case."
+1. Copy the portable core — `AGENTS.md`, `readme-gtt.md`, `readme-gtt.es.md`, `.gtt/` (the Engine, including `.gtt/scripts/`, `.gtt/docs/` and `.gtt/scaffold/manifest.yaml`), and the governed-domain skeleton (`gtt-domain/context/`, `gtt-domain/adr/`, `gtt-domain/proposals/`, `gtt-domain/backlog.md`) — into the project root, plus only the adapter matching your ADE: `.claude/` (including `.claude/CLAUDE.md`) for Claude Code, `.kiro/` for Kiro, `.github/instructions/gtt.instructions.md` for GitHub Copilot, or nothing extra for Codex. See [ADE adapters](#ade-adapters); do not copy the other adapters in "just in case."
 2. Nothing to add to your `.gitignore`: GTT ignores its own local state itself (`gtt-domain/.gitignore`, `.gtt/local/.gitignore`).
 3. Run the `gtt-bootstrap` skill (for example, “bootstrap GTT” or “set up GTT”) instead of filling `gtt-domain/context/` by hand — it performs step 1 above for you, deterministically.
 4. If you prefer to author the context manually, start with `gtt-domain/context/stack.md`. Leave a cell empty rather than guessing; an explicit unknown is preferable to an invented decision.
@@ -995,8 +989,8 @@ infra/AGENTS.md
 ## What you maintain
 
 - `gtt-domain/context/` and `gtt-domain/adr/`: applied through the governed process and not directly written by an agent once frozen.
-- `gtt-domain/backlog.md`: an Epic's goal and scope change through `gtt-domain/change-request.md` (your decision); Stories are the agent's working plan and change freely, without approval.
-- `gtt-domain/change-request.md`: your entry point whenever a governed decision or the committed development line needs to change.
+- `gtt-domain/backlog.md`: an Epic's goal and scope change through the inbox (your decision; Epics and Stories carry `Origin`, Epics `Priority`); Stories are the agent's working plan and change freely, without approval.
+- `docs/ideas/` (`gtt idea add`): your entry point whenever a governed decision or the committed development line needs to change.
 - `SOURCE-BRIEF.*`: written once during bootstrap and preserved as the original source, at the project root.
 - Your participating ADEs' adapters (`.claude/`, `.kiro/`, `.github/instructions/gtt.instructions.md`), `.gtt/ade.json` (written only by `gtt-ade.sh`) and `.gtt/scripts/`: GTT runtime/integration assets that normally require little change beyond path configuration.
 - `.gtt/protection/registry.yaml`: never hand-maintained — it is regenerated from `@GTTGuard` markers in source by `.gtt/scripts/gtt-guard-sync.sh`. Your part is placing/removing the marker; the registry follows.
