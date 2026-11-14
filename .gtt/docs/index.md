@@ -22,7 +22,7 @@ Every path below is relative to the project root. See *Workspace hygiene* in
 - [Context](../../gtt-domain/context/) — L0, governed
 - [ADRs](../../gtt-domain/adr/) — L1, accepted decisions
 - [Proposals](../../gtt-domain/proposals/) — agent proposals (`PROP-NNN`) awaiting your decision, and promotion packages
-- [ADR drafts](../../gtt-domain/adr/drafts/README.md) — where the architect writes an ADR (`gtt adr new`)
+- ADR drafts (`gtt-domain/adr/drafts/`) — where the architect writes an ADR (`gtt adr new`)
 - [Installation](installation.md) — detailed setup procedures
 - [Usage](usage.md) — the normal development loop
 - [Autonomy Profiles](method-plans.md) — Light, Medium, Hard, Team: what each one delegates, asks and requires

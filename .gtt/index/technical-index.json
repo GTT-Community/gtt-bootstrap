@@ -606,9 +606,7 @@
         }
       ],
       "references": [],
-      "referenced_by": [
-        "GTT-INDEX"
-      ],
+      "referenced_by": [],
       "relationships": [],
       "provenance": {
         "history": [],
@@ -4869,7 +4867,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "5ee78185f68d7dc6a4731c6e6e67af0de0137157de09e8e81cd6fc6d77481a18",
+      "sha256": "c56ef27c9eaa765e6d2d56f9ba285d4d8554d8f6a7a277149608070f443e09c9",
       "aliases": [],
       "sections": [
         {
@@ -5003,7 +5001,6 @@
       ],
       "references": [
         "AGENTS",
-        "ART-GTT-DOMAIN-ADR-DRAFTS-README",
         "BACKLOG",
         "DOC-METHOD-PLANS",
         "GTT-GTT-COMPLETION",

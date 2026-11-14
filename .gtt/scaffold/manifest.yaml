@@ -119,7 +119,7 @@ domain:
   - { path: gtt-domain/adr/drafts/, kind: dir, required: false, state: true, role: the architect's ADR drafts (IDEA-NNN-*.md) - written by the architect and the inbox engine, never by an agent, in either regime; outside the governed digest }
   - { path: docs/ideas/, kind: dir, required: true, role: the inbox of the human - IDEA-NNN.md, each the human's own words (an idea or a request) with a trail of dated lines under the final rule; written by `gtt idea add` and `gtt change`, an agent adds only trail lines through gtt-inbox.sh }
   - { path: docs/ideas/README.md, kind: file, required: true, role: what the ideas folder is and how an entry moves, in one screen }
-  - { path: gtt-domain/adr/drafts/README.md, kind: file, required: true, role: what the architect's ADR drafts folder is, in one screen }
+  - { path: gtt-domain/adr/drafts/README.md, kind: file, required: false, role: what the architect's ADR drafts folder is, in one screen }
   - { path: gtt-domain/proposals/drafts/, kind: dir, required: false, role: the agent's drafts before the inbox engine registers them as PROP-NNN }
   - { path: gtt-domain/pending/.seq, kind: file, required: false, state: true, role: the last event number, so a number is never reused after its file is deleted - written only by gtt-pending.sh }
   - { path: gtt-domain/working-agreements.md, kind: file, required: false, role: team working agreements - versioned and reviewed, below governed context, never authority and never session memory }
