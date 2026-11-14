@@ -87,7 +87,10 @@ def main():
         code = re.sub(r'<script type="application/json".*?</script>', "", page, flags=re.S)
         for word in ("fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon", "import(", "importScripts", "<iframe", "<link ", "<img "):
             check(word not in code, f"the page has no `{word}`")
-        check(not re.search(r"https?://|//[a-z0-9.-]+\.[a-z]{2,}/", code, re.I), "the page has no external URL")
+        # The only addresses are plain links to the method's own site (home and guide): an <a href> the person clicks, never loaded by the page.
+        loose = re.sub(r'href: "https://gtt-method\.org/(sonar/)?"', "", code)
+        check(not re.search(r"https?://|//[a-z0-9.-]+\.[a-z]{2,}/", loose, re.I), "the page loads no external URL (only links to gtt-method.org)")
+        check('href: "https://gtt-method.org/"' in code, "the page links home to gtt-method.org")
         check(not re.search(r"url\((?!['\"]?(\.\./|fonts/|\.\./sonar/fonts/))", code), "every url() is a local font")
         csp = re.search(r'Content-Security-Policy" content="([^"]*)"', page)
         csp = csp.group(1) if csp else ""

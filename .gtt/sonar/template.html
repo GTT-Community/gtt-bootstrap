@@ -23,6 +23,8 @@ a:hover{color:#99F6E4}
 .mono{font-family:var(--mono)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 header.bar{display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding:0 24px;min-height:56px;border-bottom:1px solid var(--line)}
+.brandbox{display:flex;flex-direction:column;line-height:1.15}.brandbox .home{font:400 10px var(--mono);color:var(--muted,#8b9bb0);text-decoration:none;margin-left:20px}.brandbox .home:hover{text-decoration:underline}
+.help{max-width:820px;margin:0 auto;padding:24px 16px}.help h1{margin:0 0 6px}.help .sub{opacity:.75}.help .panel{margin:14px 0;padding:14px 18px}.help li{margin:6px 0;line-height:1.5}
 .brand{display:flex;align-items:center;gap:10px;font:500 15px var(--mono)}
 .brand i{width:10px;height:10px;border-radius:2px;background:var(--agent);display:inline-block}
 nav.tabs{display:flex;gap:22px;align-self:stretch;font:13px var(--mono)}
@@ -197,6 +199,16 @@ var STR = {
     bkOmitted: "Demasiado grande para incrustar; ábrelo en", bkTruncated: "Se muestra solo el comienzo; el resto está en", bkGDocs: { context: "Contexto", adr: "Decisiones (ADR)", design: "Diseño de cada Épica" },
     bkSt: { "In Progress": "en curso", "Blocked": "bloqueada", "Planned": "planeada", "Done": "hecha", "Cancelled": "cancelada" },
     bkEpicSt: { "Proposed": "propuesta", "Planned": "planeada", "In Progress": "en curso", "Completed": "completa", "Cancelled": "cancelada" },
+    help: "guía", homeLabel: "inicio", homeTitle: "Inicio de GTT: documentación y método", helpTitle: "Cómo leer Sonar",
+    helpSub: "Una página de solo lectura: muestra lo que dicen tus repos y nunca cambia nada. Nada sale de tu máquina.",
+    helpSec: [
+      ["Las cuatro vistas", ["portafolio: cada proyecto de un vistazo (fase, avance, fecha, lo que está en curso, bandeja, lo que te necesita).", "proyecto: un proyecto a fondo: avance por alcance y horas, qué se trabaja ahora, trabajo bloqueado con su razón, salud, ritmo, bandeja y decisiones.", "backlog: Epics, Stories y documentos de diseño, con filtro y búsqueda.", "lo-último: lo que se cerró recientemente."]],
+      ["Te necesito", ["Decisiones que solo tú puedes tomar: revisar una propuesta, ratificar una ya trabajada, un ADR escrito a mano. Van ordenadas por cuánto bloquea cada una.", "Cada opción trae su comando, con botón para copiar. En el chat también puedes responder sí o no y tu agente lo registra con tus palabras exactas.", "Promover, congelar y deshacer son actos de tu propia terminal."]],
+      ["La bandeja", ["Las ideas (tuyas) y las propuestas (del agente) son un solo flujo: nueva, en revisión, aceptada, ratificar, en trabajo, cerrada; aparcada o rechazada aparte.", "Cada ítem muestra su origen (persona o agente), su prioridad (urgente, normal, baja) y, ya decidido, en qué terminó."]],
+      ["Avance, con honestidad", ["El avance cuenta lo que está en el alcance; lo marcado post- o fuera del alcance se muestra aparte. Las horas son las estimaciones del backlog, nunca una promesa.", "Una Story bloqueada muestra la razón que escribió su autor. «sin dato» significa que nada se declaró, no cero."]],
+      ["¿Está al día?", ["«en vivo» significa que un vigilante refresca la página; «generado HH:MM» significa que es una foto. Haz clic para pausar.", "Una franja ámbar arriba indica que el Bootstrap del proyecto es más antiguo que el que lo lee: dice qué falta y el gtt update que corresponde."]],
+      ["Desde la terminal", ["Ejecuta gtt sonar para abrir este proyecto; gtt sonar --all abre el portafolio de todos los proyectos que agregaste con gtt sonar add.", "Ejecuta gtt sonar list para ver qué repos necesitan actualizarse."]]
+    ],
     portfolio: "portafolio", project: "proyecto", last: "lo-último", repos: "repos", suite: "suite", live: "en vivo", paused: "en pausa",
     portfolioTitle: "Portafolio", portfolioSub: "Proyectos GTT, leídos desde sus repos.", needs: "te necesito",
     needsHint: "Ordenado por cuánto bloquea. Cada acto se corre en tu terminal.", projects: "proyectos", copy: "copiar", copied: "copiado",
@@ -235,6 +247,16 @@ var STR = {
     bkOmitted: "Too large to embed; open it at", bkTruncated: "Only the beginning is shown; the rest is in", bkGDocs: { context: "Context", adr: "Decisions (ADR)", design: "Design of each Epic" },
     bkSt: { "In Progress": "in progress", "Blocked": "blocked", "Planned": "planned", "Done": "done", "Cancelled": "cancelled" },
     bkEpicSt: { "Proposed": "proposed", "Planned": "planned", "In Progress": "in progress", "Completed": "completed", "Cancelled": "cancelled" },
+    help: "guide", homeLabel: "home", homeTitle: "GTT home: documentation and method", helpTitle: "How to read Sonar",
+    helpSub: "A read-only page: it shows what your repos say and never changes anything. Nothing leaves your machine.",
+    helpSec: [
+      ["The four views", ["portfolio: every project at a glance (phase, progress, date, what is in progress, inbox, what needs you).", "project: one project in depth: progress by scope and hours, what is being worked now, blocked work with its reason, health, throughput, inbox and decisions.", "backlog: Epics, Stories and the design documents, with filter and search.", "latest: what was closed recently."]],
+      ["I need you", ["Decisions only you can take: review a proposal, ratify one that was worked, an ADR written by hand. They are ordered by how much each blocks.", "Each option has its command, with a copy button. In the chat you can also just answer yes or no and your agent records it with your exact words.", "Promoting, freezing and undoing are acts of your own terminal."]],
+      ["The inbox", ["Ideas (yours) and proposals (the agent's) are one flow: new, in review, accepted, ratify, in work, closed; parked or rejected on the side.", "Each item shows its origin (human or agent), its priority (urgent, normal, low) and, once decided, what became of it."]],
+      ["Progress, honestly", ["Progress counts what is in scope; work marked post- or out of scope is shown apart. Hours are the estimates in the backlog, never a promise.", "A blocked Story shows the reason its author wrote. \"no data\" means nothing was declared, not zero."]],
+      ["Is it up to date?", ["\"live\" means a watcher is refreshing the page; \"generated HH:MM\" means it is a snapshot. Click it to pause.", "An amber band at the top means the project's Bootstrap is older than the one reading it: it says what is missing and the gtt update to run."]],
+      ["From the terminal", ["Run gtt sonar to open this project; gtt sonar --all opens the portfolio of every project you added with gtt sonar add.", "Run gtt sonar list to see which repos need an update."]]
+    ],
     portfolio: "portfolio", project: "project", last: "latest", repos: "repos", suite: "suite", live: "live", paused: "paused",
     portfolioTitle: "Portfolio", portfolioSub: "GTT projects, read from their repos.", needs: "i need you",
     needsHint: "Ordered by how much each blocks. Run each act in your terminal.", projects: "projects", copy: "copy", copied: "copied",
@@ -382,8 +404,8 @@ function topBar(view) {
   live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
   var suite = null; OK.forEach(function (s) { if (!suite || String(s.compat ? s.compat.read_with : s.suite_version).localeCompare(suite, undefined, { numeric: true }) > 0) suite = s.compat ? s.compat.read_with : s.suite_version; });
   return h("header", { class: "bar" },
-    h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"),
-    h("nav", { class: "tabs", "aria-label": "Views" }, tab("portfolio", T.portfolio), tab("project", T.project), tab("backlog", T.backlog), tab("last", T.last)),
+    h("div", { class: "brandbox" }, h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"), h("a", { class: "home", href: "https://gtt-method.org/", target: "_blank", rel: "noopener noreferrer", title: T.homeTitle, text: T.homeLabel + " · gtt-method.org" })),
+    h("nav", { class: "tabs", "aria-label": "Views" }, tab("portfolio", T.portfolio), tab("project", T.project), tab("backlog", T.backlog), tab("last", T.last), tab("help", T.help)),
     h("div", { class: "grow" }),
     h("div", { class: "meta" }, h("span", { text: REPOS.length + " " + T.repos }), suite ? h("span", { text: T.suite + " " + suite }) : null, live));
 }
@@ -725,6 +747,16 @@ function viewProject() {
       h("div", { class: "panel sigs" }, sigs.map(function (g) { return h("div", { class: "sig" }, levelTag(g.level), h("span", { class: "mono small", text: g.code + (g.ref ? " " + g.ref : "") }), h("span", { text: g.text })); }))) : null);
 }
 
+function viewHelp() {
+  var wrap = h("main", { class: "help" }, h("h1", { text: T.helpTitle }), h("p", { class: "sub", text: T.helpSub }));
+  T.helpSec.forEach(function (sec) {
+    var ul = h("ul", {});
+    sec[1].forEach(function (line) { ul.appendChild(h("li", { text: line })); });
+    wrap.appendChild(h("section", { class: "panel" }, h("h2", { text: sec[0] }), ul));
+  });
+  wrap.appendChild(h("p", { class: "sub" }, h("a", { href: "https://gtt-method.org/sonar/", target: "_blank", rel: "noopener noreferrer", text: "gtt-method.org/sonar" })));
+  return wrap;
+}
 function viewLast() {
   var st = readHash(); var proj = st.proj || ""; var who = st.who || "";
   var evs = [];
@@ -906,13 +938,13 @@ function viewBacklog() {
 var timer = null;
 function render() {
   var st = readHash(); var view = st.view || "portfolio";
-  if (view !== "project" && view !== "last" && view !== "backlog") view = "portfolio";
+  if (view !== "project" && view !== "last" && view !== "backlog" && view !== "help") view = "portfolio";
   var app = document.getElementById("app");
   var focus = document.activeElement && document.activeElement.id;
   while (app.firstChild) app.removeChild(app.firstChild);
   app.appendChild(topBar(view));
   var banner = staleBanner();
-  var page = view === "project" ? viewProject() : view === "backlog" ? viewBacklog() : view === "last" ? viewLast() : viewPortfolio();
+  var page = view === "project" ? viewProject() : view === "backlog" ? viewBacklog() : view === "last" ? viewLast() : view === "help" ? viewHelp() : viewPortfolio();
   if (banner) page.insertBefore(banner, page.firstChild);
   app.appendChild(page);
   if (focus) { var el = document.getElementById(focus); if (el) { el.focus(); if (el.setSelectionRange && typeof el.value === "string" && el.type === "text") { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
