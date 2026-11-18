@@ -20,6 +20,7 @@ import tempfile
 import time
 
 FAILS, COUNT = [], 0
+os.environ.setdefault("GTT_SONAR_NO_WATCH", "1")   # the page spawns a detached watcher unless CI is set: a test must not leave one behind or see its pid
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
 BACKLOG = """# Backlog
@@ -62,7 +63,7 @@ BACKLOG = """# Backlog
 
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
        "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs",
-       "working_now", "throughput", "refresh", "degraded", "inbox", "inbox_counts", "decisions", "me"}
+       "working_now", "throughput", "refresh", "degraded", "inbox", "inbox_counts", "decisions", "me", "quality", "adrs", "proposal_files"}
 HOSTILE = '<img src=x onerror="window.PWNED=9"> & <script>window.PWNED=8</script>'
 
 
@@ -109,7 +110,7 @@ def make_project(project):
 
 
 def ago(days):
-    return (datetime.date.today() - datetime.timedelta(days=days)).isoformat()
+    return (datetime.datetime.now(datetime.timezone.utc).date() - datetime.timedelta(days=days)).isoformat()   # the scripts count days in UTC
 
 
 def write(dest, path, text):
@@ -197,6 +198,27 @@ def main():
         check(snap["epics"][0]["stories"] == {"done": 1, "in_progress": 1, "blocked": 0, "planned": 1}, "an Epic counts its Stories by state", str(snap["epics"][0]["stories"]))
         check(any(s["ref"] == "STORY-002" and "$HOME" in (s["title"] or "") for s in snap["stories"]), "a title is carried as raw text for the page to escape")
         check(snap["summary"]["stories_done"] == 1 and snap["summary"]["stories_total"] == 4 and snap["summary"]["progress_pct"] == 25, "summary counts", str(snap["summary"]))
+        e0 = snap["epics"][0]
+        check(e0["derived"] == "in_progress" and e0["pct"] == 33 and e0["group"] is None, "an Epic's state is read from its Stories, and with no shared prefix there is no group", str(e0))
+        check(snap["summary"]["groups"] is None and snap["summary"]["epics"]["total"] == 2 and snap["summary"]["epics"]["done"] == 0, "no groups without a shared prefix; Epics counted from their Stories", str(snap["summary"]["epics"]))
+        q = snap["quality"]
+        check(set(q) == {"no_done_when", "done_no_evidence", "no_estimate", "blocked_no_reason", "epics_unapproved"} and all(set(v) == {"count", "of", "pct", "sample"} for v in q.values()), "quality has its five counts, each with of, pct and sample")
+        check(isinstance(snap["adrs"], list) and isinstance(snap["proposal_files"], list), "adrs and proposal_files are lists (empty when there are none, never a guess)")
+        os.makedirs(os.path.join(dest, "docs"), exist_ok=True)
+        stray = os.path.join(dest, "docs", "PREGUNTAS.md")
+        with open(stray, "w", encoding="utf-8") as handle:
+            handle.write("# Preguntas para el dueño\n\n1. ¿Aprobamos X?\n")
+        _p, again = snapshot(dest)
+        hits = [s for s in (again or {}).get("signals", []) if s["code"] == "PEN-10"]
+        check(len(hits) == 1 and hits[0]["ref"] == "docs/PREGUNTAS.md" and hits[0]["level"] == "WARNING", "a document of questions outside gtt-domain/pending/ is a PEN-10 signal on the page", str(hits))
+        os.remove(stray)
+        _p, clean = snapshot(dest)
+        check(not [s for s in (clean or {}).get("signals", []) if s["code"] == "PEN-10"], "no questions document, no PEN-10 signal")
+        sys.path.insert(0, os.path.join(ROOT, ".gtt", "scripts"))
+        import gtt_sonar as gs
+        check(gs.epic_group("E2 · Cuaderno") == "E2" and gs.epic_group("PL3 - Planta") == "PL3" and gs.epic_group("Auth: login") is None and gs.epic_group("Plain title") is None, "a group prefix is upper case, before a separator; a word is not a group")
+        check(gs.adr_state("Accepted (extended by ADR-9)") == "accepted" and gs.adr_state("Superseded by ADR-4") == "superseded" and gs.adr_state("Propuesto") == "proposed" and gs.adr_state("who knows") is None, "an ADR state is read from its Status line, in either language, or is null")
+        check(gs.derived_state({"done": 3, "in_progress": 0, "blocked": 0, "planned": 0}) == "done" and gs.derived_state({"done": 0, "in_progress": 0, "blocked": 0, "planned": 0}) is None and gs.derived_state({"done": 0, "in_progress": 0, "blocked": 1, "planned": 2}) == "blocked", "an Epic with all Stories done is done; with none, null")
         check(snap["summary"]["deadline"] is None and snap["summary"]["calibration"]["ratio"] is None and snap["summary"]["calibration"]["uncalibrated"] is True, "what GTT does not yet calculate is null")
         check(next(s for s in snap["stories"] if s["ref"] == "STORY-001")["closed_by_evidence"] is True, "a Done Story with `Closed` counts as closed by evidence")
         check(next(s for s in snap["stories"] if s["ref"] == "STORY-002")["closed_by_evidence"] is False, "an open Story is not closed by evidence")

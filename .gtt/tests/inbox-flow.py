@@ -39,7 +39,7 @@ acc = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(acc)
 check, write, tree_hash = acc.check, acc.write, acc.tree_hash
 
-TODAY = datetime.date.today().isoformat()
+TODAY = datetime.datetime.now(datetime.timezone.utc).date().isoformat()   # the scripts date in UTC
 INBOX = ".gtt/scripts/gtt-inbox.sh"
 PENDING = ".gtt/scripts/gtt-pending.sh"
 FORM4 = """Proposed Epic Change

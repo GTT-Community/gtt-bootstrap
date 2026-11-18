@@ -26,6 +26,7 @@ Exit 0 = every check held, 1 = at least one failed.
 import argparse
 import importlib.util
 import json
+import datetime
 import os
 import re
 import shutil
@@ -388,7 +389,7 @@ def route_spec_and_arch(proj, tmp):
     check(stage_of(p, prop) == "ratify" and "Ratified" not in entry_text(p, prop), "reconcile does not ratify what the human has not promoted", o + e)
     rc, o, e = promote(p, "gloss")
     stack = text(p, "gtt-domain", "context", "stack.md")
-    check(rc == 0 and re.search(rf"\| {TODAY} \| CHANGE-\d{{8}}-gloss \| a parcel term \({prop}\) \|", stack),
+    check(rc == 0 and re.search(rf"\| ({TODAY}|{datetime.date.today().isoformat()}) \| CHANGE-\d{{8}}-gloss \| a parcel term \({prop}\) \|", stack),
           f"criterion 15: the promotion is recorded as CHANGE-... and the map row ends in ({prop})", stack[-300:])
     rc, o, e = reconcile(p)
     t = entry_text(p, prop)

@@ -3395,7 +3395,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "48e3c97e447275764cef1eaa68144bd43b7e8cb306e4b2688c56932c9c4efb23",
+      "sha256": "7c90ba95da7a889ce9c8726869d94fbb258bd7b9b3e6830fe6315227443acabd",
       "aliases": [],
       "sections": [
         {
@@ -3404,7 +3404,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 437
+          "line_end": 438
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3500,15 +3500,15 @@
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
           "line_start": 405,
-          "line_end": 418
+          "line_end": 419
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 419,
-          "line_end": 437
+          "line_start": 420,
+          "line_end": 438
         }
       ],
       "references": [],

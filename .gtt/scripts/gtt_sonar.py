@@ -16,6 +16,7 @@ gtt_delivery.py, gtt_pending.py, gtt_backlog.py and gtt_change.py. A fact GTT do
 the page says "no data" and never estimates it.
 """
 
+import collections
 import argparse
 import datetime
 import hashlib
@@ -585,6 +586,115 @@ def decisions_list(by_ref, limit=10):
     return items[:limit]
 
 
+# ------------------------------------------------------------------------------------------- the Backlog branch
+# Everything here is derived from the backlog and the governed files; what is not written is `null`.
+
+def epic_group(title):
+    """An upper-case prefix (`E2`, `TX`, `PL1`) before the first separator of a title; null when there is none.
+    It only becomes a group when at least two Epics share it (see `build`): a prefix used once is just a word."""
+    found = re.match(r"\s*([A-Z]{1,4}\d{0,3})\s*[·—–:|-]\s", title or "")
+    return found.group(1) if found else None
+
+
+def derived_state(counts):
+    """The state of an Epic read from its live Stories (Cancelled excluded by the caller)."""
+    total = sum(counts.values())
+    if not total:
+        return None
+    if counts["done"] == total:
+        return "done"
+    if counts["in_progress"] or counts["done"]:
+        return "in_progress"
+    if counts["blocked"]:
+        return "blocked"
+    return "planned"
+
+
+def pct_of(part, total):
+    return round(100 * part / total) if total else None
+
+
+ADR_STATES = ("accepted", "proposed", "superseded", "deprecated", "rejected", "draft")
+
+
+def adr_state(raw):
+    word = re.sub(r"[^a-záéíóú ]", " ", (raw or "").lower()).split()
+    for w in word[:3]:
+        for key, names in (("accepted", ("accepted", "aceptado", "aceptada", "approved", "aprobado", "aprobada", "ratificado")),
+                           ("proposed", ("proposed", "propuesto", "propuesta")), ("superseded", ("superseded", "reemplazado", "reemplazada", "sustituido")),
+                           ("deprecated", ("deprecated", "obsoleto", "obsoleta")), ("rejected", ("rejected", "rechazado", "rechazada")),
+                           ("draft", ("draft", "borrador"))):
+            if w in names:
+                return key
+    return None
+
+
+def adr_list():
+    """Every ADR with its state, date, origin and what it replaces, plus the drafts waiting in `adr/drafts/`."""
+    import glob
+    rows = []
+    for group, pattern in (("adr", "gtt-domain/adr/ADR-*.md"), ("draft", "gtt-domain/adr/drafts/*.md")):
+        for path in sorted(glob.glob(pattern)):
+            base = os.path.basename(path)
+            if "TEMPLATE" in base or base.lower() == "readme.md":
+                continue
+            text = read_text(path) or ""
+            found = re.match(r"(ADR-\d+)", base)
+            status = re.search(r"^[-*]\s*(?:\*\*)?Status(?:\*\*)?:?\s*(.+)$", text, re.M)
+            date = re.search(r"^[-*]\s*Date:\s*(\d{4}-\d{2}-\d{2})", text, re.M)
+            origin = re.search(r"^[-*]\s*Origin:\s*([A-Za-z0-9-]+)", text, re.M)
+            sup = re.search(r"^[-*]\s*Supersedes:\s*(.+)$", text, re.M)
+            ref = found.group(1) if found else os.path.splitext(base)[0]
+            title = re.sub(r"^ADR-\d+\s*[-—–:·.]*\s*", "", first_heading(text, base)).strip() or ref
+            state = adr_state(status.group(1)) if status else None
+            rows.append({"ref": ref, "title": short(title, 160), "state": "draft" if group == "draft" else state,
+                         "status": short(status.group(1).strip(), 160) if status else None,
+                         "date": date.group(1) if date else None, "origin": origin.group(1) if origin else None,
+                         "supersedes": short(sup.group(1).strip(), 80) if sup else None, "path": path.replace("\\", "/")})
+    return rows
+
+
+def proposal_files():
+    """The files of `gtt-domain/proposals/` (the proposal text and its state line), newest names last."""
+    import glob
+    rows = []
+    for path in sorted(glob.glob("gtt-domain/proposals/*.md")):
+        base = os.path.basename(path)
+        if base.lower() == "readme.md":
+            continue
+        text = read_text(path) or ""
+        state = re.search(r"^\s*(?:\*\*)?(?:Estado|Status)(?:\*\*)?:?\s*(?:\*\*)?\s*(.+)$", text, re.M)
+        rows.append({"ref": os.path.splitext(base)[0], "title": short(first_heading(text, base), 160),
+                     "state": short(re.sub(r"[*`]", "", state.group(1)).strip(), 140) if state else None, "path": path.replace("\\", "/")})
+    return rows
+
+
+def quality_of(live, epics_rows):
+    """How complete the plan is, as counts and percentages of what could be wrong. Never a guess: no stories, no number."""
+    n = len(live)
+    done = [x for x in live if x["status"] == "Done"]
+    open_ = [x for x in live if x["status"] != "Done"]
+    rows = {
+        "no_done_when": [x["ref"] for x in live if not x["done_when"]],
+        "done_no_evidence": [x["ref"] for x in done if not x["closed"]],
+        "no_estimate": [x["ref"] for x in open_ if not x["estimate_h"]],
+        "blocked_no_reason": [x["ref"] for x in live if x["status"] == "Blocked" and not x["blocked_by"]],
+        "epics_unapproved": [e["ref"] for e in epics_rows if not e["approved"]],
+    }
+    base = {"no_done_when": n, "done_no_evidence": len(done), "no_estimate": len(open_), "blocked_no_reason": sum(1 for x in live if x["status"] == "Blocked"),
+            "epics_unapproved": len(epics_rows)}
+    return {k: {"count": len(v), "of": base[k], "pct": pct_of(len(v), base[k]), "sample": v[:5]} for k, v in rows.items()}
+
+
+def offchannel_signals(gtt_pending):
+    """A document of questions outside `gtt-domain/pending/` (PEN-10): a hint to register the open ones so this page can show them."""
+    try:
+        c = gtt_pending.contract()
+        return [{"code": "PEN-10", "level": "WARNING", "ref": path, "text": gtt_pending.offchannel_message(c, path)} for path in gtt_pending.offchannel(c)]
+    except (Exception, SystemExit):
+        return []                  # a Bootstrap without the pending contract: nothing to say
+
+
 def build(root, docs=False):
     import gtt_backlog
     import gtt_delivery as dl
@@ -657,6 +767,21 @@ def build(root, docs=False):
                             "release": rel_name, "out_of_scope": out_of_scope, "front": front_of(fields),
                             "blocked_by": blocked_by(fields) if s["status"] in ("Blocked", "Planned", "In Progress") else None})
     by_id = {x["ref"]: x for x in out_stories}
+    # Each Epic, read from its own live Stories: derived state, progress, hours, releases, group.
+    for e in sorted_epics:
+        own = [x for x in out_stories if x["epic"] == e["ref"] and x["status"] != "Cancelled"]
+        e["group"] = epic_group(e["title"])
+        e["derived"] = derived_state({"done": e["stories"]["done"], "in_progress": e["stories"]["in_progress"],
+                                      "blocked": e["stories"]["blocked"], "planned": e["stories"]["planned"]})
+        e["pct"] = pct_of(sum(1 for x in own if x["status"] == "Done"), len(own))
+        hours_total_e = sum(x["estimate_h"] or 0 for x in own)
+        e["hours"] = {"done": round(sum(x["estimate_h"] or 0 for x in own if x["status"] == "Done"), 1), "total": round(hours_total_e, 1)} if hours_total_e else None
+        e["releases"] = sorted({x["release"] for x in own if x["release"]}) or None
+
+    shared = {g for g, n in collections.Counter(e["group"] for e in sorted_epics if e["group"]).items() if n >= 2}
+    for e in sorted_epics:
+        if e["group"] not in shared:
+            e["group"] = None
 
     lanes = [{"id": k, "name": k} for k in sorted({e["lane"] for e in sorted_epics})]
 
@@ -785,6 +910,21 @@ def build(root, docs=False):
     except (Exception, SystemExit):
         ideas = None            # a Bootstrap without ideas: no data, never an empty guess
 
+    adrs = safe(adr_list)
+    decisions_count = None
+    if adrs is not None:
+        decisions_count = {k: sum(1 for a in adrs if a["state"] == k) for k in ADR_STATES}
+        decisions_count["total"] = len(adrs)
+    epics_done = sum(1 for e in sorted_epics if e["derived"] == "done")
+    epics_summary = {"done": epics_done, "total": len(sorted_epics), "pct": pct_of(epics_done, len(sorted_epics)),
+                     "in_progress": sum(1 for e in sorted_epics if e["derived"] == "in_progress")}
+    groups = []
+    for g in dict.fromkeys(e["group"] for e in sorted_epics if e["group"]):
+        mine = [e for e in sorted_epics if e["group"] == g]
+        n_done = sum(e["stories"]["done"] for e in mine)
+        n_live = sum(sum(e["stories"].values()) for e in mine)
+        groups.append({"id": g, "epics": len(mine), "stories_done": n_done, "stories_total": n_live, "pct": pct_of(n_done, n_live)})
+
     return {
         "schema": SCHEMA, "generated_at": now_utc(),
         "repo": {"path": root, "key": project_key(name), "name": name},
@@ -794,7 +934,10 @@ def build(root, docs=False):
         "summary": {"progress_pct": pct, "stories_done": len(done), "stories_total": len(live_stories), "stories_blocked": sum(1 for s in live_stories if s["status"] == "Blocked"),
                     "forecast": forecast, "deadline": deadline, "on_time": report.get("fits"),
                     "calibration": {"ratio": calibration.get("ratio"), "uncalibrated": calibration.get("uncalibrated")},
-                    "hours": hours, "releases": release_rows, "in_scope": in_scope, "in_progress": len(working)},
+                    "hours": hours, "releases": release_rows, "in_scope": in_scope, "in_progress": len(working),
+                    "epics": epics_summary, "decisions": decisions_count, "groups": groups or None},
+        "quality": quality_of(live_out, sorted_epics),
+        "adrs": adrs, "proposal_files": safe(proposal_files),
         "columns": COLUMNS, "lanes": lanes, "epics": sorted_epics, "stories": out_stories,
         "next": {"proposals": nxt_props, "epics_to_approve": to_approve, "planned_epics": planned},
         "needs_you": needs,
@@ -802,7 +945,7 @@ def build(root, docs=False):
         "working_now": working[:15], "throughput": throughput(out_stories, today),
         "degraded": safe(lambda: dict(degraded((release.get("bootstrap") or {}).get("version")), command=at("gtt update"))),
         "refresh": "watch" if watcher_alive() else "hook",
-        "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals],
+        "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals] + offchannel_signals(gtt_pending),
         "health": safe(health_checks),
         "recent": recent,
         "ideas": ideas,

@@ -189,8 +189,12 @@ def main():
             check("decisions" in body and "CHANGE-0001" in body and "ADR-002" in body and "produced by PROP-001" in body, "[decisiones] the list shows ADR and CHANGE with their origin")
             port = body_of(dom_of("portfolio"))
             check("3 new · 1 to review · 3 to ratify" in port and ">inbox<" in port, "[portafolio] the column `inbox` says what waits", re.sub(r"<[^>]+>", " ", port)[:300])
-            back = body_of(dom_of("backlog"))
+            back = body_of(dom_of("backlog&bt=work"))
             check("origin: PROP-005" in back and "priority: urgent" in back, "[backlog] each Epic shows its Origin and Priority")
+            summ = body_of(dom_of("backlog"))
+            check(("Summary" in summ or "Resumen" in summ) and ("Plan quality" in summ or "Calidad del plan" in summ) and ("Proposals and ideas" in summ or "Propuestas e ideas" in summ), "[backlog] opens on the Summary with its five subtabs and the plan quality")
+            adr = body_of(dom_of("backlog&bt=adr"))
+            check("ADR-002" in adr and any(w in adr for w in ("accepted", "aceptado", "no state", "sin estado")), "[backlog] the Decisions subtab lists every ADR with its state")
 
         print("criterion 5 - a story closed by evidence appears at the next reload; the hook is fast")
         many_stories(os.path.join(dest, "gtt-domain", "backlog.md"), 200)

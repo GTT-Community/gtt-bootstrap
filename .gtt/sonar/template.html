@@ -161,6 +161,11 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 .ebtn .car{font:12px var(--mono);color:var(--dim);min-width:14px}
 .srow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:9px 18px 9px 48px;border-top:1px solid var(--line-soft);background:var(--rail)}
 .srow .ref{min-width:84px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.tile .k{font:11px var(--mono);color:var(--dim)} .tile .v{font:600 26px var(--mono)} .tile .n{font-size:12px;color:var(--muted)}
+.grp2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 18px;background:var(--rail);border-top:1px solid var(--line);font:12px var(--mono);color:var(--muted)}
+.qrow{display:grid;grid-template-columns:minmax(140px,1.4fr) minmax(90px,1fr) auto;gap:12px;align-items:center;padding:8px 18px;border-top:1px solid var(--line-soft)}
 .split{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:820px){.split{grid-template-columns:1fr}}
 .dlist{display:flex;flex-direction:column;gap:2px;padding:10px}
@@ -192,6 +197,11 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 var STR = {
   es: {
     backlog: "backlog", bkTitle: "Backlog", bkSub: "Todo lo que hay en el proyecto: Épicas, historias y los documentos del diseño. Solo lectura.",
+    bkSum: "Resumen", bkAdr: "Decisiones", bkInbox: "Propuestas e ideas", bkScope: "alcance", bkHours: "horas", bkEpicsDone: "Épicas terminadas", bkGroups: "Avance por grupo", bkReleases: "Avance por release", bkQuality: "Calidad del plan", bkDecisions: "Decisiones",
+    bkAllRel: "todos los releases", bkAllFront: "todos los frentes", bkFront: "frente", bkRelease: "release", bkNoAdr: "Este proyecto aún no tiene decisiones (ADR).", bkProposalFiles: "Propuestas escritas", bkNoProps: "No hay propuestas escritas.",
+    bkDer: { done: "terminada", in_progress: "en curso", blocked: "bloqueada", planned: "planeada" }, bkAdrSt: { accepted: "aceptado", proposed: "propuesto", superseded: "reemplazado", deprecated: "obsoleto", rejected: "rechazado", draft: "borrador" }, bkNoState: "sin estado",
+    bkQ: { no_done_when: "historias sin «hecha cuando»", done_no_evidence: "hechas sin evidencia de cierre", no_estimate: "abiertas sin estimación", blocked_no_reason: "bloqueadas sin motivo", epics_unapproved: "Épicas sin aprobar" },
+    bkSupersedes: "reemplaza a", bkOf: "de",
     bkWork: "Épicas e historias", bkDesign: "Diseño", bkAll: "todas", bkSearch: "buscar por id o título", bkEpics: "Épicas", bkStories: "historias",
     bkNoMatch: "Nada coincide con el filtro.", bkNoEpics: "Este proyecto aún no tiene Épicas.", bkMore: "más: afina el filtro", bkDone: "hechas",
     bkGoal: "meta", bkApproved: "aprobada", bkNotApproved: "sin aprobar", bkDependsOn: "depende de", bkEvidence: "cierre", bkDoneWhen: "hecha cuando",
@@ -240,6 +250,11 @@ var STR = {
   },
   en: {
     backlog: "backlog", bkTitle: "Backlog", bkSub: "Everything in the project: Epics, Stories and the design documents. Read only.",
+    bkSum: "Summary", bkAdr: "Decisions", bkInbox: "Proposals and ideas", bkScope: "scope", bkHours: "hours", bkEpicsDone: "Epics finished", bkGroups: "Progress by group", bkReleases: "Progress by release", bkQuality: "Plan quality", bkDecisions: "Decisions",
+    bkAllRel: "all releases", bkAllFront: "all fronts", bkFront: "front", bkRelease: "release", bkNoAdr: "This project has no decisions (ADR) yet.", bkProposalFiles: "Written proposals", bkNoProps: "No written proposals.",
+    bkDer: { done: "finished", in_progress: "in progress", blocked: "blocked", planned: "planned" }, bkAdrSt: { accepted: "accepted", proposed: "proposed", superseded: "superseded", deprecated: "deprecated", rejected: "rejected", draft: "draft" }, bkNoState: "no state",
+    bkQ: { no_done_when: "stories without «done when»", done_no_evidence: "done without closing evidence", no_estimate: "open without an estimate", blocked_no_reason: "blocked without a reason", epics_unapproved: "Epics not approved" },
+    bkSupersedes: "supersedes", bkOf: "of",
     bkWork: "Epics and Stories", bkDesign: "Design", bkAll: "all", bkSearch: "search by id or title", bkEpics: "Epics", bkStories: "Stories",
     bkNoMatch: "Nothing matches the filter.", bkNoEpics: "This project has no Epics yet.", bkMore: "more: narrow the filter", bkDone: "done",
     bkGoal: "goal", bkApproved: "approved", bkNotApproved: "not approved", bkDependsOn: "depends on", bkEvidence: "closed", bkDoneWhen: "done when",
@@ -663,6 +678,8 @@ function progressCell(sum) {
   if (scope) lines.push(scope.done + "/" + scope.total + " " + T.stories + " " + T.inScopeW + " · " + scope.excluded + " " + T.excludedW + " · " + T.allW + " " + sum.progress_pct + "% (" + sum.stories_done + "/" + sum.stories_total + ")");
   else lines.push(sum.stories_done + "/" + sum.stories_total + " " + T.stories);
   if (hrs && hrs.pct !== null) lines.push(hrs.done + "/" + hrs.total + " " + T.hoursDone + " · " + hrs.pct + "%");
+  if (sum.epics && sum.epics.total) lines.push(sum.epics.done + "/" + sum.epics.total + " " + T.bkEpicsDone.toLowerCase() + " · " + sum.epics.pct + "% · " + sum.epics.in_progress + " " + T.bkDer.in_progress);
+  if (sum.decisions && sum.decisions.total) lines.push(sum.decisions.accepted + "/" + sum.decisions.total + " " + T.bkDecisions.toLowerCase() + " " + T.bkAdrSt.accepted);
   return h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: main === null ? T.noplan : main + "%" }), lines.map(function (l) { return h("span", { class: "small", text: l }); }));
 }
 function releasesPanel(sum) {
@@ -836,17 +853,31 @@ function backlogWork(snap, st) {
   var search = h("input", { type: "text", id: "bk-q", "aria-label": T.bkSearch, placeholder: T.bkSearch, maxlength: "80" });
   search.value = st.bq || "";
   search.addEventListener("input", debounced(function (v) { go({ bq: v }); }, 300));
-  function match(s) {
-    return (!filter || s.status === filter) && (!q || ((s.ref + " " + (s.title || "")).toLowerCase().indexOf(q) >= 0));
+  var rels = distinct(all, "release"), fronts = distinct(all, "front");
+  function pick(key, values, allLabel, label) {
+    if (values.length < 2) return null;
+    var sel = h("select", { "aria-label": label, on: { change: function (ev) { var p = { epic: "" }; p[key] = ev.target.value; go(p); } } },
+      h("option", { value: "", text: allLabel }), values.map(function (v) { return h("option", { value: v, selected: st[key] === v, text: v }); }));
+    return sel;
   }
-  var filtering = !!(filter || q);
+  function match(s) {
+    return (!filter || s.status === filter) && (!st.br || s.release === st.br) && (!st.bf || s.front === st.bf) && (!q || ((s.ref + " " + (s.title || "")).toLowerCase().indexOf(q) >= 0));
+  }
+  var filtering = !!(filter || q || st.br || st.bf);
   var panel = h("section", { class: "panel" });
   var budget = 300, hidden = 0, shownEpics = 0;
+  var lastGroup = null;
+  var groupInfo = {}; ((snap.summary && snap.summary.groups) || []).forEach(function (g) { groupInfo[g.id] = g; });
   (snap.epics || []).forEach(function (e) {
     var own = all.filter(function (s) { return s.epic === e.ref; });
     var shown = own.filter(match);
     if (filtering && !shown.length) return;
     shownEpics++;
+    if (e.group && e.group !== lastGroup) {
+      var gi = groupInfo[e.group];
+      panel.appendChild(h("div", { class: "grp2" }, h("b", { text: e.group }), gi ? h("span", { text: gi.epics + " " + T.bkEpics + " · " + gi.stories_done + "/" + gi.stories_total + " " + T.bkStories + (gi.pct !== null ? " · " + gi.pct + "%" : "") }) : null));
+    }
+    lastGroup = e.group || null;
     var open = filtering || st.epic === e.ref;
     var done = own.filter(function (s) { return s.status === "Done"; }).length;
     var live = own.filter(function (s) { return s.status !== "Cancelled"; }).length;
@@ -861,8 +892,8 @@ function backlogWork(snap, st) {
       h("span", { class: "car", "aria-hidden": "true", text: open ? "v" : ">" }),
       h("span", { class: "ref", text: e.ref }),
       h("span", { class: "grow2" }, h("b", { text: e.title || e.ref }), meta.length ? h("span", { class: "small", text: meta.join(" · ") }) : null, sub.length ? h("span", { class: "small", text: sub.join(" · ") }) : null),
-      epicTag(e), e.lane && e.lane !== "main" ? h("span", { class: "tag", text: e.lane }) : null,
-      h("span", { class: "small", text: done + "/" + live + " " + T.bkDone }),
+      epicTag(e), e.derived && e.derived !== "planned" ? h("span", { class: "tag " + (e.derived === "done" ? "ok" : e.derived === "blocked" ? "red" : "amber"), text: T.bkDer[e.derived] }) : null, e.lane && e.lane !== "main" ? h("span", { class: "tag", text: e.lane }) : null,
+      h("span", { class: "small", text: done + "/" + live + " " + T.bkDone + (e.pct !== null && e.pct !== undefined ? " · " + e.pct + "%" : "") }),
       e.estimate_h ? h("span", { class: "small", text: e.estimate_h + T.hours }) : null);
     var wrap = h("div", { class: "epic" }, head);
     if (open) {
@@ -885,7 +916,7 @@ function backlogWork(snap, st) {
   else if (!shownEpics) panel.appendChild(h("div", { class: "empty", text: T.bkNoMatch }));
   if (hidden) panel.appendChild(h("div", { class: "empty", text: "+" + hidden + " " + T.bkMore }));
   return h("div", { style: "display:flex;flex-direction:column;gap:14px" },
-    h("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center" }, chips, search), panel);
+    h("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center" }, chips, pick("br", rels, T.bkAllRel, T.bkRelease), pick("bf", fronts, T.bkAllFront, T.bkFront), search), panel);
 }
 
 function backlogDesign(snap, st) {
@@ -914,11 +945,79 @@ function backlogDesign(snap, st) {
   return h("div", { class: "split" }, list, body);
 }
 
+function distinct(list, key) {
+  var seen = {}, out = [];
+  list.forEach(function (x) { var v = x[key]; if (v && !seen[v]) { seen[v] = 1; out.push(v); } });
+  return out;
+}
+function tile(label, value, note, pct) {
+  return h("div", { class: "tile" }, h("span", { class: "k", text: label }), h("span", { class: "v", text: value }), note ? h("span", { class: "n", text: note }) : null, pct !== null && pct !== undefined ? statusBar(pct) : null);
+}
+function backlogSummary(snap) {
+  var s = snap.summary; var tiles = [];
+  if (s.in_scope && s.in_scope.pct !== null) tiles.push(tile(T.bkScope, s.in_scope.pct + "%", s.in_scope.done + "/" + s.in_scope.total + " " + T.bkStories, s.in_scope.pct));
+  else if (s.progress_pct !== null) tiles.push(tile(T.bkStories, s.progress_pct + "%", s.stories_done + "/" + s.stories_total, s.progress_pct));
+  if (s.hours && s.hours.pct !== null) tiles.push(tile(T.bkHours, s.hours.pct + "%", s.hours.done + "/" + s.hours.total + T.hours, s.hours.pct));
+  if (s.epics && s.epics.total) tiles.push(tile(T.bkEpicsDone, s.epics.done + "/" + s.epics.total, s.epics.pct + "% · " + s.epics.in_progress + " " + T.bkDer.in_progress, s.epics.pct));
+  if (s.decisions && s.decisions.total) tiles.push(tile(T.bkDecisions, s.decisions.accepted + "/" + s.decisions.total, T.bkAdrSt.accepted));
+  var out = h("div", { style: "display:flex;flex-direction:column;gap:18px" });
+  out.appendChild(tiles.length ? h("div", { class: "tiles" }, tiles) : h("div", { class: "empty", text: T.noplan }));
+  function bars(title, rows) {
+    if (!rows || !rows.length) return;
+    var panel = h("section", { class: "panel" }, h("div", { class: "grp2", text: title }));
+    rows.forEach(function (r) {
+      panel.appendChild(h("div", { class: "qrow" }, h("span", null, h("b", { text: r.name }), r.note ? h("span", { class: "small", text: " " + r.note }) : null),
+        r.pct === null ? h("span", { class: "small", text: T.nodata }) : statusBar(r.pct), h("span", { class: "mono small", text: (r.pct === null ? "" : r.pct + "%") + (r.count ? " · " + r.count : "") })));
+    });
+    out.appendChild(panel);
+  }
+  bars(T.bkGroups, (s.groups || []).map(function (g) { return { name: g.id, note: g.epics + " " + T.bkEpics, pct: g.pct, count: g.stories_done + "/" + g.stories_total }; }));
+  bars(T.bkReleases, (s.releases || []).map(function (r) { return { name: r.name, pct: r.total ? Math.round(100 * r.done / r.total) : null, count: r.done + "/" + r.total }; }));
+  var q = snap.quality;
+  if (q) {
+    var qrows = ["no_done_when", "done_no_evidence", "no_estimate", "blocked_no_reason", "epics_unapproved"].filter(function (k) { return q[k] && q[k].of; })
+      .map(function (k) { return { name: T.bkQ[k], pct: q[k].pct, count: q[k].count + " " + T.bkOf + " " + q[k].of, note: q[k].sample && q[k].sample.length ? "(" + q[k].sample.slice(0, 3).join(", ") + (q[k].count > 3 ? "…" : "") + ")" : "" }; });
+    bars(T.bkQuality, qrows);
+  }
+  return out;
+}
+function backlogAdr(snap, st) {
+  var list = snap.adrs;
+  if (list === null || list === undefined) return h("div", { class: "empty", text: T.nodata });
+  if (!list.length) return h("div", { class: "empty", text: T.bkNoAdr });
+  var counts = {}; list.forEach(function (a) { var k = a.state || "none"; counts[k] = (counts[k] || 0) + 1; });
+  var filter = st.ba || "";
+  function chip(id, label) { return h("button", { type: "button", class: "chip", "aria-pressed": filter === id ? "true" : "false", on: { click: function () { go({ ba: id }); } }, text: label }); }
+  var order = ["accepted", "proposed", "draft", "superseded", "deprecated", "rejected", "none"];
+  var chips = h("div", { class: "chips" }, chip("", T.bkAll + " " + list.length), order.filter(function (k) { return counts[k]; }).map(function (k) { return chip(k, (k === "none" ? T.bkNoState : T.bkAdrSt[k]) + " " + counts[k]); }));
+  var panel = h("section", { class: "panel" });
+  list.filter(function (a) { return !filter || (a.state || "none") === filter; }).forEach(function (a) {
+    var cls = a.state === "accepted" ? "tag ok" : a.state === "proposed" || a.state === "draft" ? "tag amber" : a.state === "rejected" ? "tag red" : "tag";
+    var sub = [a.date, a.origin, a.supersedes ? T.bkSupersedes + " " + a.supersedes : null].filter(Boolean).join(" · ");
+    panel.appendChild(h("div", { class: "srow", style: "padding-left:18px;border-top:1px solid var(--line-soft);background:transparent" }, h("span", { class: "ref", text: a.ref }),
+      h("span", { class: "grow2" }, h("span", { text: a.title || a.ref }), sub ? h("span", { class: "small", text: sub }) : null),
+      h("span", { class: cls, text: a.state ? T.bkAdrSt[a.state] : (a.status || T.bkNoState) })));
+  });
+  return h("div", { style: "display:flex;flex-direction:column;gap:14px" }, chips, panel);
+}
+function backlogInbox(snap) {
+  var out = h("div", { style: "display:flex;flex-direction:column;gap:18px" }, inboxPanel(snap));
+  var files = snap.proposal_files;
+  var panel = h("section", { class: "panel" }, h("div", { class: "grp2", text: T.bkProposalFiles }));
+  if (!files || !files.length) panel.appendChild(h("div", { class: "empty", text: files ? T.bkNoProps : T.nodata }));
+  else files.forEach(function (f) {
+    panel.appendChild(h("div", { class: "srow", style: "padding-left:18px;border-top:1px solid var(--line-soft);background:transparent" }, h("span", { class: "grow2" }, h("span", { text: f.title || f.ref }), h("span", { class: "small mono", text: f.path })),
+      f.state ? h("span", { class: "tag", text: f.state }) : null));
+  });
+  out.appendChild(panel);
+  return out;
+}
+
 function viewBacklog() {
   var st = readHash(); var snap = repoById(st.repo);
   if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
-  var tab = st.bt === "design" ? "design" : "work";
-  var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "", doc: "", bs: "", bq: "" }); } } },
+  var tab = ["sum", "work", "adr", "inbox", "design"].indexOf(st.bt) >= 0 ? st.bt : "sum";
+  var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "", doc: "", bs: "", bq: "", br: "", bf: "", ba: "" }); } } },
     OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === snap.repo.path, text: s.repo.name }); }));
   function tabLink(id, label) {
     var a = h("a", { href: "#/" + ["view=backlog", "bt=" + id, "repo=" + encodeURIComponent(snap.repo.path)].join("&"), text: label });
@@ -930,8 +1029,8 @@ function viewBacklog() {
     h("div", { class: "head" }, h("h1", { text: T.bkTitle }),
       h("p", { class: "sub", text: nEpics + " " + T.bkEpics + " · " + nStories + " " + T.bkStories + " — " + T.bkSub }),
       OK.length > 1 ? h("div", null, h("label", { class: "sr", for: "repo-pick", text: T.project }), select) : null),
-    h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);padding-bottom:0;min-height:36px", "aria-label": T.backlog }, tabLink("work", T.bkWork), tabLink("design", T.bkDesign)),
-    tab === "design" ? backlogDesign(snap, st) : backlogWork(snap, st));
+    h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);padding-bottom:0;min-height:36px", "aria-label": T.backlog }, tabLink("sum", T.bkSum), tabLink("work", T.bkWork), tabLink("adr", T.bkAdr), tabLink("inbox", T.bkInbox), tabLink("design", T.bkDesign)),
+    tab === "design" ? backlogDesign(snap, st) : tab === "adr" ? backlogAdr(snap, st) : tab === "inbox" ? backlogInbox(snap) : tab === "work" ? backlogWork(snap, st) : backlogSummary(snap));
 }
 
 /* ---------- render + refresh ---------- */

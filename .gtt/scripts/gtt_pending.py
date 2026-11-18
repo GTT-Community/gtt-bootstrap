@@ -18,7 +18,7 @@ the next session deletes what is marked. Only this engine writes the folder.
   gtt_pending.py done REF --in WHERE [--apply]                           mark an answered event as applied
   gtt_pending.py clean [--apply]                                         delete what is marked and the decisions
                                                                          nobody objected to for 7 days
-  gtt_pending.py check [--json]                                          the rules PEN-01 to PEN-07
+  gtt_pending.py check [--json]                                          the rules PEN-01 to PEN-10
   gtt_pending.py notice [--report|--due|--session] [--json]              the block that tells the human
 
 REF is `14`, `ASK-14` or `DEC-015`. All texts, limits and labels are in .gtt/contract/pending.json.
@@ -890,12 +890,43 @@ def cmd_list(args):
     return 0
 
 
+def offchannel(c):
+    """Documents whose name says `questions` outside the pending folder: a question for the human belongs to an event
+    there, which Sonar shows with its options. Names, folders and depth come from the contract; a name is a hint, so it is a warning."""
+    cfg = c.get("offchannel") or {}
+    names = cfg.get("names") or []
+    if not names:
+        return []
+    token = re.compile(r"(?<![a-z])(?:" + "|".join(re.escape(n) for n in names) + r")(?![a-z])", re.IGNORECASE)
+    skip = set(cfg.get("skip") or [])
+    exts = tuple(cfg.get("extensions") or [".md"])
+    deepest = int(cfg.get("max_depth", 3))
+    found = []
+    for top in cfg.get("dirs") or ["."]:
+        if not os.path.isdir(top):
+            continue
+        for here, dirs, files in os.walk(top):
+            depth = 0 if os.path.normpath(here) == os.path.normpath(top) else os.path.relpath(here, top).count(os.sep) + 1
+            dirs[:] = sorted(d for d in dirs if d not in skip) if depth < deepest and top != "." else []
+            for name in sorted(files):
+                stem, ext = os.path.splitext(name)
+                if ext.lower() in exts and token.search(stem):
+                    found.append(os.path.normpath(os.path.join(here, name)).replace(os.sep, "/"))
+    return sorted(dict.fromkeys(found))[:int(cfg.get("limit", 5))]
+
+
+def offchannel_message(c, path):
+    text = ((c.get("offchannel") or {}).get("message") or {})
+    return (text.get(language()) or text.get("en") or "{path}").replace("{path}", path)
+
+
 def cmd_check(args):
     c = contract()
     found = review_all(c)
+    stray = offchannel(c)
     ok = not any(level == "fail" for _ev, entries in found for _r, level, _m in entries)
     if args.json:
-        emit({"schema": 1, "ok": ok, "events": [{"id": f"{e['kind']}-{e['number']:03d}" if e["number"] else e["name"], "findings":
+        emit({"schema": 1, "ok": ok, "offchannel": stray, "events": [{"id": f"{e['kind']}-{e['number']:03d}" if e["number"] else e["name"], "findings":
               [{"rule": r, "level": lv, "message": m} for r, lv, m in entries]} for e, entries in found]})
     else:
         if not found:
@@ -904,6 +935,8 @@ def cmd_check(args):
             print(f"{ev['name']}: {'ok' if not any(l == 'fail' for _r, l, _m in entries) else 'FAILED'}")
             for rule, level, message in entries:
                 print(f"  {level.upper():4} {rule}: {message}")
+        for path in stray:
+            print(f"WARN PEN-10: {offchannel_message(c, path)}")
     return 0 if ok else 1
 
 

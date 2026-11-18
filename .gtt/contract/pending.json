@@ -112,6 +112,19 @@
     { "id": "PEN-06", "level": "fail", "statement": "the name, the number and the heading of an event agree, and no number repeats" },
     { "id": "PEN-08", "level": "fail", "statement": "a question is necessary: a product or governed question names the Story or Epic it blocks, no question repeats an open one, and at most max_open_asks questions are open at once (answer those first)" },
     { "id": "PEN-09", "level": "fail", "statement": "a review (REV) names its entry, carries the sha256 of it, has 2 to 5 numbered options each with a one-line description, exactly one recommended, no closing lines, and at most rev.max_lines lines of rev.max_chars characters" },
-    { "id": "PEN-07", "level": "warn", "statement": "an answered event that nobody marked is waiting to be applied" }
-  ]
+    { "id": "PEN-07", "level": "warn", "statement": "an answered event that nobody marked is waiting to be applied" },
+    { "id": "PEN-10", "level": "warn", "statement": "a question for the human is an event in gtt-domain/pending/, not a document of its own: a file whose name says questions (preguntas, questions) outside the folder is reported, and the open questions in it are registered with `ask`" }
+  ],
+  "offchannel": {
+    "names": ["preguntas", "questions", "por-responder"],
+    "dirs": [".", "docs", "gtt-domain"],
+    "max_depth": 3,
+    "skip": ["node_modules", ".git", ".gtt", "pending", "proposals", "drafts", "withdrawn", "dist", "build", "vendor", ".venv", "design", "ideas"],
+    "extensions": [".md", ".txt"],
+    "limit": 5,
+    "message": {
+      "en": "A document of questions sits outside the channel: {path}. A question for the human is an event (`gtt-pending.sh ask`), so Sonar shows it with its options; register the open ones and keep this file only as a record.",
+      "es": "Hay un documento de preguntas fuera del canal: {path}. Una pregunta para el humano es un evento (`gtt-pending.sh ask`), así Sonar la muestra con sus opciones; registra las abiertas y deja este archivo solo como registro."
+    }
+  }
 }
