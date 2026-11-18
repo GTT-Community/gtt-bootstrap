@@ -43,8 +43,23 @@ FAIL=0
 PASSED=0
 SKIPPED=0
 FAILED=0
+HEALTH_DIR=".gtt/local/health"
+LAST_OUT=""
+write_health() {
+  # One file per check in .gtt/local/health/<id>.json (Sonar and gtt-findings read them; derived and disposable).
+  # $1=label $2=exit-code. The id is the first word of the label; the detail is what the check said, flattened and short.
+  local id status detail at
+  id="$(printf '%s' "${1%% *}" | sed 's/\.sh$//' | tr 'A-Z' 'a-z' | tr -c 'a-z0-9\n' '-' | sed 's/^-*//; s/-*$//')"
+  [ -n "$id" ] || return 0
+  case "$2" in 0) status="ok" ;; 2) status="warn" ;; *) status="fail" ;; esac
+  detail="$(printf '%s' "$LAST_OUT" | head -c 240 | tr '\n\r\t' '   ' | tr -d '"\\')"
+  at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  mkdir -p "$HEALTH_DIR" 2>/dev/null || return 0
+  printf '{"title": "%s", "status": "%s", "detail": "%s", "at": "%s"}\n' "$(printf '%s' "$1" | tr -d '"\\')" "$status" "$detail" "$at" > "$HEALTH_DIR/$id.json" 2>/dev/null || true
+}
 report() {
   # $1=label $2=exit-code (2 means "cannot determine", not a failure)
+  write_health "$1" "$2"
   case "$2" in
     0) echo "PASS               $1"; PASSED=$((PASSED + 1)) ;;
     2) echo "CANNOT-DETERMINE   $1" ;;
@@ -57,6 +72,7 @@ run_check() {
   shift
   out="$("$@" 2>&1)"
   rc=$?
+  LAST_OUT="$out"
   report "$label" "$rc"
   [ "$rc" -ne 0 ] && printf '%s\n' "$out" | sed 's/^/                   /'
   return 0
@@ -64,6 +80,7 @@ run_check() {
 
 bash .gtt/scripts/gtt-check-backlog.sh >/tmp/gtt-validate-backlog.$$ 2>&1
 BACKLOG_RC=$?
+LAST_OUT="$(cat /tmp/gtt-validate-backlog.$$)"
 report "gtt-check-backlog.sh" "$BACKLOG_RC"
 [ "$BACKLOG_RC" -ne 0 ] && cat /tmp/gtt-validate-backlog.$$
 rm -f /tmp/gtt-validate-backlog.$$

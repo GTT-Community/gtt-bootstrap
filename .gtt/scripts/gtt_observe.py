@@ -60,6 +60,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -526,6 +527,20 @@ def observe_delivery(base):
                     "guards": "the delivery plan (.gtt/contract/delivery.json)"}, s["artifact"], s["detail"], s["state"]) for s in found]
 
 
+def observe_depends(base):
+    """GTT-DEPENDS: an import between modules that `stack.md` 5. Dependency rules does not allow. Computed by gtt_code.py (the last map its watcher left);
+    it has the same registry and the same treatment as GTT-MODULES."""
+    try:
+        import gtt_code
+        data = gtt_code.last_map()
+    except Exception:
+        return []
+    rule = {"id": "GTT-DEPENDS", "kind": "depends", "level": "GOVERNANCE",
+            "guards": "stack.md 5. Dependency rules - what each module may and must not depend on; a new dependency is a design change"}
+    return [signal(rule, f"{e['from']}>{e['to']}", f"{e['from']} depends on {e['to']} ({e['count']} import(s), e.g. {e['example']}), which the governed design does not allow", "present")
+            for e in (data or {}).get("edges", []) if e.get("allowed") is False]
+
+
 def observe_commits():
     """With `convention: conventional` in gtt-domain/workflow.md: one NOTICE for each commit subject since
     the merge base with the default branch that is not a Conventional Commit. It informs and never blocks."""
@@ -577,7 +592,7 @@ def collect():
         return [], ["not frozen yet: there is no governed state to observe against"], base
     rules, problems = boundaries()
     signals, notes = observe_rules(rules, base)
-    signals += observe_governed(base) + observe_stack(base) + observe_modules(base) + observe_protected(base) + observe_delivery(base) + observe_commits()
+    signals += observe_governed(base) + observe_stack(base) + observe_modules(base) + observe_protected(base) + observe_delivery(base) + observe_commits() + observe_shadow() + observe_depends(base)
     seen, unique = set(), []
     for sig in signals:
         if sig["fingerprint"] not in seen:
@@ -612,7 +627,7 @@ def save_ledger(ledger, before):
 def correlate(ledger, signals):
     """Fold the current signals into the backlog. Returns the items that are NEW to the human: first
     seen, seen again after it had gone, or changed since the human decided on it."""
-    today = datetime.date.today().isoformat()
+    today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
     by_print = {item["fingerprint"]: item for item in ledger["items"]}
     fresh, present = [], set()
     for sig in signals:
@@ -794,7 +809,7 @@ def cmd_decide(args):
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")
         return 0
-    item.update(status=status, decision={"by": args.by, "date": datetime.date.today().isoformat(),
+    item.update(status=status, decision={"by": args.by, "date": datetime.datetime.now(datetime.timezone.utc).date().isoformat(),
                                          "note": args.note or "", "state": item["state"]})
     save_ledger(ledger, before)
     print(f"gtt-observe: recorded in {LEDGER}.")
@@ -861,6 +876,72 @@ def blocking_content(path, text):
             if regex.search(line):
                 return rule["id"], rule["guards"], f"line {number}: {line.strip()[:120]}"
     return None
+
+
+SHADOW_REF = re.compile(r"\b(?:STORY|EPIC|ASK)-\d+\b")
+
+
+def shadow_files():
+    """[(path, mtime)] of the parallel state: a file whose name says questions, board, decisions or tasks outside `gtt-domain/` and `.gtt/`
+    (or a `BACKLOG.md` anywhere but `gtt-domain/`), and a `.md` in `docs/` that cites three or more Stories, Epics or questions beside words of state.
+    The names, the folders, the words and the days are data in `.gtt/contract/findings.json`; the content of a file is read here and never leaves."""
+    try:
+        cfg = json.loads(read(".gtt/contract/findings.json"))["shadow"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return []
+    names = {n.lower() for n in cfg["names"]}
+    skip, deepest = set(cfg["skip"]), int(cfg.get("max_depth", 3))
+    docs, doc_skip = cfg.get("doc_dir", "docs"), set(cfg.get("doc_skip", []))
+    words = tuple(w.lower() for w in cfg.get("status_words", []))
+    found = {}
+    for here, dirs, files in os.walk("."):
+        depth = 0 if here == "." else here.count(os.sep)
+        rel = os.path.normpath(here).replace(os.sep, "/")
+        dirs[:] = sorted(d for d in dirs if d not in skip and not d.startswith(".")) if depth < deepest else []
+        in_docs = rel == docs or rel.startswith(docs + "/")
+        for name in sorted(files):
+            path = os.path.normpath(os.path.join(here, name)).replace(os.sep, "/")
+            if name.lower() in names or (name.lower() == cfg.get("backlog_name", "BACKLOG.md").lower()):
+                found[path] = os.path.getmtime(path)
+            elif in_docs and name.lower().endswith(".md") and not any(part in doc_skip for part in rel.split("/")[1:]):
+                text = (read(path) or "")
+                if len(set(SHADOW_REF.findall(text))) >= int(cfg.get("doc_ref_min", 3)) and any(w in text.lower() for w in words):
+                    found[path] = os.path.getmtime(path)
+    return sorted(found.items())
+
+
+def observe_shadow():
+    """GTT-SHADOW-STATE: NOTICE; WARNING when the file changed in the last days. It informs and never blocks."""
+    try:
+        days = int(json.loads(read(".gtt/contract/findings.json"))["shadow"].get("recent_days", 7))
+    except (OSError, ValueError, KeyError, TypeError):
+        days = 7
+    out = []
+    for path, mtime in shadow_files():
+        recent = (time.time() - mtime) < days * 86400
+        rule = {"id": "GTT-SHADOW-STATE", "kind": "shadow", "level": "WARNING" if recent else "NOTICE",
+                "guards": "gtt-domain/ is the one source of state: questions, board and decisions live there, not in a parallel file"}
+        out.append(signal(rule, path, f"parallel state outside gtt-domain/: {path}", "present"))
+    return out
+
+
+def findings():
+    """GOV-OBSERVATION for what the governance backlog (`gtt-domain/governance-backlog.json`) holds open, as it is (no recalculation),
+    and GTT-SHADOW-STATE, which is computed live here (it needs no freeze)."""
+    import gtt_findings as gf
+    out = []
+    try:
+        ledger = load_ledger()
+    except SystemExit:
+        ledger = {"items": []}
+    for item in ledger.get("items", []):
+        if item.get("status") not in OPEN_STATES or item.get("rule") in ("GTT-SHADOW-STATE", "GTT-DEPENDS") or str(item.get("rule", "")).startswith("DLV-"):
+            continue
+        out.append(gf.make("GOV-OBSERVATION", item["artifact"], LEDGER, "gtt_observe", level="WARNING" if item["level"] in ("GOVERNANCE", "BLOCKING") else "NOTICE",
+                           what=f"{item['rule']}: {item['detail']}"))
+    for sig in observe_shadow():
+        out.append(gf.make("GTT-SHADOW-STATE", sig["artifact"], sig["artifact"], "gtt_observe", level=sig["level"], path=sig["artifact"]))
+    return out
 
 
 def main(argv):

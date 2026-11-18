@@ -158,7 +158,8 @@ PROPOSALS_DIR = "gtt-domain/proposals"
 GIT_HOOK = ".git/hooks/pre-commit"
 WORKFLOW_FILE = "gtt-domain/workflow.md"
 LOCAL_STATE = (".gtt/local/checkpoint.json", ".gtt/local/last-validation.json", ".gtt/local/delivery-snapshot.json",
-               "gtt-domain/delivery-log.jsonl", "gtt-domain/run/log.jsonl", ".gtt/local/prompts.jsonl", ".gtt/local/pending-state.json")
+               "gtt-domain/delivery-log.jsonl", "gtt-domain/run/log.jsonl", ".gtt/local/prompts.jsonl", ".gtt/local/pending-state.json",
+               ".gtt/local/activity.jsonl", ".gtt/local/activity-state.json")
 SOURCES_DIR = "docs/sources"
 BRANCH_LISTING = {"-l", "--list", "--show-current", "-a", "--all", "-r", "--remotes", "-v", "-vv", "--contains", "--merged",
                   "--no-merged", "--points-at"}
@@ -263,6 +264,14 @@ RUN_OWNED = ("GTT governance (deterministic-first): a run script (gtt-domain/run
              "RUN-NNN --apply`; never write the script yourself.")
 RUN_EXECUTE = ("GTT governance (human-decision-authority): executing a run is the human's act, never an agent's. Hand it over "
                "with the message `gtt-run.sh generate` prints - `gtt run <n>` - and continue with the work.")
+BACKLOG_SET = ("GTT governance (human-decision-authority): `gtt-backlog.sh set` is what the human's page (Sonar) uses to write the fields of a Story or of a proposed Epic. "
+               "An agent edits its own Stories with its own tools and never runs it; an Epic's goal and scope are the human's.")
+SONAR_SECRET = ("GTT governance (human-decision-authority): ~/.gtt/sonar/ holds the secret of the human's local Sonar server, which is what lets "
+                "them write through the page. An agent never reads it, and never opens the server (`gtt sonar`); `gtt sonar --static` is the read-only page.")
+SHADOW_NAMES = ('preguntas.md', 'questions.md', 'tablero.md', 'board.md', 'kanban.md', 'decisiones.md', 'decisions.md', 'todo.md', 'tasks.md', 'status.md', 'estado.md')
+SHADOW_OWNED = ("GTT governance (deterministic-first): questions, board, decisions and tasks live in gtt-domain/ (pending events, the backlog, the inbox), "
+                "never in a parallel file such as PREGUNTAS.md or TABLERO.md. Register the question with `bash .gtt/scripts/gtt-pending.sh ask ... --apply`, "
+                "or put the work in gtt-domain/backlog.md, and continue with the work.")
 IDEAS_DIR = "docs/ideas"
 IDEAS_OWNED = ("GTT governance (human-decision-authority): docs/ideas/ holds the human's ideas, and the text of an idea is never an agent's to "
                "write. The only thing an agent adds is one triage line, through the engine: `bash .gtt/scripts/gtt-idea.sh triage IDEA-NNN "
@@ -380,6 +389,8 @@ def protected_token(root, token, shell=False):
         return LEDGER_OWNED
     if low in LOCAL_STATE:
         return LOCAL_OWNED
+    if low.rsplit("/", 1)[-1] in SHADOW_NAMES + ("backlog.md",) and not under(low, "gtt-domain") and not under(low, ".gtt") and installed(root):
+        return SHADOW_OWNED
     if under(low, IDEAS_DIR) and installed(root):
         return IDEAS_OWNED
     if under(low, PENDING_DIR) and installed(root):
@@ -592,6 +603,9 @@ def cli_act(words):
         return None
     if rest[0] == "run":                    # `gtt run <n>` executes; `gtt run`, `run show` and `run check` only read
         return "run" if len(rest) > 1 and rest[1] not in CLI_READS else None
+    if rest[0] == "sonar" and not (len(rest) > 1 and rest[1] in ("list", "idea", "add", "remove")):
+        # `gtt sonar` opens the server that lets the human write through the page: the human's act. Only the read-only page (`--static`) is the agent's.
+        return None if "--static" in [w.lower() for w in words] else "sonar"
     if (rest[0],) in CLI_HUMAN_ACTS and not (len(rest) > 1 and rest[1] in CLI_READS):
         return " ".join(rest[:1])
     if tuple(rest[:2]) in CLI_HUMAN_ACTS:
@@ -610,6 +624,8 @@ def decide_units(root, command):
         # --- promotion scripts, in any spelling
         if APPLY_SCRIPT.search(normalize(words[0])):
             return PROMOTION
+        if re.search(r"(?:~|\$HOME|\$\{HOME\}|" + re.escape(os.path.expanduser("~").replace("\\", "/")) + r")/\.gtt/sonar(?:/|\b)", " ".join(words).replace("\\", "/")):
+            return SONAR_SECRET             # ~/.gtt/sonar/ holds the secret of the human's local server: an agent never reads it
         syntax_only = head in SHELLS and "-n" in rest and "-c" not in rest      # `bash -n script` reads, never runs
         if head in SHELLS and not syntax_only and (any(APPLY_SCRIPT.search(normalize(w)) for w in rest) or (piped and chain_reads_apply)):
             return PROMOTION
@@ -685,6 +701,8 @@ def decide_units(root, command):
                 return IDEAS_ACT
             if base(word) in ("gtt-pending.sh", "gtt_pending.py") and follow and follow[0] == "answer" and not syntax_only:
                 return PENDING_ANSWER
+            if base(word) in ("gtt-backlog.sh", "gtt_backlog.py") and follow and follow[0] == "set" and not syntax_only:
+                return BACKLOG_SET
             if base(word) in ("gtt-run.sh", "gtt_run.py") and follow and follow[0] == "execute" and not syntax_only:
                 return RUN_EXECUTE
             if base(word) in ("gtt-contract.sh", "gtt_contract.py") and any(x.lower() == "confirmed_by_human=true" for x in follow):

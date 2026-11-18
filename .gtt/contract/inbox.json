@@ -748,7 +748,8 @@
         "form": "Forma",
         "request": "Solicitud",
         "now": "Ahora",
-        "adopted": "Adoptada"
+        "adopted": "Adoptada",
+        "about": "Sobre"
       },
       "actor": {
         "human": "humano",
@@ -889,7 +890,8 @@
         "form": "Form",
         "request": "Request",
         "now": "Now",
-        "adopted": "Adopted"
+        "adopted": "Adopted",
+        "about": "About"
       },
       "actor": {
         "human": "human",

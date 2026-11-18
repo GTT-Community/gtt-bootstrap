@@ -184,6 +184,99 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 .md .tablewrap table{min-width:0;font-size:13px}
 .md .tablewrap th,.md .tablewrap td{padding:7px 10px}
 .md hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+/* ===== 1.25: the Plan, the Inbox, Activity, Health ===== */
+.tag.hollow{border:1px dashed var(--needs);color:var(--needs)}
+.tag.hollowa{border:1px dashed var(--agent);color:var(--agent)}
+.tag.ok{border-color:var(--agent);color:var(--agent)}
+.strip{grid-template-columns:repeat(5,1fr)}
+.strip>.fig{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.strip .fig .k{font:11.5px var(--mono);color:var(--dim)}
+.strip .fig .v{font:500 20px var(--mono)}
+.strip .fig .s{font-size:12.5px;color:var(--muted)}
+.amberv{color:var(--needs)}.redv{color:var(--danger)}
+.headblock{display:flex;flex-direction:column;gap:2px}
+.headrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.meta .edit{color:var(--agent);border:1px solid var(--agent);border-radius:4px;padding:1px 7px}
+.meta .edit.ro{color:var(--muted);border-color:var(--line)}
+nav.tabs a b{font:500 11px var(--mono);padding:0 6px;border-radius:4px;background:var(--line);color:var(--text);margin-left:6px}
+nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
+.now{display:grid;grid-template-columns:1.3fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.now>div{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.k2{font:11.5px var(--mono);color:var(--dim)}.k2::before{content:"# "}
+.pulse{display:flex;align-items:center;gap:10px}
+.pulse i{width:8px;height:8px;border-radius:50%;background:var(--agent);box-shadow:0 0 0 3px var(--agent-bg);flex:none}
+.pulse i.off{background:transparent;box-shadow:inset 0 0 0 1px var(--needs)}
+.files{font:12px var(--mono);color:var(--muted);display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+.files span::before{content:"~ ";color:var(--agent)}
+.nrow{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.nrow:last-child{border-bottom:0}.nrow.more{justify-content:center}
+.acts{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{font:12px var(--mono);padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--cmd);color:var(--text);cursor:pointer;white-space:nowrap}
+.btn.pri{border-color:var(--needs);color:var(--needs)}.btn.go{border-color:var(--agent);color:var(--agent)}.btn.ghost{background:none;color:var(--muted)}
+.cmd{display:inline-flex}.cmd button{min-height:0;padding:5px 10px}.cmd code{padding:5px 10px;font-size:12px}
+.shadow{border:1px dashed var(--needs);border-radius:8px;padding:8px 14px;font:12px var(--mono);color:#D9C48A;background:var(--needs-bg);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.secline{display:flex;align-items:baseline;gap:12px}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{font:12px var(--mono);padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:none;cursor:pointer}
+.chip.on,.chip[aria-pressed="true"]{border-color:var(--agent);color:var(--agent);background:none}
+.chip b{color:var(--text);font-weight:500;margin-left:6px}
+.lane{font:11.5px var(--mono);color:var(--dim);padding:2px 2px 0}
+.epic{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.epic.prop{border:1px dashed var(--agent)}
+.ehead-wrap{position:relative}
+.ehead{all:unset;box-sizing:border-box;display:grid;grid-template-columns:18px 84px minmax(0,1fr) 210px 150px 128px;gap:14px;align-items:center;padding:12px 16px;width:100%;cursor:pointer}
+.ehead:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
+.ehead-wrap>.cref{position:absolute;left:112px;top:12px}
+.etitle{display:flex;flex-direction:column;gap:6px;min-width:0}.etitle .t{font-weight:500}
+.chev{font:12px var(--mono);color:var(--dim)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.pbar{height:8px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 8px);position:relative}
+.pbar>.d{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,var(--agent) 0 6px,transparent 6px 8px)}
+.pbar>.u{position:absolute;top:0;bottom:0;box-shadow:inset 0 0 0 1px var(--needs)}
+.pct{font:12px var(--mono);color:var(--muted);display:flex;justify-content:space-between;margin-top:4px}
+.hrs{font:12px var(--mono);color:var(--muted);text-align:right}.hrs b{color:var(--text);font-weight:500}
+.efind{padding:0 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
+.find{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.lvl{font:10.5px var(--mono);padding:1px 6px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
+.lvl.w{border-color:var(--needs);color:var(--needs)}.lvl.n{border-color:#50647C;color:#B6C4D3}
+.who{font:11px var(--mono);color:var(--dim)}.who.me{color:var(--needs)}
+.stories{display:flex;flex-direction:column}
+.sitem{border-top:1px solid var(--line-soft)}
+.srow2{display:grid;grid-template-columns:minmax(0,1fr) 110px 110px 130px;gap:10px;padding:10px 16px 10px 132px;align-items:start}
+.srow2 .rt{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.srow2.undef{background:linear-gradient(90deg,rgba(251,191,36,.05),transparent 40%)}
+.srow2.blocked{background:linear-gradient(90deg,rgba(248,113,113,.06),transparent 40%)}
+.st{font:11px var(--mono);color:var(--muted)}.ready{color:var(--agent);font:12px var(--mono)}
+.form{margin:4px 16px 10px 132px;padding:12px 14px;border:1px dashed var(--needs);border-radius:8px;background:var(--rail);display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 12px;align-items:center}
+.form.agent{border-color:var(--agent)}
+.form label{font:12px var(--mono);color:var(--muted)}
+.form input,.form textarea{font:12.5px var(--mono);padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);width:100%}
+.form textarea{min-height:34px;resize:vertical}
+.form .acts-row,.form .hint{grid-column:2}.form .hint{font-size:12px;color:var(--dim)}
+.miss{font:11.5px var(--mono);color:var(--needs)}.missa{font:11.5px var(--mono);color:var(--agent)}
+.efind .form{margin:0}
+.blockedinfo{padding:4px 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
+.aportebox{padding:2px 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
+.aporte{display:inline-flex;flex-direction:column;gap:6px;min-width:260px;max-width:520px}
+.aporte textarea{min-height:34px}
+.cref{all:unset;cursor:pointer;color:var(--dim);font:12px var(--mono);padding:0 4px}.cref:hover{color:var(--agent)}
+
+.codegrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
+.mod{all:unset;box-sizing:border-box;position:absolute;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:10px 14px;border:1px solid #2E4058;border-radius:8px;background:var(--surface);cursor:pointer;font-size:12.5px;color:var(--muted)}
+.mod b{color:var(--text);font-weight:500}.mod:focus-visible{outline:2px solid var(--agent)}
+.mod.hot{border-color:var(--agent);background:var(--agent-bg)}.mod.hot .hotl{color:var(--agent)}
+.mod.empty,.mod.out{border:1px dashed #50647C}.mod.out{border-color:var(--needs);color:var(--needs)}
+.mod.sel{box-shadow:0 0 0 2px var(--text)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--muted)}.legend .okc{color:var(--agent)}.legend .badc{color:var(--danger)}
+@media (max-width:980px){.codegrid{grid-template-columns:1fr}}
+.foot{font:12px var(--mono);color:var(--dim)}
+.meta2{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}.meta2 .mk{font:11.5px var(--mono);color:var(--dim)}
+.lane .gs{margin-left:12px;color:var(--muted)}
+.tl .row{padding:8px 18px}
+.sessionpre{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 var(--mono);color:var(--muted);max-height:360px;overflow:auto}
+@media (max-width:980px){.strip{grid-template-columns:repeat(2,1fr)}.ehead{grid-template-columns:18px 70px minmax(0,1fr)}.ehead>*:nth-child(n+4){display:none}.srow2{grid-template-columns:1fr;padding-left:16px}.efind,.blockedinfo,.aportebox{padding-left:16px}.form{margin-left:16px;grid-template-columns:1fr}.form .acts-row,.form .hint{grid-column:1}.now{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -308,9 +401,12 @@ var DATA;
 try { DATA = JSON.parse(raw); } catch (e) { DATA = { repos: [] }; }
 var REPOS = (DATA.repos || []);
 var OK = REPOS.filter(function (r) { return r && r.snapshot && r.snapshot.schema === "sonar.v1"; }).map(function (r) { return r.snapshot; });
-var LANG = (OK[0] && OK[0].lang === "en") ? "en" : "es";
-if (!OK.length && DATA.lang === "en") LANG = "en";
-var T = STR[LANG];
+var LANG, T;
+function setLang() {      /* the served page gets its data after the first paint: the language is decided again every time the data changes */
+  LANG = (OK[0] && OK[0].lang === "en") ? "en" : ((OK[0] && OK[0].lang === "es") ? "es" : (DATA.lang === "en" ? "en" : "es"));
+  T = STR[LANG];
+}
+setLang();
 document.documentElement.setAttribute("lang", LANG);
 
 /* ---------- DOM helpers: text only, never markup ---------- */
@@ -438,39 +534,10 @@ function staleBanner() {
   return old ? h("div", { class: "stale", role: "status", text: (watching ? T.watchStopped : T.staleWarn) + " (" + T.generated + " " + new Date(gen).toLocaleTimeString() + ")" }) : null;
 }
 
-/* ---------- views ---------- */
-function needsAll() {
-  var out = [];
-  OK.forEach(function (s) { (s.needs_you || []).forEach(function (n) { out.push({ n: n, repo: s.repo.name }); }); });
-  out.sort(function (a, b) { return ((b.n.weight.stories || 0) - (a.n.weight.stories || 0)) || ((b.n.weight.hours || 0) - (a.n.weight.hours || 0)); });
-  return out;
-}
+
 function needsMe(snap) {
   var st = readHash(); var me = String(snap.me || "").toLowerCase();
   return function (x) { return st.mine !== "1" || !x["for"] || String(x["for"]).toLowerCase() === me; };
-}
-function needsPanel(items, showRepo, limit) {
-  var total = items.length; if (limit && total > limit) items = items.slice(0, limit);
-  var box = h("section", { class: "panel needs", "aria-labelledby": "needs-h" },
-    h("div", { class: "top" }, h("h2", { id: "needs-h", text: T.needs }), h("span", { class: "count", text: total }), h("span", { class: "hint", text: T.needsHint })));
-  if (!items.length) box.appendChild(h("div", { class: "empty", text: T.nothingNeeds }));
-  items.forEach(function (it) {
-    var n = it.n; var w = [];
-    if (n.kind === "review" && n.note) w.push(T.lvl[n.note] || n.note);
-    else if (n.kind === "ratify" && n.note) w.push(T.fromW + " " + n.note);
-    else if (n.note) w.push(n.note);
-    if (n["for"]) w.push(T.forW + " " + n["for"]);
-    if (n.weight && n.weight.stories) w.push(n.weight.stories + " " + T.openSt);
-    if (n.unblocks && n.unblocks.length) w.push(T.unblocksW + " " + n.unblocks.join(", "));
-    if (n.weight && n.weight.hours) w.push(n.weight.hours + T.hours);
-    box.appendChild(h("div", { class: "row" },
-      !showRepo && n.entry ? h("a", { class: "ref", href: "#/view=project&card=" + encodeURIComponent(n.entry), text: n.ref, "aria-label": n.ref + " · " + n.entry }) : h("span", { class: "ref", text: n.ref }),
-      h("div", { class: "grow2" }, h("b", { text: n.title || n.ref }), h("span", { class: "small", text: [T.hows[n.how] || T.kinds[n.kind] || n.how || n.kind].concat(w).join(" · ") })),
-      showRepo ? h("span", { class: "tag", text: it.repo }) : null,
-      n.command ? h("div", { class: "grow2" }, cmdBlock(n.command), (n.choices || []).length > 1 ? h("div", { class: "small" }, n.choices.map(function (c, i) { return h("div", null, h("span", { text: (i + 1) + ". " + c.label + " " }), copyButton(c.command)); })) : null) : nodata()));
-  });
-  if (total > items.length) box.appendChild(h("div", { class: "empty", text: "+" + (total - items.length) + " " + T.more }));
-  return box;
 }
 
 function inboxWords(snap) {
@@ -479,130 +546,11 @@ function inboxWords(snap) {
   var parts = ["new", "review", "ratify"].filter(function (k) { return c[k]; }).map(function (k) { return c[k] + " " + T.inboxWords[k]; });
   return h("span", { class: "small", text: parts.length ? parts.join(" · ") : "—" });
 }
-function viewPortfolio() {
-  var st = readHash();
-  var rows = REPOS.map(function (r) {
-    if (!r || !r.snapshot || r.snapshot.schema !== "sonar.v1") {
-      var info = (r && r.stale) || {};
-      return h("tr", null, h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: info.key || "" }), h("b", { text: info.name || info.path || "?" }))),
-        h("td", { colspan: "8" }, h("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center" }, h("span", { class: "tag update", text: T.update }), info.reason ? h("span", { class: "small", text: info.reason }) : null, info.command ? cmdBlock(info.command) : null)));
-    }
-    var s = r.snapshot; var sum = s.summary; var needs = (s.needs_you || []).length;
-    return h("tr", null,
-      h("td", null, h("div", { class: "stack" }, h("span", { class: "mono small", text: s.repo.key }), h("b", { text: s.repo.name }))),
-      h("td", null, h("div", { class: "stack" }, phaseTag(s.project), s.compat ? h("span", { class: "tag amber", title: s.compat.command, text: T.compat }) : null)),
-      h("td", { style: "min-width:160px" }, sum.progress_pct === null ? h("span", { class: "small", text: T.noplan }) : h("div", { class: "stack" }, h("span", { class: "mono", text: sum.progress_pct + "%" }), statusBar(sum.progress_pct))),
-      h("td", null, etaNote(s)),
-      h("td", null, String(inProgress(s))),
-      h("td", null, inboxWords(s)),
-      h("td", null, needs ? h("span", { class: "count", text: needs }) : "0"),
-      h("td", null, levelTag(worst(s))),
-      h("td", null, h("a", { href: "#/view=project&repo=" + encodeURIComponent(s.repo.path), text: T.open, "aria-label": T.open + " " + s.repo.name })));
-  });
-  var head = h("tr", null, [T.cProject, T.cPhase, T.cProgress, T.cEta, T.cDoing, T.cInbox, T.cNeeds, T.cSignal, ""].map(function (c) { return h("th", { scope: "col" }, c ? c : h("span", { class: "sr", text: T.open })); }));
-  return h("main", null,
-    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --all" }), h("h1", { text: T.portfolioTitle }), h("p", { class: "sub", text: T.portfolioSub })),
-    needsPanel(needsAll(), true, 12),
-    h("section", { "aria-labelledby": "proj-h", style: "display:flex;flex-direction:column;gap:12px" }, h("h2", { id: "proj-h", class: "sec", text: T.projects }),
-      REPOS.length ? h("div", { class: "panel tablewrap" }, h("table", null, h("thead", null, head), h("tbody", null, rows))) : h("div", { class: "empty", text: T.noRepos })));
-}
-
-function dayNum(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ""); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000 : null; }
-
-function flowLine(snap) {
-  var today = dayNum(snap.generated_at);
-  var pts = [today, dayNum(snap.summary.forecast), dayNum(snap.summary.deadline)];
-  snap.epics.forEach(function (e) { pts.push(dayNum(e.start), dayNum(e.end)); });
-  pts = pts.filter(function (x) { return x !== null; });
-  var wrap = h("div", { class: "panel flow" });
-  if (!snap.epics.length) { wrap.appendChild(h("div", { class: "empty", text: T.noEpics })); return wrap; }
-  var min = Math.min.apply(null, pts) - 1, max = Math.max.apply(null, pts) + 2;
-  if (max - min < 14) max = min + 14;
-  var span = max - min; var pct = function (d) { return ((d - min) / span * 100); };
-  var inner = h("div", { class: "flowin" });
-  var days = h("div", { class: "days" });
-  for (var d = Math.floor(min); d < Math.ceil(max); d++) {
-    var dt = new Date(d * 86400000); var dow = dt.getUTCDay();
-    days.appendChild(h("span", { class: (dow === 0 || dow === 6) ? "we" : "", text: dt.getUTCDate() }));
-  }
-  inner.appendChild(h("div", { class: "grid2", style: "padding-bottom:8px;border-bottom:1px solid var(--line)" }, h("span", { class: "mono small", text: fmtDate(snap.generated_at.slice(0, 10)).split(" ")[1] }), days));
-  var lines = h("div", { style: "position:absolute;left:250px;right:0;top:0;bottom:0;pointer-events:none" });
-  function vline(day, cls, label) { if (day === null) return; var l = h("div", { class: "vline " + cls, "aria-hidden": "true", title: label }); l.style.left = pct(day) + "%"; lines.appendChild(l); }
-  vline(today, "today", T.today); vline(dayNum(snap.summary.forecast), "eta", T.etaLine); vline(dayNum(snap.summary.deadline), "due", T.due);
-  inner.appendChild(lines);
-  var st = readHash(); var lanes = {};
-  snap.epics.forEach(function (e) { (lanes[e.lane] = lanes[e.lane] || []).push(e); });
-  Object.keys(lanes).sort().forEach(function (ln) {
-    inner.appendChild(h("div", { class: "lane", text: ln }));
-    lanes[ln].forEach(function (e) {
-      var blockedN = e.stories.blocked || 0; var total = e.stories.done + e.stories.in_progress + e.stories.planned + blockedN;
-      var open = st.epic === e.ref;
-      var name = h("button", { type: "button", class: "name", "aria-expanded": open ? "true" : "false", on: { click: function () { go({ epic: open ? "" : e.ref }); } } },
-        h("span", { style: "font-weight:500" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""),
-        h("span", { class: "small", text: e.stories.done + "/" + total + " " + T.stories + (blockedN ? " · " + blockedN + " " + T.blockedW : "") }));
-      var track = h("div", { class: "track" });
-      var s = dayNum(e.start);
-      if (s === null) { track.appendChild(h("span", { class: "small", text: T.noDates, style: "position:absolute;top:5px;left:8px" })); }
-      else {
-        var endDay = dayNum(e.end) !== null ? dayNum(e.end) : Math.max(dayNum(snap.summary.forecast) || today, today);
-        var seg = h("div", { class: "segs" }); seg.style.left = pct(s) + "%"; seg.style.width = Math.max(pct(endDay + 1) - pct(s), 1.5) + "%";
-        [["d", e.stories.done], ["p", e.stories.in_progress], ["n", e.stories.planned], ["b", blockedN]].forEach(function (pair) {
-          if (!pair[1] || !total) return; var seg1 = h("div", { class: pair[0] }); seg1.style.width = (pair[1] / total * 100) + "%"; seg.appendChild(seg1);
-        });
-        track.appendChild(seg);
-      }
-      inner.appendChild(h("div", { class: "grid2 erow" }, name, track));
-    });
-  });
-  wrap.appendChild(inner);
-  return wrap;
-}
-
-function epicDetail(snap, ref) {
-  var epic = snap.epics.filter(function (e) { return e.ref === ref; })[0];
-  if (!epic) return h("div", { class: "empty", text: T.pickEpic });
-  var cols = snap.columns.map(function (c) {
-    var list = snap.stories.filter(function (s) { return s.epic === ref && (c === "Planned" ? (s.status !== "In Progress" && s.status !== "Done") : s.status === c); });
-    return h("div", null, h("h3", { text: (T.columns[c] || c) + " · " + list.length }),
-      list.map(function (s) {
-        var over = (s.flags || []).indexOf("DLV-STORY-OVER") >= 0;
-        var bits = [];
-        if (s.estimate_h !== null && s.estimate_h !== undefined) bits.push(s.estimate_h + T.hours + " est.");
-        if (s.elapsed_h !== null && s.elapsed_h !== undefined) bits.push(s.elapsed_h + T.hours);
-        return h("div", { class: "scard" + (over ? " over" : "") }, h("span", { class: "mono small", text: s.ref }), h("div", { text: s.title || "" }), bits.length ? h("span", { class: "small", text: bits.join(" · ") }) : null);
-      }));
-  });
-  return h("div", { class: "detail", "aria-label": epic.ref }, cols);
-}
 
 var DRAFT_KEY = "gtt-sonar-idea-draft";
 function draftGet() { try { return sessionStorage.getItem(DRAFT_KEY) || ""; } catch (e) { return ""; } }
 function draftSet(v) { try { if (v) sessionStorage.setItem(DRAFT_KEY, v); else sessionStorage.removeItem(DRAFT_KEY); } catch (e) { /* storage may be blocked */ } }
 
-function ideasSection(snap) {
-  var list = snap.ideas;
-  var box = h("div", { class: "panel" });
-  if (list === null || list === undefined) box.appendChild(h("div", { class: "empty", text: T.nodata }));
-  else if (!list.length) box.appendChild(h("div", { class: "empty", text: T.ideaNone }));
-  else list.forEach(function (i) {
-    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: i.ref }), h("div", { class: "grow2" }, h("b", { text: i.title || i.ref })),
-      h("span", { class: i.state === "new" ? "tag amber" : "tag", text: T.ideaStates[i.state] || i.state }), i.to ? h("span", { class: "mono small", text: i.to }) : null));
-  });
-  var area = h("textarea", { id: "idea-text", rows: "3", "aria-label": T.ideaLabel, placeholder: T.ideaLabel, maxlength: "4000" });
-  area.value = draftGet();
-  var out = h("div", { id: "idea-cmd" });
-  function paint() {
-    draftSet(area.value);
-    while (out.firstChild) out.removeChild(out.firstChild);
-    if (area.value.trim()) out.appendChild(cmdBlock(ideaCommand(area.value)));
-  }
-  area.addEventListener("input", paint);
-  paint();
-  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.ideas), box,
-    h("div", { class: "panel", style: "padding:14px 18px;display:flex;flex-direction:column;gap:10px" },
-      h("label", { class: "small", for: "idea-text", text: T.newIdea }), area,
-      h("span", { class: "small", text: T.ideaHint }), h("span", { class: "mono small", text: "$ cd " + snap.repo.path }), out));
-}
 
 /* ---------- the inbox: the Bandeja ---------- */
 var BOARD = ["new", "review", "accepted", "ratify", "work", "closed"];
@@ -660,7 +608,7 @@ function decisionsPanel(snap) {
   else list.forEach(function (d) {
     box.appendChild(h("div", { class: "dec" }, h("time", { text: d.at || "—" }), h("span", { class: "ref", text: d.ref }), h("span", { class: "tag", text: T.decKinds[d.kind] || d.kind }),
       h("b", { text: d.title || d.ref }),
-      d.origin ? (d.entry && here[d.entry] ? h("a", { class: "mono small", href: "#/view=project&card=" + encodeURIComponent(d.entry), text: T.producedBy + " " + d.origin }) : h("span", { class: "mono small", text: T.producedBy + " " + d.origin })) : null));
+      d.origin ? (d.entry && here[d.entry] ? h("a", { class: "mono small", href: "#/view=inbox&card=" + encodeURIComponent(d.entry), text: T.producedBy + " " + d.origin }) : h("span", { class: "mono small", text: T.producedBy + " " + d.origin })) : null));
   });
   return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.decisions), box);
 }
@@ -671,40 +619,7 @@ function mineChip(snap) {
     h("span", { class: "small", text: T.mineHint }));
 }
 
-function progressCell(sum) {
-  var scope = sum.in_scope; var hrs = sum.hours;
-  var main = scope && scope.pct !== null ? scope.pct : sum.progress_pct;
-  var lines = [];
-  if (scope) lines.push(scope.done + "/" + scope.total + " " + T.stories + " " + T.inScopeW + " · " + scope.excluded + " " + T.excludedW + " · " + T.allW + " " + sum.progress_pct + "% (" + sum.stories_done + "/" + sum.stories_total + ")");
-  else lines.push(sum.stories_done + "/" + sum.stories_total + " " + T.stories);
-  if (hrs && hrs.pct !== null) lines.push(hrs.done + "/" + hrs.total + " " + T.hoursDone + " · " + hrs.pct + "%");
-  if (sum.epics && sum.epics.total) lines.push(sum.epics.done + "/" + sum.epics.total + " " + T.bkEpicsDone.toLowerCase() + " · " + sum.epics.pct + "% · " + sum.epics.in_progress + " " + T.bkDer.in_progress);
-  if (sum.decisions && sum.decisions.total) lines.push(sum.decisions.accepted + "/" + sum.decisions.total + " " + T.bkDecisions.toLowerCase() + " " + T.bkAdrSt.accepted);
-  return h("div", null, h("span", { class: "k", text: T.cProgress }), h("span", { class: "v", text: main === null ? T.noplan : main + "%" }), lines.map(function (l) { return h("span", { class: "small", text: l }); }));
-}
-function releasesPanel(sum) {
-  var rows = sum.releases || []; if (rows.length < 2) return null;
-  var box = h("div", { class: "panel" });
-  rows.forEach(function (r) {
-    var pct = r.total ? Math.round(100 * r.done / r.total) : 0;
-    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: r.name }),
-      h("div", { class: "grow2" }, statusBar(pct), h("span", { class: "small", text: r.done + "/" + r.total + " " + T.stories + (r.hours_total ? " · " + r.hours_done + "/" + r.hours_total + " " + T.hours : "") })),
-      r.scope === "out" ? h("span", { class: "tag", text: T.excludedW }) : null));
-  });
-  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.releasesW), box);
-}
-function workingPanel(snap) {
-  var rows = snap.working_now || []; if (!rows.length) return null;
-  var total = (snap.summary && snap.summary.in_progress) || rows.length;
-  var box = h("div", { class: "panel" });
-  rows.forEach(function (w) {
-    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: w.ref }),
-      h("div", { class: "grow2" }, h("b", { text: w.title || w.ref }), h("span", { class: "small", text: [w.epic, w.front ? "· " + w.front : null, w.since_h !== null && w.since_h !== undefined ? T.sinceW + " " + (w.since_h >= 48 ? Math.round(w.since_h / 24) + " d" : w.since_h + " h") : null, w.estimate_h ? w.estimate_h + T.hours : null].filter(Boolean).join(" ") })),
-      (w.flags || []).map(function (f) { return h("span", { class: "tag amber", text: f }); })));
-  });
-  if (total > rows.length) box.appendChild(h("div", { class: "empty", text: "+" + (total - rows.length) }));
-  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.working + " · " + total), box);
-}
+
 function healthPanel(snap) {
   var rows = snap.health || []; if (!rows.length) return null;
   var box = h("div", { class: "panel sigs" });
@@ -713,94 +628,6 @@ function healthPanel(snap) {
       h("b", { text: c.title }), c.detail ? h("span", { text: c.detail }) : null, c.stale ? h("span", { class: "tag amber", text: T.staleHealth }) : null));
   });
   return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), box);
-}
-function flowSpark(snap) {
-  var t = snap.throughput; if (!t || !t.total) return null;
-  var max = Math.max.apply(null, t.days.map(function (d) { return d.closed; }));
-  var bars = "▁▂▃▄▅▆▇█"; var line = t.days.map(function (d) { return d.closed ? bars[Math.min(7, Math.ceil(7 * d.closed / max))] : "·"; }).join("");
-  return h("span", { class: "small mono", title: t.days.map(function (d) { return d.day + ": " + d.closed; }).join("\n"), text: line + "  " + t.total + " " + T.flow14 });
-}
-function viewProject() {
-  var st = readHash(); var snap = repoById(st.repo);
-  if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
-  var sum = snap.summary;
-  var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "" }); } } },
-    OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === snap.repo.path, text: s.repo.name }); }));
-  var strip = h("div", { class: "strip" },
-    h("div", null, h("span", { class: "k", text: T.cEta }), h("span", { class: "v", text: sum.forecast ? fmtDate(sum.forecast) : T.nodata }), sum.deadline ? h("span", { class: "small", text: T.deadline + " " + fmtDate(sum.deadline) + (sum.on_time === true ? " · " + T.onTime : sum.on_time === false ? " · " + T.late : "") }) : null),
-    progressCell(sum),
-    h("div", null, h("span", { class: "k", text: T.calib }), h("span", { class: "v", text: sum.calibration.ratio === null ? T.uncalibrated : "x" + sum.calibration.ratio + (sum.calibration.uncalibrated ? " · " + T.uncalibrated : "") })),
-    h("div", null, h("span", { class: "k", text: T.needs }), h("span", { class: "v", text: (snap.needs_you || []).length }), snap.repo_state && snap.repo_state.uncommitted ? h("span", { class: "small", text: snap.repo_state.uncommitted + " " + T.uncommitted }) : null, flowSpark(snap)));
-  var cards = [];
-  (snap.next.proposals || []).forEach(function (p) { cards.push(h("div", { class: "card assert" }, h("span", { class: "tag", text: T.proposal }), h("span", { class: "t", text: p.title || p.ref }), p.command ? cmdBlock(p.command) : null)); });
-  var idle = snap.next.epics_to_approve || [];
-  (snap.next.planned_epics || []).forEach(function (e) { cards.push(h("div", { class: "card" }, h("span", { class: "tag", text: T.planned }), h("span", { class: "t" }, h("span", { class: "mono small", text: e.ref + " " }), e.title || ""))); });
-  var sigs = (snap.signals || []);
-  return h("main", null,
-    h("div", { class: "head" },
-      h("span", { class: "cmdline", text: "$ gtt sonar " + snap.repo.key }),
-      h("h1", { text: snap.repo.name }),
-      h("div", { class: "meta" }, phaseTag(snap.project), snap.project.profile ? h("span", { text: snap.project.profile }) : null,
-        h("label", { class: "sr", for: "repo-pick", text: T.project }), select)),
-    snap.degraded ? h("div", { class: "stale", role: "status" }, h("b", { text: T.degradedTitle + ": " + snap.degraded.project + " → " + snap.degraded.tool + ". " }),
-      snap.degraded.missing.map(function (m) { return (T.degradedMissing[m] || m); }).join(", ") + ". " + T.degradedFix + " ", snap.degraded.command ? cmdBlock(snap.degraded.command) : null) :
-    snap.compat ? h("div", { class: "stale", role: "status" }, T.compat + " " + snap.compat.read_with + " (" + snap.compat.installed + "). ", snap.compat.command ? cmdBlock(snap.compat.command) : null) : null,
-    strip,
-    mineChip(snap),
-    (snap.needs_you || []).length ? needsPanel(snap.needs_you.filter(needsMe(snap)).map(function (n) { return { n: n, repo: snap.repo.name }; }), false, 15) : null,
-    inboxPanel(snap), decisionsPanel(snap),
-    workingPanel(snap), releasesPanel(sum), healthPanel(snap),
-    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.coming), cards.length ? h("div", { class: "cards" }, cards) : (idle.length ? null : h("div", { class: "empty", text: T.nothingNext })),
-      idle.length ? h("details", { class: "panel idle" }, h("summary", { text: idle.length + " " + T.idleEpics }),
-        idle.map(function (e) { return h("div", { class: "row" }, h("span", { class: "ref", text: e.ref }), h("div", { class: "grow2" }, h("b", { text: e.title || e.ref }), h("span", { class: "small", text: e.open_stories + " " + T.openSt })), e.command ? cmdBlock(e.command) : null); })) : null),
-    h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.flow),
-      h("div", { class: "legend", "aria-hidden": "true" },
-        h("span", null, h("i", { class: "sw done" }), T.done), h("span", null, h("i", { class: "sw prog" }), T.doing), h("span", null, h("i", { class: "sw plan" }), T.pending),
-        h("span", { text: "| " + T.today }), h("span", { text: "¦ " + T.etaLine }), h("span", { style: "color:var(--danger)", text: "| " + T.due })),
-      flowLine(snap)),
-    st.epic ? h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.detail + " " + st.epic), epicDetail(snap, st.epic)) : null,
-    ideasSection(snap),
-    sigs.length ? h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.signals),
-      h("div", { class: "panel sigs" }, sigs.map(function (g) { return h("div", { class: "sig" }, levelTag(g.level), h("span", { class: "mono small", text: g.code + (g.ref ? " " + g.ref : "") }), h("span", { text: g.text })); }))) : null);
-}
-
-function viewHelp() {
-  var wrap = h("main", { class: "help" }, h("h1", { text: T.helpTitle }), h("p", { class: "sub", text: T.helpSub }));
-  T.helpSec.forEach(function (sec) {
-    var ul = h("ul", {});
-    sec[1].forEach(function (line) { ul.appendChild(h("li", { text: line })); });
-    wrap.appendChild(h("section", { class: "panel" }, h("h2", { text: sec[0] }), ul));
-  });
-  wrap.appendChild(h("p", { class: "sub" }, h("a", { href: "https://gtt-method.org/sonar/", target: "_blank", rel: "noopener noreferrer", text: "gtt-method.org/sonar" })));
-  return wrap;
-}
-function viewLast() {
-  var st = readHash(); var proj = st.proj || ""; var who = st.who || "";
-  var evs = [];
-  OK.forEach(function (s) { (s.recent || []).forEach(function (r) { evs.push({ r: r, repo: s.repo.path, name: s.repo.name }); }); });
-  evs = evs.filter(function (e) { return (!proj || e.repo === proj) && (!who || (e.r.actor || "unknown") === who); });
-  evs.sort(function (a, b) { return String(b.r.at).localeCompare(String(a.r.at)); });
-  var byDay = {}; var order = [];
-  evs.forEach(function (e) { var d = String(e.r.at || "").slice(0, 10) || "?"; if (!byDay[d]) { byDay[d] = []; order.push(d); } byDay[d].push(e); });
-  var projSel = h("select", { id: "f-proj", on: { change: function (ev) { go({ proj: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
-    OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === proj, text: s.repo.name }); }));
-  var whoSel = h("select", { id: "f-who", on: { change: function (ev) { go({ who: ev.target.value }); } } }, h("option", { value: "", text: T.all }),
-    [["agent", T.claude], ["human", T.you], ["gtt", T.gtt], ["unknown", T.unknown]].map(function (o) { return h("option", { value: o[0], selected: o[0] === who, text: o[1] }); }));
-  var body = h("div", { class: "panel" });
-  if (!order.length) body.appendChild(h("div", { class: "empty", text: T.noEvents }));
-  order.forEach(function (d) {
-    body.appendChild(h("h3", { class: "dayh", text: d + " · " + byDay[d].length + " " + T.daySummary }));
-    byDay[d].forEach(function (e) {
-      var a = e.r.actor || "unknown"; var time = String(e.r.at || "").slice(11, 16);
-      body.appendChild(h("div", { class: "ev" }, h("time", { text: time }), h("span", { class: "dot " + a, "aria-hidden": "true" }),
-        h("span", { class: "tag", text: a === "agent" ? T.claude : a === "human" ? T.you : a === "gtt" ? T.gtt : T.unknown }),
-        h("span", { text: e.r.text || e.r.action || "" }), e.r.ref ? h("span", { class: "mono small", text: e.r.ref }) : null, h("span", { class: "tag", text: e.name })));
-    });
-  });
-  return h("main", null,
-    h("div", { class: "head" }, h("span", { class: "cmdline", text: "$ gtt sonar --log" }), h("h1", { text: T.logTitle }), evs.some(function (e) { return e.r.derived; }) ? h("span", { class: "small", text: T.derivedNote }) : null),
-    h("div", { class: "filters" }, h("label", { for: "f-proj", text: T.project }), projSel, h("label", { for: "f-who", text: T.who }), whoSel),
-    body);
 }
 
 /* ---------- backlog: Epics, Stories and the design documents (text only, never markup) ---------- */
@@ -841,83 +668,6 @@ function paintBlocks(blocks) {
 }
 function debounced(fn, ms) { var id = null; return function (ev) { var v = ev.target.value; if (id) clearTimeout(id); id = setTimeout(function () { fn(v); }, ms); }; }
 
-function backlogWork(snap, st) {
-  var filter = st.bs || ""; var q = (st.bq || "").toLowerCase().trim();
-  var all = snap.stories || [];
-  var counts = {}; all.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
-  function chip(id, label) {
-    return h("button", { type: "button", class: "chip", "aria-pressed": filter === id ? "true" : "false", on: { click: function () { go({ bs: id, epic: "" }); } } }, label);
-  }
-  var chips = h("div", { class: "chips" }, chip("", T.bkAll + " " + all.length),
-    STORY_ORDER.filter(function (s) { return counts[s]; }).map(function (s) { return chip(s, (T.bkSt[s] || s) + " " + counts[s]); }));
-  var search = h("input", { type: "text", id: "bk-q", "aria-label": T.bkSearch, placeholder: T.bkSearch, maxlength: "80" });
-  search.value = st.bq || "";
-  search.addEventListener("input", debounced(function (v) { go({ bq: v }); }, 300));
-  var rels = distinct(all, "release"), fronts = distinct(all, "front");
-  function pick(key, values, allLabel, label) {
-    if (values.length < 2) return null;
-    var sel = h("select", { "aria-label": label, on: { change: function (ev) { var p = { epic: "" }; p[key] = ev.target.value; go(p); } } },
-      h("option", { value: "", text: allLabel }), values.map(function (v) { return h("option", { value: v, selected: st[key] === v, text: v }); }));
-    return sel;
-  }
-  function match(s) {
-    return (!filter || s.status === filter) && (!st.br || s.release === st.br) && (!st.bf || s.front === st.bf) && (!q || ((s.ref + " " + (s.title || "")).toLowerCase().indexOf(q) >= 0));
-  }
-  var filtering = !!(filter || q || st.br || st.bf);
-  var panel = h("section", { class: "panel" });
-  var budget = 300, hidden = 0, shownEpics = 0;
-  var lastGroup = null;
-  var groupInfo = {}; ((snap.summary && snap.summary.groups) || []).forEach(function (g) { groupInfo[g.id] = g; });
-  (snap.epics || []).forEach(function (e) {
-    var own = all.filter(function (s) { return s.epic === e.ref; });
-    var shown = own.filter(match);
-    if (filtering && !shown.length) return;
-    shownEpics++;
-    if (e.group && e.group !== lastGroup) {
-      var gi = groupInfo[e.group];
-      panel.appendChild(h("div", { class: "grp2" }, h("b", { text: e.group }), gi ? h("span", { text: gi.epics + " " + T.bkEpics + " · " + gi.stories_done + "/" + gi.stories_total + " " + T.bkStories + (gi.pct !== null ? " · " + gi.pct + "%" : "") }) : null));
-    }
-    lastGroup = e.group || null;
-    var open = filtering || st.epic === e.ref;
-    var done = own.filter(function (s) { return s.status === "Done"; }).length;
-    var live = own.filter(function (s) { return s.status !== "Cancelled"; }).length;
-    var meta = [];
-    if (e.goal) meta.push(T.bkGoal + ": " + e.goal);
-    var sub = [];
-    if (e.depends && e.depends.length) sub.push(T.bkDependsOn + " " + e.depends.join(", "));
-    if (e.approved) sub.push(T.bkApproved + ": " + e.approved);
-    if (e.origin) sub.push(T.bkOrigin + ": " + e.origin);
-    if (e.priority) sub.push(T.bkPriority + ": " + (T.prio[e.priority] || e.priority));
-    var head = h("button", { type: "button", class: "ebtn", "aria-expanded": open ? "true" : "false", on: { click: function () { if (!filtering) go({ epic: open ? "" : e.ref }); } } },
-      h("span", { class: "car", "aria-hidden": "true", text: open ? "v" : ">" }),
-      h("span", { class: "ref", text: e.ref }),
-      h("span", { class: "grow2" }, h("b", { text: e.title || e.ref }), meta.length ? h("span", { class: "small", text: meta.join(" · ") }) : null, sub.length ? h("span", { class: "small", text: sub.join(" · ") }) : null),
-      epicTag(e), e.derived && e.derived !== "planned" ? h("span", { class: "tag " + (e.derived === "done" ? "ok" : e.derived === "blocked" ? "red" : "amber"), text: T.bkDer[e.derived] }) : null, e.lane && e.lane !== "main" ? h("span", { class: "tag", text: e.lane }) : null,
-      h("span", { class: "small", text: done + "/" + live + " " + T.bkDone + (e.pct !== null && e.pct !== undefined ? " · " + e.pct + "%" : "") }),
-      e.estimate_h ? h("span", { class: "small", text: e.estimate_h + T.hours }) : null);
-    var wrap = h("div", { class: "epic" }, head);
-    if (open) {
-      shown.forEach(function (s) {
-        if (budget <= 0) { hidden++; return; }
-        budget--;
-        var line = [];
-        if (s.done_when) line.push(T.bkDoneWhen + ": " + s.done_when);
-        if (s.closed) line.push(T.bkEvidence + ": " + s.closed);
-        wrap.appendChild(h("div", { class: "srow" }, h("span", { class: "ref", text: s.ref }),
-          h("span", { class: "grow2" }, h("span", { text: s.title || s.ref }), line.length ? h("span", { class: "small", text: line.join(" · ") }) : null),
-          storyTag(s.status), s.owner === "human" ? h("span", { class: "tag amber", text: "human" }) : null,
-          (s.flags || []).map(function (f) { return h("span", { class: "tag red", text: f }); }),
-          s.estimate_h ? h("span", { class: "small", text: s.estimate_h + T.hours }) : null));
-      });
-    }
-    panel.appendChild(h("div", { class: "row", style: "padding:0;display:block" }, wrap));
-  });
-  if (!(snap.epics || []).length) panel.appendChild(h("div", { class: "empty", text: T.bkNoEpics }));
-  else if (!shownEpics) panel.appendChild(h("div", { class: "empty", text: T.bkNoMatch }));
-  if (hidden) panel.appendChild(h("div", { class: "empty", text: "+" + hidden + " " + T.bkMore }));
-  return h("div", { style: "display:flex;flex-direction:column;gap:14px" },
-    h("div", { style: "display:flex;gap:12px;flex-wrap:wrap;align-items:center" }, chips, pick("br", rels, T.bkAllRel, T.bkRelease), pick("bf", fronts, T.bkAllFront, T.bkFront), search), panel);
-}
 
 function backlogDesign(snap, st) {
   var docs = snap.docs;
@@ -931,7 +681,7 @@ function backlogDesign(snap, st) {
     if (!group.length) return;
     list.appendChild(h("div", { class: "grp", text: T.bkGDocs[g] }));
     group.forEach(function (d) {
-      var a = h("a", { href: "#/" + ["view=backlog", "bt=design", "repo=" + encodeURIComponent(snap.repo.path), "doc=" + encodeURIComponent(d.id)].join("&"), text: d.title });
+      var a = h("a", { href: "#/" + ["view=design", "dt=docs", "repo=" + encodeURIComponent(snap.repo.path), "doc=" + encodeURIComponent(d.id)].join("&"), text: d.title });
       if (d.id === cur.id) a.setAttribute("aria-current", "page");
       list.appendChild(a);
     });
@@ -953,34 +703,7 @@ function distinct(list, key) {
 function tile(label, value, note, pct) {
   return h("div", { class: "tile" }, h("span", { class: "k", text: label }), h("span", { class: "v", text: value }), note ? h("span", { class: "n", text: note }) : null, pct !== null && pct !== undefined ? statusBar(pct) : null);
 }
-function backlogSummary(snap) {
-  var s = snap.summary; var tiles = [];
-  if (s.in_scope && s.in_scope.pct !== null) tiles.push(tile(T.bkScope, s.in_scope.pct + "%", s.in_scope.done + "/" + s.in_scope.total + " " + T.bkStories, s.in_scope.pct));
-  else if (s.progress_pct !== null) tiles.push(tile(T.bkStories, s.progress_pct + "%", s.stories_done + "/" + s.stories_total, s.progress_pct));
-  if (s.hours && s.hours.pct !== null) tiles.push(tile(T.bkHours, s.hours.pct + "%", s.hours.done + "/" + s.hours.total + T.hours, s.hours.pct));
-  if (s.epics && s.epics.total) tiles.push(tile(T.bkEpicsDone, s.epics.done + "/" + s.epics.total, s.epics.pct + "% · " + s.epics.in_progress + " " + T.bkDer.in_progress, s.epics.pct));
-  if (s.decisions && s.decisions.total) tiles.push(tile(T.bkDecisions, s.decisions.accepted + "/" + s.decisions.total, T.bkAdrSt.accepted));
-  var out = h("div", { style: "display:flex;flex-direction:column;gap:18px" });
-  out.appendChild(tiles.length ? h("div", { class: "tiles" }, tiles) : h("div", { class: "empty", text: T.noplan }));
-  function bars(title, rows) {
-    if (!rows || !rows.length) return;
-    var panel = h("section", { class: "panel" }, h("div", { class: "grp2", text: title }));
-    rows.forEach(function (r) {
-      panel.appendChild(h("div", { class: "qrow" }, h("span", null, h("b", { text: r.name }), r.note ? h("span", { class: "small", text: " " + r.note }) : null),
-        r.pct === null ? h("span", { class: "small", text: T.nodata }) : statusBar(r.pct), h("span", { class: "mono small", text: (r.pct === null ? "" : r.pct + "%") + (r.count ? " · " + r.count : "") })));
-    });
-    out.appendChild(panel);
-  }
-  bars(T.bkGroups, (s.groups || []).map(function (g) { return { name: g.id, note: g.epics + " " + T.bkEpics, pct: g.pct, count: g.stories_done + "/" + g.stories_total }; }));
-  bars(T.bkReleases, (s.releases || []).map(function (r) { return { name: r.name, pct: r.total ? Math.round(100 * r.done / r.total) : null, count: r.done + "/" + r.total }; }));
-  var q = snap.quality;
-  if (q) {
-    var qrows = ["no_done_when", "done_no_evidence", "no_estimate", "blocked_no_reason", "epics_unapproved"].filter(function (k) { return q[k] && q[k].of; })
-      .map(function (k) { return { name: T.bkQ[k], pct: q[k].pct, count: q[k].count + " " + T.bkOf + " " + q[k].of, note: q[k].sample && q[k].sample.length ? "(" + q[k].sample.slice(0, 3).join(", ") + (q[k].count > 3 ? "…" : "") + ")" : "" }; });
-    bars(T.bkQuality, qrows);
-  }
-  return out;
-}
+
 function backlogAdr(snap, st) {
   var list = snap.adrs;
   if (list === null || list === undefined) return h("div", { class: "empty", text: T.nodata });
@@ -1000,66 +723,839 @@ function backlogAdr(snap, st) {
   });
   return h("div", { style: "display:flex;flex-direction:column;gap:14px" }, chips, panel);
 }
-function backlogInbox(snap) {
-  var out = h("div", { style: "display:flex;flex-direction:column;gap:18px" }, inboxPanel(snap));
-  var files = snap.proposal_files;
-  var panel = h("section", { class: "panel" }, h("div", { class: "grp2", text: T.bkProposalFiles }));
-  if (!files || !files.length) panel.appendChild(h("div", { class: "empty", text: files ? T.bkNoProps : T.nodata }));
-  else files.forEach(function (f) {
-    panel.appendChild(h("div", { class: "srow", style: "padding-left:18px;border-top:1px solid var(--line-soft);background:transparent" }, h("span", { class: "grow2" }, h("span", { text: f.title || f.ref }), h("span", { class: "small mono", text: f.path })),
-      f.state ? h("span", { class: "tag", text: f.state }) : null));
+
+/* ================================================================= 1.25: the Plan, the Inbox, Activity, Health, Design */
+function L(es, en) { return LANG === "es" ? es : en; }
+var SERVED = (DATA.mode === "served");
+var ACT = null;                       /* in served mode the block below gives it a body; the static page never talks to anything */
+var DRAFTS = {};                      /* what is being typed, by "ref|field": a repaint never loses it */
+var FORM_MSG = {};                    /* the answer of the last save, by ref */
+var BUSY = {};
+
+/*SERVED*/
+function postAct(op, args) {
+  var snap = currentSnap();
+  return fetch("/api/act", { method: "POST", headers: { "Content-Type": "application/json", "X-GTT-Sonar": "1" },
+    body: JSON.stringify({ repo: snap ? snap.repo.path : null, op: op, args: args }) })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; }, function () { return { ok: r.ok, status: r.status, body: {} }; }); })
+    .catch(function () { return { ok: false, status: 0, body: { error: "no connection" } }; });
+}
+ACT = postAct;
+var ETAG = null;
+function poll() {
+  var a = document.activeElement;
+  if (readHash().pause === "1" || (a && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && a.type === "text")))) return;   /* never repaint under what is being typed */
+  var headers = { "X-GTT-Sonar": "1" }; if (ETAG) headers["If-None-Match"] = ETAG;
+  fetch("/api/snapshot", { headers: headers }).then(function (r) {
+    if (r.status === 304 || !r.ok) return null;
+    ETAG = r.headers.get("ETag");
+    return r.json();
+  }).then(function (page) {
+    if (!page || !page.repos) return;
+    DATA = page; REPOS = DATA.repos || [];
+    OK = REPOS.filter(function (r) { return r && r.snapshot && r.snapshot.schema === "sonar.v1"; }).map(function (r) { return r.snapshot; });
+    setLang();
+    render();
+  }).catch(function () { /* the next tick tries again */ });
+}
+setInterval(poll, 2000);
+/*END-SERVED*/
+
+/* ---------- small helpers ---------- */
+function currentSnap() { var st = readHash(); return OK.length ? repoById(st.repo) : null; }
+function shortCmd(c) { return String(c || "").replace(/^cd '[^']*' && /, "").replace(/^cd "[^"]*" && /, ""); }
+function fmtH(x) { if (x === null || x === undefined) return "—"; var s = (Math.round(x * 10) / 10).toString(); return LANG === "es" ? s.replace(".", ",") : s; }
+function fmtRange(r) {
+  if (!r || r.length < 2) return null;
+  var a = fmtDate(r[0]), b = fmtDate(r[1]); return a === b ? a : a + " " + L("a", "to") + " " + b;
+}
+function hhmm(iso) { var t = Date.parse(iso); if (!t) return "—"; return new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+function ago(iso) {
+  var t = Date.parse(iso); if (!t) return null; var m = Math.max(0, Math.round((Date.now() - t) / 60000));
+  if (m < 1) return L("hace un momento", "just now"); if (m < 60) return L("hace ", "") + m + " min" + L("", " ago");
+  var hh = Math.round(m / 60); if (hh < 48) return L("hace ", "") + hh + " h" + L("", " ago"); return L("hace ", "") + Math.round(hh / 24) + " d" + L("", " ago");
+}
+function ownerWord(o) { return o === "human" ? L("te toca", "yours") : o === "agent" ? L("le toca a claude", "the agent's") : ""; }
+function lvlTag(l) { return h("span", { class: "lvl " + (l === "WARNING" || l === "BLOCKING" ? "w" : "n"), text: l }); }
+function copyRef(ref) {
+  var b = h("button", { type: "button", class: "cref", title: L("copiar ref", "copy ref"), "aria-label": L("copiar ref ", "copy ref ") + ref, text: "⧉" });
+  b.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    var done = function () { b.textContent = "✓"; setTimeout(function () { b.textContent = "⧉"; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ref).then(done, function () {}); else done();
   });
-  out.appendChild(panel);
-  return out;
+  return b;
+}
+function copyText(label, text) {
+  var b = h("button", { type: "button", class: "btn ghost", text: label });
+  b.addEventListener("click", function () {
+    var done = function () { var o = b.textContent; b.textContent = T.copied; setTimeout(function () { b.textContent = o; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () {}); else done();
+  });
+  return b;
+}
+function cmdLine(full) {
+  /* shown short (`gtt answer 1 1`), copied whole (with the `cd`) */
+  var short = shortCmd(full);
+  var b = h("button", { type: "button", text: T.copy, "aria-label": T.copy + ": " + short });
+  b.addEventListener("click", function () {
+    var done = function () { b.textContent = T.copied; setTimeout(function () { b.textContent = T.copy; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(done, function () {}); else done();
+  });
+  return h("span", { class: "cmd" }, h("code", null, h("span", { "aria-hidden": "true", text: "$ " }), short), b);
+}
+function editable(snap) { return SERVED && snap && snap.readiness && !snap.degraded; }
+function degradedNote(snap) {
+  var miss = snap.degraded && snap.degraded.missing ? snap.degraded.missing : [];
+  if (miss.indexOf("serve") >= 0) return h("div", { class: "stale", role: "status", text: L("solo lectura: este Bootstrap no ofrece la página editable. Actualiza GTT en este repo", "read only: this Bootstrap does not offer the editable page. Update GTT in this repo") + (snap.degraded.needs ? " (" + L("hace falta ", "needs ") + snap.degraded.needs + ")" : "") + (snap.degraded.command ? ": " + shortCmd(snap.degraded.command) : "") });
+  if (snap.readiness) return null;
+  return h("div", { class: "stale", role: "status", text: L("sin dato: actualiza GTT en este repo (gtt update) para ver lo que falta por definir.", "no data: update GTT in this repo (gtt update) to see what is left to define.") });
+}
+function findingsOf(snap, ref) { return (snap.findings || []).filter(function (f) { return f.ref === ref && f.plane === "definition"; }); }
+function epicFindings(snap, e) {
+  return (snap.findings || []).filter(function (f) { return f.ref === e.ref || (f.epic === e.ref && f.ref !== e.ref && f.plane !== "definition"); });
+}
+function storyChat(snap, s) {
+  var fs = findingsOf(snap, s.ref).filter(function (f) { return f.fix && f.fix.chat; });
+  if (!fs.length) return null;
+  return fs.map(function (f) { return f.fix.chat; }).join(" ");
+}
+function inboxN(snap) { var c = snap.inbox_counts; return c ? (c["new"] || 0) + (c.review || 0) + (c.ratify || 0) : 0; }
+function healthN(snap) {
+  var n = 0, worstLvl = null;
+  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { n++; if (f.level === "WARNING" || f.level === "BLOCKING") worstLvl = "w"; } });
+  (snap.health || []).forEach(function (c) { if (c.status !== "ok") { n++; if (c.status === "fail") worstLvl = "w"; } });
+  return { n: n, amber: worstLvl === "w" };
 }
 
-function viewBacklog() {
-  var st = readHash(); var snap = repoById(st.repo);
-  if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
-  var tab = ["sum", "work", "adr", "inbox", "design"].indexOf(st.bt) >= 0 ? st.bt : "sum";
-  var select = h("select", { id: "repo-pick", "aria-label": T.project, on: { change: function (ev) { go({ repo: ev.target.value, epic: "", doc: "", bs: "", bq: "", br: "", bf: "", ba: "" }); } } },
-    OK.map(function (s) { return h("option", { value: s.repo.path, selected: s.repo.path === snap.repo.path, text: s.repo.name }); }));
-  function tabLink(id, label) {
-    var a = h("a", { href: "#/" + ["view=backlog", "bt=" + id, "repo=" + encodeURIComponent(snap.repo.path)].join("&"), text: label });
-    if (tab === id) a.setAttribute("aria-current", "page");
+/* ---------- the bar ---------- */
+function topBar2(view, snap) {
+  var st = readHash();
+  function tab(id, label, count, amber) {
+    var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.view = id; if (id !== "plan") { delete x.q; }
+    var href = "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&");
+    var a = h("a", { href: href }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null);
+    if (view === id) a.setAttribute("aria-current", "page");
     return a;
   }
+  var hn = snap ? healthN(snap) : { n: 0, amber: false };
+  var tabs = [];
+  if (OK.length > 1) tabs.push(tab("portfolio", L("portafolio", "portfolio")));
+  tabs.push(tab("plan", L("plan", "plan")), tab("inbox", L("bandeja", "inbox"), snap ? inboxN(snap) : 0, false), tab("activity", L("actividad", "activity")), snap && snap.code && snap.code.modules && snap.code.modules.length ? tab("code", L("código", "code")) : null,
+    tab("health", L("salud", "health"), hn.n, hn.amber), tab("design", L("diseño", "design")), tab("help", L("guía", "guide")));
+  var paused = st.pause === "1";
+  var mode = snap && editable(snap) ? h("span", { class: "edit", text: L("editable", "editable") }) : h("span", { class: "edit ro", text: L("solo lectura", "read only") });
+  var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }),
+    paused ? T.paused : (SERVED ? L("en vivo", "live") : liveLabel()));
+  live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
+  var suite = snap ? (snap.compat ? snap.compat.read_with : snap.suite_version) : null;
+  return h("header", { class: "bar" },
+    h("div", { class: "brandbox" }, h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"),
+      h("a", { class: "home", href: "https://gtt-method.org/", target: "_blank", rel: "noopener noreferrer", title: "gtt-method.org", text: "gtt-method.org" })),
+    h("nav", { class: "tabs", "aria-label": L("Vistas", "Views") }, tabs),
+    h("div", { class: "grow" }),
+    h("div", { class: "meta" }, suite ? h("span", { text: L("suite ", "suite ") + suite }) : null, mode, live));
+}
+
+/* ---------- the five figures, Now, the last events, I-need-you ---------- */
+function needItems(snap) {
+  var out = [];
+  (snap.needs_you || []).forEach(function (n) {
+    out.push({ ref: n.ref, title: n.title || n.ref, sub: [(T.hows[n.how] || T.kinds[n.kind] || n.kind)].concat(n.unblocks && n.unblocks.length ? [L("destraba ", "unblocks ") + n.unblocks.join(", ")] : []).concat(n.note ? [n.note] : []).join(" · "),
+      choices: n.choices || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
+  });
+  (snap.findings || []).forEach(function (f) {
+    if (f.owner !== "human") return;
+    if (f.code === "GOV-GAP") out.push({ ref: f.ref, title: f.text, sub: L("vacío abierto", "open gap") + (f.epic ? " · " + L("afecta ", "affects ") + f.epic : ""), about: f.ref, kind: "gap", target: f.epic || f.ref });
+    else if (f.code === "GOV-DEC") out.push({ ref: f.ref, title: f.text, sub: L("decidió el agente y debes saberlo", "the agent decided and you should know"), kind: "dec", target: f.ref });
+    else if (f.code === "GOV-RUN") out.push({ ref: f.ref, title: f.text, sub: L("varios actos tuyos listos", "several acts of yours are ready"), command: f.fix.command, kind: "run", target: f.ref });
+    else if (f.code === "DEF-EPIC-PROPOSED") out.push({ ref: f.ref, title: L("propuesta completa: espera tu aprobación", "complete proposal: waits for your approval"), sub: epicTitle(snap, f.ref), command: f.fix.command, kind: "epic", target: f.ref });
+    else if (f.code === "DEF-EPIC-INTENT") out.push({ ref: f.ref, title: epicTitle(snap, f.ref) + ": " + f.text, sub: L("abre la épica para completarla", "open the Epic to complete it"), kind: "epic", target: f.ref });
+  });
+  return out;
+}
+function epicTitle(snap, ref) { var e = (snap.epics || []).filter(function (x) { return x.ref === ref; })[0]; return e ? (e.title || ref) : ref; }
+function figures(snap) {
+  var s = snap.summary || {}; var hrs = s.hours; var rc = snap.readiness ? snap.readiness.counts : null;
+  var pct = (hrs && hrs.pct !== null && hrs.pct !== undefined) ? hrs.pct : s.progress_pct;
+  var needs = needItems(snap);
+  var kinds = {}; needs.forEach(function (n) { var k = n.kind === "ask" ? "q" : n.kind === "gap" ? "g" : (n.kind === "epic" || n.kind === "epic-batch") ? "e" : "o"; kinds[k] = (kinds[k] || 0) + 1; });
+  var needsSub = [];
+  if (kinds.q) needsSub.push(kinds.q + " " + L(kinds.q > 1 ? "preguntas" : "pregunta", kinds.q > 1 ? "questions" : "question"));
+  if (kinds.e) needsSub.push(kinds.e + " " + L(kinds.e > 1 ? "épicas" : "épica", kinds.e > 1 ? "Epics" : "Epic"));
+  if (kinds.g) needsSub.push(kinds.g + " " + L(kinds.g > 1 ? "vacíos" : "vacío", kinds.g > 1 ? "gaps" : "gap"));
+  if (kinds.o) needsSub.push(kinds.o + " " + L("otros", "other"));
+  var alerts = { w: 0, n: 0 };
+  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "WARNING" || f.level === "BLOCKING") alerts.w++; else alerts.n++; } });
+  (snap.signals || []).forEach(function (x) { if (!(snap.findings || []).length) { if (x.level === "WARNING" || x.level === "GOVERNANCE") alerts.w++; else alerts.n++; } });
+  var eta = fmtRange(snap.forecast_range) || (s.forecast ? fmtDate(s.forecast) : null);
+  var etaSub = [s.deadline ? L("plazo ", "deadline ") + fmtDate(s.deadline) : L("sin plazo", "no deadline")];
+  if (snap.forecast_range || (s.calibration && s.calibration.uncalibrated)) etaSub.push(L("sin calibrar", "uncalibrated"));
+  var toDef = rc ? rc.to_define : null;
+  var nextN = (snap.stories || []).filter(function (x) { return x.next && x.ready === "to_define"; }).length;
+  function cell(k, v, sub, cls, key) { return h("div", { class: "fig", "data-fig": key }, h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub })); }
+  var estimated = hrs && hrs.total ? L("de ", "of ") + fmtH(hrs.total) + " h · " : "";
+  return h("section", { class: "strip", "aria-label": L("cifras", "figures") },
+    cell(L("avance", "progress"), pct === null || pct === undefined ? "—" : pct + "%", (hrs && hrs.total ? fmtH(hrs.done) + " " + estimated : "") + (s.stories_done || 0) + "/" + (s.stories_total || 0) + " " + L("historias", "Stories"), "", "progress"),
+    cell(L("fecha estimada", "estimated date"), eta || "—", etaSub.join(" · "), "", "eta"),
+    cell(L("te necesito", "I need you"), String(needs.length), needsSub.join(" · ") || L("nada por ahora", "nothing for now"), needs.length ? "amberv" : "", "needs"),
+    cell(L("por definir", "to define"), toDef === null ? "—" : String(toDef), rc ? nextN + " " + L("cerca de empezar", "close to starting") + " · " + (rc.mine || 0) + " " + L(rc.mine === 1 ? "tuya" : "tuyas", "yours") : L("sin dato", "no data"), toDef ? "amberv" : "", "define"),
+    cell(L("alertas", "alerts"), String(alerts.w + alerts.n), alerts.w + " WARNING · " + alerts.n + " NOTICE", alerts.w ? "redv" : "", "alerts"));
+}
+function nowBlock(snap) {
+  var a = snap.activity;
+  var left = h("div", null, h("span", { class: "k2", text: L("ahora", "now") }));
+  if (!a || !a.now || (!a.journal && !(a.now.files || []).length && !a.now.story)) {
+    left.appendChild(h("span", { class: "small", text: L("sin dato: aún no hay diario de actividad (con un ADE con hooks, o con el vigilante de Sonar, se llena solo).", "no data: no activity journal yet (it fills by itself with an ADE with hooks, or with the Sonar watcher).") }));
+  } else {
+    var n = a.now; var who = n.source === "claude" ? "claude" : n.source === "unattributed" ? L("sin atribuir", "unattributed") : (n.source || L("sin dato", "no data"));
+    var st = n.story ? (snap.stories || []).filter(function (x) { return x.ref === n.story; })[0] : null;
+    if (n.story && !n.source) {
+      left.appendChild(h("div", { class: "pulse" }, h("i", { class: "off", "aria-hidden": "true" }), h("span", null, h("span", { class: "mono", text: n.story }), st ? " " + (st.title || "") : "", st && st.epic ? h("span", { class: "small", text: " · " + st.epic }) : null, " " + L("en curso", "in progress"))));
+      left.appendChild(h("span", { class: "small", text: L("sin dato de quién trabaja: aún no hay diario de actividad.", "no data on who is working: there is no activity journal yet.") }));
+    } else if (n.story) {
+      left.appendChild(h("div", { class: "pulse" }, h("i", { "aria-hidden": "true" }), h("span", null, h("b", { text: who }), " " + L("en", "on") + " ", h("span", { class: "mono", text: n.story }), st ? " " + (st.title || "") : "", st && st.epic ? h("span", { class: "small", text: " · " + st.epic }) : null)));
+      var bits = [];
+      if (n.since) bits.push(L("desde ", "since ") + hhmm(n.since));
+      if (n.active_h !== null && n.active_h !== undefined) bits.push(fmtH(n.active_h) + " h" + (n.estimate_h ? " " + L("de ", "of ") + fmtH(n.estimate_h) + " h " + L("estimadas", "estimated") : ""));
+      if (n.last_t) bits.push(L("último cambio ", "last change ") + ago(n.last_t));
+      left.appendChild(h("span", { class: "small", text: bits.join(" · ") }));
+    } else {
+      left.appendChild(h("div", { class: "pulse" }, h("i", { class: "off", "aria-hidden": "true" }), h("span", null, L("trabajo fuera de una historia", "work outside a Story"), n.probable ? h("span", { class: "small", text: " · " + L("probablemente ", "probably ") + n.probable + " (" + L("inferido", "inferred") + ")" }) : null)));
+      if (n.last_t) left.appendChild(h("span", { class: "small", text: L("último cambio ", "last change ") + ago(n.last_t) }));
+    }
+    if (n.source) left.appendChild(h("span", { class: "small", text: L("fuente: ", "source: ") + who + (n.last_source === "hook" ? " (hook)" : n.last_source === "sample" ? " (" + L("muestreo", "sampling") + ")" : "") }));
+    left.appendChild(h("div", { class: "files" }, (n.files || []).map(function (p) { return h("span", { text: p }); })));
+  }
+  var right = h("div", null, h("span", { class: "k2", text: L("lo último", "last events") }));
+  var last = a && a.last ? a.last : (snap.recent || []).slice(0, 3);
+  if (!last.length) right.appendChild(h("span", { class: "small", text: L("nada todavía", "nothing yet") }));
+  last.forEach(function (e) { right.appendChild(h("span", { class: "small" }, h("span", { class: "mono", text: hhmm(e.at) + " " }), (e.actor === "human" ? L("tú", "you") + " · " : "") + (e.text || ""))); });
+  return h("section", { class: "now", "aria-label": L("ahora y lo último", "now and last") }, left, right);
+}
+function actNode(snap, n, small) {
+  var box = h("span", { class: "acts" });
+  var edit = editable(snap);
+  if (n.choices && n.choices.length) {
+    n.choices.forEach(function (c, i) {
+      var m = /gtt answer (\d+) (\d+)/.exec(c.command || "");
+      var label = (i + 1) + " · " + c.label;
+      if (edit && m) {
+        var b = h("button", { type: "button", class: "btn " + (i === 0 ? "pri" : ""), text: label });
+        b.addEventListener("click", function () {
+          if (BUSY[n.ref]) return; BUSY[n.ref] = true; b.textContent = "…";
+          ACT("pending.answer", { ref: m[1], answer: m[2] }).then(function (r) { BUSY[n.ref] = false; FORM_MSG[n.ref] = r.ok ? L("respondida", "answered") : (r.body && r.body.error) || L("no se pudo", "could not"); poll2(); });
+        });
+        box.appendChild(b);
+      } else box.appendChild(cmdLine(c.command));
+    });
+  } else if (n.command) box.appendChild(cmdLine(n.command));
+  else if (n.about) box.appendChild(aporte(snap, n.about, true));
+  if (FORM_MSG[n.ref]) box.appendChild(h("span", { class: "small", text: FORM_MSG[n.ref] }));
+  return box;
+}
+function poll2() { if (typeof poll === "function") poll(); }
+function needsBlock(snap) {
+  var st = readHash(); var items = needItems(snap); var all = st.na === "1";
+  var shown = all ? items : items.slice(0, 3);
+  var box = h("section", { class: "needs", "aria-labelledby": "needs-h" },
+    h("div", { class: "top" }, h("h2", { id: "needs-h", text: L("te necesito", "I need you") }), h("span", { class: "count", text: items.length }),
+      h("span", { class: "hint", text: L("Respondes aquí. Lo que cambia el diseño entra a la Bandeja; aprobar y promover se copian a tu terminal.", "You answer here. What changes the design goes to the Inbox; approve and promote are copied to your terminal.") })));
+  if (!items.length) box.appendChild(h("div", { class: "empty", text: L("Nada te espera.", "Nothing waits for you.") }));
+  shown.forEach(function (n) {
+    box.appendChild(h("div", { class: "nrow" }, h("span", { class: "ref", text: n.ref }),
+      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })), actNode(snap, n)));
+  });
+  if (items.length > 3) box.appendChild(h("div", { class: "nrow more" }, h("button", { type: "button", class: "btn ghost", on: { click: function () { go({ na: all ? "" : "1" }); } }, text: all ? L("ver menos", "see less") : L("ver todo (", "see all (") + items.length + ")" })));
+  return items.length ? box : null;
+}
+function shadowStrip(snap) {
+  var sh = snap.shadow; if (!sh || !sh.length) return null;
+  var paths = sh.map(function (x) { return x.path; });
+  var chat = L("Migra a gtt-domain/ el estado que vive fuera de él (" + paths.join(", ") + ") y archiva esos archivos en docs/archivo/ con «Reemplazado por gtt-domain/».", "Migrate the state that lives outside gtt-domain/ (" + paths.join(", ") + ") into it and archive those files in docs/archivo/ with “Replaced by gtt-domain/”.");
+  return h("div", { class: "shadow" }, L("Estado fuera de GTT: ", "State outside GTT: ") + paths.join(" · ") + L(" — Sonar no los lee. Pídele a claude que los migre: ", " — Sonar does not read them. Ask claude to migrate them: "), copyText(L("copiar texto para el chat", "copy text for the chat"), chat));
+}
+
+/* ---------- the Plan ---------- */
+var FILTERS = ["all", "define", "mine", "alerts", "doing", "blocked", "done"];
+function filterLabel(k) { return { all: L("todas", "all"), define: L("por definir", "to define"), mine: L("tuyas", "yours"), alerts: L("con alertas", "with alerts"), doing: L("en curso", "in progress"), blocked: L("bloqueadas", "blocked"), done: L("hechas", "done") }[k]; }
+function storyMatches(snap, s, k) {
+  var fs = findingsOf(snap, s.ref);
+  if (k === "all") return true;
+  if (k === "define") return s.ready === "to_define";
+  if (k === "mine") return fs.some(function (f) { return f.owner === "human"; });
+  if (k === "alerts") return (s.flags || []).length > 0 || (snap.findings || []).some(function (f) { return f.ref === s.ref && f.plane !== "definition"; }) || fs.some(function (f) { return f.level === "WARNING"; });
+  if (k === "doing") return s.status === "In Progress";
+  if (k === "blocked") return s.status === "Blocked" || s.ready === "blocked";
+  if (k === "done") return s.status === "Done";
+  return true;
+}
+function epicMatches(snap, e, k) {
+  if (k === "all") return true;
+  if (k === "define") return e.ready === "to_define" || epicFindings(snap, e).some(function (f) { return f.plane === "definition"; });
+  if (k === "mine") return epicFindings(snap, e).some(function (f) { return f.owner === "human"; });
+  if (k === "alerts") return (e.flags || []).length > 0 || epicFindings(snap, e).some(function (f) { return f.plane !== "definition" || f.level === "WARNING"; });
+  if (k === "doing") return e.state === "in_progress";
+  if (k === "blocked") return e.ready === "blocked";
+  if (k === "done") return e.state === "done";
+  return false;
+}
+function filterCounts(snap) {
+  var c = {}; FILTERS.forEach(function (k) { c[k] = (snap.stories || []).filter(function (s) { return storyMatches(snap, s, k); }).length; });
+  var rc = snap.readiness ? snap.readiness.counts : null;
+  if (rc) { c.define = rc.to_define; c.mine = rc.mine; }
+  return c;
+}
+function planFilters(snap) {
+  var st = readHash(); var cur = FILTERS.indexOf(st.f) >= 0 ? st.f : "all"; var counts = filterCounts(snap);
+  var row = h("div", { class: "filters", role: "group", "aria-label": L("filtros", "filters") });
+  FILTERS.forEach(function (k) {
+    row.appendChild(h("button", { type: "button", class: "chip" + (cur === k ? " on" : ""), "aria-pressed": cur === k ? "true" : "false", on: { click: function () { go({ f: k === "all" ? "" : k }); } } }, filterLabel(k), h("b", { text: counts[k] })));
+  });
+  var q = h("input", { type: "text", id: "plan-q", placeholder: L("buscar por id o título", "search by id or title"), "aria-label": L("buscar", "search"), value: st.q || "" });
+  q.value = st.q || "";
+  q.addEventListener("input", debounced(function (ev) { go({ q: ev.target.value }); }, 250));
+  row.appendChild(q);
+  var releases = distinct(snap.stories || [], "release"), groups = distinct(snap.epics || [], "group");
+  var g = st.g || "lane";
+  var sel = h("select", { id: "plan-g", "aria-label": L("agrupar por", "group by"), on: { change: function (ev) { go({ g: ev.target.value === "lane" ? "" : ev.target.value }); } } },
+    h("option", { value: "lane", text: L("agrupar por: frente", "group by: front"), selected: g === "lane" }),
+    releases.length > 0 ? h("option", { value: "release", text: L("agrupar por: release", "group by: release"), selected: g === "release" }) : null,
+    groups.length > 0 ? h("option", { value: "group", text: L("agrupar por: grupo", "group by: group"), selected: g === "group" }) : null);
+  row.appendChild(sel);
+  var timeline = (snap.epics || []).some(function (e) { return e.start || e.end || e.eta; });
+  if (timeline) row.appendChild(h("button", { type: "button", class: "chip", "aria-pressed": st.tl === "1" ? "true" : "false", on: { click: function () { go({ tl: st.tl === "1" ? "" : "1" }); } }, text: L("línea de tiempo", "timeline") }));
+  return row;
+}
+function epicGroupKey(snap, e, g) {
+  if (g === "release") { var rel = (e.releases && e.releases[0]) || null; return rel || L("sin release", "no release"); }
+  if (g === "group") return e.group || L("sin grupo", "no group");
+  return e.lane || "main";
+}
+function groupLabel(g, key) { return (g === "lane" ? L("frente ", "front ") : g === "release" ? "release " : L("grupo ", "group ")) + key; }
+function progressBar(e, snap) {
+  var total = (e.stories.done + e.stories.in_progress + e.stories.blocked + e.stories.planned) || 0;
+  var toDef = (snap.stories || []).filter(function (s) { return s.epic === e.ref && s.ready === "to_define" && s.status !== "Done" && s.status !== "Cancelled"; }).length;
+  var pct = e.percent === null || e.percent === undefined ? (total ? Math.round(100 * e.stories.done / total) : 0) : e.percent;
+  var bar = h("div", { class: "pbar", "aria-hidden": "true" });
+  var d = h("span", { class: "d" }); d.style.width = pct + "%"; bar.appendChild(d);
+  if (total && toDef) { var u = h("span", { class: "u" }); u.style.left = pct + "%"; u.style.width = Math.min(100 - pct, Math.round(100 * toDef / total)) + "%"; bar.appendChild(u); }
+  return h("div", null, bar, h("div", { class: "pct" }, h("span", { text: total ? pct + "%" : "—" }), h("span", { text: e.stories.done + "/" + total + " " + L("hechas", "done") })));
+}
+function epicTags(snap, e) {
+  var tags = [];
+  var stLabel = { in_progress: L("en curso", "in progress"), done: L("hecha", "done"), planned: L("planeada", "planned"), proposed: L("propuesta", "proposed") }[e.state] || e.state;
+  var isProp = e.raw_status === "Proposed" || e.state === "proposed";
+  tags.push(h("span", { class: "tag " + (isProp ? "hollowa" : e.state === "in_progress" ? "ok" : ""), text: isProp ? L("propuesta", "proposed") : stLabel }));
+  var own = (snap.findings || []).filter(function (f) { return f.ref === e.ref && f.plane === "definition"; });
+  var nDef = (snap.stories || []).filter(function (s) { return s.epic === e.ref && s.ready === "to_define" && s.status !== "Done" && s.status !== "Cancelled"; }).length + own.length;
+  if (own.some(function (f) { return f.code === "DEF-EPIC-DESIGN"; })) tags.push(h("span", { class: "tag hollow", text: L("sin diseño", "no design") }));
+  if (own.some(function (f) { return f.code === "DEF-EPIC-ESTIMATE"; })) tags.push(h("span", { class: "tag hollow", text: L("sin estimación", "no estimate") }));
+  if (nDef && !isProp) tags.push(h("span", { class: "tag hollow", text: nDef + " " + L("por definir", "to define") }));
+  var gaps = (snap.findings || []).filter(function (f) { return f.code === "GOV-GAP" && f.epic === e.ref; }).length;
+  if (gaps) tags.push(h("span", { class: "tag amber", text: gaps + " " + L(gaps > 1 ? "vacíos abiertos" : "vacío abierto", gaps > 1 ? "open gaps" : "open gap") }));
+  if (e.stories.blocked) tags.push(h("span", { class: "tag red", text: e.stories.blocked + " " + L(e.stories.blocked > 1 ? "bloqueadas" : "bloqueada", "blocked") }));
+  if (e.origin) tags.push(h("span", { class: "tag", text: T.bkOrigin + ": " + e.origin }));
+  if (e.priority && e.priority !== "normal") tags.push(h("span", { class: "tag " + (e.priority === "urgent" ? "amber" : ""), text: T.bkPriority + ": " + e.priority }));
+  return h("div", { class: "tags" }, tags);
+}
+function metaLine(pairs) {
+  var rows = pairs.filter(function (p) { return p[1] !== null && p[1] !== undefined && String(p[1]).trim() !== ""; });
+  if (!rows.length) return null;
+  return h("div", { class: "meta2" }, rows.map(function (p) { return h("span", null, h("span", { class: "mk", text: p[0] + ": " }), String(p[1])); }));
+}
+function epicMeta(e) {
+  return metaLine([[L("objetivo", "goal"), e.goal], [L("alcance", "scope"), e.scope], [L("fuera de alcance", "out of scope"), e.out_of_scope], [L("aprobada", "approved"), e.approved],
+    ["kind", e.kind], ["touches", e.touches], ["build", e.build], ["budget", e.budget], [L("diseño", "design"), e.design], [L("depende de", "depends on"), (e.depends || []).join(", ")],
+    ["release", (e.releases || []).join(", ")], [L("grupo", "group"), e.group], [L("estado derivado", "derived state"), e.derived]]);
+}
+function storyMeta(s) {
+  return metaLine([["implements", s.implements], ["done when", s.done_when], ["release", s.release], [L("frente", "front"), s.front], ["origin", s.origin], [L("cierre", "closed"), s.closed], [L("bloqueada por", "blocked by"), s.blocked_by]]);
+}
+function findRow(snap, f) {
+  var shown = f.text.length > 190 ? f.text.slice(0, 187) + "…" : f.text;
+  var row = h("div", { class: "find" }, lvlTag(f.level), h("span", { text: shown, title: f.text }), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }),
+    f.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null);
+  if (f.fix && f.fix.command) row.appendChild(cmdLine(f.fix.command));
+  if (f.fix && f.fix.about) row.appendChild(aporte(snap, f.ref, true));
+  return row;
+}
+function aporte(snap, ref, compact) {
+  var key = "about|" + ref;
+  var area = h("textarea", { rows: "2", placeholder: L("tu aporte sobre ", "your input on ") + ref, "aria-label": L("aporte sobre ", "input on ") + ref, maxlength: "2000", id: "ap-" + ref });
+  area.value = DRAFTS[key] || "";
+  var out = h("span", { class: "acts" });
+  function paint() {
+    DRAFTS[key] = area.value;
+    while (out.firstChild) out.removeChild(out.firstChild);
+    var text = area.value.trim(); if (!text) return;
+    if (editable(snap)) {
+      var send = h("button", { type: "button", class: "btn go", text: L("enviar a la Bandeja", "send to the Inbox") });
+      send.addEventListener("click", function () {
+        ACT("inbox.add", { text: text, about: ref }).then(function (r) { FORM_MSG[key] = r.ok ? L("enviado a la Bandeja", "sent to the Inbox") : (r.body && r.body.error) || L("no se pudo", "could not"); if (r.ok) { DRAFTS[key] = ""; area.value = ""; } paint(); poll2(); });
+      });
+      out.appendChild(send);
+    } else out.appendChild(cmdLine("gtt idea add --about " + ref + " '" + text.replace(/'/g, "'\\''") + "'"));
+    if (FORM_MSG[key]) out.appendChild(h("span", { class: "small", text: FORM_MSG[key] }));
+  }
+  area.addEventListener("input", paint); paint();
+  return h("span", { class: "aporte" }, area, out);
+}
+function fieldLabel(name) { return name; }
+function fieldsFor(snap, ref, defaults) {
+  var set = {}; var list = [];
+  var fs = ref.indexOf("EPIC-") === 0 ? (snap.findings || []).filter(function (f) { return f.ref === ref && f.plane === "definition"; }) : findingsOf(snap, ref);
+  fs.forEach(function (f) { (f.fix.fields || []).forEach(function (n) { if (!set[n]) { set[n] = 1; list.push(n); } }); });
+  (defaults || []).forEach(function (n) { if (!set[n]) { set[n] = 1; list.push(n); } });
+  return list;
+}
+function itemForm(snap, item, isEpic) {
+  var ref = item.ref;
+  var fs = isEpic ? (snap.findings || []).filter(function (f) { return f.ref === ref && f.plane === "definition"; }) : findingsOf(snap, ref);
+  var fields = fieldsFor(snap, ref, isEpic && (item.raw_status === "Proposed" || item.state === "proposed") ? ["Goal", "Scope", "Out of Scope"] : []);
+  var falta = fs.map(function (f) { return f.text; }).join(" · ");
+  var owners = {}; fs.forEach(function (f) { owners[f.owner] = 1; });
+  var form = h("div", { class: "form" + (owners.agent && !owners.human ? " agent" : "") });
+  form.appendChild(h("label", { text: L("falta", "missing") }));
+  form.appendChild(h("div", null, h("span", { class: owners.human ? "miss" : "missa", text: falta || L("nada", "nothing") }), " ", h("span", { class: "who", text: (owners.human ? L("te toca", "yours") : "") + (owners.human && owners.agent ? " · " : "") + (owners.agent ? L("le toca a claude", "the agent's") : "") })));
+  var edit = editable(snap);
+  if (edit) {
+    fields.forEach(function (name) {
+      var key = ref + "|" + name; var long = (name === "Done when" || name === "Goal" || name === "Scope" || name === "Out of Scope");
+      var id = "f-" + ref + "-" + name.replace(/\s+/g, "_");
+      form.appendChild(h("label", { for: id, text: fieldLabel(name) }));
+      var input = long ? h("textarea", { id: id, rows: "2" }) : h("input", { id: id, type: "text" });
+      input.placeholder = { Estimate: L("horas, p. ej. 1.5h", "hours, e.g. 1.5h"), Implements: "EPIC-001#R-1", "Blocked by": "ASK-001, GAP-004", "Done when": L("E-1 pasa · tests/test_x.py", "E-1 passes · tests/test_x.py"), Goal: L("el resultado que entrega", "the result it delivers"), Scope: L("qué incluye", "what is in"), "Out of Scope": L("lo que deliberadamente queda fuera", "what is deliberately left out"), Priority: "urgent | normal | low", Lane: "A" }[name] || "";
+      input.value = DRAFTS[key] !== undefined ? DRAFTS[key] : (isEpic ? ({ Goal: item.goal, Scope: item.scope, "Out of Scope": item.out_of_scope }[name] || "") : "");
+      input.addEventListener("input", function (ev) { DRAFTS[key] = ev.target.value; });
+      form.appendChild(input);
+    });
+  }
+  var acts = h("div", { class: "acts" });
+  if (edit && fields.length) {
+    var save = h("button", { type: "button", class: "btn go", text: isEpic ? L("guardar", "save") : L("guardar en el backlog", "save to the backlog") });
+    save.addEventListener("click", function () {
+      var values = {}; fields.forEach(function (n) { var v = DRAFTS[ref + "|" + n]; if (v !== undefined && String(v).trim()) values[n] = String(v).trim(); });
+      if (!Object.keys(values).length) { FORM_MSG[ref] = L("escribe algo primero", "write something first"); render(); return; }
+      if (BUSY[ref]) return; BUSY[ref] = true; save.textContent = "…";
+      ACT("backlog.set", { ref: ref, sha: item.sha, fields: values }).then(function (r) {
+        BUSY[ref] = false;
+        if (r.ok) { Object.keys(values).forEach(function (n) { delete DRAFTS[ref + "|" + n]; }); FORM_MSG[ref] = L("guardado", "saved") + (r.body && r.body.left ? " · " + L("falta: ", "still missing: ") + r.body.left : ""); }
+        else if (r.status === 409) FORM_MSG[ref] = L("el backlog cambió mientras escribías: no se guardó nada. Revisa y vuelve a intentarlo.", "the backlog changed while you typed: nothing was saved. Check and try again.");
+        else FORM_MSG[ref] = (r.body && r.body.error) || L("no se pudo guardar", "could not save");
+        poll2(); render();
+      });
+    });
+    acts.appendChild(save);
+  }
+  var chat = isEpic ? ((fs.filter(function (f) { return f.fix && f.fix.chat; }).map(function (f) { return f.fix.chat; }).join(" ")) || null) : storyChat(snap, item);
+  if (chat) acts.appendChild(copyText(edit ? L("o pedírselo a claude: copiar para el chat", "or ask claude: copy for the chat") : L("copiar para el chat", "copy for the chat"), chat));
+  fs.forEach(function (f) { if (f.fix && f.fix.command) acts.appendChild(cmdLine(f.fix.command)); });
+  if (FORM_MSG[ref]) acts.appendChild(h("span", { class: "small", text: FORM_MSG[ref] }));
+  form.appendChild(h("div", { class: "acts-row" }, acts));
+  var hint = edit ? (isEpic ? L("Cuando tenga diseño, la aprobación se copia a tu terminal.", "Once it has a design, the approval is copied to your terminal.") : L("Se guarda con la operación backlog.set (tu acto). Si el backlog cambió mientras escribías, te avisa y no pisa nada.", "It is saved through the backlog.set operation (your act). If the backlog changed while you typed, it tells you and overwrites nothing."))
+    : L("Esta página es de solo lectura: copia el texto y pégalo en el chat, o abre «gtt sonar» para llenarlo aquí.", "This page is read only: copy the text into the chat, or open `gtt sonar` to fill it here.");
+  form.appendChild(h("div", { class: "hint" }, hint));
+  return form;
+}
+function storyRow(snap, s) {
+  var undefd = s.ready === "to_define", blocked = s.ready === "blocked" || s.status === "Blocked";
+  var stLabel = { "In Progress": L("en curso", "in progress"), Done: L("hecha", "done"), Planned: L("planeada", "planned"), Blocked: L("bloqueada", "blocked"), Cancelled: L("cancelada", "cancelled") }[s.status] || s.status;
+  var readyNode = s.status === "Done" || s.status === "Cancelled" ? h("span", { class: "st", text: "" })
+    : undefd ? h("span", { class: "tag hollow", text: L("por definir", "to define") }) : blocked ? h("span", { class: "tag red", text: L("bloqueada", "blocked") }) : s.ready === "ready" ? h("span", { class: "ready", text: L("lista ✓", "ready ✓") }) : h("span", { class: "st", text: "" });
+  var hrs = (s.estimate_h !== null && s.estimate_h !== undefined ? fmtH(s.estimate_h) + " h" : "?") + " · " + (s.active_h !== null && s.active_h !== undefined ? fmtH(s.active_h) + " h" : "—");
+  var title = h("span", { class: "rt" }, h("span", { class: "mono", text: s.ref }), copyRef(s.ref), " " + (s.title || ""), s.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null);
+  var smeta = storyMeta(s);
+  var cls = (undefd ? "undef" : "") + (blocked ? " blocked" : "") + (s.next ? " nxt" : "");
+  var tr = h("div", { class: "srow2 " + cls, id: "s-" + s.ref }, h("div", { class: "c1" }, title, smeta), h("div", { class: "st", text: stLabel }), h("div", null, readyNode), h("div", { class: "hrs", text: s.status === "Done" ? hrs : hrs }));
+  var wrap = h("div", { class: "sitem" }, tr);
+  if (undefd || blocked) {
+    if (undefd) wrap.appendChild(itemForm(snap, s, false));
+    else {
+      var fs = findingsOf(snap, s.ref);
+      var note = h("div", { class: "blockedinfo" }, fs.map(function (f) { return findRow(snap, f); }));
+      if (!fs.length && s.blocked_by) note.appendChild(h("span", { class: "small", text: L("bloqueada: ", "blocked: ") + s.blocked_by }));
+      wrap.appendChild(note);
+    }
+    var human = findingsOf(snap, s.ref).filter(function (f) { return f.owner === "human" && f.fix && f.fix.about; });
+    human.forEach(function (f) { wrap.appendChild(h("div", { class: "aportebox" }, h("span", { class: "small", text: f.text + " · " + L("te toca · aporte:", "yours · input:") }), aporte(snap, f.code.indexOf("GAP") >= 0 ? (f.text.match(/GAP-\d+/) || [s.ref])[0] : s.ref))); });
+  }
+  return wrap;
+}
+function epicBlock(snap, e, open) {
+  var isProp = e.raw_status === "Proposed" || e.state === "proposed";
+  var st = readHash();
+  var head = h("button", { type: "button", class: "ehead", "aria-expanded": open ? "true" : "false", "aria-label": (open ? L("cerrar ", "close ") : L("abrir ", "open ")) + e.ref, on: { click: function () {
+    var cur = (st.open || "").split(",").filter(Boolean); var i = cur.indexOf(e.ref); var closedSet = (st.shut || "").split(",").filter(Boolean);
+    if (open) { closedSet.push(e.ref); cur = cur.filter(function (x) { return x !== e.ref; }); } else { cur.push(e.ref); closedSet = closedSet.filter(function (x) { return x !== e.ref; }); }
+    go({ open: cur.join(","), shut: closedSet.join(",") }); } } },
+    h("span", { class: "chev", text: open ? "v" : ">" }), h("span", { class: "mono eref", text: e.ref }),
+    h("span", { class: "etitle" }, h("span", { class: "t", text: e.title || e.ref }), epicTags(snap, e)),
+    progressBar(e, snap),
+    h("span", { class: "hrs" }, h("span", null, h("b", { text: e.estimate_h ? fmtH(e.estimate_h) : "—" }), " h " + L("estimadas", "estimated")), h("br"),
+      h("span", { text: fmtH(e.active_h !== null && e.active_h !== undefined ? e.active_h : e.real_h) + " h " + (e.active_h !== null && e.active_h !== undefined ? L("activas", "active") : L("reales", "real")) })),
+    h("span", { class: "hrs" }, h("span", { class: "small", text: L("fin estimado", "estimated end") }), h("br"),
+      h("b", { text: e.state === "done" ? (fmtDate(e.end) || "—") : (fmtRange(e.eta_range) ? fmtRange(e.eta_range) + " (" + L("sin calibrar", "uncalibrated") + ")" : (e.eta ? fmtDate(e.eta) : L("sin fecha", "no date"))) })));
+  var box = h("section", { class: "epic" + (isProp ? " prop" : ""), id: "e-" + e.ref });
+  box.appendChild(h("div", { class: "ehead-wrap" }, head, copyRef(e.ref)));
+  if (open) {
+    var own = epicFindings(snap, e);
+    var em = epicMeta(e); if (em) box.appendChild(h("div", { class: "efind" }, em));
+    if (own.length) box.appendChild(h("div", { class: "efind" }, own.map(function (f) { return findRow(snap, f); })));
+    if (isProp && editable(snap)) box.appendChild(h("div", { class: "efind" }, itemForm(snap, e, true)));
+    else if (isProp) box.appendChild(h("div", { class: "efind" }, itemForm(snap, e, true)));
+    var q = (st.q || "").toLowerCase(); var k = FILTERS.indexOf(st.f) >= 0 ? st.f : "all";
+    var rows = (snap.stories || []).filter(function (s) { return s.epic === e.ref && storyMatches(snap, s, k) && (!q || (s.ref + " " + (s.title || "")).toLowerCase().indexOf(q) >= 0); });
+    if (rows.length) box.appendChild(h("div", { class: "stories" }, rows.map(function (s) { return storyRow(snap, s); })));
+    else if (k !== "all") box.appendChild(h("div", { class: "empty small", text: L("ninguna historia coincide con el filtro", "no Story matches the filter") }));
+  }
+  return box;
+}
+function timelinePanel(snap) {
+  var rows = (snap.epics || []).filter(function (e) { return e.start || e.end || e.eta; });
+  var box = h("div", { class: "panel tl" }, h("h2", { class: "sec", text: L("línea de tiempo", "timeline") }));
+  rows.forEach(function (e) {
+    box.appendChild(h("div", { class: "row" }, h("span", { class: "ref", text: e.ref }), h("div", { class: "grow2" }, h("b", { text: e.title || e.ref })),
+      h("span", { class: "mono small", text: (fmtDate(e.start) || "—") + " → " + (e.state === "done" ? (fmtDate(e.end) || "—") : (fmtRange(e.eta_range) ? fmtRange(e.eta_range) + " (" + L("sin calibrar", "uncalibrated") + ")" : (fmtDate(e.eta) || "—"))) })));
+  });
+  return box;
+}
+function viewPlan() {
+  var st = readHash(); var snap = currentSnap();
+  if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var nEpics = (snap.epics || []).length, nStories = (snap.stories || []).length;
-  return h("main", null,
-    h("div", { class: "head" }, h("h1", { text: T.bkTitle }),
-      h("p", { class: "sub", text: nEpics + " " + T.bkEpics + " · " + nStories + " " + T.bkStories + " — " + T.bkSub }),
-      OK.length > 1 ? h("div", null, h("label", { class: "sr", for: "repo-pick", text: T.project }), select) : null),
-    h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);padding-bottom:0;min-height:36px", "aria-label": T.backlog }, tabLink("sum", T.bkSum), tabLink("work", T.bkWork), tabLink("adr", T.bkAdr), tabLink("inbox", T.bkInbox), tabLink("design", T.bkDesign)),
-    tab === "design" ? backlogDesign(snap, st) : tab === "adr" ? backlogAdr(snap, st) : tab === "inbox" ? backlogInbox(snap) : tab === "work" ? backlogWork(snap, st) : backlogSummary(snap));
+  var px = snap.project_extra || {};
+  var meta = [snap.project.profile];
+  if (px.method && px.method.style && px.method.style !== "OPEN") meta.push(L("método ", "method ") + [].concat(px.method.style).join(" + ") + (px.method.status ? " (" + px.method.status + ")" : ""));
+  else if (px.method) meta.push(L("método sin fijar", "method not set"));
+  if (px.ades && px.ades.participating) meta.push("ADE " + [].concat(px.ades.participating).join(", "));
+  if (snap.repo_state && snap.repo_state.dirty) meta.push(snap.repo_state.dirty + " " + L("sin commit", "uncommitted"));
+  meta.push(nEpics + " " + L("épicas", "Epics") + " · " + nStories + " " + L("historias", "Stories"));
+  var head = h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }),
+    h("div", { class: "headrow" }, h("h1", { text: snap.repo.name }), h("span", { class: "tag dev", text: snap.project.phase }), h("span", { class: "small", text: meta.filter(Boolean).join(" · ") })));
+  var main = h("main", { id: "plan" }, head);
+  var dn = degradedNote(snap); if (dn) main.appendChild(dn);
+  main.appendChild(figures(snap)); main.appendChild(nowBlock(snap));
+  var nb = needsBlock(snap); if (nb) main.appendChild(nb);
+  var sh = shadowStrip(snap); if (sh) main.appendChild(sh);
+  main.appendChild(h("div", { class: "secline" }, h("h2", { class: "sec", text: "plan" }), h("span", { class: "small", text: L("en el orden en que se construye, por " + (st.g === "release" ? "release" : st.g === "group" ? "grupo" : "frente"), "in the order it is built, by " + (st.g === "release" ? "release" : st.g === "group" ? "group" : "front")) })));
+  main.appendChild(planFilters(snap));
+  if (st.tl === "1") main.appendChild(timelinePanel(snap));
+  var g = st.g === "release" || st.g === "group" ? st.g : "lane"; var k = FILTERS.indexOf(st.f) >= 0 ? st.f : "all"; var q = (st.q || "").toLowerCase();
+  var opened = {}; (st.open || "").split(",").filter(Boolean).forEach(function (r) { opened[r] = true; });
+  var shut = {}; (st.shut || "").split(",").filter(Boolean).forEach(function (r) { shut[r] = true; });
+  var order = [], buckets = {};
+  (snap.epics || []).forEach(function (e) {
+    var visibleStories = (snap.stories || []).filter(function (s) { return s.epic === e.ref && storyMatches(snap, s, k) && (!q || (s.ref + " " + (s.title || "")).toLowerCase().indexOf(q) >= 0); });
+    var epicHit = (k === "all" ? true : epicMatches(snap, e, k)) && (!q || (e.ref + " " + (e.title || "")).toLowerCase().indexOf(q) >= 0);
+    if (k === "all" && !q) epicHit = true;
+    if (!visibleStories.length && !epicHit) return;
+    var key = epicGroupKey(snap, e, g); if (!buckets[key]) { buckets[key] = []; order.push(key); }
+    buckets[key].push(e);
+  });
+  if (!order.length) main.appendChild(h("div", { class: "empty", text: nEpics ? L("Nada coincide con el filtro.", "Nothing matches the filter.") : T.noplan }));
+  order.forEach(function (key) {
+    var stat = null;
+    if (g === "release") stat = ((snap.summary && snap.summary.releases) || []).filter(function (r) { return r.name === key; })[0];
+    else if (g === "group") stat = ((snap.summary && snap.summary.groups) || []).filter(function (r) { return r.id === key; })[0];
+    var statText = stat ? (g === "release" ? stat.done + "/" + stat.total + " " + L("historias", "Stories") + (stat.hours_total ? " · " + fmtH(stat.hours_done) + "/" + fmtH(stat.hours_total) + " h" : "") + (stat.scope === "out" ? " · " + L("fuera de alcance", "out of scope") : "")
+      : stat.stories_done + "/" + stat.stories_total + " " + L("historias", "Stories") + " · " + stat.epics + " " + L("épicas", "Epics") + (stat.pct !== null && stat.pct !== undefined ? " · " + stat.pct + "%" : "")) : null;
+    main.appendChild(h("div", { class: "lane" }, groupLabel(g, key), statText ? h("span", { class: "gs", text: statText }) : null));
+    buckets[key].forEach(function (e) {
+      var needsOpen = e.state === "in_progress" || e.ready === "to_define" || e.ready === "blocked" || e.raw_status === "Proposed" || k !== "all" || !!q;
+      var open = shut[e.ref] ? false : (opened[e.ref] || needsOpen);
+      main.appendChild(epicBlock(snap, e, open));
+    });
+  });
+  main.appendChild(h("div", { class: "foot", text: L("Sonar no decide nada: guarda lo que tú escribes por las operaciones de GTT, y aprobar, promover y congelar siguen en tu terminal.", "Sonar decides nothing: it saves what you write through GTT's operations, and approve, promote and freeze stay in your terminal.") }));
+  return main;
+}
+
+/* ---------- the Inbox (Bandeja): ideas, proposals, ADR drafts, and what the agent still owes them ---------- */
+function viewInbox() {
+  var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Bandeja", "Inbox") }), h("span", { class: "small", text: snap.repo.name }))));
+  var mc = mineChip(snap); if (mc) main.appendChild(mc);
+  main.appendChild(inboxPanel(snap));
+  var owed = (snap.findings || []).filter(function (f) { return f.code.indexOf("DEF-INBOX-") === 0; });
+  if (owed.length) {
+    var box = h("div", { class: "panel" });
+    owed.forEach(function (f) { box.appendChild(h("div", { class: "row" }, h("a", { class: "ref", href: "#/view=inbox&card=" + encodeURIComponent(f.ref), text: f.ref }), h("div", { class: "grow2" }, h("span", { text: f.text })), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) }), f.fix && f.fix.chat && f.owner === "agent" ? copyText(L("copiar para el chat", "copy for the chat"), f.fix.chat) : null)); });
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("por definir en la Bandeja", "to define in the Inbox")), box));
+  }
+  main.appendChild(ideasForm(snap));
+  return main;
+}
+function ideasForm(snap) {
+  var area = h("textarea", { id: "idea-text", rows: "3", "aria-label": T.ideaLabel, placeholder: T.ideaLabel, maxlength: "4000" });
+  area.value = draftGet();
+  var out = h("div", { id: "idea-cmd" });
+  function paint() {
+    draftSet(area.value);
+    while (out.firstChild) out.removeChild(out.firstChild);
+    if (!area.value.trim()) return;
+    if (editable(snap)) {
+      var send = h("button", { type: "button", class: "btn go", text: L("enviar a la Bandeja", "send to the Inbox") });
+      send.addEventListener("click", function () { ACT("inbox.add", { text: area.value.trim() }).then(function (r) { FORM_MSG.idea = r.ok ? L("enviada", "sent") : (r.body && r.body.error) || L("no se pudo", "could not"); if (r.ok) { area.value = ""; draftSet(""); } paint(); poll2(); }); });
+      out.appendChild(send);
+      if (FORM_MSG.idea) out.appendChild(h("span", { class: "small", text: FORM_MSG.idea }));
+    } else out.appendChild(cmdBlock(ideaCommand(area.value)));
+  }
+  area.addEventListener("input", paint); paint();
+  return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.newIdea),
+    h("div", { class: "panel", style: "padding:14px 18px;display:flex;flex-direction:column;gap:10px" }, area, h("span", { class: "small", text: editable(snap) ? L("Se envía como una IDEA a la Bandeja (inbox.add): la ratificación sigue siendo tuya.", "It is sent as an IDEA to the Inbox (inbox.add): ratifying stays yours.") : T.ideaHint }), out));
+}
+
+/* ---------- Activity: one block per day, everything together, filtered by who did it ---------- */
+function actorKey(e) { return e.actor === "agent" ? "claude" : e.actor === "human" ? "human" : e.actor === "gtt" ? "gtt" : "none"; }
+function viewActivity() {
+  var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var st = readHash(); var a = snap.activity;
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Actividad", "Activity") }), h("span", { class: "small", text: snap.repo.name }))));
+  main.appendChild(nowBlock(snap));
+  if (!a) { main.appendChild(h("div", { class: "empty", text: L("sin dato: actualiza GTT en este repo.", "no data: update GTT in this repo.") })); return main; }
+  var cur = ["all", "claude", "human", "gtt", "none"].indexOf(st.act) >= 0 ? st.act : "all";
+  var label = { all: L("todo", "all"), claude: "claude", human: L("tú", "you"), gtt: "gtt", none: L("sin atribuir", "unattributed") };
+  var chips = h("div", { class: "filters" });
+  Object.keys(label).forEach(function (k) { chips.appendChild(h("button", { type: "button", class: "chip" + (cur === k ? " on" : ""), "aria-pressed": cur === k ? "true" : "false", on: { click: function () { go({ act: k === "all" ? "" : k }); } }, text: label[k] })); });
+  main.appendChild(chips);
+  var events = (a.events || []).filter(function (e) { return cur === "all" || actorKey(e) === cur; });
+  var box = h("div", { class: "panel" }); var day = null;
+  if (!events.length) box.appendChild(h("div", { class: "empty", text: L("Nada que mostrar.", "Nothing to show.") }));
+  events.forEach(function (e) {
+    var d = (e.at || "").slice(0, 10);
+    if (d !== day) { day = d; box.appendChild(h("h3", { class: "dayh", text: d || "—" })); }
+    box.appendChild(h("div", { class: "ev" }, h("time", { text: hhmm(e.at) }), h("span", { class: "dot " + (e.actor === "agent" ? "agent" : e.actor === "human" ? "human" : e.actor === "gtt" ? "gtt" : "unknown"), "aria-hidden": "true" }),
+      h("span", { text: e.text || "" }), h("span", { class: "small", text: " · " + label[actorKey(e)] })));
+  });
+  main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("lo que pasó", "what happened")), box));
+  var runs = a.runs || [];
+  if (runs.length) {
+    var rb = h("div", { class: "panel" });
+    runs.forEach(function (r) { rb.appendChild(h("div", { class: "ev" }, h("time", { text: hhmm(r.at || r.t) }), h("span", { class: "mono small", text: r.run || r.id || "RUN" }), h("span", { class: "tag " + (r.ok === false || r.status === "failed" ? "red" : "ok"), text: r.ok === false || r.status === "failed" ? L("falló", "failed") : L("corrió", "ran") }), h("span", { class: "small", text: r.detail || r.title || "" }))); });
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("gtt run: resultado", "gtt run: result")), rb));
+  }
+  if (a.session) main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("lo que vio claude", "what claude saw")),
+    h("div", { class: "panel", style: "padding:12px 16px" }, h("span", { class: "small", text: L("session.md de su última sesión · ", "session.md of its last session · ") + hhmm(a.session.at) + " · " + L("solo lectura", "read only") }), h("pre", { class: "sessionpre", text: (a.session.lines || []).join("\n") }))));
+  return main;
+}
+
+/* ---------- Health: every finding by plane, with a link to its item, and the state of each check ---------- */
+function viewHealth() {
+  var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Salud", "Health") }), h("span", { class: "small", text: snap.repo.name }))));
+  var dn = degradedNote(snap); if (dn) main.appendChild(dn);
+  var planes = [["governance", L("gobierno", "governance")], ["delivery", L("entrega", "delivery")], ["definition", L("definición", "definition")], ["code", L("código", "code")]];
+  planes.forEach(function (p) {
+    var rows = (snap.findings || []).filter(function (f) { return f.plane === p[0]; });
+    if (!rows.length && p[0] === "code") return;
+    var box = h("div", { class: "panel sigs" });
+    if (!rows.length) box.appendChild(h("div", { class: "empty", text: L("nada que avisar", "nothing to report") }));
+    rows.forEach(function (f) {
+      var target = (f.epic || (f.ref.indexOf("EPIC-") === 0 || f.ref.indexOf("STORY-") === 0 ? f.ref : null));
+      var href = target ? "#/view=plan&q=" + encodeURIComponent(f.ref.indexOf("STORY-") === 0 ? f.ref : target) : (f.code.indexOf("DEF-INBOX-") === 0 ? "#/view=inbox&card=" + encodeURIComponent(f.ref) : null);
+      box.appendChild(h("div", { class: "sig" }, lvlTag(f.level), href ? h("a", { class: "ref", href: href, text: f.ref }) : h("span", { class: "ref", text: f.ref }), h("span", { class: "mono small", text: f.code }), h("span", { text: f.text }),
+        h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" })));
+    });
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + rows.length), box));
+  });
+  var hp = healthPanel(snap); if (hp) main.appendChild(hp);
+  else main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), h("div", { class: "panel empty", text: L("Aún no hay resultados de chequeos: corre gtt-validate.sh.", "No check results yet: run gtt-validate.sh.") })));
+  return main;
+}
+
+/* ---------- Design: the governed context, the adopted ADR and the decisions ---------- */
+function viewDesign() {
+  var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var st = readHash(); var tab = ["docs", "adr"].indexOf(st.dt) >= 0 ? st.dt : "docs";
+  function tl(id, label) { var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.dt = id; var a = h("a", { href: "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&"), text: label }); if (tab === id) a.setAttribute("aria-current", "page"); return a; }
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Diseño", "Design") }), h("span", { class: "small", text: snap.repo.name }))),
+    h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);min-height:36px", "aria-label": L("Diseño", "Design") }, tl("docs", L("Contexto y diseño por épica", "Context and design by Epic")), tl("adr", L("Decisiones", "Decisions"))));
+  if (tab === "adr") { main.appendChild(decisionsPanel(snap)); main.appendChild(backlogAdr(snap, st)); }
+  else main.appendChild(backlogDesign(snap, st));
+  return main;
+}
+
+/* ---------- Portfolio: only with 2 repos or more ---------- */
+function viewPortfolio2() {
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar --all" }), h("div", { class: "headrow" }, h("h1", { text: L("Portafolio", "Portfolio") }), h("span", { class: "small", text: OK.length + " " + L("proyectos", "projects") }))));
+  var rows = h("tbody");
+  OK.forEach(function (s) {
+    var rc = s.readiness ? s.readiness.counts : null; var hn = healthN(s);
+    var href = "#/view=plan&repo=" + encodeURIComponent(s.repo.path);
+    var needs = (s.needs_you || []).length;
+    rows.appendChild(h("tr", null, h("td", null, h("a", { href: href, text: s.repo.name })), h("td", { class: "mono", text: s.suite_version || "—" }), h("td", null, h("span", { class: "tag " + (s.project.phase === "DEV" ? "dev" : "think"), text: s.project.phase })),
+      h("td", { class: "mono", text: s.summary.progress_pct === null ? "—" : s.summary.progress_pct + "%" }), h("td", { class: "mono", text: String(needs) }), h("td", { class: "mono", text: rc ? rc.to_define + " (" + rc.mine + " " + L("tuyas", "yours") + ")" : L("sin dato", "no data") }),
+      h("td", { class: "mono", text: String(hn.n) }), h("td", null, inboxWords(s))));
+  });
+  var head = ["proyecto", "suite", "fase", "avance", "te necesito", "por definir", "alertas", "bandeja"].map(function (x, i) { return h("th", { text: L(x, ["project", "suite", "phase", "progress", "I need you", "to define", "alerts", "inbox"][i]) }); });
+  main.appendChild(h("div", { class: "panel tablewrap" }, h("table", null, h("thead", null, h("tr", null, head)), rows)));
+  return main;
+}
+
+
+/* ---------- Code (1.26): what was built, and whether it respects the architecture ---------- */
+var SVGNS = ["http:", "", "www.w3.org", "2000", "svg"].join("/");
+function svgEl(tag, attrs) { var el = document.createElementNS(SVGNS, tag); Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, String(attrs[k])); }); return el; }
+function codeFilter(st) { return ["all", "freeze", "yesterday"].indexOf(st.cs) >= 0 ? st.cs : "all"; }
+function fileStatus(f, since) { return since === "freeze" ? f.freeze : since === "yesterday" ? f.yesterday : f.status; }
+function viewCode() {
+  var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var st = readHash(); var code = snap.code;
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar · " + L("código", "code") }),
+    h("div", { class: "headrow" }, h("h1", { text: L("Lo construido", "What was built") }), h("span", { class: "small", text: snap.repo.name }))));
+  if (!code || !code.modules) {
+    main.appendChild(h("div", { class: "stale", role: "status", text: L("sin dato: actualiza GTT en este repo (gtt update) para ver el mapa del código.", "no data: update GTT in this repo (gtt update) to see the map of the code.") }));
+    return main;
+  }
+  main.appendChild(h("p", { class: "small", text: L("Módulos de stack.md (5. Dependency rules) contra las importaciones reales del código. Calculado a partir de archivos; nada se guarda en el repo.", "Modules of stack.md (5. Dependency rules) against the real imports of the code. Computed from files; nothing is stored in the repo.") }));
+  var since = codeFilter(st); var epicSel = st.ce || "";
+  var chips = h("div", { class: "filters" });
+  function chip(label, patch, on) { chips.appendChild(h("button", { type: "button", class: "chip" + (on ? " on" : ""), "aria-pressed": on ? "true" : "false", on: { click: function () { go(patch); } }, text: label })); }
+  chip(L("todo el código", "all the code"), { ce: "", cs: "" }, !epicSel && since === "all");
+  Object.keys(code.epics || {}).forEach(function (e) { chip(e + " " + (code.epics[e].title || ""), { ce: epicSel === e ? "" : e }, epicSel === e); });
+  chip(L("desde el freeze", "since the freeze"), { cs: since === "freeze" ? "" : "freeze" }, since === "freeze");
+  chip(L("desde ayer", "since yesterday"), { cs: since === "yesterday" ? "" : "yesterday" }, since === "yesterday");
+  main.appendChild(chips);
+  var mods = code.modules; var maxLayer = 0; mods.forEach(function (m) { if (m.layer > maxLayer) maxLayer = m.layer; });
+  var rows = {}; mods.forEach(function (m) { (rows[m.layer] = rows[m.layer] || []).push(m); });
+  var BW = 200, BH = 82, GX = 56, GY = 70, PAD = 24;
+  var widest = 0; Object.keys(rows).forEach(function (k) { if (rows[k].length > widest) widest = rows[k].length; });
+  var W = PAD * 2 + widest * BW + (widest - 1) * GX, Hh = PAD * 2 + (maxLayer + 1) * BH + maxLayer * GY;
+  var pos = {};
+  Object.keys(rows).forEach(function (k) {
+    var layer = +k, list = rows[k]; var rowW = list.length * BW + (list.length - 1) * GX; var x0 = (W - rowW) / 2;
+    list.forEach(function (m, i) { pos[m.path] = { x: x0 + i * (BW + GX), y: PAD + (maxLayer - layer) * (BH + GY) }; });
+  });
+  var epicFiles = epicSel && code.epics && code.epics[epicSel] ? code.epics[epicSel].files : null;
+  function touched(m) {
+    if (epicFiles) return m.detail.some(function (f) { return epicFiles.indexOf(f.file) >= 0; }) || m.stories.some(function (s) { return (code.epics[epicSel].stories || []).indexOf(s) >= 0; });
+    if (since !== "all") return m.detail.some(function (f) { return !!fileStatus(f, since); });
+    return false;
+  }
+  var box = h("div", { class: "panel codemap", style: "padding:18px;overflow-x:auto" }, h("h2", { class: "sec", text: L("mapa de módulos", "module map") }));
+  var wrap = h("div", { class: "mapwrap", style: "position:relative;width:" + W + "px;height:" + Hh + "px;margin-top:10px" });
+  var svg = svgEl("svg", { width: W, height: Hh, viewBox: "0 0 " + W + " " + Hh, "aria-hidden": "true" });
+
+  (code.edges || []).forEach(function (e) {
+    var a = pos[e.from], b = pos[e.to]; if (!a || !b) return;
+    var same = a.y === b.y; var x1, y1, x2, y2;
+    if (same) { x1 = a.x < b.x ? a.x + BW : a.x; y1 = a.y + BH / 2; x2 = a.x < b.x ? b.x : b.x + BW; y2 = b.y + BH / 2; }
+    else { var down = b.y > a.y; x1 = a.x + BW / 2; y1 = down ? a.y + BH : a.y; x2 = b.x + BW / 2; y2 = down ? b.y : b.y + BH; }
+    var bad = e.allowed === false; var hit = !bad && ((epicFiles || since !== "all") && mods.some(function (m) { return (m.path === e.from) && touched(m); }));
+    var color = bad ? "#F87171" : hit ? "#2DD4BF" : "#50647C";
+    var line = svgEl("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color, "stroke-width": bad ? 2 : hit ? 2 : 1.5 });
+    var ang = Math.atan2(y2 - y1, x2 - x1), hx = 9, hy = 5;      /* the arrowhead is drawn by hand: no markers */
+    var head = svgEl("polygon", { points: [x2, y2, x2 - hx * Math.cos(ang) + hy * Math.sin(ang), y2 - hx * Math.sin(ang) - hy * Math.cos(ang), x2 - hx * Math.cos(ang) - hy * Math.sin(ang), y2 - hx * Math.sin(ang) + hy * Math.cos(ang)].join(" "), fill: color });
+    if (bad) line.setAttribute("stroke-dasharray", "6 4");
+    var tt = svgEl("title"); tt.textContent = e.from + " → " + e.to + " · " + e.count + "× · " + e.example; line.appendChild(tt);
+    svg.appendChild(line); svg.appendChild(head);
+  });
+  wrap.appendChild(svg);
+  mods.forEach(function (m) {
+    var p = pos[m.path]; var sel = st.cm === m.path; var hot = touched(m);
+    var newN = since === "all" ? m.new : m.detail.filter(function (f) { return fileStatus(f, since) === "new"; }).length;
+    var chgN = since === "all" ? m.changed : m.detail.filter(function (f) { return !!fileStatus(f, since); }).length;
+    var el = h("button", { type: "button", class: "mod" + (hot ? " hot" : "") + (m.empty ? " empty" : "") + (sel ? " sel" : ""), "aria-pressed": sel ? "true" : "false", "aria-label": m.path,
+      on: { click: function () { go({ cm: sel ? "" : m.path }); } }, style: "left:" + p.x + "px;top:" + p.y + "px;width:" + BW + "px;height:" + BH + "px" },
+      h("b", { class: "mono", text: m.path.replace(/\/$/, "") }),
+      m.empty ? h("span", { text: L("declarado · vacío", "declared · empty") }) : h("span", { text: m.files + " " + L("archivos", "files") + (m.classes !== null && m.classes !== undefined ? " · " + m.classes + " " + L("clases", "classes") : "") }),
+      !m.empty ? h("span", { class: hot ? "hotl" : "", text: (newN ? newN + " " + L("nuevas", "new") : chgN ? chgN + " " + L("cambiadas", "changed") : L("sin cambios", "no changes")) + (m.stories.length ? " · " + m.stories.slice(0, 2).join(", ") : "") }) : null);
+    wrap.appendChild(el);
+  });
+  if (code.outside && code.outside.length) {
+    var o = h("div", { class: "mod out", style: "right:0;bottom:0;width:" + BW + "px;height:" + BH + "px" }, h("b", { class: "mono", text: L("fuera de todo módulo", "outside every module") }), h("span", { text: code.outside.length + " " + L("archivos", "files") }));
+    wrap.appendChild(o);
+  }
+  box.appendChild(wrap);
+  box.appendChild(h("div", { class: "legend", style: "margin-top:14px" }, h("span", { text: "── " + L("depende, permitido", "depends, allowed") }), h("span", { class: "okc", text: "── " + L("tocado por lo filtrado", "touched by the filter") }), h("span", { class: "badc", text: "- - " + L("depende sin estar permitido", "depends and is not allowed") }),
+    h("span", { text: L("borde punteado: declarado sin código, o código sin módulo", "dashed: declared with no code, or code with no module") })));
+  var right = h("div", { class: "panel", style: "padding:16px 18px;display:flex;flex-direction:column;gap:10px" }, h("h2", { class: "sec", text: L("¿respeta la arquitectura?", "does it respect the architecture?") }));
+  var fs = (snap.findings || []).filter(function (f) { return f.plane === "code" || f.code === "GTT-MODULES" || f.code === "GTT-DEPENDS"; });
+  if (!fs.length) right.appendChild(h("span", { class: "small", text: L("Nada que avisar: las dependencias reales caben en lo que stack.md permite.", "Nothing to report: the real dependencies fit what stack.md allows.") }));
+  fs.forEach(function (f) { right.appendChild(h("div", { class: "find" }, lvlTag(f.level), h("span", { text: f.text }), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: f.owner ? ownerWord(f.owner) : L("informativo", "informative") }))); });
+  var top = h("div", { class: "codegrid" }, box, right);
+  main.appendChild(top);
+  var selMod = mods.filter(function (m) { return m.path === st.cm; })[0];
+  if (selMod) {
+    var table = h("table", null, h("thead", null, h("tr", null, [L("clase o archivo", "class or file"), L("estado", "status"), L("construido en", "built in"), L("quién", "who"), L("último cambio", "last change")].map(function (x) { return h("th", { text: x }); }))), h("tbody", null,
+      selMod.detail.map(function (f) {
+        var s = fileStatus(f, since); var names = (f.classes || []);
+        return h("tr", null, h("td", null, h("span", { class: "mono", text: f.file }), names.length ? h("div", { class: "small", text: names.join(", ") }) : null),
+          h("td", null, s ? h("span", { class: "tag hollowa", text: s === "new" ? L("nueva", "new") : L("cambiada", "changed") }) : h("span", { class: "small", text: "—" })),
+          h("td", null, (f.stories || []).map(function (x) { return h("span", { class: "tag", text: x }); })), h("td", { class: "small", text: (f.who || []).join(", ") || L("sin dato", "no data") }), h("td", { class: "small", text: f.last ? ago(f.last) : "—" }));
+      })));
+    main.appendChild(h("div", { class: "panel", style: "padding:16px 18px" }, h("h2", { class: "sec", text: selMod.path + " · " + L("qué hay y quién lo construyó", "what is there and who built it") }), h("div", { class: "tablewrap" }, table),
+      h("p", { class: "small", text: code.ctags ? L("Clases con universal-ctags. «Nueva» compara contra el último commit (o el freeze, o ayer, según el filtro).", "Classes from universal-ctags. “New” compares against the last commit (or the freeze, or yesterday, per the filter).") : L("Sin universal-ctags la vista queda en módulos y archivos (se dice una vez). «Nueva» compara contra el último commit.", "Without universal-ctags the view stays at modules and files (said once). “New” compares against the last commit.") })));
+  }
+  var d2c = code.design_to_code;
+  if (epicSel && d2c && d2c[epicSel]) {
+    var t2 = h("table", null, h("thead", null, h("tr", null, [L("ítem del diseño", "design item"), L("historias", "Stories"), L("archivos", "files"), L("evidencia", "evidence"), L("estado", "state")].map(function (x) { return h("th", { text: x }); }))),
+      h("tbody", null, d2c[epicSel].map(function (r) {
+        return h("tr", null, h("td", null, h("b", { class: "mono", text: r.item }), r.text ? h("div", { class: "small", text: r.text.replace(/^\s*[-*]\s+\*\*[A-Z]+-\d+\*\*\s*/, "") }) : null),
+          h("td", null, r.stories.length ? r.stories.map(function (x) { return h("span", { class: "tag", text: x }); }) : h("span", { class: "tag hollow", text: L("pendiente", "pending") })),
+          h("td", { class: "mono small", text: (r.files || []).join(", ") || "—" }), h("td", { class: "small", text: (r.evidence || []).join(" · ") || "—" }),
+          h("td", null, h("span", { class: "tag " + (r.closed ? "ok" : r.built ? "hollowa" : "hollow"), text: r.closed ? L("cerrado", "closed") : r.built ? L("en construcción", "being built") : L("sin código", "no code") })));
+      })));
+    main.appendChild(h("div", { class: "panel", style: "padding:16px 18px" }, h("h2", { class: "sec", text: L("del diseño al código · ", "from design to code · ") + epicSel }), h("div", { class: "tablewrap" }, t2)));
+  } else if (epicSel) main.appendChild(h("div", { class: "empty small", text: L("Esta épica no tiene diseño con ítems todavía.", "This Epic has no design with items yet.") }));
+  return main;
+}
+
+/* ---------- the guide ---------- */
+function viewHelp2() {
+  var main = h("main", { class: "help" }, h("h1", { text: L("Guía de Sonar", "Sonar guide") }), h("p", { class: "sub", text: L("Qué es cada vista, cómo leerla y qué puedes hacer aquí.", "What each view is, how to read it and what you can do here.") }));
+  function panel(title, items) { return h("section", { class: "panel" }, h("h2", { class: "sec", text: title }), h("ul", null, items.map(function (t) { return h("li", { text: t }); }))); }
+  main.appendChild(panel(L("Las vistas", "The views"), [
+    L("Plan: las épicas en el orden en que se construyen, con sus historias, lo que le falta a cada una y a quién le toca. Aquí lo llenas.", "Plan: the Epics in the order they are built, with their Stories, what each still lacks and whom it is up to. You fill it in here."),
+    L("Bandeja: ideas sin triage, propuestas sin confirmar y borradores de ADR a medias.", "Inbox: ideas not triaged, proposals not confirmed and ADR drafts half written."),
+    L("Actividad: qué hace claude ahora, con o sin hooks; lo que pasó, día por día; y lo que vio en su última sesión.", "Activity: what claude is doing now, with or without hooks; what happened, day by day; and what it saw in its last session."),
+    L("Salud: todo lo que GTT detecta, por plano, con enlace a su épica o historia, y el estado de cada chequeo.", "Health: everything GTT detects, by plane, linked to its Epic or Story, and the state of each check."),
+    L("Diseño: el contexto gobernado, los ADR adoptados y el diseño de cada épica.", "Design: the governed context, the adopted ADRs and the design of each Epic."),
+    L("Código: los módulos de stack.md contra las importaciones reales, qué se construyó, quién lo construyó y si respeta la arquitectura.", "Code: the modules of stack.md against the real imports, what was built, who built it and whether it respects the architecture.")]));
+  main.appendChild(panel(L("Cómo se lee", "How to read it"), [
+    L("Borde punteado ámbar: por definir y te toca. Punteado turquesa: por definir y le toca a claude, o una propuesta que espera aprobación. Sólido: ratificado o tuyo y completo.", "Dashed amber: to define and yours. Dashed teal: to define and the agent's, or a proposal waiting for approval. Solid: ratified, or yours and complete."),
+    L("«te toca», «le toca a claude», «siguiente», «sin atribuir» e «inferido» siempre se dicen con palabras, nunca solo con color.", "“yours”, “the agent's”, “next”, “unattributed” and “inferred” are always said in words, never by colour alone."),
+    L("Sin calibrar: mientras haya menos de 3 historias medidas, la fecha es un rango (1 a 2 veces la estimación), no una fecha falsa.", "Uncalibrated: with fewer than 3 Stories measured, the date is a range (1 to 2 times the estimate), not a false date.")]));
+  main.appendChild(panel(L("Qué puedes hacer", "What you can do"), [
+    L("Con «gtt sonar» (editable): responder una pregunta, llenar los campos de una historia o de una épica propuesta, y dejar un aporte sobre una épica, un diseño o un vacío.", "With `gtt sonar` (editable): answer a question, fill the fields of a Story or of a proposed Epic, and leave input on an Epic, a design or a gap."),
+    L("Aprobar, promover, correr, deshacer y congelar siguen en tu terminal: Sonar te deja el comando para copiar.", "Approve, promote, run, undo and freeze stay in your terminal: Sonar leaves you the command to copy."),
+    L("Con «gtt sonar --static» (solo lectura): en vez de formularios hay comandos y texto para copiar al chat.", "With `gtt sonar --static` (read only): instead of forms there are commands and text to copy into the chat.")]));
+  main.appendChild(h("p", { class: "small" }, L("Más en ", "More at "), h("a", { href: "https://gtt-method.org/sonar/", target: "_blank", rel: "noopener noreferrer", text: "gtt-method.org/sonar/" })));
+  return main;
 }
 
 /* ---------- render + refresh ---------- */
 var timer = null;
 function render() {
-  var st = readHash(); var view = st.view || "portfolio";
-  if (view !== "project" && view !== "last" && view !== "backlog" && view !== "help") view = "portfolio";
+  var st = readHash(); var snap = currentSnap();
+  var view = st.view || (OK.length > 1 && !st.repo ? "portfolio" : "plan");
+  if (["plan", "inbox", "activity", "health", "design", "code", "portfolio", "help"].indexOf(view) < 0) view = "plan";
+  if (view === "portfolio" && OK.length < 2) view = "plan";
   var app = document.getElementById("app");
   var focus = document.activeElement && document.activeElement.id;
+  var sel = null;
+  if (document.activeElement && (document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "INPUT")) { try { sel = [document.activeElement.selectionStart, document.activeElement.selectionEnd]; } catch (e) { sel = null; } }
   while (app.firstChild) app.removeChild(app.firstChild);
-  app.appendChild(topBar(view));
+  app.appendChild(topBar2(view, snap));
   var banner = staleBanner();
-  var page = view === "project" ? viewProject() : view === "backlog" ? viewBacklog() : view === "last" ? viewLast() : view === "help" ? viewHelp() : viewPortfolio();
-  if (banner) page.insertBefore(banner, page.firstChild);
+  var page = view === "plan" ? viewPlan() : view === "inbox" ? viewInbox() : view === "activity" ? viewActivity() : view === "health" ? viewHealth() : view === "design" ? viewDesign() : view === "code" ? viewCode() : view === "portfolio" ? viewPortfolio2() : viewHelp2();
+  if (banner && !SERVED) page.insertBefore(banner, page.firstChild);
   app.appendChild(page);
-  if (focus) { var el = document.getElementById(focus); if (el) { el.focus(); if (el.setSelectionRange && typeof el.value === "string" && el.type === "text") { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
+  if (focus) { var el = document.getElementById(focus); if (el) { el.focus(); if (sel && el.setSelectionRange && (el.tagName === "TEXTAREA" || el.type === "text")) { try { el.setSelectionRange(sel[0], sel[1]); } catch (e) {} } } }
   try {
     var saved = sessionStorage.getItem("sonar-scroll");
     if (saved) { sessionStorage.removeItem("sonar-scroll"); var cut = saved.indexOf("|"); if (saved.slice(0, cut) === location.hash) window.scrollTo(0, parseInt(saved.slice(cut + 1), 10) || 0); }
   } catch (e) {}
-  document.title = "GTT Sonar · " + (T[view === "last" ? "last" : view] || view);
+  document.title = "GTT Sonar · " + view;
 }
 function schedule() {
   if (timer) { clearTimeout(timer); timer = null; }
-  if (readHash().pause === "1") return;
+  if (SERVED || readHash().pause === "1") return;       /* the served page repaints from the server; the static one reloads */
   timer = setTimeout(function () {
     var a = document.activeElement;
-    if (a && (a.id === "idea-text" || a.id === "bk-q")) { schedule(); return; }      // never reload under a draft being typed
-    try { sessionStorage.setItem("sonar-scroll", location.hash + "|" + Math.round(window.scrollY)); } catch (e) {}      // the page comes back where it was
+    if (a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT")) { schedule(); return; }      /* never reload under a draft being typed */
+    try { sessionStorage.setItem("sonar-scroll", location.hash + "|" + Math.round(window.scrollY)); } catch (e) {}
     location.reload();
   }, 5000);
 }

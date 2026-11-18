@@ -68,6 +68,111 @@ def many_stories(path, count):
         handle.write("\n".join(out) + "\n")
 
 
+def load_fixture():
+    spec = importlib.util.spec_from_file_location("sonar_demo", os.path.join(HERE, "fixtures", "sonar-demo.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def plan_checks(tmp, chrome):
+    demo = load_fixture()
+    project = demo.build(full=True)
+    hostile_title = "<script>window.PWNED=7</script>"
+    bl = os.path.join(project, "gtt-domain", "backlog.md")
+    # a heading with <...> is a template example to the backlog parser and is skipped, so the hostile text goes in fields the Plan paints
+    text = open(bl, encoding="utf-8").read().replace("- **Done when:** `pytest tests/test_rules.py` passes", "- **Done when:** `pytest tests/test_rules.py` passes " + hostile_title).replace("**Goal:** the platform runs and stores parcels", "**Goal:** " + hostile_title)
+    open(bl, "w", encoding="utf-8").write(text)
+    snap_path = os.path.join(tmp, "plan.json")
+    proc = sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json", "--docs")
+    open(snap_path, "w", encoding="utf-8").write(proc.stdout)
+    static, served = os.path.join(tmp, "plan-static.html"), os.path.join(tmp, "plan-served.html")
+    check(sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", static, snap_path).returncode == 0 and
+          sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--served", "--out", served, snap_path).returncode == 0, "the same template renders in static and in served mode")
+    s_text, v_text = open(static, encoding="utf-8").read(), open(served, encoding="utf-8").read()
+    code = re.sub(r'<script type="application/json".*?</script>', "", s_text, flags=re.S)
+    print("   ", [w for w in ("fetch(", "XMLHttpRequest", "/api/", "connect-src") if w in (code if w != "connect-src" else s_text)])
+    check("fetch(" not in code and "XMLHttpRequest" not in code and "/api/" not in code and "connect-src" not in s_text, "the static page has no network code and its CSP has no connect-src")
+    check("connect-src 'self'" in v_text and "fetch(" in v_text and "/api/act" in v_text, "the served page may talk to its own origin only")
+    check(re.search(r"script-src 'sha256-[A-Za-z0-9+/=]{20,}'", s_text) and re.search(r"script-src 'sha256-[A-Za-z0-9+/=]{20,}'", v_text), "each mode has the hash of its own script")
+    if not chrome:
+        print("  skip  headless Chrome not installed: the DOM checks of the Plan were not run")
+        return
+
+    def dom(path, frag):
+        return sh(project, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=3000", "--dump-dom", f"file://{path}#/view={frag}").stdout
+
+    def body_of(page):
+        return page.split('id="app"', 1)[-1].split("<script", 1)[0]
+
+    def words(page):
+        return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body_of(page)))
+    plan = dom(static, "plan")
+    body = body_of(plan)
+    check("<script" not in body and "&lt;script&gt;window.PWNED=7" in plan, "criterion 28: a text with <script> is text, in the Plan", "")
+    check("window.PWNED=7" not in re.sub(r'<script type="application/json".*?</script>', "", plan.split('id="app"', 1)[0], flags=re.S), "and it ran nothing")
+    for view in ("plan", "inbox", "activity", "health", "design", "help"):
+        page = dom(static, view)
+        check(len(body_of(page)) > 1500 and 'class="bar"' in body_of(page), f"criterion 28: the view `{view}` is drawn")
+    w = words(plan)
+    for needle in ("progress", "estimated date", "I need you", "to define", "alerts", "now", "last events", "plan", "front A", "EPIC-001", "EPIC-002", "STORY-003"):
+        check(needle in w, f"criterion 28: the Plan shows `{needle}`")
+    check(re.search(r"to define \d+", w) and re.search(r"yours \d+", w) and "with alerts" in w and "in progress" in w and "blocked" in w and "done" in w, "criterion 28: the filters are there, with their counts")
+    check('class="epic prop"' in body and 'class="srow2 undef' in body, "criterion 28: the proposed Epic is dashed and a Story to define has its own form")
+    print("criterion 29 - static mode: commands and text to copy instead of forms")
+    check("save to the backlog" not in w and "or ask claude" not in w and 'id="f-STORY-003-Estimate"' not in body, "no form to fill in the static page")
+    check("copy for the chat" in w and "gtt idea add --about GAP-004" not in w, "a text for the chat is there for what is the agent's")
+    check("gtt approve EPIC-002" in w or "gtt answer 1 1" in w, "the act that is the human's comes as a command to copy, shown short")
+    check("cd '" not in w, "and without the `cd`")
+    check("This page is read only" in w and "read only" in w, "the page says it is read only")
+    print("criterion 29 - served mode: the forms are there")
+    sv = dom(served, "plan")
+    svw = words(sv)
+    check('id="f-STORY-003-Estimate"' in body_of(sv) and 'id="f-STORY-004-Done_when"' in body_of(sv) and "save to the backlog" in svw and "or ask claude: copy for the chat" in svw, "the Story to define has its fields and its two ways out")
+    check('id="f-EPIC-002-Goal"' in body_of(sv) and 'id="f-EPIC-002-Out_of_Scope"' in body_of(sv), "the Proposed Epic has the form of its intent")
+    check("editable" in svw, "the page says it is editable")
+    check('id="ap-GAP-004"' in body_of(sv), "an open gap takes your input in the page")
+    print("criterion 30 - with an older Bootstrap the Plan says so")
+    old = json.load(open(snap_path, encoding="utf-8"))
+    for key in ("readiness", "findings", "activity", "project_extra", "agreements", "shadow", "forecast_range", "sources", "mode"):
+        old[key] = None
+    for e in old["epics"]:
+        for key in ("ready", "codes", "percent", "real_h", "active_h", "eta", "eta_range", "sha"):
+            e[key] = None
+    for s in old["stories"]:
+        for key in ("ready", "codes", "next", "implements", "origin", "active_h", "real_h", "sha"):
+            s[key] = None
+    old["degraded"] = {"version": "1.23.0", "missing": ["findings"], "command": "gtt update"}
+    old_path = os.path.join(tmp, "old.json")
+    json.dump(old, open(old_path, "w"))
+    oldhtml = os.path.join(tmp, "old.html")
+    sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--served", "--out", oldhtml, old_path)
+    ow = words(dom(oldhtml, "plan"))
+    check("no data: update GTT in this repo" in ow and "read only" in ow and "EPIC-001" in ow, "the Plan draws what there is, says `no data: update GTT`, and is read only even when served")
+    check('id="f-STORY-003-Estimate"' not in dom(oldhtml, "plan"), "and offers no form")
+    print("1.26 - the Code view")
+    sh(project, "bash", ".gtt/scripts/gtt-code.sh", "refresh", "--quiet")
+    snap2 = os.path.join(tmp, "plan2.json")
+    open(snap2, "w", encoding="utf-8").write(sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json", "--docs").stdout)
+    page2 = os.path.join(tmp, "plan2.html")
+    sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", page2, snap2)
+    cw = words(dom(page2, "code&ce=EPIC-001&cm=src%2Fparcelas%2F"))
+    check("module map" in cw and "src/parcelas" in cw and "src/core" in cw and "does it respect the architecture" in cw and "from design to code" in cw, "the Code view draws the map, the findings and design to code")
+    check("code" in words(dom(page2, "plan")).split("activity")[1][:30], "the Code tab appears when the project has a code map")
+    print("criterion 38 - Activity: what claude saw, the runs, and who did what")
+    act = words(dom(static, "activity"))
+    check("what claude saw" in act and "session.md" in act and "GTT Session State" in act, "what claude saw in its last session, read only")
+    check("gtt run: result" in act and "RUN-000" in act, "the result of each `gtt run`")
+    check("claude" in act and "you" in act and "unattributed" in act, "the filters by who did it")
+    check("source: unattributed (sampling)" in words(dom(static, "plan")) or "source: claude (hook)" in words(dom(static, "plan")), "Now says where its data comes from")
+    print("criterion 39 - every Epic and Story has `copy ref`")
+    check(len(re.findall(r'aria-label="copy ref (?:EPIC|STORY)-\d+"', body)) >= 10, "copy ref on each Epic and Story", str(len(re.findall(r'aria-label="copy ref', body))))
+    health = words(dom(static, "health"))
+    check("governance" in health and "delivery" in health and "definition" in health and "GOV-GAP" in health and "DEF-STORY-ESTIMATE" in health, "Health shows the findings by plane")
+    check(re.search(r'href="#/view=plan&amp;q=STORY-003"', dom(static, "health")) is not None, "each finding links to its item")
+    shutil.rmtree(os.path.dirname(project), ignore_errors=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", default=ROOT)
@@ -123,12 +228,12 @@ def main():
         if not chrome:
             print("  skip  headless Chrome not installed: the DOM check of criterion 3 was not run")
         else:
-            for view in ("portfolio", "project&repo=%2Fx&epic=EPIC-001", "backlog&repo=%2Fx&epic=EPIC-001", "backlog&bt=design&repo=%2Fx", "last"):
+            for view in ("plan&repo=%2Fx", "inbox&repo=%2Fx", "activity&repo=%2Fx", "health&repo=%2Fx", "design&repo=%2Fx", "design&dt=adr&repo=%2Fx", "help"):
                 dom = sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{out}#/view={view}").stdout
                 tag = view.split("&")[0]
                 body = dom.split('id="app"', 1)[-1].split('<script', 1)[0]
                 check("<img" not in body and "<script" not in body, f"[{tag}] no element was created from the text (no <img>, no <script> in the page body)")
-                check("&lt;img src=x" in dom or tag in ("last", "backlog") or "&lt;script&gt;" in dom, f"[{tag}] the hostile text is on the page as text")
+                check("&lt;img src=x" in dom or tag not in ("plan",) or "&lt;script&gt;" in dom, f"[{tag}] the hostile text is on the page as text")
 
         print("criterion 24 - the Bandeja, Te necesito, Decisiones, the portfolio column and the Backlog fields, with test data")
         sh(dest, "git", "config", "user.name", "Ana")
@@ -167,7 +272,7 @@ def main():
                 return sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{page24}#/view={frag}").stdout
             def body_of(dom):
                 return dom.split('id="app"', 1)[-1].split("<script", 1)[0]
-            dom = dom_of("project&card=PROP-006")
+            dom = dom_of("inbox&card=PROP-006")
             body = body_of(dom)
             check("<img" not in body and "<script" not in body, "[bandeja] no element was created from a title, a text or a trail line")
             check("&lt;img src=x" in dom and "PWNED=9" in dom, "[bandeja] the hostile text is on the page as text")
@@ -180,21 +285,27 @@ def main():
                 check(f'id="card-{ref}"' in body, f"[bandeja] the card of {ref} is drawn")
             check("from IDEA-004" in body and "your move" in body and "gtt promote ready-set" in body, "[bandeja] a card says where it came from and the act that is yours")
             check("trail" in body and "Work: EPIC-011" in body, "[bandeja] an open card shows the trail")
-            alldom = body_of(dom_of("project&ia=1"))
+            alldom = body_of(dom_of("inbox&ia=1"))
             check(">Parked<" in re.sub(r"<span[^>]*>\d+</span>", "", alldom) and ">Rejected<" in re.sub(r"<span[^>]*>\d+</span>", "", alldom) and 'id="card-IDEA-010"' in alldom and 'id="card-PROP-009"' in alldom, "[bandeja] `all` adds the parked and the rejected")
-            check("decide" in body and "answer" in body and "REV-" in body and "ratify" in body and "adopt" in body, "[te necesito] review, ratify and adr-hand are drawn")
-            check("gtt adr adopt" in body and "gtt run 4" in body and "gtt approve EPIC-010" in body, "[te necesito] each act brings its command")
-            mine = body_of(dom_of("project&mine=1"))
-            check("for Ana" in mine and "for Luis" not in mine and "REV-" in mine, "[para mí] the filter keeps what is for the git user (and what has no owner)")
-            check("decisions" in body and "CHANGE-0001" in body and "ADR-002" in body and "produced by PROP-001" in body, "[decisiones] the list shows ADR and CHANGE with their origin")
-            port = body_of(dom_of("portfolio"))
-            check("3 new · 1 to review · 3 to ratify" in port and ">inbox<" in port, "[portafolio] the column `inbox` says what waits", re.sub(r"<[^>]+>", " ", port)[:300])
-            back = body_of(dom_of("backlog&bt=work"))
-            check("origin: PROP-005" in back and "priority: urgent" in back, "[backlog] each Epic shows its Origin and Priority")
-            summ = body_of(dom_of("backlog"))
-            check(("Summary" in summ or "Resumen" in summ) and ("Plan quality" in summ or "Calidad del plan" in summ) and ("Proposals and ideas" in summ or "Propuestas e ideas" in summ), "[backlog] opens on the Summary with its five subtabs and the plan quality")
-            adr = body_of(dom_of("backlog&bt=adr"))
-            check("ADR-002" in adr and any(w in adr for w in ("accepted", "aceptado", "no state", "sin estado")), "[backlog] the Decisions subtab lists every ADR with its state")
+            needs = body_of(dom_of("plan&na=1"))
+            check("decide" in needs and "REV-" in needs and "ratify" in needs and "adopt" in needs, "[te necesito] review, ratify and adr-hand are drawn")
+            check("gtt adr adopt" in needs and "gtt run 4" in needs and "gtt approve EPIC-010" in needs, "[te necesito] each act brings its command, shown short")
+            check("cd '" not in re.sub(r"<[^>]+>", " ", needs) or "&amp;&amp;" not in re.sub(r"<[^>]+>", " ", needs), "[te necesito] the command is shown without the `cd`")
+            mine = body_of(dom_of("inbox&mine=1"))
+            check("for Ana" in mine and "for Luis" not in mine, "[para mí] the filter keeps what is for the git user (and what has no owner)")
+            adr = body_of(dom_of("design&dt=adr"))
+            check("CHANGE-0001" in adr and "ADR-002" in adr and "produced by PROP-001" in adr, "[decisiones] the list shows ADR and CHANGE with their origin")
+            check("ADR-002" in adr and any(w in adr for w in ("accepted", "aceptado", "no state", "sin estado")), "[diseño] the Decisions tab lists every ADR with its state")
+            two = os.path.join(tmp, "two.html")
+            sh(dest, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", two, snap24, snap24)
+            port = sh(dest, chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=2000", "--dump-dom", f"file://{two}#/view=portfolio").stdout
+            port = body_of(port)
+            check("3 new · 1 to review · 3 to ratify" in port and ">inbox<" in port, "[portafolio] with two repos the column `inbox` says what waits", re.sub(r"<[^>]+>", " ", port)[:300])
+            single = body_of(dom_of("portfolio"))
+            check(">portfolio<" not in single, "[portafolio] with one repo there is no portfolio")
+            plan = body_of(dom_of("plan"))
+            check("origin: PROP-005" in plan and "priority: urgent" in plan, "[plan] each Epic shows its Origin and Priority")
+            check(all(w in plan for w in ("EPIC-030", "STORY-300")), "[plan] the Epic and its Story are drawn")
 
         print("criterion 5 - a story closed by evidence appears at the next reload; the hook is fast")
         many_stories(os.path.join(dest, "gtt-domain", "backlog.md"), 200)
@@ -259,6 +370,9 @@ def main():
         check(not re.search(r"onclick=|tabindex=\"-", template) and "addEventListener(\"click\"" in template, "actions are real buttons and links, not clickable divs")
         check(":focus-visible{outline:2px solid var(--agent)" in template, "the focus is visible: 2px in agent")
         check("animation" not in template and "transition" not in template, "no animations")
+
+        print("1.25 - the Plan, Activity, Health: criteria 28 to 30, 38 and 39 (the fixture with its eight problems)")
+        plan_checks(tmp, chrome)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{COUNT - len(FAILS)}/{COUNT} checks held" + (f"; FAILED: {', '.join(FAILS)}" if FAILS else ""))

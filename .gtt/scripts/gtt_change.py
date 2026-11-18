@@ -265,7 +265,7 @@ def cmd_withdraw(args):
     if item is None:
         print(f"gtt-change: REFUSED - no proposal `{args.name}` to withdraw. Nothing was changed.", file=sys.stderr)
         return 1
-    stamp = datetime.date.today().isoformat()
+    stamp = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
     target = os.path.join(WITHDRAWN, f"{stamp}-{item['name']}")
     print(f"gtt-change: withdraw {item['kind']} {item['path']} -> {target} (archived, not deleted; promoted nothing)")
     if not args.apply:

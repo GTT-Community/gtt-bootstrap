@@ -236,6 +236,7 @@ source repository is the catalog, not an installed project.
 | `gtt-domain/run/` | Plans (`RUN-NNN-<slug>.md`), the sealed scripts generated from them, `log.jsonl` and `done/` (the last 20). The agent writes plans; only GTT writes the rest |
 | `.gtt/scripts/gtt-pending.sh` / `.gtt/scripts/gtt_pending.py` | Pending events (operations `pending.*`): `ask` a question, `decide` a decision, `list`, `record` an answer given in the chat (with the human's exact words), `answer` (the human's act, `gtt answer`), `done` to mark an applied one, `clean` (session start), `check` (PEN-01 to PEN-07), `notice` |
 | `.gtt/contract/pending.json` | The pending-events contract: kinds, type lists, limits, key shapes, times, labels and messages (es/en) and the threshold. Data only |
+| `.gtt/contract/findings.json` | The findings contract: planes, the code of every finding with its owner, level, fix and es/en texts, deferred Done-when patterns, parallel-state names. Data only |
 | `gtt-domain/pending/` | One file per open question (`ASK-NNN.md`) or decision (`DEC-NNN.md`); normally empty. Only GTT writes it |
 | `.claude/hooks/pending-watch.py` | UserPromptSubmit hook: keeps the human's last 10 messages locally for the quote check, opens the turn, tells the agent what to apply or record; silent when nothing is pending |
 | `.gtt/scripts/gtt_flow.py` | The engine behind the five scripts above and the static checks `gtt-validate.sh` runs on them |

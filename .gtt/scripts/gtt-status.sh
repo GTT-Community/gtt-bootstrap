@@ -142,6 +142,12 @@ if [ -f ".gtt/scripts/gtt-project.sh" ] && [ -f ".gtt/contract/inbox.json" ]; th
   INBOX_STATE="$(bash .gtt/scripts/gtt-project.sh inbox-line 2>/dev/null || true)"
 fi
 
+# What waits to be defined: one line, computed by gtt-findings.sh (empty when every Epic and Story that is next is ready).
+DEFINE_STATE=""
+if [ -f ".gtt/scripts/gtt-findings.sh" ] && [ -f ".gtt/contract/findings.json" ] && [ -f "gtt-domain/backlog.md" ]; then
+  DEFINE_STATE="$(bash .gtt/scripts/gtt-findings.sh line 2>/dev/null || true)"
+fi
+
 # Pending events: what waits for the human in gtt-domain/pending/ (empty when nothing does).
 PENDING_STATE=""
 if [ -f ".gtt/scripts/gtt-pending.sh" ] && [ -f ".gtt/contract/pending.json" ]; then
@@ -207,6 +213,11 @@ CONTENT="$({
   if [ -n "${INBOX_STATE}" ]; then
     echo "## Inbox (docs/ideas/, gtt-domain/proposals/ - the agent triages new entries at a cut point; the human decides: gtt answer <n> <k>)"
     echo "${INBOX_STATE}"
+    echo
+  fi
+  if [ -n "${DEFINE_STATE}" ]; then
+    echo "## To define (gtt-findings.sh ready <ref> - define your own gaps before you start a Story; skip the ones that wait for the human)"
+    echo "${DEFINE_STATE}"
     echo
   fi
   if [ -n "${PENDING_STATE}" ]; then

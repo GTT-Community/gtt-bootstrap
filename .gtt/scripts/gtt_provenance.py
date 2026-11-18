@@ -511,6 +511,21 @@ def cmd_list(args):
     return 0
 
 
+def findings():
+    """GOV-GAP: every gap that is OPEN or BLOCKING, stuck to the Epics it affects (`affects:`)."""
+    import gtt_findings as gf
+    gaps, _ = load_gaps(Findings())
+    out = []
+    for g in gaps:
+        if g["kind"] not in ("OPEN", "BLOCKING"):
+            continue
+        epics = re.findall(r"EPIC-\d+", g.get("affects") or "") or [None]
+        for epic in epics:
+            out.append(gf.make("GOV-GAP", g["id"], g["where"], "gtt_provenance", epic=epic, level="WARNING" if g["kind"] == "BLOCKING" else None,
+                               gap=g["id"], kind=g["kind"], topic=g["topic"]))
+    return out
+
+
 def main(argv):
     if not os.path.isdir(".gtt"):
         print("gtt-provenance: run from the project root (no .gtt/ directory here)", file=sys.stderr)

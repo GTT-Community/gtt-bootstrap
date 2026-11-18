@@ -797,6 +797,41 @@ def next_action(session_start=False):
         return {"kind": "design", "text": text,
                 "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
                          "from your document, or through the guided questionnaire."}
+    return next_story()
+
+
+def next_story():
+    """The next Story that is ready to start, as a next action; None when one is In Progress, or none waits.
+    A Story whose gaps are the agent's is defined first; one that waits for the human is skipped (and said once) for the next that can start."""
+    if not (os.path.isfile(FROZEN) and os.path.isfile(".gtt/ade.json") and os.path.isfile(".gtt/contract/findings.json")):
+        return None
+    try:
+        import gtt_backlog
+        import gtt_findings as gf
+        stories, _epics = gtt_backlog.parse(gtt_backlog.DEFAULT)
+        if any(gtt_backlog.normal(s["status"]) == "In Progress" for s in stories):
+            return None
+        data = gf.report()
+    except (Exception, SystemExit):
+        return None
+    spanish = gf.language() == "es"
+    skipped = []
+    for s in stories:
+        if gtt_backlog.normal(s["status"]) != "Planned":
+            continue
+        own = [f for f in data["findings"] if f["ref"] == s["id"] and f["plane"] == "definition"]
+        if any(f["owner"] == "human" for f in own):
+            skipped.append(s["id"])
+            continue
+        gaps = "; ".join(f["text"] for f in own)
+        told = (f"{', '.join(skipped)} " + ("espera algo tuyo y la salto" if spanish else "waits for the human and is skipped") + ". ") if skipped else ""
+        if own:
+            text = (f"{told}La siguiente historia es {s['id']}; define primero lo suyo ({gaps}) y márcala `In Progress` antes de tocar código." if spanish else
+                    f"{told}The next Story is {s['id']}; define its gaps first ({gaps}) and mark it `In Progress` before you touch code.")
+        else:
+            text = (f"{told}La siguiente historia lista es {s['id']}: márcala `In Progress` antes de tocar código." if spanish else
+                    f"{told}The next ready Story is {s['id']}: mark it `In Progress` before you touch code.")
+        return {"kind": "story", "text": text, "human": None}
     return None
 
 

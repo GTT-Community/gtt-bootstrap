@@ -203,6 +203,7 @@ def backlog():
     for epic in epics:
         f = epic["fields"]
         out_epics.append({"id": epic["id"], "line": epic["line"], "title": epic.get("title"), "status": gtt_backlog.normal(epic.get("status", "")),
+                          "raw_status": epic.get("status", ""), "group": epic.get("group"),
                           "kind": f.get("Kind", "").strip().strip("`").lower(),
                           "lane": f.get("Lane", "").strip().strip("`"), "owner": f.get("Owner", "").strip(),
                           "depends": EPIC_ID.findall(f.get("Depends on", "")), "touches": split_list(f.get("Touches", "")),
@@ -210,7 +211,24 @@ def backlog():
                           "estimate_text": f.get("Estimate", ""), "estimate_h": hours_of(f.get("Estimate", "")),
                           "decisions": decisions_of(f.get("Estimate", "")), "priority": gtt_backlog.priority_of(epic),
                           "declared": [k for k in FIELDS if not blank(f.get(k, ""))]})
+    for e in out_epics:
+        e["derived_state"] = derived_state([s["status"] for s in out_stories if s["epic"] == e["id"]])
     return out_stories, out_epics
+
+
+def derived_state(statuses):
+    """The state of an Epic read from its live Stories (Cancelled left out): done, in_progress, blocked, planned, or None without Stories.
+    The raw status the human wrote stays in `raw_status`; this one is computed and never written."""
+    live_ = [s for s in statuses if s != "Cancelled"]
+    if not live_:
+        return None
+    if all(s == "Done" for s in live_):
+        return "done"
+    if any(s in ("In Progress", "Done") for s in live_):
+        return "in_progress"
+    if any(s == "Blocked" for s in live_):
+        return "blocked"
+    return "planned"
 
 
 def live(epics):
@@ -332,23 +350,49 @@ def timeline():
     return out
 
 
+def activity():
+    """The activity journal module, or None when this Bootstrap has none."""
+    try:
+        import gtt_activity
+        return gtt_activity
+    except Exception:
+        return None
+
+
+def story_hours(story, row, now=None):
+    """(clock hours, active hours or None) of a Story: from its start to its close (or to now while it runs), and the sum of the intervals between
+    the actions of the journal that name it, without the pauses. The clock counts the night; the active hours do not."""
+    if not row or not row["started"]:
+        return None, None
+    end = row["closed"] if story["status"] == "Done" and row["closed"] else (now or moment() if story["status"] == "In Progress" else None)
+    if end is None:
+        return None, None
+    clock = max((end - row["started"]).total_seconds() / 3600.0, 0.0)
+    mod = activity()
+    active = mod.active_hours(story["id"], row["started"], end) if mod else None
+    return clock, active
+
+
 def measured(stories, times):
-    """[(story id, real hours, estimated hours)] of the Done Stories that have both a start and an estimate."""
+    """[(story id, real hours, estimated hours, basis)] of the Done Stories that have both a start and an estimate. The hours are the active ones
+    when the journal has the Story, else the clock; `basis` says which."""
     out = []
     for s in stories:
         row = times.get(s["id"])
         if s["status"] == "Done" and row and row["started"] and row["closed"] and s["estimate_h"]:
-            real = max((row["closed"] - row["started"]).total_seconds() / 3600.0, 0.0)
-            out.append((s["id"], real, s["estimate_h"]))
+            clock, active = story_hours(s, row)
+            out.append((s["id"], active if active is not None else clock, s["estimate_h"], "active" if active is not None else "clock"))
     return out
 
 
 def calibration(stories, times):
     rows = measured(stories, times)
     need = thresholds()["calibration_min_stories"]
-    ratio = statistics.median(r / e for _, r, e in rows) if rows else None
+    ratio = statistics.median(r / e for _, r, e, _b in rows) if rows else None
+    bases = {b for *_x, b in rows}
     return {"measured": len(rows), "needed": need, "uncalibrated": len(rows) < need,
-            "ratio": round(ratio, 2) if ratio is not None else None}
+            "ratio": round(ratio, 2) if ratio is not None else None,
+            "basis": None if not rows else ("active" if bases == {"active"} else "clock" if bases == {"clock"} else "mixed")}
 
 
 # ------------------------------------------------------------------------------------------- the plan
@@ -414,6 +458,20 @@ def build_plan():
     days = math.ceil(total_h / th["hours_per_day"]) if total_h else 0
     today = moment().date()
     eta = today + datetime.timedelta(days=days)
+    eta_range, epic_eta = None, {}
+    for ident, hours_at in finish.items():
+        epic_eta[ident] = {"eta": (today + datetime.timedelta(days=math.ceil(hours_at / th["hours_per_day"]))).isoformat(), "eta_range": None}
+    if cal["uncalibrated"] and finish:
+        # Without enough measured Stories a single date would be false: the prior says the work takes between 1.0x and 2.0x its estimate.
+        low = th.get("prior_range_low", 1.0)
+        high = th.get("prior_range_high", 2.0)
+        lo_finish, _, _ = schedule(epics, stories, low)
+        hi_finish, _, _ = schedule(epics, stories, high)
+        span = lambda f: today + datetime.timedelta(days=math.ceil((max(f.values()) if f else 0.0) / th["hours_per_day"]))
+        eta_range = [span(lo_finish).isoformat(), span(hi_finish).isoformat()]
+        for ident in epic_eta:
+            epic_eta[ident]["eta_range"] = [(today + datetime.timedelta(days=math.ceil(lo_finish.get(ident, 0.0) / th["hours_per_day"]))).isoformat(),
+                                            (today + datetime.timedelta(days=math.ceil(hi_finish.get(ident, 0.0) / th["hours_per_day"]))).isoformat()]
     limit = deadline()
     lanes = {}
     for epic in live(epics):
@@ -435,6 +493,7 @@ def build_plan():
         late = None
     return {"schema": 1, "kind": "gtt-delivery-plan", "profile": profile_name(), "calibration": cal,
             "lanes": lanes, "chain": chain, "chain_hours": round(total_h, 1), "days": days, "eta": eta.isoformat() if finish else None,
+            "eta_range": eta_range, "epic_eta": epic_eta,
             "deadline": limit.isoformat() if limit else None, "fits": fits, "late": late, "levers": levers,
             "unestimated": unestimated, "over_cap": over, "cycles": cycles, "no_date": no_date,
             "waiting_on_you": human_waits(stories, times)}
@@ -597,40 +656,57 @@ def print_lanes(plan, as_json):
 
 # ---------------------------------------------------------------------------------------------- report
 
-def cmd_report(args):
+def report_data(epic_filter=None):
+    """The delivery report as data: ({kind, uncalibrated, calibration, epics, forecast, planned_h, real_h, active_h, signals}, error text or None).
+    `real_h` is the clock, `active_h` the hours of the journal without pauses (None without a journal)."""
     loaded = backlog()
     if loaded is None:
-        print("gtt-delivery: no gtt-domain/backlog.md yet - nothing to report", file=sys.stderr)
-        return 1
+        return None, "gtt-delivery: no gtt-domain/backlog.md yet - nothing to report"
     stories, epics = loaded
     times, now = timeline(), moment()
     rows = []
     for epic in epics:
-        if args.epic and epic["id"] != args.epic:
+        if epic_filter and epic["id"] != epic_filter:
             continue
         own = [s for s in stories if s["epic"] == epic["id"]]
         fraction, how = progress(epic, stories)
-        real = 0.0
+        real, active, have_active, per_story = 0.0, 0.0, False, []
         for s in own:
-            row = times.get(s["id"])
-            if row and row["started"]:
-                end = row["closed"] if s["status"] == "Done" and row["closed"] else (now if s["status"] == "In Progress" else None)
-                if end:
-                    real += max((end - row["started"]).total_seconds() / 3600.0, 0.0)
-        rows.append({"epic": epic["id"], "status": epic["status"], "lane": epic["lane"] or "main", "estimate_h": epic_hours(epic, stories),
+            clock, hours = story_hours(s, times.get(s["id"]), now)
+            if clock is not None:
+                real += clock
+            if hours is not None:
+                active += hours
+                have_active = True
+            if clock is not None or hours is not None:
+                per_story.append({"story": s["id"], "real_h": round(clock, 2) if clock is not None else None, "active_h": hours})
+        rows.append({"epic": epic["id"], "status": epic["status"], "raw_status": epic.get("raw_status"), "derived_state": epic.get("derived_state"), "group": epic.get("group"),
+                     "lane": epic["lane"] or "main", "estimate_h": epic_hours(epic, stories),
                      "percent": round(fraction * 100), "percent_by": how, "stories": len(own),
-                     "stories_done": sum(1 for s in own if s["status"] == "Done"), "real_h": round(real, 1)})
-    if args.epic and not rows:
-        print(f"gtt-delivery: {args.epic} is not in the backlog", file=sys.stderr)
-        return 1
+                     "stories_done": sum(1 for s in own if s["status"] == "Done"), "real_h": round(real, 1),
+                     "active_h": round(active, 1) if have_active else None, "story_hours": per_story})
+    if epic_filter and not rows:
+        return None, f"gtt-delivery: {epic_filter} is not in the backlog"
     plan = build_plan()
     cal = plan["calibration"]
     open_signals = [s for s in signals()]
+    for r in rows:
+        r.update(plan["epic_eta"].get(r["epic"]) or {"eta": None, "eta_range": None})
     data = {"schema": 1, "kind": "gtt-delivery-report", "uncalibrated": cal["uncalibrated"], "calibration": cal,
-            "epics": rows, "forecast": {"chain": plan["chain"], "hours": plan["chain_hours"], "eta": plan["eta"], "deadline": plan["deadline"],
-                                        "fits": plan["fits"]},
+            "epics": rows, "forecast": {"chain": plan["chain"], "hours": plan["chain_hours"], "eta": plan["eta"], "eta_range": plan["eta_range"],
+                                        "deadline": plan["deadline"], "fits": plan["fits"]},
             "planned_h": round(sum(r["estimate_h"] or 0 for r in rows), 1), "real_h": round(sum(r["real_h"] for r in rows), 1),
+            "active_h": round(sum(r["active_h"] or 0 for r in rows), 1) if any(r["active_h"] is not None for r in rows) else None,
             "signals": [{"rule": s["rule"], "artifact": s["artifact"], "detail": s["detail"]} for s in open_signals]}
+    return data, None
+
+
+def cmd_report(args):
+    data, error = report_data(args.epic)
+    if data is None:
+        print(error, file=sys.stderr)
+        return 1
+    rows, cal, open_signals = data["epics"], data["calibration"], data["signals"]
     if args.json:
         emit(data)
         return 0
@@ -841,6 +917,27 @@ def signals():
             if spent > th["story_over_ratio"] * s["estimate_h"]:
                 add("DLV-STORY-OVER", s["id"], f"In Progress for {spent:.1f} h against an estimate of {fmt_h(s['estimate_h'])} "
                     f"(more than {th['story_over_ratio']:g}x): is it bigger than thought, or stuck?")
+    mod = activity()
+    if mod is not None:
+        journal = mod.rows()
+        for s in stories:
+            row = times.get(s["id"])
+            if s["status"] != "In Progress" or not journal:
+                continue
+            stamps = [mod.parse(r["t"]) for r in journal if s["id"] in (r.get("stories") or []) and r.get("t")]
+            if row and row["started"]:
+                stamps.append(row["started"])
+            last = max((x for x in stamps if x), default=None)
+            if last and (now - last).total_seconds() > th.get("story_idle_h", 24) * 3600:
+                add("DLV-STORY-IDLE", s["id"], f"{s['id']} is In Progress with no action for {(now - last).total_seconds() / 3600:.0f} h: is it still going on?")
+        for epic in live(epics):
+            hours = epic_hours(epic, stories)
+            if not hours or epic["status"] in ("Completed", "Done"):
+                continue
+            spent = [story_hours(s, times.get(s["id"]), now)[1] for s in stories if s["epic"] == epic["id"]]
+            spent = sum(x for x in spent if x is not None)
+            if spent > th.get("epic_over_ratio", 1.2) * hours:
+                add("DLV-EPIC-OVER", epic["id"], f"{epic['id']} has {spent:.1f} active h against an estimate of {fmt_h(hours)} (more than {th.get('epic_over_ratio', 1.2):g}x): bigger than thought?")
     for epic in live(epics):
         hours = epic_hours(epic, stories)
         if hours is not None and hours > th["epic_cap_h"] and not budget_decided(epic):
@@ -1026,7 +1123,7 @@ def check_all():
         where = f"{BACKLOG}:{epic['line']}"
         hours = epic_hours(epic, stories)
         if epic["status"] in ("Planned", "In Progress") and hours is None:
-            add("estimate", where, f"{epic['id']} is {epic['status']} without an `Estimate:` (agent hours, e.g. `6h + 2 decisions`)")
+            add("estimate", where, f"{epic['id']} is {epic.get('raw_status') or epic['status']} without an `Estimate:` (agent hours, e.g. `6h + 2 decisions`)")
         if hours is not None and hours > th["epic_cap_h"] and not budget_decided(epic):
             add("budget", where, f"{epic['id']} is {fmt_h(hours)}, over the {fmt_h(th['epic_cap_h'])} cap, and `Budget:` holds no decision "
                 f"(`over - accepted: <reason> - <who> - <YYYY-MM-DD>`, or `over - split | cut | integrate`)")
@@ -1271,3 +1368,18 @@ def main(argv):
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
+
+def findings():
+    """The open DLV conditions as findings of the `delivery` plane: the rule is the code, the artifact is the reference."""
+    import gtt_findings as gf
+    levels = {"NOTICE": "NOTICE", "WARNING": "WARNING", "GOVERNANCE": "WARNING", "BLOCKING": "WARNING"}
+    out = []
+    for sig in signals():
+        ref = sig["artifact"]
+        epic = None
+        found = EPIC_ID.findall(ref) if isinstance(ref, str) else []
+        if found and ref.startswith("EPIC-"):
+            epic = ref
+        out.append(gf.make(sig["rule"], ref, BACKLOG, "gtt_delivery", epic=epic, level=levels.get(sig["level"], "NOTICE"), what=sig["detail"], owner="agent"))
+    return out
+

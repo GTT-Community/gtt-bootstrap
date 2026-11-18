@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "dfcd527c9fa5217cf6865360e6ac35d9bb30b047deb4434ad3bdc689b9fe9f38",
+      "sha256": "1b26c325ec17befe3c55327658c8141b5cef58c0030a44cb48fc9ed31c646bb4",
       "aliases": [],
       "sections": [
         {
@@ -174,7 +174,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 356
+          "line_end": 358
         },
         {
           "heading": "Mission",
@@ -262,183 +262,183 @@
           "anchor": "backlog",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Backlog",
           "line_start": 229,
-          "line_end": 260
+          "line_end": 262
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Agent roles and the evidence boundary",
-          "line_start": 261,
-          "line_end": 264
+          "line_start": 263,
+          "line_end": 266
         },
         {
           "heading": "The rest of the contract",
           "level": 2,
           "anchor": "the-rest-of-the-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > The rest of the contract",
-          "line_start": 265,
-          "line_end": 270
+          "line_start": 267,
+          "line_end": 272
         },
         {
           "heading": "Before changing anything",
           "level": 2,
           "anchor": "before-changing-anything",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Before changing anything",
-          "line_start": 271,
-          "line_end": 274
+          "line_start": 273,
+          "line_end": 276
         },
         {
           "heading": "Required workspace",
           "level": 2,
           "anchor": "required-workspace",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Required workspace",
-          "line_start": 275,
-          "line_end": 278
+          "line_start": 277,
+          "line_end": 280
         },
         {
           "heading": "Protected artifacts (GTTGuard)",
           "level": 2,
           "anchor": "protected-artifacts-gttguard",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Protected artifacts (GTTGuard)",
-          "line_start": 279,
-          "line_end": 282
+          "line_start": 281,
+          "line_end": 284
         },
         {
           "heading": "Session continuity",
           "level": 2,
           "anchor": "session-continuity",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Session continuity",
-          "line_start": 283,
-          "line_end": 286
+          "line_start": 285,
+          "line_end": 288
         },
         {
           "heading": "Artifact identity and technical index",
           "level": 2,
           "anchor": "artifact-identity-and-technical-index",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Artifact identity and technical index",
-          "line_start": 287,
-          "line_end": 290
+          "line_start": 289,
+          "line_end": 292
         },
         {
           "heading": "Validation",
           "level": 2,
           "anchor": "validation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Validation",
-          "line_start": 291,
-          "line_end": 294
+          "line_start": 293,
+          "line_end": 296
         },
         {
           "heading": "Adapters vs. portable core",
           "level": 2,
           "anchor": "adapters-vs-portable-core",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Adapters vs. portable core",
-          "line_start": 295,
-          "line_end": 298
+          "line_start": 297,
+          "line_end": 300
         },
         {
           "heading": "Multi-ADE participation",
           "level": 2,
           "anchor": "multi-ade-participation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Multi-ADE participation",
-          "line_start": 299,
-          "line_end": 302
+          "line_start": 301,
+          "line_end": 304
         },
         {
           "heading": "Bootstrap behavior",
           "level": 2,
           "anchor": "bootstrap-behavior",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Bootstrap behavior",
-          "line_start": 303,
-          "line_end": 308
+          "line_start": 305,
+          "line_end": 310
         },
         {
           "heading": "Autonomy Profiles",
           "level": 2,
           "anchor": "autonomy-profiles",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Autonomy Profiles",
-          "line_start": 309,
-          "line_end": 312
+          "line_start": 311,
+          "line_end": 314
         },
         {
           "heading": "Delivery planning",
           "level": 2,
           "anchor": "delivery-planning",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Delivery planning",
-          "line_start": 313,
-          "line_end": 316
+          "line_start": 315,
+          "line_end": 318
         },
         {
           "heading": "Simple execution",
           "level": 2,
           "anchor": "simple-execution",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Simple execution",
-          "line_start": 317,
-          "line_end": 322
+          "line_start": 319,
+          "line_end": 324
         },
         {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Pending events",
-          "line_start": 323,
-          "line_end": 328
+          "line_start": 325,
+          "line_end": 330
         },
         {
           "heading": "Working without unnecessary interruption",
           "level": 2,
           "anchor": "working-without-unnecessary-interruption",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Working without unnecessary interruption",
-          "line_start": 329,
-          "line_end": 332
+          "line_start": 331,
+          "line_end": 334
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Design assessment",
-          "line_start": 333,
-          "line_end": 336
+          "line_start": 335,
+          "line_end": 338
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 337,
-          "line_end": 340
+          "line_start": 339,
+          "line_end": 342
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
-          "line_start": 341,
-          "line_end": 344
+          "line_start": 343,
+          "line_end": 346
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 345,
-          "line_end": 348
+          "line_start": 347,
+          "line_end": 350
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 349,
-          "line_end": 352
+          "line_start": 351,
+          "line_end": 354
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 353,
-          "line_end": 356
+          "line_start": 355,
+          "line_end": 358
         }
       ],
       "references": [],
@@ -701,7 +701,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "d3e20fcb34e01606fd254e2e2cdf68c167c6d83f3da1eaba1e4d5763883933e0",
+      "sha256": "431bff78077feae5dc6b4d3d2c7db90eacbed4bd6002284bd5ef105839ddcf26",
       "aliases": [],
       "sections": [
         {
@@ -710,7 +710,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 9,
-          "line_end": 68
+          "line_end": 82
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -721,28 +721,36 @@
           "line_end": 40
         },
         {
+          "heading": "Define before you start",
+          "level": 2,
+          "anchor": "define-before-you-start",
+          "path": "GTT delivery > Define before you start",
+          "line_start": 41,
+          "line_end": 54
+        },
+        {
           "heading": "At any time (even if planning was never declared)",
           "level": 2,
           "anchor": "at-any-time-even-if-planning-was-never-declared",
           "path": "GTT delivery > At any time (even if planning was never declared)",
-          "line_start": 41,
-          "line_end": 51
+          "line_start": 55,
+          "line_end": 65
         },
         {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 52,
-          "line_end": 58
+          "line_start": 66,
+          "line_end": 72
         },
         {
           "heading": "Origin, Priority and the cut point",
           "level": 2,
           "anchor": "origin-priority-and-the-cut-point",
           "path": "GTT delivery > Origin, Priority and the cut point",
-          "line_start": 59,
-          "line_end": 68
+          "line_start": 73,
+          "line_end": 82
         }
       ],
       "references": [],
@@ -3395,7 +3403,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "7c90ba95da7a889ce9c8726869d94fbb258bd7b9b3e6830fe6315227443acabd",
+      "sha256": "e586c233b4da48c480749d6597153558b03950a558760676521cf468a5d7a74c",
       "aliases": [],
       "sections": [
         {
@@ -4867,7 +4875,7 @@
       "title": "GTT Index",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "c56ef27c9eaa765e6d2d56f9ba285d4d8554d8f6a7a277149608070f443e09c9",
+      "sha256": "298bfb1d84d64da80b998dbdbd4d13f7f2118b7e49043000cbef22338982217c",
       "aliases": [],
       "sections": [
         {
@@ -4876,7 +4884,7 @@
           "anchor": "gtt-index",
           "path": "GTT Index",
           "line_start": 1,
-          "line_end": 291
+          "line_end": 292
         },
         {
           "heading": "Quick links",
@@ -4972,31 +4980,31 @@
           "anchor": "enforcement--costs-zero-context",
           "path": "GTT Index > Enforcement — costs zero context",
           "line_start": 171,
-          "line_end": 251
+          "line_end": 252
         },
         {
           "heading": "Human documentation — never loaded by any agent",
           "level": 2,
           "anchor": "human-documentation--never-loaded-by-any-agent",
           "path": "GTT Index > Human documentation — never loaded by any agent",
-          "line_start": 252,
-          "line_end": 266
+          "line_start": 253,
+          "line_end": 267
         },
         {
           "heading": "The one flow that matters",
           "level": 2,
           "anchor": "the-one-flow-that-matters",
           "path": "GTT Index > The one flow that matters",
-          "line_start": 267,
-          "line_end": 280
+          "line_start": 268,
+          "line_end": 281
         },
         {
           "heading": "What loads on every single session",
           "level": 2,
           "anchor": "what-loads-on-every-single-session",
           "path": "GTT Index > What loads on every single session",
-          "line_start": 281,
-          "line_end": 291
+          "line_start": 282,
+          "line_end": 292
         }
       ],
       "references": [
@@ -5395,7 +5403,7 @@
       "title": "GTT delivery",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "32344942345647287cb1ac06701a60bd5f1339c1475e1753bbd6d3b275001608",
+      "sha256": "ce7281e8121b69a408d17f318112247283e88dfbba1901a90201f1dccbaca3cf",
       "aliases": [],
       "sections": [
         {
@@ -5404,7 +5412,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 8,
-          "line_end": 67
+          "line_end": 81
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -5415,28 +5423,36 @@
           "line_end": 39
         },
         {
+          "heading": "Define before you start",
+          "level": 2,
+          "anchor": "define-before-you-start",
+          "path": "GTT delivery > Define before you start",
+          "line_start": 40,
+          "line_end": 53
+        },
+        {
           "heading": "At any time (even if planning was never declared)",
           "level": 2,
           "anchor": "at-any-time-even-if-planning-was-never-declared",
           "path": "GTT delivery > At any time (even if planning was never declared)",
-          "line_start": 40,
-          "line_end": 50
+          "line_start": 54,
+          "line_end": 64
         },
         {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 51,
-          "line_end": 57
+          "line_start": 65,
+          "line_end": 71
         },
         {
           "heading": "Origin, Priority and the cut point",
           "level": 2,
           "anchor": "origin-priority-and-the-cut-point",
           "path": "GTT delivery > Origin, Priority and the cut point",
-          "line_start": 58,
-          "line_end": 67
+          "line_start": 72,
+          "line_end": 81
         }
       ],
       "references": [],
@@ -7617,7 +7633,7 @@
       "title": "GTT delivery",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "32344942345647287cb1ac06701a60bd5f1339c1475e1753bbd6d3b275001608",
+      "sha256": "ce7281e8121b69a408d17f318112247283e88dfbba1901a90201f1dccbaca3cf",
       "aliases": [],
       "sections": [
         {
@@ -7626,7 +7642,7 @@
           "anchor": "gtt-delivery",
           "path": "GTT delivery",
           "line_start": 8,
-          "line_end": 67
+          "line_end": 81
         },
         {
           "heading": "Before the freeze (THINK)",
@@ -7637,28 +7653,36 @@
           "line_end": 39
         },
         {
+          "heading": "Define before you start",
+          "level": 2,
+          "anchor": "define-before-you-start",
+          "path": "GTT delivery > Define before you start",
+          "line_start": 40,
+          "line_end": 53
+        },
+        {
           "heading": "At any time (even if planning was never declared)",
           "level": 2,
           "anchor": "at-any-time-even-if-planning-was-never-declared",
           "path": "GTT delivery > At any time (even if planning was never declared)",
-          "line_start": 40,
-          "line_end": 50
+          "line_start": 54,
+          "line_end": 64
         },
         {
           "heading": "After the freeze",
           "level": 2,
           "anchor": "after-the-freeze",
           "path": "GTT delivery > After the freeze",
-          "line_start": 51,
-          "line_end": 57
+          "line_start": 65,
+          "line_end": 71
         },
         {
           "heading": "Origin, Priority and the cut point",
           "level": 2,
           "anchor": "origin-priority-and-the-cut-point",
           "path": "GTT delivery > Origin, Priority and the cut point",
-          "line_start": 58,
-          "line_end": 67
+          "line_start": 72,
+          "line_end": 81
         }
       ],
       "references": [],
@@ -8830,6 +8854,11 @@
     ],
     "declaration file": [
       "DOC-SESSION-ADAPTER-CONTRACT#declaration-file"
+    ],
+    "define before you start": [
+      "ART-KIRO-STEERING-GTT-DELIVERY#define-before-you-start",
+      "GTT-SKILL#define-before-you-start",
+      "SKILL-GTT-DELIVERY#define-before-you-start"
     ],
     "delivery planning": [
       "AGENTS#delivery-planning",

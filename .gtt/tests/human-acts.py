@@ -28,7 +28,7 @@ check, bash, write, git, commit, tree_hash = acc.check, acc.bash, acc.write, acc
 COVERED = {"freeze", "epic.approve", "promotion.apply", "promotion.undo", "governance.accept", "governance.reject",
            "governance.defer", "change.request", "proposal.withdraw", "pending.answer", "run.execute",
            "idea.add", "idea.park", "idea.drop", "inbox.add", "inbox.park", "inbox.reopen", "inbox.reject", "inbox.drop",
-           "inbox.priority", "adr.new", "adr.adopt", "inbox.migrate"}
+           "inbox.priority", "adr.new", "adr.adopt", "inbox.migrate", "backlog.set"}
 
 
 def human_acts(project):
@@ -208,6 +208,40 @@ def inbox_rule(project, tmp):
     check(rc == 1 and tree_hash(p) == h, "A5 a second draft with the same title is refused", (o + e)[-200:])
 
 
+def backlog_set_rule(project, tmp):
+    print("[backlog.set] the human's act from Sonar: only the table's fields, only what was seen, a refused one changes nothing")
+    p, rc, out = design_project(project, tmp, "bs")
+    bl = ".gtt/scripts/gtt-backlog.sh"
+    write(os.path.join(p, "gtt-domain", "backlog.md"), "# Backlog\n\n## Epics\n\n### EPIC-001 — Base\n**Status:** In Progress\n**Goal:** g\n**Approved:** human — 2026-11-01\n\n#### Stories\n\n"
+          "##### STORY-001 — Schema\n- **Status:** Planned\n- **Estimate:** ?\n- **Done when:** `pytest tests/test_schema.py` passes\n\n### EPIC-002 — Proposal\n**Status:** Proposed\n\n")
+    story, proposed = "STORY-001", "EPIC-002"
+    before = tree_hash(p)
+    rc, o, e = bash(p, bl, "set", story, "--sha", sha_of(p, story), "--fields", json.dumps({"Estimate": "2h"}))
+    check(rc == 0 and tree_hash(p) == before, "a dry run changes nothing", (o + e)[-200:])
+    for label, cmd in (("a field that is not on the table", ("set", story, "--sha", sha_of(p, story), "--fields", json.dumps({"Status": "Done"}), "--apply")),
+                       ("Approved", ("set", story, "--sha", sha_of(p, story), "--fields", json.dumps({"Approved": "x"}), "--apply")),
+                       ("a block that changed", ("set", story, "--sha", "0" * 64, "--fields", json.dumps({"Estimate": "2h"}), "--apply")),
+                       ("no fields", ("set", story, "--sha", sha_of(p, story), "--fields", "{}", "--apply")),
+                       ("an item that does not exist", ("set", "STORY-999", "--sha", "x", "--fields", json.dumps({"Estimate": "2h"}), "--apply")),
+                       ("an approved Epic", ("set", "EPIC-001", "--sha", sha_of(p, "EPIC-001"), "--fields", json.dumps({"Goal": "other"}), "--apply"))):
+        h = tree_hash(p)
+        rc, o, e = bash(p, bl, *cmd)
+        check(rc in (1, 3) and tree_hash(p) == h, f"{label}: refused and nothing changes ({rc})", (o + e)[-200:])
+    rc, o, e = bash(p, bl, "set", proposed, "--sha", sha_of(p, proposed), "--fields", json.dumps({"Goal": "the owner can see the plots", "Scope": "list and map"}), "--apply", "--via", "sonar")
+    text = open(os.path.join(p, "gtt-domain", "backlog.md"), encoding="utf-8").read()
+    check(rc == 0 and "**Goal:** the owner can see the plots" in text and "**Status:** Proposed" in text and "Approved" not in text.split("### EPIC-002")[1], "a Proposed Epic takes its intent, and stays Proposed and unapproved", (o + e)[-200:])
+    rc, o, e = bash(p, bl, "set", story, "--sha", sha_of(p, story), "--fields", json.dumps({"Estimate": "2h"}), "--apply", "--via", "sonar")
+    text = open(os.path.join(p, "gtt-domain", "backlog.md"), encoding="utf-8").read()
+    check(rc == 0 and "- **Estimate:** 2h" in text and "- **Estimate:** ?" not in text, "with the right sha and a field of the table it writes, and only that line", (o + e)[-200:])
+    journal = os.path.join(p, ".gtt", "local", "activity.jsonl")
+    check(os.path.isfile(journal) and '"via": "sonar"' in open(journal, encoding="utf-8").read(), "and the act is in the journal as the human's, via sonar")
+
+
+def sha_of(p, ref):
+    out = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, '.gtt/scripts'); import gtt_backlog as b; print(b.block_sha('gtt-domain/backlog.md', sys.argv[1]))", ref], cwd=p, capture_output=True, text=True)
+    return out.stdout.strip()
+
+
 def refusals_change_nothing(project, tmp):
     print("[acts] a refused act leaves every file as it was")
     p, rc, out = design_project(project, tmp, "rf")
@@ -229,7 +263,7 @@ def main():
     project = os.path.abspath(args.project)
     tmp = tempfile.mkdtemp(prefix="gtt-human-acts-")
     try:
-        for scenario in (declared_acts, freeze_rule, approve_rule, promote_and_undo, ideas_rule, inbox_rule, refusals_change_nothing):
+        for scenario in (declared_acts, freeze_rule, approve_rule, promote_and_undo, ideas_rule, inbox_rule, backlog_set_rule, refusals_change_nothing):
             scenario(project, tmp)
     finally:
         if args.keep:

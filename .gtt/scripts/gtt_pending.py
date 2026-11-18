@@ -18,7 +18,7 @@ the next session deletes what is marked. Only this engine writes the folder.
   gtt_pending.py done REF --in WHERE [--apply]                           mark an answered event as applied
   gtt_pending.py clean [--apply]                                         delete what is marked and the decisions
                                                                          nobody objected to for 7 days
-  gtt_pending.py check [--json]                                          the rules PEN-01 to PEN-10
+  gtt_pending.py check [--json]                                          the rules PEN-01 to PEN-09
   gtt_pending.py notice [--report|--due|--session] [--json]              the block that tells the human
 
 REF is `14`, `ASK-14` or `DEC-015`. All texts, limits and labels are in .gtt/contract/pending.json.
@@ -816,6 +816,12 @@ def cmd_answer(args):
         write_answer(ev, text, c)
         settle(ev, c)
         print(f"{ev['kind']}-{ev['number']:03d} · {ev['title']}  <-  {text}")
+    try:
+        import gtt_activity
+        for ev in targets:
+            gtt_activity.human(getattr(args, "via", None) or "cli", "pending.answer", f"{ev['kind']}-{ev['number']:03d}")
+    except Exception:
+        pass
     return 0
 
 
@@ -890,43 +896,12 @@ def cmd_list(args):
     return 0
 
 
-def offchannel(c):
-    """Documents whose name says `questions` outside the pending folder: a question for the human belongs to an event
-    there, which Sonar shows with its options. Names, folders and depth come from the contract; a name is a hint, so it is a warning."""
-    cfg = c.get("offchannel") or {}
-    names = cfg.get("names") or []
-    if not names:
-        return []
-    token = re.compile(r"(?<![a-z])(?:" + "|".join(re.escape(n) for n in names) + r")(?![a-z])", re.IGNORECASE)
-    skip = set(cfg.get("skip") or [])
-    exts = tuple(cfg.get("extensions") or [".md"])
-    deepest = int(cfg.get("max_depth", 3))
-    found = []
-    for top in cfg.get("dirs") or ["."]:
-        if not os.path.isdir(top):
-            continue
-        for here, dirs, files in os.walk(top):
-            depth = 0 if os.path.normpath(here) == os.path.normpath(top) else os.path.relpath(here, top).count(os.sep) + 1
-            dirs[:] = sorted(d for d in dirs if d not in skip) if depth < deepest and top != "." else []
-            for name in sorted(files):
-                stem, ext = os.path.splitext(name)
-                if ext.lower() in exts and token.search(stem):
-                    found.append(os.path.normpath(os.path.join(here, name)).replace(os.sep, "/"))
-    return sorted(dict.fromkeys(found))[:int(cfg.get("limit", 5))]
-
-
-def offchannel_message(c, path):
-    text = ((c.get("offchannel") or {}).get("message") or {})
-    return (text.get(language()) or text.get("en") or "{path}").replace("{path}", path)
-
-
 def cmd_check(args):
     c = contract()
     found = review_all(c)
-    stray = offchannel(c)
     ok = not any(level == "fail" for _ev, entries in found for _r, level, _m in entries)
     if args.json:
-        emit({"schema": 1, "ok": ok, "offchannel": stray, "events": [{"id": f"{e['kind']}-{e['number']:03d}" if e["number"] else e["name"], "findings":
+        emit({"schema": 1, "ok": ok, "events": [{"id": f"{e['kind']}-{e['number']:03d}" if e["number"] else e["name"], "findings":
               [{"rule": r, "level": lv, "message": m} for r, lv, m in entries]} for e, entries in found]})
     else:
         if not found:
@@ -935,8 +910,6 @@ def cmd_check(args):
             print(f"{ev['name']}: {'ok' if not any(l == 'fail' for _r, l, _m in entries) else 'FAILED'}")
             for rule, level, message in entries:
                 print(f"  {level.upper():4} {rule}: {message}")
-        for path in stray:
-            print(f"WARN PEN-10: {offchannel_message(c, path)}")
     return 0 if ok else 1
 
 
@@ -1073,6 +1046,19 @@ def begin_turn(session, text, c=None):
     return state
 
 
+def findings():
+    """GOV-DEC (what the agent decided that you must know) and DEF-ANSWER-TO-APPLY (you answered and nobody applied it yet)."""
+    import gtt_findings as gf
+    c = contract()
+    s = summary(c)
+    out = []
+    for r in s["decisions"]:
+        out.append(gf.make("GOV-DEC", r["id"], r["path"], "gtt_pending", what=r["title"]))
+    for r in s["to_apply"]:
+        out.append(gf.make("DEF-ANSWER-TO-APPLY", r["id"], r["path"], "gtt_pending", event=r["id"]))
+    return out
+
+
 def main(argv):
     parser = argparse.ArgumentParser(description="GTT pending events")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -1086,7 +1072,7 @@ def main(argv):
     p = sub.add_parser("record"); p.add_argument("ref"); p.add_argument("answer"); p.add_argument("--quote", required=True)
     p.add_argument("--apply", action="store_true"); p.add_argument("--by")
     p = sub.add_parser("answer"); p.add_argument("ref"); p.add_argument("reply", nargs="?"); p.add_argument("--confirmed-by-human", action="store_true")
-    p.add_argument("--confirmed", action="store_true"); p.add_argument("--by")
+    p.add_argument("--confirmed", action="store_true"); p.add_argument("--by"); p.add_argument("--via")
     p = sub.add_parser("done"); p.add_argument("ref"); p.add_argument("--in", dest="where", required=True); p.add_argument("--apply", action="store_true")
     p = sub.add_parser("clean"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("check"); p.add_argument("--json", action="store_true")

@@ -561,13 +561,23 @@ def cmd_add(args, c):
     number = next_number(c, "IDEA")
     ref = f"IDEA-{number:03d}"
     path = os.path.join(c["entries"]["IDEA"]["dirs"][0], f"{ref}.md").replace("\\", "/")
+    about = (getattr(args, "about", None) or "").strip()
+    if about and not re.fullmatch(r"(?:EPIC|STORY|GAP|ADR|PROP|IDEA|ASK|DEC|REV|CHANGE)-[A-Za-z0-9-]+", about):
+        die("--about names a reference: EPIC-001, STORY-003, GAP-004...")
+    if about:
+        now = True          # an input about something that exists is read at the next cut point
     header = header_line(c, author=author_value(c, "human", human_name(args.by)), created=pend.today(), type=L["type"][kind],
-                         now=L["yes"] if now else None, request=getattr(args, "request", None))
+                         now=L["yes"] if now else None, request=getattr(args, "request", None), about=about or None)
     if not args.apply:
         print(f"{PREFIX}: dry run - would create {path}\n(nothing written; re-run with --apply)")
         return 0
     write(path, render_entry(c, ref, title, text, header))
     log_event(ref, None, "new", "human", "created")
+    try:
+        import gtt_activity
+        gtt_activity.human(getattr(args, "via", None) or "cli", "inbox.add", ref)
+    except Exception:
+        pass
     print(f"{PREFIX}: created {path}")
     return 0
 
@@ -1215,7 +1225,7 @@ def build_parser():
         x.add_argument("text", nargs="?")
         x.add_argument("--file")
         x.add_argument("--type", choices=["idea", "solicitud"])
-        for field in ("change", "reason", "trigger", "scope", "impact", "risk", "priority", "by", "request"):
+        for field in ("change", "reason", "trigger", "scope", "impact", "risk", "priority", "by", "request", "about", "via"):
             x.add_argument(f"--{field}")
         x.add_argument("--now", action="store_true")
 
@@ -1256,6 +1266,39 @@ def build_parser():
     x = sub.add_parser("migrate"); x.add_argument("--apply", action="store_true")
     x.set_defaults(func=lambda args, c: __import__("gtt_inbox_migrate").run(args, c))
     return p
+
+
+def findings():
+    """DEF-INBOX-*: what the inbox lacks (section 4.3 of the Sonar order). Hand-written ADR drafts, ideas nobody triaged, proposals whose level
+    is still `por confirmar`, accepted entries without a package and packages the draft left behind."""
+    import gtt_findings as gf
+    import gtt_inbox_reconcile as rec
+    c = contract()
+    if c is None:
+        return []
+    cfg = gf.contract()
+    out, src = [], "gtt_inbox"
+    for e in entries(c):
+        if e["stage"] in ("closed", "rejected", "parked"):
+            continue
+        where = e["path"]
+        if e["type"] == "adr" and e["where"].endswith("adr/drafts") and e["stage"] == "new":
+            problems = rec.draft_problems(e)
+            if problems:
+                out.append(gf.make("DEF-INBOX-ADR-DRAFT", e["ref"], where, src, what="; ".join(problems)))
+            continue
+        if e["kind"] == "IDEA" and e["stage"] == "new":
+            days = days_since(e["since"])
+            if days is not None and days >= int(cfg.get("untriaged_days", 1)):
+                out.append(gf.make("DEF-INBOX-UNTRIAGED", e["ref"], where, src, days=days))
+        if e["kind"] == "PROP" and e["level"] is None:
+            out.append(gf.make("DEF-INBOX-LEVEL", e["ref"], where, src))
+        packages = [l for l in e["trail"] if l["key"] == "package"]
+        if e["stage"] == "accepted" and not packages:
+            out.append(gf.make("DEF-INBOX-NO-PACKAGE", e["ref"], where, src))
+        if packages and packages[-1]["value"].lower().startswith(LB(c)["phrase"]["package_stale"].lower()):
+            out.append(gf.make("DEF-INBOX-PACKAGE-STALE", e["ref"], where, src))
+    return out
 
 
 def main(argv):

@@ -13,7 +13,7 @@ opened only to verify a citation. Everything here is computed from files, never 
 
   gtt_design.py source add FILE --id D [--version N] [--authority A] [--precedence N] [--text EXPORT.md] [--apply]
   gtt_design.py source adopt PATH --id D [--copy] [--apply]
-  gtt_design.py source verify | list [--json] | impact ID
+  gtt_design.py source verify [--json] | list [--json] | impact ID
   gtt_design.py design scaffold EPIC-NNN [--apply]
   gtt_design.py design check [EPIC-NNN] [--pre-freeze] [--approval] [--json]
   gtt_design.py design coverage [--json]
@@ -86,7 +86,7 @@ def frozen():
 
 
 def today():
-    return datetime.date.today().isoformat()
+    return datetime.datetime.now(datetime.timezone.utc).date().isoformat()
 
 
 def die(message, code=2):
@@ -381,25 +381,84 @@ def cmd_source_add(args, adopt=False):
     return 0
 
 
-def cmd_source_verify(args):
+def verify_problems():
+    """([(source id, message)], files checked): a registered source whose file changed, vanished or was edited after it was registered."""
     problems, checked = [], 0
     for row in source_rows():
         if row["sha"] and os.path.isfile(row["path"]):
             checked += 1
             if not (sha256(row["path"]) or "").startswith(row["sha"]):
-                problems.append(f"{row['path']} (`{row['id']}` {row['version']}) no longer matches its registered sha256 {row['sha']}")
+                problems.append((row["id"], f"{row['path']} (`{row['id']}` {row['version']}) no longer matches its registered sha256 {row['sha']}"))
         elif row["sha"]:
-            problems.append(f"{row['path']} (`{row['id']}` {row['version']}) is registered and missing")
+            problems.append((row["id"], f"{row['path']} (`{row['id']}` {row['version']}) is registered and missing"))
     for record in sidecars():
         path = f"{record['dir']}/{record.get('name')}"
         checked += 1
         if sha256(path) != record.get("sha256"):
-            problems.append(f"{path} (`{record.get('id')}` v{record.get('version')}) was edited or removed after it was registered")
+            problems.append((record.get("id"), f"{path} (`{record.get('id')}` v{record.get('version')}) was edited or removed after it was registered"))
+    return problems, checked
+
+
+def cmd_source_verify(args):
+    found, checked = verify_problems()
+    problems = [m for _, m in found]
+    if args.json:
+        print(json.dumps({"schema": 1, "kind": "gtt-source-verify", "checked": checked,
+                          "problems": [{"source": i, "message": m, "epics": sorted(cited_by_epics(i))} for i, m in found]}, indent=2, sort_keys=True))
+        return 1 if problems else 0
     for problem in problems:
         print(f"gtt-source: FAILED - {problem}. Sources are immutable: restore it, or add a new version.", file=sys.stderr)
     if not problems:
         print(f"gtt-source: OK - {checked} registered source file(s) match their hash.")
     return 1 if problems else 0
+
+
+def cited_by_epics(source_id):
+    """The Epics whose design cites the source: [FUENTE: id ...] in `context/design/EPIC-n.md`."""
+    out = set()
+    try:
+        for file, _line, _ref in citations(source_id):
+            found = re.search(r"(EPIC-\d+)\.md$", str(file))
+            if found:
+                out.add(found.group(1))
+    except Exception:
+        pass
+    return out
+
+
+def findings():
+    """DEF-EPIC-DESIGN (no design, a draft, or the first three problems), GOV-COVERAGE (design items no Story builds, once work started)
+    and GOV-SOURCE (a source changed after it was registered, with the Epics that cite it)."""
+    import gtt_findings as gf
+    stories, epics = backlog()
+    out, src = [], "gtt_design"
+    for epic in epics:
+        raw = epic.get("status", "")
+        if raw in ("Proposed", "Completed", "Cancelled", "Done"):
+            continue
+        path = epic_design(epic)
+        design = parse_design(path)
+        where = f"{path}"
+        if design is None:
+            out.append(gf.make("DEF-EPIC-DESIGN", epic["id"], BACKLOG + f":{epic['line']}", src, epic=epic["id"], what="no design" if gf.language() == "en" else "sin diseño"))
+            continue
+        fails, _ = design_problems(design)
+        if design["status"] != "Approved":
+            draft = "draft" if gf.language() == "en" else "borrador"
+            out.append(gf.make("DEF-EPIC-DESIGN", epic["id"], where, src, epic=epic["id"], what=draft + (": " + "; ".join(fails[:3]) if fails else "")))
+        elif fails:
+            out.append(gf.make("DEF-EPIC-DESIGN", epic["id"], where, src, epic=epic["id"], what="; ".join(fails[:3])))
+    for entry in coverage():
+        if entry["missing"] and entry["working"] and not entry["closed"]:
+            out.append(gf.make("GOV-COVERAGE", entry["epic"], BACKLOG, src, epic=entry["epic"], what=brief([f"{k}" for k in entry["missing"]], 6)))
+        elif entry["missing"] and entry["closed"]:
+            out.append(gf.make("GOV-COVERAGE", entry["epic"], BACKLOG, src, epic=entry["epic"], level="WARNING", what=brief([f"{k}" for k in entry["missing"]], 6)))
+    problems, _ = verify_problems()
+    for source_id, message in problems:
+        epics_citing = sorted(cited_by_epics(source_id)) or [None]
+        for epic_id in epics_citing:
+            out.append(gf.make("GOV-SOURCE", epic_id or source_id, SOURCES_MD, src, epic=epic_id, what=message))
+    return out
 
 
 def cmd_source_list(args):
@@ -626,7 +685,7 @@ def cmd_design_check(args):
     findings = check_all(args.epic, args.pre_freeze, args.approval)
     if args.json:
         print(json.dumps({"schema": 1, "kind": "gtt-design-check", "result": "fail" if any(f[0] == "FAIL" for f in findings) else "pass",
-                          "findings": [{"level": l, "where": w, "message": m} for l, w, m in findings], "coverage": coverage()}, indent=2, sort_keys=True))
+                          "findings": [{"level": l, "where": w, "message": m, "ref": (re.search(r"(EPIC-\d+)", w + " " + m) or [None, None])[1], "code": "DESIGN"} for l, w, m in findings], "coverage": coverage()}, indent=2, sort_keys=True))
     else:
         for level, where, message in findings:
             print(f"{level}  {where}: {message}", file=sys.stderr if level == "FAIL" else sys.stdout)
@@ -810,7 +869,7 @@ def main(argv):
         p.add_argument("--authority", choices=AUTHORITIES); p.add_argument("--precedence", type=int); p.add_argument("--text")
         p.add_argument("--copy", action="store_true"); p.add_argument("--apply", action="store_true")
         p.set_defaults(func=lambda a, adopt=(name == "adopt"): cmd_source_add(a, adopt))
-    source.add_parser("verify").set_defaults(func=cmd_source_verify)
+    sv = source.add_parser("verify"); sv.add_argument("--json", action="store_true"); sv.set_defaults(func=cmd_source_verify)
     p = source.add_parser("list"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_source_list)
     p = source.add_parser("impact"); p.add_argument("id"); p.set_defaults(func=cmd_source_impact)
     design = sub.add_parser("design").add_subparsers(dest="action", required=True)

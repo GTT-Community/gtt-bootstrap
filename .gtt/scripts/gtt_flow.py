@@ -689,7 +689,7 @@ def log_change(change_id, reason):
     rows = [i for i in range(start, end) if lines[i].startswith("|")]
     if len(rows) < 2:
         return False
-    row = f"| {datetime.date.today().isoformat()} | {change_id} | {reason.replace('|', '/')} |"
+    row = f"| {datetime.datetime.now(datetime.timezone.utc).date().isoformat()} | {change_id} | {reason.replace('|', '/')} |"
     blank = next((i for i in rows[2:] if not lines[i].replace("|", "").strip()), None)
     if blank is not None:
         lines[blank] = row
@@ -756,7 +756,7 @@ def cmd_promote(args):
                   "Nothing was written: an architectural change needs its ADR in the same set.", file=sys.stderr)
             return 1
         if not has_adr:
-            change_id = f"CHANGE-{datetime.date.today().strftime('%Y%m%d')}-{args.name}"
+            change_id = f"CHANGE-{datetime.datetime.now(datetime.timezone.utc).date().strftime('%Y%m%d')}-{args.name}"
             if not any(e["to"] == STACK for e in spec["files"]):
                 spec["files"].append({"from": None, "to": STACK, "sha_before": sha256(STACK)})
     local_dir()

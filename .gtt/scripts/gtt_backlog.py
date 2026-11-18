@@ -11,6 +11,7 @@ The backlog has two kinds of entry and they are not governed alike (AGENTS.md ->
   check   [backlog.md]   the structural rules below
   summary [backlog.md]   one line: Stories by status, and the Epics still waiting for approval
   json    [backlog.md]   the same, structured
+  set REF --sha SHA --fields JSON [--via sonar] [--apply]   write the fields a person could write by hand (the human's act, from Sonar), refusing a stale block
   reorder [backlog.md] [--apply]   order Epics (per lane) and Stories (per Epic) by `Priority`: urgent first, then normal, then low;
                          stable, never past what is In Progress (section 5.7 of the change-flow order). A dry run until --apply.
 
@@ -109,6 +110,7 @@ def parse(path):
             story["fields"][field] = (story["fields"][field] + " " + line.strip()).strip()
     for item in epics:
         item["status"] = item["fields"].get("Status", "")
+        item["group"] = epic_group(item["title"])
     return stories, epics
 
 
@@ -459,6 +461,114 @@ def set_field(path, ident, name, value):
     return True
 
 
+def block_text(path, ident):
+    """The lines of one Epic or Story as written in the file (its heading to the line before the next heading), or None.
+    What `block_sha` hashes: the form of Sonar sends it back, and a change made meanwhile is refused."""
+    try:
+        with open(path, encoding="utf-8", newline="") as handle:
+            lines = handle.read().replace("\r\n", "\n").split("\n")
+    except OSError:
+        return None
+    stories, epics = parse_lines(lines)
+    item = next((i for i in stories + epics if i["id"] == ident), None)
+    if item is None:
+        return None
+    is_story = ident.startswith("STORY-")
+    end = _span(lines, item["line"] - 1, re.compile(r"^(#|---)") if is_story else re.compile(r"^(#{1,3}\s|---|####\s)"))[1]
+    return "\n".join(lines[item["line"] - 1:end]).rstrip("\n")
+
+
+def block_shas(path):
+    """{ref: sha256} of every Epic and Story in one pass (a page with 200 Stories cannot parse the file 200 times)."""
+    import hashlib
+    try:
+        with open(path, encoding="utf-8", newline="") as handle:
+            lines = handle.read().replace("\r\n", "\n").split("\n")
+    except OSError:
+        return {}
+    stories, epics = parse_lines(lines)
+    out = {}
+    for item in stories + epics:
+        is_story = item["id"].startswith("STORY-")
+        end = _span(lines, item["line"] - 1, re.compile(r"^(#|---)") if is_story else re.compile(r"^(#{1,3}\s|---|####\s)"))[1]
+        out[item["id"]] = hashlib.sha256("\n".join(lines[item["line"] - 1:end]).rstrip("\n").encode("utf-8")).hexdigest()
+    return out
+
+
+def block_sha(path, ident):
+    import hashlib
+    text = block_text(path, ident)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest() if text is not None else None
+
+
+# ----------------------------------------------------------------------------------------------- set: what the human fills in from Sonar
+
+STORY_FIELDS = ("Estimate", "Implements", "Done when", "Blocked by")
+EPIC_FIELDS = ("Goal", "Scope", "Out of Scope", "Estimate", "Priority", "Lane", "Depends on")
+FIELD_MAX = 600
+
+
+def cmd_set(path, ref, sha, fields_json, via, apply):
+    """`set REF --sha SHA --fields '{"Estimate": "1h"}'`: writes only the fields a person could write by hand, in the item they saw.
+    The guards of section 2.2: only the fields of the table; an Epic only while it is `Proposed`; never Status, Approved, Design, Closed or Origin;
+    and the sha of the block must still be the one the page showed (a backlog that changed meanwhile is refused and nothing is written).
+    Prints one JSON line: {ok, ref, changed, left}. Exit 0 = written (or would be, without --apply), 1 = refused, 3 = the backlog changed."""
+    def refuse(code, message):
+        print(json.dumps({"ok": False, "ref": ref, "error": message}, ensure_ascii=False))
+        print(f"gtt-backlog: {message}", file=sys.stderr)
+        return code
+    try:
+        fields = json.loads(fields_json)
+    except (TypeError, ValueError):
+        return refuse(1, "--fields is a JSON object of field names and values")
+    if not isinstance(fields, dict) or not fields:
+        return refuse(1, "--fields is a JSON object of field names and values")
+    loaded = load(path)
+    if loaded is None:
+        return refuse(2, f"cannot read {path}")
+    stories, epics = loaded
+    item = next((i for i in stories + epics if i["id"] == ref), None)
+    if item is None:
+        return refuse(1, f"{ref} is not in {path}")
+    is_story = ref.startswith("STORY-")
+    allowed = STORY_FIELDS if is_story else EPIC_FIELDS
+    if not is_story and item.get("status") != "Proposed":
+        return refuse(1, f"{ref} is `{item.get('status')}`: the fields of an Epic are written only while it is Proposed. To change an approved Epic, leave your input about it (`gtt idea add --about {ref}`)")
+    clean = {}
+    for name, value in fields.items():
+        if name not in allowed:
+            return refuse(1, f"`{name}` is not a field Sonar writes (" + ", ".join(allowed) + "). Status, Approved, Design, Closed and Origin are never written from here")
+        text = " ".join(str(value).replace("\r", " ").replace("\n", " ").split())
+        if not text:
+            return refuse(1, f"`{name}` is empty")
+        if len(text) > FIELD_MAX or any(ord(c) < 32 for c in text):
+            return refuse(1, f"`{name}` is too long or has control characters")
+        if name == "Priority" and text.split(" ")[0].lower() not in PRIORITIES:
+            return refuse(1, "`Priority` is urgent, normal or low")
+        clean[name] = text
+    if (block_sha(path, ref) or "") != (sha or ""):
+        print(json.dumps({"ok": False, "ref": ref, "stale": True, "error": "STALE: the backlog changed while you typed"}))
+        print("gtt-backlog: STALE - the block of " + ref + " is not the one that was shown; nothing was written.", file=sys.stderr)
+        return 3
+    if not apply:
+        print(json.dumps({"ok": True, "ref": ref, "changed": sorted(clean), "dry_run": True}, ensure_ascii=False))
+        return 0
+    changed = [name for name, value in clean.items() if set_field(path, ref, name, value)]
+    try:
+        import gtt_activity
+        gtt_activity.human(via or "cli", "backlog.set", ref)
+    except Exception:
+        pass
+    left = ""
+    try:
+        import gtt_findings as gf
+        left = "; ".join(f["text"] for f in gf.report()["findings"] if f["ref"] == ref and f["plane"] == "definition")
+    except (Exception, SystemExit):
+        pass
+    print(json.dumps({"ok": True, "ref": ref, "changed": changed, "left": left, "sha": block_sha(path, ref)}, ensure_ascii=False))
+    return 0
+
+
 def facts(path):
     loaded = load(path)
     if loaded is None:
@@ -491,8 +601,193 @@ def cmd_json(path):
     return 0
 
 
+# ----------------------------------------------------------------------------------------------- findings (sections 4.1 and 4.3 of the Sonar order)
+
+GROUP = re.compile(r"\s*([A-Z]{1,4}\d{0,3})\s*[·—–:|-]\s")
+HOURS_EMPTY = ("?", "")
+
+
+def epic_group(title):
+    """An upper-case prefix (`E2`, `TX`, `PL1`) before the first separator of a title, or None. It is data of the Epic;
+    a page decides whether two Epics sharing it make a group."""
+    found = GROUP.match(title or "")
+    return found.group(1) if found else None
+
+
+def planning_declared():
+    """True when the project declared delivery planning: its Stories and Epics then owe an estimate."""
+    return os.path.isfile(".gtt/delivery.json")
+
+
+def _value(item, name):
+    return (item["fields"].get(name) or "").strip().strip("`")
+
+
+def _placeholder(text):
+    text = PLACEHOLDER.sub("", text).strip().strip(SEPARATORS)
+    return text.lower() in ("", "?", "tbd", "todo")
+
+
+def next_refs(per_front=2):
+    """The Stories that come next: the one In Progress and the first `per_front` Planned of each front (the `Lane` of their Epic,
+    `main` when none), in the order of the plan, plus the Epics that own them."""
+    loaded = load(DEFAULT)
+    if loaded is None:
+        return set()
+    stories, epics = loaded
+    lane = {e["id"]: (_value(e, "Lane") or "main") for e in epics}
+    state = {e["id"]: normal(e["status"]) for e in epics}
+    taken, out = {}, set()
+    for s in stories:
+        st = normal(s["status"])
+        if not s["epic"] or state.get(s["epic"]) in ("Completed", "Cancelled"):
+            continue
+        front = lane.get(s["epic"], "main")
+        if st == "In Progress":
+            out.add(s["id"])
+            out.add(s["epic"])
+        elif st == "Planned" and taken.get(front, 0) < per_front:
+            taken[front] = taken.get(front, 0) + 1
+            out.add(s["id"])
+            out.add(s["epic"])
+    return out
+
+
+def _open_asks():
+    """{story or epic id: ASK ref} for the open questions that block something."""
+    try:
+        import gtt_pending
+        return {b: r.get("ref") or r.get("id") for r in gtt_pending.summary()["blocking"] for b in (re.findall(r"(?:STORY|EPIC)-\d+", str(r.get("blocks") or "")))}
+    except (Exception, SystemExit):
+        return {}
+
+
+def _gaps():
+    try:
+        import gtt_provenance as pv
+        found = pv.Findings() if hasattr(pv, "Findings") else None
+        gaps, _ = pv.load_gaps(found)
+        return {g["id"]: g for g in gaps}
+    except (Exception, SystemExit):
+        return None
+
+
+def findings(path=DEFAULT):
+    """The definition findings of the plan: what an Epic or a Story still lacks, with the reference it sticks to."""
+    import gtt_findings as gf
+    cfg = gf.contract()
+    loaded = load(path)
+    if loaded is None:
+        return []
+    stories, epics = loaded
+    out, src = [], "gtt_backlog"
+    planning = planning_declared()
+    deferred = [d.lower() for d in cfg.get("deferred_done_when", [])]
+    gap_re = re.compile(cfg.get("gap_cite", r"GAP-\d{3,}"))
+    gaps, asks = _gaps(), _open_asks()
+    declared = {e["id"] for e in epics if _value(e, "Design") and not blank(_value(e, "Design"))}
+    for e in epics:
+        raw = e.get("status", "")
+        where = f"{path}:{e['line']}"
+        if raw in ("Completed", "Cancelled"):
+            continue
+        missing = []
+        if raw == "Proposed":
+            missing = [n for n in ("Goal", "Scope", "Out of Scope") if blank(e["fields"].get(n, ""))]
+            if missing:
+                out.append(gf.make("DEF-EPIC-INTENT", e["id"], where, src, epic=e["id"], what=", ".join(missing)))
+        est = e["fields"].get("Estimate", "")
+        if planning and (blank(est) or _placeholder(est)):
+            out.append(gf.make("DEF-EPIC-ESTIMATE", e["id"], where, src, epic=e["id"]))
+        if raw == "Proposed" and not missing and not (planning and (blank(est) or _placeholder(est))):
+            out.append(gf.make("DEF-EPIC-PROPOSED", e["id"], where, src, epic=e["id"]))
+    epic_status = {e["id"]: e.get("status", "") for e in epics}
+    for s in stories:
+        st = normal(s["status"])
+        if st in ("Done", "Cancelled") or epic_status.get(s["epic"]) in ("Completed", "Cancelled"):
+            continue
+        where, ref, epic = f"{path}:{s['line']}", s["id"], s["epic"]
+        f = s["fields"]
+        if "Estimate" in f:
+            if blank(f["Estimate"]) or _placeholder(f["Estimate"]):
+                out.append(gf.make("DEF-STORY-ESTIMATE", ref, where, src, epic=epic))
+        elif planning:
+            out.append(gf.make("DEF-STORY-ESTIMATE", ref, where, src, epic=epic))
+        if epic in declared and blank(f.get("Implements", "")):
+            out.append(gf.make("DEF-STORY-IMPLEMENTS", ref, where, src, epic=epic))
+        done = f.get("Done when", "")
+        why = None
+        if blank(done):
+            why = "empty" if gf.language() == "en" else "vacío"
+        elif any(d in done.lower() for d in deferred):
+            why = "deferred" if gf.language() == "en" else "diferido"
+        elif not (TEST_PATH.search(done) or RUN_EVIDENCE.search(done)):
+            why = "without executable evidence" if gf.language() == "en" else "sin evidencia ejecutable"
+        if why:
+            out.append(gf.make("DEF-STORY-DONE-WHEN", ref, where, src, epic=epic, what=why))
+        for gid in dict.fromkeys(gap_re.findall(" ".join(v for k, v in f.items() if k not in ("Closed",)))):
+            known = (gaps or {}).get(gid)
+            if gaps is None:
+                break
+            if known and known["kind"] in ("OPEN", "BLOCKING"):
+                out.append(gf.make("DEF-STORY-GAP", ref, where, src, epic=epic, gap=gid, state=known["kind"]))
+            else:
+                out.append(gf.make("DEF-STORY-GAP-STALE", ref, where, src, epic=epic, gap=gid, state="RESOLVED" if known else ("not in the register" if gf.language() == "en" else "fuera del registro")))
+        if st == "Blocked":
+            if ref in asks:
+                out.append(gf.make("DEF-STORY-BLOCKED", ref, where, src, epic=epic, ask=asks[ref]))
+            elif blank(f.get("Blocked by", "")):
+                out.append(gf.make("DEF-STORY-BLOCKED-NOCAUSE", ref, where, src, epic=epic))
+    out.extend(_notes(path, stories, gf, src))
+    return out
+
+
+NOTE_SECTIONS = (("Current Focus", ("In Progress",)), ("Next Work", ("Planned", "In Progress")), ("Blocked", ("Blocked",)))
+
+
+def _notes(path, stories, gf, src):
+    """*Current Focus*, *Next Work* and *Blocked* name a Story that is in another state."""
+    try:
+        with open(path, encoding="utf-8") as handle:
+            lines = handle.read().replace("\r\n", "\n").split("\n")
+    except OSError:
+        return []
+    state = {s["id"]: normal(s["status"]) for s in stories}
+    out, current = [], None
+    for number, line in enumerate(lines, 1):
+        head = re.match(r"^##\s+(.*?)\s*$", line)
+        if head:
+            current = next(((n, ok) for n, ok in NOTE_SECTIONS if head.group(1).lower().startswith(n.lower())), None)
+            continue
+        if line.startswith("#") and not line.startswith("##"):
+            current = None
+        if current is None:
+            continue
+        for ref in dict.fromkeys(re.findall(r"STORY-\d+", line)):
+            if ref in state and state[ref] not in current[1]:
+                out.append(gf.make("DEF-NOTES-STALE", ref, f"{path}:{number}", src, section=current[0], story=ref, state=state[ref]))
+    return out
+
+
 def main(argv):
+    if len(argv) >= 3 and argv[1] == "check" and "--json" in argv[2:]:
+        rest = [a for a in argv[2:] if a != "--json"]
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        print(json.dumps({"schema": 1, "kind": "gtt-backlog-findings", "findings": findings(rest[0] if rest else DEFAULT)}, indent=2, ensure_ascii=False))
+        return 0
     commands = {"check": cmd_check, "summary": cmd_summary, "json": cmd_json}
+    if len(argv) >= 3 and argv[1] == "set":
+        import argparse
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        sp = argparse.ArgumentParser(prog="gtt_backlog.py set")
+        sp.add_argument("ref")
+        sp.add_argument("--sha", required=True)
+        sp.add_argument("--fields", required=True)
+        sp.add_argument("--via", default="cli")
+        sp.add_argument("--backlog", default=DEFAULT)
+        sp.add_argument("--apply", action="store_true")
+        a = sp.parse_args(argv[2:])
+        return cmd_set(a.backlog, a.ref, a.sha, a.fields, a.via, a.apply)
     if len(argv) >= 2 and argv[1] == "reorder":
         rest = [a for a in argv[2:] if a != "--apply"]
         return cmd_reorder(rest[0] if rest else DEFAULT, "--apply" in argv[2:])

@@ -28,20 +28,31 @@ def log_size():
 
 
 def notice(before):
-    """A Story that just moved to Done is a cut point: one line says what waits for triage in the inbox. Nothing is
-    printed when nothing is new, so it costs no tokens; the agent decides what to do with it."""
+    """A Story that just moved to Done is a cut point: one line says what waits for triage in the inbox, and - once the code view exists -
+    offers the review of what was built, once per Story (the log row that closes it is new only once). Nothing is printed when nothing is
+    new, so it costs no tokens; the agent decides what to do with it."""
     try:
         with open(LOG, encoding="utf-8") as handle:
             handle.seek(before)
             rows = [json.loads(line) for line in handle.read().splitlines() if line.strip()]
-        if not any(r.get("kind") == "story" and r.get("to") == "Done" for r in rows):
+        closed = [r["id"] for r in rows if r.get("kind") == "story" and r.get("to") == "Done"]
+        if not closed:
             return
-        if not os.path.isfile(".gtt/scripts/gtt-project.sh") or not os.path.isfile(".gtt/contract/inbox.json"):
-            return
-        done = subprocess.run(["bash", ".gtt/scripts/gtt-project.sh", "inbox-line", "--triage"], capture_output=True, text=True, timeout=20)
-        line = done.stdout.strip()
-        if line:
-            print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": line}}))
+        lines = []
+        if os.path.isfile(".gtt/scripts/gtt_code.py"):
+            spanish = False
+            try:
+                with open(".gtt/methodology.json", encoding="utf-8") as handle:
+                    spanish = json.load(handle).get("language") == "es"
+            except Exception:
+                pass
+            lines.append(("Revisa lo construido: Sonar → Código → " if spanish else "Review what was built: Sonar → Code → ") + ", ".join(closed))
+        if os.path.isfile(".gtt/scripts/gtt-project.sh") and os.path.isfile(".gtt/contract/inbox.json"):
+            done = subprocess.run(["bash", ".gtt/scripts/gtt-project.sh", "inbox-line", "--triage"], capture_output=True, text=True, timeout=20)
+            if done.stdout.strip():
+                lines.insert(0, done.stdout.strip())
+        if lines:
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": " · ".join(lines)}}))
     except Exception:
         pass
 

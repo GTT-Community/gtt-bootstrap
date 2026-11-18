@@ -47,6 +47,7 @@ COLUMNS = ["Planned", "In Progress", "Done"]
 HEALTH_DIR = ".gtt/local/health"
 WATCH_PID = ".gtt/local/sonar-watch.pid"
 WATCH_EVERY = 2            # seconds between looks at the inputs
+SAMPLE_EVERY = 10          # seconds between two samples of the working tree (`git status --porcelain`)
 WATCH_BEAT = 60            # seconds: a render at least this often, so the page never looks abandoned
 WATCH_HOURS = 8
 STALE_AFTER_H = 48         # a health file older than this is reported as stale
@@ -589,32 +590,11 @@ def decisions_list(by_ref, limit=10):
 # ------------------------------------------------------------------------------------------- the Backlog branch
 # Everything here is derived from the backlog and the governed files; what is not written is `null`.
 
-def epic_group(title):
-    """An upper-case prefix (`E2`, `TX`, `PL1`) before the first separator of a title; null when there is none.
-    It only becomes a group when at least two Epics share it (see `build`): a prefix used once is just a word."""
-    found = re.match(r"\s*([A-Z]{1,4}\d{0,3})\s*[·—–:|-]\s", title or "")
-    return found.group(1) if found else None
-
-
-def derived_state(counts):
-    """The state of an Epic read from its live Stories (Cancelled excluded by the caller)."""
-    total = sum(counts.values())
-    if not total:
-        return None
-    if counts["done"] == total:
-        return "done"
-    if counts["in_progress"] or counts["done"]:
-        return "in_progress"
-    if counts["blocked"]:
-        return "blocked"
-    return "planned"
-
-
 def pct_of(part, total):
     return round(100 * part / total) if total else None
 
 
-ADR_STATES = ("accepted", "proposed", "superseded", "deprecated", "rejected", "draft")
+ADR_STATES = ("accepted", "proposed", "superseded", "deprecated", "rejected")
 
 
 def adr_state(raw):
@@ -630,10 +610,10 @@ def adr_state(raw):
 
 
 def adr_list():
-    """Every ADR with its state, date, origin and what it replaces, plus the drafts waiting in `adr/drafts/`."""
+    """Every adopted ADR with its state, date, origin and what it replaces. Drafts are on the Inbox, never here."""
     import glob
     rows = []
-    for group, pattern in (("adr", "gtt-domain/adr/ADR-*.md"), ("draft", "gtt-domain/adr/drafts/*.md")):
+    for group, pattern in (("adr", "gtt-domain/adr/ADR-*.md"),):
         for path in sorted(glob.glob(pattern)):
             base = os.path.basename(path)
             if "TEMPLATE" in base or base.lower() == "readme.md":
@@ -647,7 +627,7 @@ def adr_list():
             ref = found.group(1) if found else os.path.splitext(base)[0]
             title = re.sub(r"^ADR-\d+\s*[-—–:·.]*\s*", "", first_heading(text, base)).strip() or ref
             state = adr_state(status.group(1)) if status else None
-            rows.append({"ref": ref, "title": short(title, 160), "state": "draft" if group == "draft" else state,
+            rows.append({"ref": ref, "title": short(title, 160), "state": state,
                          "status": short(status.group(1).strip(), 160) if status else None,
                          "date": date.group(1) if date else None, "origin": origin.group(1) if origin else None,
                          "supersedes": short(sup.group(1).strip(), 80) if sup else None, "path": path.replace("\\", "/")})
@@ -669,30 +649,108 @@ def proposal_files():
     return rows
 
 
-def quality_of(live, epics_rows):
-    """How complete the plan is, as counts and percentages of what could be wrong. Never a guess: no stories, no number."""
-    n = len(live)
-    done = [x for x in live if x["status"] == "Done"]
-    open_ = [x for x in live if x["status"] != "Done"]
-    rows = {
-        "no_done_when": [x["ref"] for x in live if not x["done_when"]],
-        "done_no_evidence": [x["ref"] for x in done if not x["closed"]],
-        "no_estimate": [x["ref"] for x in open_ if not x["estimate_h"]],
-        "blocked_no_reason": [x["ref"] for x in live if x["status"] == "Blocked" and not x["blocked_by"]],
-        "epics_unapproved": [e["ref"] for e in epics_rows if not e["approved"]],
-    }
-    base = {"no_done_when": n, "done_no_evidence": len(done), "no_estimate": len(open_), "blocked_no_reason": sum(1 for x in live if x["status"] == "Blocked"),
-            "epics_unapproved": len(epics_rows)}
-    return {k: {"count": len(v), "of": base[k], "pct": pct_of(len(v), base[k]), "sample": v[:5]} for k, v in rows.items()}
-
-
-def offchannel_signals(gtt_pending):
-    """A document of questions outside `gtt-domain/pending/` (PEN-10): a hint to register the open ones so this page can show them."""
+def shadow_signals():
+    """Parallel state outside `gtt-domain/` (GTT-SHADOW-STATE): computed by gtt_observe; this only carries it."""
     try:
-        c = gtt_pending.contract()
-        return [{"code": "PEN-10", "level": "WARNING", "ref": path, "text": gtt_pending.offchannel_message(c, path)} for path in gtt_pending.offchannel(c)]
+        import gtt_observe
+        return [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in gtt_observe.observe_shadow()]
     except (Exception, SystemExit):
-        return []                  # a Bootstrap without the pending contract: nothing to say
+        return []
+
+
+def code_snapshot():
+    """The last map of the code (what the watcher or the render left); None when this Bootstrap has no code map or nobody built one yet.
+    A snapshot never builds the index: it is the expensive part."""
+    import gtt_code
+    return gtt_code.last_map()
+
+
+def refresh_code():
+    """The render keeps the code map fresh: an incremental refresh when the index exists (it only reads the files that changed), the first one
+    in the background so the hook that called the render is not held up."""
+    try:
+        import gtt_code
+    except Exception:
+        return
+    if not gtt_code.modules():
+        return
+    if os.path.isfile(gtt_code.INDEX):
+        class A:
+            quiet = True
+        gtt_code.cmd_refresh(A())
+    else:
+        try:
+            subprocess.Popen([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "gtt_code.py"), "refresh", "--quiet"], stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=os.getcwd(), start_new_session=True)
+        except OSError:
+            pass
+
+
+def activity_block(recent, root):
+    """`activity` of the snapshot: what the agent does now, the last three events, the runs and the session the agent saw."""
+    import gtt_activity as ga
+    now = ga.now_state()
+    journal = ga.rows()
+    sources = sorted({r.get("source") for r in journal[-100:] if r.get("source")}) or None
+    events = [{"at": r["at"], "actor": r["actor"], "text": r["text"], "ref": r.get("ref")} for r in recent]
+    for r in journal[-200:]:
+        if r.get("actor") == "human":
+            events.append({"at": r.get("t"), "actor": "human", "text": f"{r.get('op')} {r.get('ref') or ''} · via {r.get('via')}".strip(), "ref": r.get("ref")})
+    events.sort(key=lambda e: e.get("at") or "", reverse=True)
+    runs = []
+    try:
+        import gtt_run
+        runs = (gtt_run.log_entries(gtt_run.contract()) or [])[-5:][::-1]
+    except (Exception, SystemExit):
+        runs = None
+    session = None
+    if os.path.isfile("gtt-domain/session.md"):
+        try:
+            mtime = datetime.datetime.fromtimestamp(os.path.getmtime("gtt-domain/session.md"), datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            session = {"at": mtime, "lines": [short(l, 200) for l in read_text("gtt-domain/session.md").splitlines()[:80]]}
+        except OSError:
+            session = None
+    return {"now": now, "last": events[:3], "events": events[:60], "runs": runs, "session": session, "sources": sources,
+            "journal": bool(journal)}
+
+
+def project_extra():
+    """The method and its state, the ADEs, the workflow policy: the header of the Plan."""
+    out = {"method": None, "ades": None, "workflow": None}
+    try:
+        import gtt_method
+        view = gtt_method.in_force()
+        out["method"] = {"style": view.get("style"), "start": view.get("start"), "status": view.get("status"), "source": view.get("source")}
+    except (Exception, SystemExit):
+        pass
+    ade = read_json(".gtt/ade.json")
+    if isinstance(ade, dict):
+        out["ades"] = {"primary": ade.get("primary"), "participating": ade.get("participating"), "excluded": ade.get("excluded")}
+    try:
+        import gtt_flow
+        values, problems, source = gtt_flow.workflow()
+        out["workflow"] = {"values": values, "source": source, "problems": problems[:3]}
+    except (Exception, SystemExit):
+        pass
+    return out
+
+
+def agreements():
+    """The working agreements: the roles and the preferences blocks, as they are written (team, versioned)."""
+    text = read_text("gtt-domain/working-agreements.md")
+    if not text:
+        return None
+    out = {}
+    for name in ("gtt-roles", "gtt-preferences"):
+        found = re.search(r"```" + name + r"\r?\n(.*?)```", text, re.S)
+        if found:
+            rows = {}
+            for line in found.group(1).splitlines():
+                key, sep, value = line.partition(":")
+                if sep and key.strip() and not key.strip().startswith("#"):
+                    rows[key.strip()] = short(value.strip(), 160)
+            out[name.replace("gtt-", "")] = rows
+    return out or None
 
 
 def build(root, docs=False):
@@ -749,7 +807,15 @@ def build(root, docs=False):
             "goal": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Goal"), 400),
             "approved": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Approved"), 80),
             "origin": origin_of((raw_epics.get(e["id"], {}).get("fields") or {}).get("Origin")),
-            "priority": priority_of((raw_epics.get(e["id"], {}).get("fields") or {}).get("Priority"))})
+            "priority": priority_of((raw_epics.get(e["id"], {}).get("fields") or {}).get("Priority")),
+            "raw_status": e.get("raw_status") or e["status"], "group": e.get("group"), "derived": e.get("derived_state"),
+            "scope": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Scope"), 400),
+            "out_of_scope": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Out of Scope"), 400),
+            "kind": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Kind"), 40),
+            "touches": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Touches"), 200),
+            "build": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Build"), 120),
+            "budget": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Budget"), 200),
+            "design": short((raw_epics.get(e["id"], {}).get("fields") or {}).get("Design"), 160)})
 
     out_stories = []
     for s in stories:
@@ -770,9 +836,6 @@ def build(root, docs=False):
     # Each Epic, read from its own live Stories: derived state, progress, hours, releases, group.
     for e in sorted_epics:
         own = [x for x in out_stories if x["epic"] == e["ref"] and x["status"] != "Cancelled"]
-        e["group"] = epic_group(e["title"])
-        e["derived"] = derived_state({"done": e["stories"]["done"], "in_progress": e["stories"]["in_progress"],
-                                      "blocked": e["stories"]["blocked"], "planned": e["stories"]["planned"]})
         e["pct"] = pct_of(sum(1 for x in own if x["status"] == "Done"), len(own))
         hours_total_e = sum(x["estimate_h"] or 0 for x in own)
         e["hours"] = {"done": round(sum(x["estimate_h"] or 0 for x in own if x["status"] == "Done"), 1), "total": round(hours_total_e, 1)} if hours_total_e else None
@@ -925,6 +988,40 @@ def build(root, docs=False):
         n_live = sum(sum(e["stories"].values()) for e in mine)
         groups.append({"id": g, "epics": len(mine), "stories_done": n_done, "stories_total": n_live, "pct": pct_of(n_done, n_live)})
 
+
+    # The layer of the Plan (sonar.v1, additions of 1.25): what each Epic and Story still lacks, hours and dates, what the agent does now.
+    # Every number comes from the script that owns it; this only carries it. A Bootstrap without that script gives null, never a guess.
+    findings_data = safe(lambda: __import__("gtt_findings").report()) if os.path.isfile(".gtt/contract/findings.json") else None      # an older Bootstrap has no findings contract: null, never a guess
+    delivery_data = safe(lambda: dl.report_data()[0])
+    ready_of = (findings_data or {}).get("readiness") or {}
+    codes_of = collections.defaultdict(list)
+    for f in (findings_data or {}).get("findings", []):
+        if f["plane"] == "definition":
+            codes_of[f["ref"]].append(f["code"])
+    next_set = {f["ref"] for f in (findings_data or {}).get("findings", []) if f.get("next")}
+    epic_rows = {r["epic"]: r for r in (delivery_data or {}).get("epics", [])}
+    shas = safe(lambda: gtt_backlog.block_shas(dl.BACKLOG)) or {}
+    for e in sorted_epics:
+        r = epic_rows.get(e["ref"]) or {}
+        e["ready"] = (ready_of.get(e["ref"]) or {}).get("situation") if findings_data else None
+        e["codes"] = codes_of.get(e["ref"]) if findings_data else None
+        e["percent"] = r.get("percent")
+        e["real_h"], e["active_h"] = r.get("real_h"), r.get("active_h")
+        e["eta"], e["eta_range"] = r.get("eta"), r.get("eta_range")
+        e["sha"] = shas.get(e["ref"])
+    for x in out_stories:
+        fields = (raw_stories.get(x["ref"]) or {}).get("fields") or {}
+        x["ready"] = (ready_of.get(x["ref"]) or {}).get("situation") if findings_data else None
+        x["codes"] = codes_of.get(x["ref"]) if findings_data else None
+        x["next"] = (x["ref"] in next_set) if findings_data else None
+        x["sha"] = shas.get(x["ref"])
+        x["implements"] = short(fields.get("Implements"), 200)
+        x["origin"] = origin_of(fields.get("Origin"))
+        hours_row = next((s for r in epic_rows.values() for s in r.get("story_hours", []) if s["story"] == x["ref"]), None)
+        x["active_h"] = hours_row["active_h"] if hours_row else None
+        x["real_h"] = hours_row["real_h"] if hours_row else None
+    activity = safe(lambda: activity_block(recent, root))
+
     return {
         "schema": SCHEMA, "generated_at": now_utc(),
         "repo": {"path": root, "key": project_key(name), "name": name},
@@ -936,7 +1033,6 @@ def build(root, docs=False):
                     "calibration": {"ratio": calibration.get("ratio"), "uncalibrated": calibration.get("uncalibrated")},
                     "hours": hours, "releases": release_rows, "in_scope": in_scope, "in_progress": len(working),
                     "epics": epics_summary, "decisions": decisions_count, "groups": groups or None},
-        "quality": quality_of(live_out, sorted_epics),
         "adrs": adrs, "proposal_files": safe(proposal_files),
         "columns": COLUMNS, "lanes": lanes, "epics": sorted_epics, "stories": out_stories,
         "next": {"proposals": nxt_props, "epics_to_approve": to_approve, "planned_epics": planned},
@@ -945,12 +1041,24 @@ def build(root, docs=False):
         "working_now": working[:15], "throughput": throughput(out_stories, today),
         "degraded": safe(lambda: dict(degraded((release.get("bootstrap") or {}).get("version")), command=at("gtt update"))),
         "refresh": "watch" if watcher_alive() else "hook",
-        "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals] + offchannel_signals(gtt_pending),
+        "signals": [{"code": s["rule"], "level": s["level"], "ref": s["artifact"], "text": s["detail"]} for s in signals] + shadow_signals(),
         "health": safe(health_checks),
         "recent": recent,
         "ideas": ideas,
         "inbox": inbox, "inbox_counts": inbox_counts, "decisions": safe(lambda: decisions_list(by_ref)), "me": git_user(),
         "docs": safe(collect_docs) if docs else None,
+        "mode": os.environ.get("GTT_SONAR_MODE") or "static",
+        "sources": {"findings": "gtt_findings" if findings_data else None, "delivery": "gtt_delivery" if delivery_data else None,
+                    "activity": (activity or {}).get("sources")},
+        "findings": (findings_data or {}).get("findings"),
+        "readiness": {"counts": (findings_data or {}).get("counts")} if findings_data else None,
+        "activity": activity,
+        "project_extra": safe(project_extra),
+        "agreements": safe(agreements),
+        "shadow": safe(lambda: [{"path": s["artifact"], "level": s["level"]} for s in __import__("gtt_observe").observe_shadow()]),
+        "forecast_range": (delivery_data or {}).get("forecast", {}).get("eta_range") if delivery_data else None,
+        "code": safe(code_snapshot),
+        "prefs": {k: v for k, v in prefs().items() if k in PREF_KEYS or k == "open_epics"} or None,
     }
 
 
@@ -977,12 +1085,16 @@ def embed(data):
     return json.dumps(data, sort_keys=True, ensure_ascii=False).replace("<", "\\u003c").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
 
 
-def csp_for(template_text):
-    """The page may run only the template's own script, by hash; no network, no other source."""
+SERVED_BLOCK = re.compile(r"/\*SERVED\*/.*?/\*END-SERVED\*/", re.S)
+
+
+def csp_for(template_text, served=False):
+    """The page may run only the template's own script, by hash; no other source. Served by the local server it may also talk to its own origin
+    (`connect-src 'self'`); the static page connects to nothing."""
     found = SCRIPT.search(template_text)
     digest = base64_sha256(found.group(1)) if found else ""
     return ("default-src 'none'; script-src 'sha256-%s'; style-src 'unsafe-inline'; font-src file: 'self'; "
-            "base-uri 'none'; form-action 'none'" % digest)
+            "base-uri 'none'; form-action 'none'" % digest) + ("; connect-src 'self'" if served else "")
 
 
 def base64_sha256(text):
@@ -990,13 +1102,16 @@ def base64_sha256(text):
     return base64.b64encode(hashlib.sha256(text.encode("utf-8")).digest()).decode("ascii")
 
 
-def page(repos, fonts_rel, root_template=None):
-    """The HTML for a list of repos, each {"snapshot": {...}} or {"stale": {...}}."""
+def page(repos, fonts_rel, root_template=None, served=False):
+    """The HTML for a list of repos, each {"snapshot": {...}} or {"stale": {...}}. One template, two modes: `static` (no network: commands and
+    text to copy) and `served` (the local server of `gtt sonar`: forms, and a snapshot every 2 s). The served-only code is cut from the static page."""
     with open(root_template or TEMPLATE, encoding="utf-8") as handle:
         template = handle.read()
-    payload = {"schema": "sonar.page.v1", "generated_at": now_utc(), "repos": repos}
+    if not served:
+        template = SERVED_BLOCK.sub("", template)
+    payload = {"schema": "sonar.page.v1", "generated_at": now_utc(), "repos": repos, "mode": "served" if served else "static"}
     # CSP first: it carries a hash of the script, which does not contain the placeholders below.
-    csp = csp_for(template)
+    csp = csp_for(template, served)
     return (template.replace("__SONAR_CSP__", csp).replace("__SONAR_FONTS__", fonts_rel)
             .replace("__SONAR_DATA__", embed(payload)))
 
@@ -1051,7 +1166,7 @@ def cmd_render(args):
                 for name in os.listdir(FONTS):
                     with open(os.path.join(FONTS, name), "rb") as src, open(os.path.join(target, name), "wb") as dst:
                         dst.write(src.read())
-            write_atomic(args.out, page(repos, fonts))
+            write_atomic(args.out, page(repos, fonts, served=bool(args.served)))
             return 0
         root = repo_root()
         if os.path.realpath(root) != os.path.realpath(os.getcwd()) and os.path.isdir(os.path.join(root, ".gtt")):
@@ -1064,6 +1179,7 @@ def cmd_render(args):
         write_atomic(LOCK, str(os.getpid()))
         try:
             reconcile_quietly()
+            refresh_code()
             snap = build(os.getcwd(), docs=True)
             write_atomic(os.path.join(LOCAL, "sonar.json"), json.dumps(snap, indent=2, sort_keys=True, ensure_ascii=False) + "\n")
             write_atomic(os.path.join(LOCAL, "sonar.html"), page([{"snapshot": snap}], "../sonar/fonts"))
@@ -1086,23 +1202,49 @@ def prefs():
     return read_json(PREFS) or {}
 
 
+_GIT_PATHS = {}
+
+
+def git_path(name):
+    """Where git keeps `HEAD` or `index` for this working tree: `git rev-parse --git-path`, so a linked worktree (whose `.git` is a file)
+    is watched too. Asked once per process; None when git says nothing."""
+    if name not in _GIT_PATHS:
+        try:
+            out = subprocess.run(["git", "rev-parse", "--git-path", name], capture_output=True, text=True, timeout=5)
+            _GIT_PATHS[name] = out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
+        except (OSError, subprocess.SubprocessError):
+            _GIT_PATHS[name] = None
+    return _GIT_PATHS[name]
+
+
 def fingerprint():
-    """What changes when the page should change: the backlog, the pending events, the health files, the proposals,
-    the freeze and git's HEAD and index. Names, sizes and mtimes only; nothing is read."""
+    """What changes when the page should change: the backlog, the freeze, the delivery log, the governance backlog, the pending events,
+    the health files, the proposals, the ideas, every file under `context/` and `adr/` (a design edited by hand shows at once) and git's
+    HEAD and index. Names, sizes and mtimes only; nothing is read."""
     marks = []
-    for path in ("gtt-domain/backlog.md", "gtt-domain/.frozen", "gtt-domain/delivery-log.jsonl", ".git/HEAD", ".git/index"):
+    for path in ("gtt-domain/backlog.md", "gtt-domain/.frozen", "gtt-domain/delivery-log.jsonl", "gtt-domain/governance-backlog.json",
+                 ".gtt/local/last-validation.json", git_path("HEAD") or ".git/HEAD", git_path("index") or ".git/index"):
         try:
             st = os.stat(path)
             marks.append((path, st.st_mtime_ns, st.st_size))
         except OSError:
             pass
-    for folder in ("gtt-domain/pending", "gtt-domain/proposals", "gtt-domain/adr", "docs/ideas", HEALTH_DIR):
+    for folder in ("gtt-domain/pending", "gtt-domain/proposals", "gtt-domain/run", "docs/ideas", HEALTH_DIR):
         try:
             for entry in os.scandir(folder):
                 st = entry.stat()
                 marks.append((entry.path, st.st_mtime_ns, st.st_size))
         except OSError:
             pass
+    for tree in ("gtt-domain/context", "gtt-domain/adr"):                      # the whole tree: designs live two levels down
+        for here, _dirs, files in os.walk(tree):
+            for name in files:
+                try:
+                    full = os.path.join(here, name)
+                    st = os.stat(full)
+                    marks.append((full, st.st_mtime_ns, st.st_size))
+                except OSError:
+                    pass
     return hash(tuple(sorted(marks)))
 
 
@@ -1125,6 +1267,11 @@ def cmd_watch(args):
     me = str(os.getpid())
     deadline = time.time() + (args.hours or WATCH_HOURS) * 3600
     seen, last = None, 0.0
+    tree, sampled = None, 0.0
+    try:
+        import gtt_activity
+    except Exception:                                           # a Bootstrap without the journal: no sampling
+        gtt_activity = None
     try:
         while not stop and time.time() < deadline:
             if (read_text(WATCH_PID) or "").split()[:1] != [me]:
@@ -1134,6 +1281,9 @@ def cmd_watch(args):
                 subprocess.run([sys.executable, os.path.abspath(__file__), "render", "--quiet"], stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL, timeout=120)
                 seen, last = fingerprint(), time.time()
+            if gtt_activity is not None and time.time() - sampled >= SAMPLE_EVERY:
+                tree = gtt_activity.sample(tree) if tree is not None else gtt_activity.porcelain()      # what changed in the tree, unattributed
+                sampled = time.time()
             time.sleep(WATCH_EVERY)
     except Exception:                                           # noqa: BLE001 - a watcher never makes noise
         pass
@@ -1163,8 +1313,36 @@ def spawn_watcher():
                      stderr=subprocess.DEVNULL, cwd=os.getcwd(), **flags)
 
 
+PREF_KEYS = {"view": ("plan", "inbox", "activity", "health", "design", "help"), "filter": ("all", "define", "mine", "alerts", "doing", "blocked", "done"),
+             "group": ("lane", "release", "group")}
+
+
 def cmd_prefs(args):
     data = prefs()
+    if getattr(args, "set", None):
+        # The page's own preferences (its start view, its filter, how it groups): a closed list of keys and values, written only here.
+        try:
+            wanted = json.loads(args.set)
+        except ValueError:
+            print("gtt-sonar: --set is a JSON object", file=sys.stderr)
+            return 1
+        if not isinstance(wanted, dict):
+            print("gtt-sonar: --set is a JSON object", file=sys.stderr)
+            return 1
+        for key, value in wanted.items():
+            if key in PREF_KEYS and value in PREF_KEYS[key]:
+                data[key] = value
+            elif key == "open_epics" and isinstance(value, list) and all(isinstance(v, str) and len(v) < 24 for v in value) and len(value) < 200:
+                data[key] = value
+            else:
+                print(f"gtt-sonar: `{key}` is not a preference of the page", file=sys.stderr)
+                return 1
+        if args.apply:
+            os.makedirs(LOCAL, exist_ok=True)
+            write_atomic(PREFS, json.dumps(data, indent=2, sort_keys=True) + "\n")
+        else:
+            print("gtt-sonar: dry run - nothing written (re-run with --apply)")
+            return 0
     if args.open_on_start or args.watch:
         if args.open_on_start:
             data["open_on_start"] = args.open_on_start == "on"
@@ -1244,6 +1422,7 @@ def main(argv):
     r.add_argument("sources", nargs="*")
     r.add_argument("--out")
     r.add_argument("--fonts")
+    r.add_argument("--served", action="store_true", help="the page of the local server: forms and a snapshot every 2 s (the CLI uses it)")
     r.set_defaults(func=cmd_render)
     st = sub.add_parser("start")
     st.set_defaults(func=cmd_start)
@@ -1253,6 +1432,8 @@ def main(argv):
     pf = sub.add_parser("prefs")
     pf.add_argument("--open-on-start", choices=["on", "off"])
     pf.add_argument("--watch", choices=["on", "off"])
+    pf.add_argument("--set")
+    pf.add_argument("--apply", action="store_true")
     pf.set_defaults(func=cmd_prefs)
     args = p.parse_args(argv[1:])
     return args.func(args)

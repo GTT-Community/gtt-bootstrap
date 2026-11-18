@@ -62,11 +62,11 @@ def main():
         found = re.search(r"/\*IDEA-CMD\*/(.*?)/\*END-IDEA-CMD\*/", template, re.S)
         check(found is not None, "the page has one marked command builder")
         builders = [b for b in re.findall(r'"gtt [a-z]+ [a-z]+', template)]
-        check(builders == ['"gtt idea add'], "no other command is assembled in the page: only `gtt idea add`", str(builders))
+        check(set(builders) == {'"gtt idea add'}, "no other command is assembled in the page: only `gtt idea add` (also with --about)", str(builders))
         blocks = re.findall(r"cmdBlock\(([^)]*\)?)\)", template)
         allowed = {"text", "n.command", "p.command", "e.command", "info.command", "snap.compat.command", "snap.degraded.command", "ideaCommand(area.value)", "r.command)"}
         check(all(b.strip() in allowed or b.strip().startswith("ideaCommand") for b in blocks if not b.strip().startswith("text")), "every command block shows the snapshot's command or the idea command", str(blocks))
-        check("command" in template and "n.command" in template and "p.command" in template and "e.command" in template, "every other act shows the snapshot's own `command`")
+        check("command" in template and "n.command" in template and "fix.command" in template and "c.command" in template, "every other act shows the snapshot's own `command` (the need, the finding or the choice)")
         node = shutil.which("node")
         if not node or not found:
             print("  skip  Node is not installed: the escaping of `gtt idea add` was not run")

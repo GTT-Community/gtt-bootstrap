@@ -38,6 +38,20 @@ Until three Stories have been measured the plan is *uncalibrated*: say it.
 4. Run `bash .gtt/scripts/gtt-delivery.sh plan` and give the human the summary it computes, e.g. "With 3 fronts: ~N h of agent,
    finish X, deadline Y -> does not fit. To fit: integrate identity (-5 Stories), cut EPIC-008 (-4 Stories)". Every lever is a `[PROPUESTA]`.
 
+## Define before you start
+
+Before you mark a Story `In Progress`, read what it still lacks: `bash .gtt/scripts/gtt-findings.sh ready STORY-n --json`
+(the session context shows it as `## To define`). Each finding says whose it is (`owner`):
+
+- **`agent`** - yours: define it now and keep going. Fill `Estimate`, `Implements` and `Done when` (an example of the design and
+  executable evidence), update a stale `Blocked by` or a note in *Current Focus* / *Next Work* / *Blocked*. Nobody approves a Story.
+- **`human`** - a decision of theirs (an `Epic` still `Proposed`, an open GAP, an ASK that blocks it): open one ASK
+  (`gtt-pending.sh ask ... --blocks STORY-n`) only if it is not already open, **skip that Story** and take the next one that is ready;
+  tell them once which one you skipped and why.
+- Mark the Story `In Progress` **before you touch code**. Code that changes for 15 minutes with no Story In Progress is itself a finding.
+- The human may paste a line from Sonar ("Define STORY-n before starting it: ... My input: ..."). Their words after `My input:` are
+  their input for that gap: put it in the Story (or the design, through the change flow if it changes the design) and go on.
+
 ## At any time (even if planning was never declared)
 
 `bash .gtt/scripts/gtt-delivery.sh check` and `summary` report three signals with or without a declaration: `DLV-NO-PLAN` (many open

@@ -1,0 +1,681 @@
+{
+  "schema": 1,
+  "contract_version": 1,
+  "notice": "Findings contract: the shape every detection takes in GTT Sonar and gtt-findings.sh, with data only. The scripts that own each fact emit the findings; gtt_findings.py joins them, derives the situation of each item and has no rules of its own. Texts are es/en; {placeholders} are filled by the emitting script.",
+  "planes": [
+    "definition",
+    "governance",
+    "delivery",
+    "code"
+  ],
+  "levels": [
+    "NOTICE",
+    "WARNING",
+    "BLOCKING"
+  ],
+  "next_per_front": 2,
+  "placeholder_values": [
+    "?",
+    "tbd",
+    "todo",
+    "<>"
+  ],
+  "deferred_done_when": [
+    "se definen al implementar",
+    "se definirá al implementar",
+    "tbd",
+    "to be defined",
+    "to be determined",
+    "por definir",
+    "a definir",
+    "definir al implementar"
+  ],
+  "gap_cite": "GAP-\\d{3,}",
+  "shadow": {
+    "names": [
+      "PREGUNTAS.md",
+      "QUESTIONS.md",
+      "TABLERO.md",
+      "BOARD.md",
+      "KANBAN.md",
+      "decisiones.md",
+      "DECISIONS.md",
+      "TODO.md",
+      "TASKS.md",
+      "STATUS.md",
+      "ESTADO.md"
+    ],
+    "backlog_name": "BACKLOG.md",
+    "doc_ref_min": 3,
+    "doc_dir": "docs",
+    "doc_skip": [
+      "sources",
+      "ideas",
+      "archivo"
+    ],
+    "status_words": [
+      "abierta",
+      "abierto",
+      "pendiente",
+      "open",
+      "pending",
+      "blocked",
+      "bloqueada",
+      "bloqueado",
+      "done",
+      "hecha",
+      "hecho",
+      "lista",
+      "listo",
+      "in progress",
+      "en curso"
+    ],
+    "recent_days": 7,
+    "max_depth": 3,
+    "skip": [
+      "node_modules",
+      ".git",
+      ".gtt",
+      "gtt-domain",
+      "dist",
+      "build",
+      "vendor",
+      ".venv"
+    ]
+  },
+  "health_dir": ".gtt/local/health",
+  "codes": {
+    "DEF-EPIC-INTENT": {
+      "plane": "definition",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "missing: {what}; the Epic is still a proposal",
+        "es": "falta: {what}; la épica sigue siendo una propuesta"
+      },
+      "fix": {
+        "fields": [
+          "Goal",
+          "Scope",
+          "Out of Scope"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "missing: {what}; the Epic is still a proposal",
+          "es": "falta: {what}; la épica sigue siendo una propuesta"
+        }
+      }
+    },
+    "DEF-EPIC-DESIGN": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "its design is not ready: {what}",
+        "es": "su diseño no está listo: {what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Complete the design of {ref}: {what}.",
+          "es": "Completa el diseño de {ref}: {what}."
+        }
+      }
+    },
+    "DEF-EPIC-ESTIMATE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "no Estimate (delivery planning is declared)",
+        "es": "sin Estimate (la planificación de entrega está declarada)"
+      },
+      "fix": {
+        "fields": [
+          "Estimate"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Estimate {ref}.",
+          "es": "Estima {ref}."
+        }
+      }
+    },
+    "DEF-EPIC-PROPOSED": {
+      "plane": "definition",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "complete proposal, waiting for your approval",
+        "es": "propuesta completa, espera tu aprobación"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": "gtt approve {ref}",
+        "chat": {
+          "en": "complete proposal, waiting for your approval",
+          "es": "propuesta completa, espera tu aprobación"
+        }
+      }
+    },
+    "DEF-STORY-ESTIMATE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "no estimate",
+        "es": "sin estimación"
+      },
+      "fix": {
+        "fields": [
+          "Estimate"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Define {ref} before starting it: it has no estimate. My input: ",
+          "es": "Define {ref} antes de empezarla: falta la estimación. Mi aporte: "
+        }
+      }
+    },
+    "DEF-STORY-IMPLEMENTS": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "no `Implements`: which part of the design does it build?",
+        "es": "sin `Implements`: ¿qué parte del diseño construye?"
+      },
+      "fix": {
+        "fields": [
+          "Implements"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Define {ref}: say which parts of the design it implements.",
+          "es": "Define {ref}: di qué partes del diseño implementa."
+        }
+      }
+    },
+    "DEF-STORY-DONE-WHEN": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "`Done when` is {what}",
+        "es": "`Done when` está {what}"
+      },
+      "fix": {
+        "fields": [
+          "Done when"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Define {ref}: its `Done when` needs evidence a command can check.",
+          "es": "Define {ref}: su `Done when` necesita evidencia que un comando pueda comprobar."
+        }
+      }
+    },
+    "DEF-STORY-GAP": {
+      "plane": "definition",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "cites {gap}, still {state}",
+        "es": "cita {gap}, que sigue {state}"
+      },
+      "fix": {
+        "fields": [],
+        "about": true,
+        "command": null,
+        "chat": {
+          "en": "cites {gap}, still {state}",
+          "es": "cita {gap}, que sigue {state}"
+        }
+      }
+    },
+    "DEF-STORY-GAP-STALE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "cites {gap}, which is {state}",
+        "es": "cita {gap}, que está {state}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Update {ref}: it cites {gap}, which is {state}.",
+          "es": "Actualiza {ref}: cita {gap}, que está {state}."
+        }
+      }
+    },
+    "DEF-STORY-BLOCKED": {
+      "plane": "definition",
+      "owner": "human",
+      "level": "WARNING",
+      "text": {
+        "en": "blocked by {ask}",
+        "es": "bloqueada por {ask}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "blocked by {ask}",
+          "es": "bloqueada por {ask}"
+        }
+      }
+    },
+    "DEF-STORY-BLOCKED-NOCAUSE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "Blocked, and no ASK or `Blocked by` says why",
+        "es": "Bloqueada, y ningún ASK ni `Blocked by` dice por qué"
+      },
+      "fix": {
+        "fields": [
+          "Blocked by"
+        ],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Say why {ref} is blocked (`Blocked by`) or open an ASK.",
+          "es": "Di por qué {ref} está bloqueada (`Blocked by`) o abre un ASK."
+        }
+      }
+    },
+    "DEF-NOTES-STALE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "{section} names {story}, which is {state}",
+        "es": "{section} nombra a {story}, que está {state}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Update {section} in the backlog: {story} is {state}.",
+          "es": "Actualiza {section} en el backlog: {story} está {state}."
+        }
+      }
+    },
+    "DEF-ANSWER-TO-APPLY": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "you answered {event}; nobody applied it yet",
+        "es": "respondiste {event}; nadie lo ha aplicado"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Apply my answer to {event} and mark it done.",
+          "es": "Aplica mi respuesta a {event} y márcala hecha."
+        }
+      }
+    },
+    "DEF-INBOX-ADR-DRAFT": {
+      "plane": "definition",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "ADR draft incomplete: {what}",
+        "es": "borrador de ADR incompleto: {what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "ADR draft incomplete: {what}",
+          "es": "borrador de ADR incompleto: {what}"
+        }
+      }
+    },
+    "DEF-INBOX-UNTRIAGED": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "idea without triage for {days} days",
+        "es": "idea sin triage hace {days} días"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Triage {ref}.",
+          "es": "Haz el triage de {ref}."
+        }
+      }
+    },
+    "DEF-INBOX-LEVEL": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "proposal with level `por confirmar`",
+        "es": "propuesta con nivel `por confirmar`"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Supersede {ref} with its real level.",
+          "es": "Reemplaza {ref} con su nivel real."
+        }
+      }
+    },
+    "DEF-INBOX-NO-PACKAGE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "accepted and without a package",
+        "es": "aceptada y sin paquete"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Prepare the package of {ref}.",
+          "es": "Prepara el paquete de {ref}."
+        }
+      }
+    },
+    "DEF-INBOX-PACKAGE-STALE": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "package out of date: the draft changed after it",
+        "es": "paquete desactualizado: el borrador cambió después"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Rebuild the package of {ref}.",
+          "es": "Rehaz el paquete de {ref}."
+        }
+      }
+    },
+    "GOV-GAP": {
+      "plane": "governance",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "{gap} ({kind}): {topic}",
+        "es": "{gap} ({kind}): {topic}"
+      },
+      "fix": {
+        "fields": [],
+        "about": true,
+        "command": null,
+        "chat": {
+          "en": "{gap} ({kind}): {topic}",
+          "es": "{gap} ({kind}): {topic}"
+        }
+      }
+    },
+    "GOV-SOURCE": {
+      "plane": "governance",
+      "owner": "agent",
+      "level": "WARNING",
+      "text": {
+        "en": "source changed or broken: {what}",
+        "es": "fuente cambiada o rota: {what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Propose the change that follows from the source: {what}.",
+          "es": "Propón el cambio que sigue de la fuente: {what}."
+        }
+      }
+    },
+    "GOV-COVERAGE": {
+      "plane": "governance",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "design items no Story builds: {what}",
+        "es": "ítems del diseño que ninguna historia construye: {what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Add Stories for {ref}: {what}.",
+          "es": "Agrega historias para {ref}: {what}."
+        }
+      }
+    },
+    "GOV-OBSERVATION": {
+      "plane": "governance",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "{what}",
+        "es": "{what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "{what}",
+          "es": "{what}"
+        }
+      }
+    },
+    "GOV-VALIDATION": {
+      "plane": "governance",
+      "owner": "agent",
+      "level": "WARNING",
+      "text": {
+        "en": "check `{check}` {state}",
+        "es": "el chequeo `{check}` {state}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Fix the check `{check}`: {state}.",
+          "es": "Corrige el chequeo `{check}`: {state}."
+        }
+      }
+    },
+    "GOV-DEC": {
+      "plane": "governance",
+      "owner": "human",
+      "level": "WARNING",
+      "text": {
+        "en": "the agent decided: {what}",
+        "es": "el agente decidió: {what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "the agent decided: {what}",
+          "es": "el agente decidió: {what}"
+        }
+      }
+    },
+    "GOV-RUN": {
+      "plane": "governance",
+      "owner": "human",
+      "level": "NOTICE",
+      "text": {
+        "en": "{run} is ready to run",
+        "es": "{run} está listo para correr"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": "gtt run {n}",
+        "chat": {
+          "en": "{run} is ready to run",
+          "es": "{run} está listo para correr"
+        }
+      }
+    },
+    "GTT-SHADOW-STATE": {
+      "plane": "governance",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "parallel state outside gtt-domain/: {path}",
+        "es": "estado paralelo fuera de gtt-domain/: {path}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Migrate {path} into gtt-domain/ and archive the file.",
+          "es": "Migra {path} a gtt-domain/ y archiva el archivo."
+        }
+      }
+    },
+    "DLV-FINDING": {
+      "plane": "delivery",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "{what}",
+        "es": "{what}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "{what}",
+          "es": "{what}"
+        }
+      }
+    },
+    "DEF-WORK-NO-STORY": {
+      "plane": "definition",
+      "owner": "agent",
+      "level": "NOTICE",
+      "text": {
+        "en": "code has been changing for {minutes} min with no Story In Progress{probable}",
+        "es": "el código lleva {minutes} min cambiando sin ninguna historia En curso{probable}"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Mark the Story you are building as In Progress.",
+          "es": "Marca como In Progress la historia que construyes."
+        }
+      }
+    },
+    "GTT-DEPENDS": {
+      "plane": "code",
+      "owner": "agent",
+      "level": "WARNING",
+      "text": {
+        "en": "{frm} depends on {to}, which stack.md 5 does not allow ({count} import(s), e.g. {example})",
+        "es": "{frm} depende de {to}, y stack.md 5 no lo permite ({count} importación(es), p. ej. {example})"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "Remove the dependency of {frm} on {to} ({example}), or propose the change of the rule in stack.md 5.",
+          "es": "Quita la dependencia de {frm} sobre {to} ({example}), o propone el cambio de la regla en stack.md 5."
+        }
+      }
+    },
+    "CODE-EMPTY": {
+      "plane": "code",
+      "owner": null,
+      "level": "NOTICE",
+      "text": {
+        "en": "{path} is declared in stack.md and has no code yet",
+        "es": "{path} está declarado en stack.md y todavía no tiene código"
+      },
+      "fix": {
+        "fields": [],
+        "about": false,
+        "command": null,
+        "chat": {
+          "en": "",
+          "es": ""
+        }
+      }
+    }
+  },
+  "untriaged_days": 1,
+  "owners_extra": [
+    "gtt_activity"
+  ],
+  "code": {
+    "exclude": [
+      "vendor/",
+      "node_modules/",
+      ".gtt/",
+      "gtt-domain/",
+      ".git/",
+      "dist/",
+      "build/",
+      "__pycache__/",
+      ".venv/",
+      "venv/",
+      "target/",
+      ".next/",
+      "coverage/",
+      ".claude/",
+      ".kiro/",
+      ".cursor/",
+      ".agents/",
+      ".openhands/",
+      ".github/",
+      "docs/"
+    ],
+    "languages": [
+      "python",
+      "js/ts",
+      "go",
+      "java/kotlin",
+      "csharp",
+      "ruby",
+      "php",
+      "rust"
+    ]
+  }
+}

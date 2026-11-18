@@ -256,6 +256,8 @@ delivers, how one knows it is done and - once done - what closed it (`Closed`:
 the date and the commit or PR and tests that passed, from what actually
 happened).
 
+**Start only a Story that is ready** (`gtt-findings.sh ready STORY-n`) and mark it `In Progress` before you touch code: define your own gaps first; skip the ones that wait for the human.
+
 In `.gtt/docs/agents/operations.md` → *Backlog in detail*.
 
 ## Agent roles and the evidence boundary

@@ -780,6 +780,13 @@ def cmd_execute(args):
     return 1
 
 
+def findings():
+    """GOV-RUN: a reviewed plan waits for the human to run it (`gtt run n`)."""
+    import gtt_findings as gf
+    c = contract()
+    return [gf.make("GOV-RUN", r["id"], r["path"], "gtt_run", run=r["id"], n=r["number"]) for r in listing(c) if r["state"] == "ready"]
+
+
 def main(argv):
     parser = argparse.ArgumentParser(description="GTT simple execution")
     sub = parser.add_subparsers(dest="cmd", required=True)
