@@ -328,6 +328,12 @@ Settle simple, reversible questions yourself: take the simplest option and conti
 
 In `.gtt/docs/agents/operations.md` → *Pending events*.
 
+## Disk and work copies
+
+Before creating a work copy (a Git worktree) or launching agents in parallel, run `bash .gtt/scripts/gtt-disk.sh check`; when an agent or a Story ends, remove its merged, clean copy with `gtt-disk.sh prune <path> --apply`. By default at most 3 work copies, 15 GB and 10 GB free. It never blocks ordinary work, and only the human changes the limits (`gtt-disk.sh set`).
+
+In `.gtt/docs/agents/operations.md` → *Disk and work copies*.
+
 ## Working without unnecessary interruption
 
 In `.gtt/docs/agents/operations.md` → *Working without unnecessary interruption*.

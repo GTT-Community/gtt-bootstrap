@@ -209,6 +209,30 @@ with `git commit --no-verify`, so the guaranteed layer is CI: run
 
 ---
 
+## Disk: agents never run you out of space
+
+Agents that work in parallel each get a work copy (a Git worktree) with its own dependencies, and a disk that fills stops
+all of them at once. So one rule is in force by default, for every ADE: **at most 3 work copies at a time, work copies and
+ADE folders under 15 GB, at least 10 GB free.** The agent runs `bash .gtt/scripts/gtt-disk.sh check` before creating a
+work copy or launching agents, removes a finished copy that is already merged (`gtt-disk.sh prune <path> --apply`), installs
+dependencies with the frozen, offline install of its package manager, and keeps dumps, audio, test data and test reports
+in `/tmp`. It never blocks ordinary work.
+
+The numbers are yours. **Keeping the default is recommended**: a full disk can corrupt the work in progress, and cleaning it
+afterwards costs more than the limits ever did. If your machine is big enough to want other numbers:
+
+```bash
+bash .gtt/scripts/gtt-disk.sh status                         # the limits in force
+bash .gtt/scripts/gtt-disk.sh set --max-copies 5 --apply     # more copies (it warns first)
+bash .gtt/scripts/gtt-disk.sh set --max-gb 40 --min-free-gb 30 --apply
+bash .gtt/scripts/gtt-disk.sh set --off --apply              # no rule: not recommended
+bash .gtt/scripts/gtt-disk.sh set --default --apply          # back to the default
+```
+
+It is saved in `.gtt/local/disk.json` on that machine only (never committed), and an agent cannot change it.
+
+---
+
 ## Sonar: see everything in one page
 
 GTT Sonar is the visible face of observation. `gtt sonar` generates one HTML page from the project's own state and opens it;

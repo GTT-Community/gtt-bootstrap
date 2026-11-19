@@ -212,6 +212,30 @@ el CI: ejecuta `gtt-validate.sh` y `gtt-check-stack.sh` sobre el pull request.
 
 ---
 
+## Disco: los agentes nunca te dejan sin espacio
+
+Los agentes que trabajan en paralelo reciben cada uno una copia de trabajo (un worktree de Git) con sus propias dependencias,
+y un disco lleno los detiene a todos a la vez. Por eso rige por defecto una regla, igual para todos los ADE: **como máximo
+3 copias de trabajo a la vez, copias de trabajo y carpetas de los ADE bajo 15 GB, al menos 10 GB libres.** El agente corre
+`bash .gtt/scripts/gtt-disk.sh check` antes de crear una copia o lanzar agentes, borra la copia terminada que ya está integrada
+(`gtt-disk.sh prune <ruta> --apply`), instala dependencias con la instalación congelada y sin red de su gestor de paquetes, y
+deja volcados, audios, datos de prueba y reportes de pruebas en `/tmp`. Nunca bloquea el trabajo ordinario.
+
+Los números son tuyos. **Se recomienda dejar los de por defecto**: un disco lleno puede corromper el trabajo en curso y
+limpiarlo después cuesta más que lo que costaron los límites. Si tu máquina es lo bastante grande para otros números:
+
+```bash
+bash .gtt/scripts/gtt-disk.sh status                         # los límites vigentes
+bash .gtt/scripts/gtt-disk.sh set --max-copies 5 --apply     # más copias (avisa antes)
+bash .gtt/scripts/gtt-disk.sh set --max-gb 40 --min-free-gb 30 --apply
+bash .gtt/scripts/gtt-disk.sh set --off --apply              # sin regla: no se recomienda
+bash .gtt/scripts/gtt-disk.sh set --default --apply          # de vuelta al valor por defecto
+```
+
+Se guarda en `.gtt/local/disk.json` solo en esa máquina (nunca se versiona) y un agente no puede cambiarlo.
+
+---
+
 ## Sonar: todo en una página
 
 GTT Sonar es la cara visible de la observación. `gtt sonar` genera una página HTML desde el propio estado del proyecto y la abre;

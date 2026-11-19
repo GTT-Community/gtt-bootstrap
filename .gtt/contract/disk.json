@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "notice": "Disk and work copies contract: the default limits that keep agents from filling the disk, the bounds a person may set, and the messages gtt-disk.sh prints (es/en). Data only. The numbers are the default rule; a person changes them only through `gtt-disk.sh set` (a human act), which writes .gtt/local/disk.json on that machine. The rule is advice with numbers: it never blocks work.",
+  "defaults": {
+    "max_work_copies": 3,
+    "max_gb": 15,
+    "min_free_gb": 10
+  },
+  "bounds": {
+    "max_work_copies": [1, 50],
+    "max_gb": [1, 4000],
+    "min_free_gb": [0, 4000]
+  },
+  "state": ".gtt/local/disk.json",
+  "stray": {
+    "note": "What does not belong inside a work copy: it goes to a temporary folder and is deleted when done. Names only; the search skips node_modules and .git and never goes deeper than 4 levels.",
+    "dirs": ["playwright-report", "test-results"],
+    "extensions": [".dump", ".sql", ".sql.gz", ".wav", ".mp3", ".m4a", ".ogg", ".flac"],
+    "max_depth": 4
+  },
+  "messages": {
+    "en": {
+      "ok": "gtt-disk: ok - {copies} of {max_copies} work copies, {gb} GB of {max_gb} GB, {free} GB free",
+      "head": "gtt-disk: {copies} of {max_copies} work copies, {gb} GB of {max_gb} GB, {free} GB free",
+      "off": "gtt-disk: the disk rule is off on this machine (set by a person with `gtt-disk.sh set --off`).",
+      "copies": "- {copies} work copies, the limit is {max_copies}: close a finished one before creating another.",
+      "size": "- work copies and ADE folders take {gb} GB, the limit is {max_gb} GB: clean up before launching agents in parallel.",
+      "free": "- only {free} GB free on this disk (minimum {min_free} GB): clean up before going on.",
+      "merged": "- removable (merged into {base}, nothing uncommitted, idle): {path}",
+      "merged_apply": "  remove them all: bash .gtt/scripts/gtt-disk.sh prune --apply (one you finished yourself: prune <path> --apply)",
+      "heavy": "- not merged yet, delete at least its dependencies when you are done: {path} ({node_modules} GB in node_modules)",
+      "stray": "- {count} item(s) that belong in /tmp, not in a work copy: {sample}",
+      "store": "- the pnpm store ({store}) is on another disk than the project: pnpm copies instead of linking. Put the store on the project's disk (`pnpm config set store-dir <path>`).",
+      "prune_none": "gtt-disk: no work copy is both merged and clean; nothing to remove.",
+      "prune_dry": "gtt-disk: dry run - would remove {count} work copy(ies); nothing was changed (re-run with --apply):",
+      "prune_done": "gtt-disk: removed {count} work copy(ies) and pruned the list.",
+      "prune_fail": "gtt-disk: could not remove {path}: {why}",
+      "status": "gtt-disk: limits in force - {max_copies} work copies, {max_gb} GB, {min_free} GB free ({source}).",
+      "source_default": "the default rule",
+      "source_custom": "set by a person for this machine",
+      "set_dry": "gtt-disk: dry run - nothing written (re-run with --apply).",
+      "set_done": "gtt-disk: saved in {state}.",
+      "set_default": "gtt-disk: back to the default rule.",
+      "warn": "Careful. These limits are what keeps a disk from filling when several agents work at once. A full disk stops every agent at the same moment and can corrupt the work in progress, and cleaning a disk afterwards costs more than keeping the limits. Recommended: keep the default ({d_copies} work copies, {d_gb} GB, {d_free} GB free).",
+      "warn_off": "Careful. With the rule off nothing watches the disk: work copies pile up and one run can fill it. Recommended: keep it on, even with higher limits.",
+      "bad_value": "gtt-disk: {name} must be a whole number from {low} to {high}.",
+      "not_git": "gtt-disk: this folder is not inside a Git repository; there are no work copies to look at."
+    },
+    "es": {
+      "ok": "gtt-disk: ok - {copies} de {max_copies} copias de trabajo, {gb} GB de {max_gb} GB, {free} GB libres",
+      "head": "gtt-disk: {copies} de {max_copies} copias de trabajo, {gb} GB de {max_gb} GB, {free} GB libres",
+      "off": "gtt-disk: la regla de disco está apagada en esta máquina (la dejó así una persona con `gtt-disk.sh set --off`).",
+      "copies": "- {copies} copias de trabajo, el máximo es {max_copies}: cierra una terminada antes de crear otra.",
+      "size": "- las copias de trabajo y las carpetas de los ADE ocupan {gb} GB, el máximo es {max_gb} GB: limpia antes de lanzar agentes en paralelo.",
+      "free": "- solo quedan {free} GB libres en este disco (mínimo {min_free} GB): limpia antes de seguir.",
+      "merged": "- se puede borrar (ya está en {base}, sin cambios pendientes, sin uso reciente): {path}",
+      "merged_apply": "  borrarlas todas: bash .gtt/scripts/gtt-disk.sh prune --apply (una que terminaste tú: prune <ruta> --apply)",
+      "heavy": "- aún no está integrada; al terminar borra al menos sus dependencias: {path} ({node_modules} GB en node_modules)",
+      "stray": "- {count} elemento(s) que van a /tmp y no dentro de una copia de trabajo: {sample}",
+      "store": "- el almacén de pnpm ({store}) está en otro disco que el proyecto: pnpm copia en vez de enlazar. Pon el almacén en el disco del proyecto (`pnpm config set store-dir <ruta>`).",
+      "prune_none": "gtt-disk: ninguna copia de trabajo está integrada y limpia a la vez; no hay nada que borrar.",
+      "prune_dry": "gtt-disk: simulacro - borraría {count} copia(s) de trabajo; no se cambió nada (repite con --apply):",
+      "prune_done": "gtt-disk: borré {count} copia(s) de trabajo y limpié la lista.",
+      "prune_fail": "gtt-disk: no pude borrar {path}: {why}",
+      "status": "gtt-disk: límites vigentes - {max_copies} copias de trabajo, {max_gb} GB, {min_free} GB libres ({source}).",
+      "source_default": "la regla por defecto",
+      "source_custom": "fijados por una persona para esta máquina",
+      "set_dry": "gtt-disk: simulacro - no se escribió nada (repite con --apply).",
+      "set_done": "gtt-disk: guardado en {state}.",
+      "set_default": "gtt-disk: de vuelta a la regla por defecto.",
+      "warn": "Ojo. Estos límites son lo que evita que se llene el disco cuando varios agentes trabajan a la vez. Un disco lleno detiene a todos los agentes al mismo tiempo y puede corromper el trabajo en curso, y limpiarlo después cuesta más que mantener los límites. Recomendado: deja los de por defecto ({d_copies} copias de trabajo, {d_gb} GB, {d_free} GB libres).",
+      "warn_off": "Ojo. Con la regla apagada nada vigila el disco: las copias de trabajo se acumulan y una sola corrida puede llenarlo. Recomendado: dejarla encendida, aunque sea con límites más altos.",
+      "bad_value": "gtt-disk: {name} debe ser un número entero de {low} a {high}.",
+      "not_git": "gtt-disk: esta carpeta no está dentro de un repositorio Git; no hay copias de trabajo que mirar."
+    }
+  }
+}

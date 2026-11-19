@@ -200,6 +200,10 @@ RUN_EXECUTE = ("GTT governance (human-decision-authority): executing a run is th
                "with the message `gtt-run.sh generate` prints - `gtt run <n>` - and continue with the work.")
 BACKLOG_SET = ("GTT governance (human-decision-authority): `gtt-backlog.sh set` is what the human's page (Sonar) uses to write the fields of a Story or of a proposed Epic. "
                "An agent edits its own Stories with its own tools and never runs it; an Epic's goal and scope are the human's.")
+DISK_SET = ("GTT governance (human-decision-authority): the limits of the disk rule (work copies, GB, free space) are the person's "
+            "to change, never an agent's, and the default is the recommended one. Tell the human the command - bash .gtt/scripts/gtt-disk.sh "
+            "set --max-copies N --max-gb N --min-free-gb N --apply (in Claude Code they can type it after `!` in the prompt) - say in one "
+            "line what a full disk costs, and keep to the limits in force.")
 SONAR_SECRET = ("GTT governance (human-decision-authority): ~/.gtt/sonar/ holds the secret of the human's local Sonar server, which is what lets "
                 "them write through the page. An agent never reads it, and never opens the server (`gtt sonar`); `gtt sonar --static` is the read-only page.")
 SHADOW_NAMES = ('preguntas.md', 'questions.md', 'tablero.md', 'board.md', 'kanban.md', 'decisiones.md', 'decisions.md', 'todo.md', 'tasks.md', 'status.md', 'estado.md')
@@ -321,6 +325,8 @@ def protected_token(root, token, shell=False):
         return FREEZE
     if low == LEDGER:
         return LEDGER_OWNED
+    if low == ".gtt/local/disk.json":
+        return DISK_SET
     if low in LOCAL_STATE:
         return LOCAL_OWNED
     if low.rsplit("/", 1)[-1] in SHADOW_NAMES + ("backlog.md",) and not under(low, "gtt-domain") and not under(low, ".gtt") and installed(root):
@@ -637,6 +643,8 @@ def decide_units(root, command):
                 return PENDING_ANSWER
             if base(word) in ("gtt-backlog.sh", "gtt_backlog.py") and follow and follow[0] == "set" and not syntax_only:
                 return BACKLOG_SET
+            if base(word) in ("gtt-disk.sh", "gtt_disk.py") and follow and follow[0] == "set" and not syntax_only:
+                return DISK_SET
             if base(word) in ("gtt-run.sh", "gtt_run.py") and follow and follow[0] == "execute" and not syntax_only:
                 return RUN_EXECUTE
             if base(word) in ("gtt-contract.sh", "gtt_contract.py") and any(x.lower() == "confirmed_by_human=true" for x in follow):
