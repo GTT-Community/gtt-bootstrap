@@ -212,6 +212,31 @@ el CI: ejecuta `gtt-validate.sh` y `gtt-check-stack.sh` sobre el pull request.
 
 ---
 
+## Actualizar un proyecto: un solo comando
+
+`gtt update` actualiza toda la suite. Si existe un `gtt` más nuevo, se reemplaza primero (verificado, el binario anterior queda como
+`gtt.old`) y sigue con el Bootstrap que esa versión trae; después actualiza el Bootstrap de este proyecto, de forma transaccional.
+El CLI y el Bootstrap quedan en la misma versión.
+
+También recupera un proyecto clonado, movido de máquina o compartido: el registro de instalación se reconstruye desde el release
+publicado de la versión que el proyecto tiene (sin `--base`), los archivos borrados vuelven y los movidos se siguen. Tus propias
+ediciones a archivos del paquete se conservan (la versión del release queda al lado como `.gtt-new`); nunca los reemplaza sin tu confirmación.
+
+Lo que **no** hace es tocar `gtt-domain/`: tu backlog, contexto, ADRs y propuestas son del proyecto, no del paquete. Lo que los
+validadores nuevos encuentren en ellos se informa como hallazgos, nunca como motivo para quedarse en la versión vieja, y el update
+queda hecho. Llevar ese contenido a un formato más nuevo es trabajo del agente, no del CLI. `gtt update` guarda un zip de `gtt-domain/` fuera del
+proyecto y te avisa cuando hace falta; tu agente lo recibe como su siguiente acción, hace un segundo zip dentro del proyecto
+(`gtt-domain-migrate.sh begin`) y reescribe **solo Stories**. El Goal, el Scope y el `Approved` de un Epic, todo lo gobernado y el estado
+de cada Story quedan exactamente como estaban: `gtt-domain-migrate.sh verify` lo prueba y `restore` lo deshace. **Guarda también una
+copia del zip en otro lugar** (otro disco o la nube): es lo único que sobrevive si pierdes la máquina.
+
+```bash
+gtt update              # primero gtt (si hay uno más nuevo), luego el Bootstrap de este proyecto
+gtt update --no-cli     # solo el Bootstrap de este proyecto
+```
+
+---
+
 ## Disco: los agentes nunca te dejan sin espacio
 
 Los agentes que trabajan en paralelo reciben cada uno una copia de trabajo (un worktree de Git) con sus propias dependencias,

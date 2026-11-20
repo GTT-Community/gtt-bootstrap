@@ -139,6 +139,8 @@
     "guard.validate": { "version": 1, "implementation": ".gtt/scripts/gtt-check-protection.sh", "argv": [], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },
     "guard.sync": { "version": 1, "implementation": ".gtt/scripts/gtt-guard-sync.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
 
+    "domain.status": { "version": 1, "implementation": ".gtt/scripts/gtt-domain-migrate.sh", "argv": ["status", "--json"], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "json", "contract": "domain-status" } },
+
     "index": { "version": 1, "implementation": ".gtt/scripts/gtt-index.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
     "reconcile": { "version": 1, "implementation": ".gtt/scripts/gtt-reconcile.sh", "argv": [], "args": [ { "name": "map", "type": "string", "flag": "--map" }, { "name": "retire", "type": "id", "flag": "--retire" }, { "name": "retire_missing", "type": "bool", "flag": "--retire-missing" }, { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
     "query": { "version": 1, "implementation": ".gtt/scripts/gtt-query.sh", "argv": [], "args": [ { "name": "term", "type": "string", "positional": true, "required": true }, { "name": "show", "type": "bool", "flag": "--show" }, { "name": "deep", "type": "bool", "flag": "--deep" } ], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },

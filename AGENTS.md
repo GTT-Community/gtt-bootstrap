@@ -334,6 +334,12 @@ Before creating a work copy (a Git worktree) or launching agents in parallel, ru
 
 In `.gtt/docs/agents/operations.md` → *Disk and work copies*.
 
+## Domain migration
+
+When `## Next action` (or `bash .gtt/scripts/gtt-project.sh next-action`) says the gtt-domain must be migrated, say it in one line and, at a cut point (never in the middle of a Story), run `bash .gtt/scripts/gtt-domain-migrate.sh begin` (it zips gtt-domain/ and takes the invariants), rewrite only Stories in `gtt-domain/backlog.md`, then run `gtt-domain-migrate.sh done`. Never an Epic's heading, never anything governed, never a Story dropped or moved to another status: a need of an Epic is a proposal. Tell the human to keep a copy of the zip somewhere else too.
+
+In `.gtt/docs/agents/operations.md` → *Domain migration*.
+
 ## Working without unnecessary interruption
 
 In `.gtt/docs/agents/operations.md` → *Working without unnecessary interruption*.

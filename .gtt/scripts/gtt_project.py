@@ -782,6 +782,10 @@ def next_action(session_start=False):
     urgent = inbox_work(session_start)
     if urgent:
         return urgent
+    # A project whose gtt-domain does not yet satisfy the Bootstrap it was updated to: the agent migrates it, at a cut point.
+    migration = domain_migration_action(session_start)
+    if migration:
+        return migration
     # An installed project with no design yet and no questionnaire: the design is what GTT waits on. Every
     # state has a next action, so an ADE that only reads it at session start still knows where to begin.
     if os.path.isfile(".gtt/ade.json") and not os.path.isfile(FROZEN) and not glob.glob("SOURCE-BRIEF.*") \
@@ -798,6 +802,17 @@ def next_action(session_start=False):
                 "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
                          "from your document, or through the guided questionnaire."}
     return next_story()
+
+
+def domain_migration_action(session_start=False):
+    """The domain migration as a next action, or None (see gtt_domain_migrate.py). Never an obstacle: any failure is silence."""
+    if not os.path.isfile(os.path.join(CONTRACT, "domain.json")):
+        return None
+    try:
+        import gtt_domain_migrate
+        return gtt_domain_migrate.action(session_start)
+    except (Exception, SystemExit):
+        return None
 
 
 def next_story():

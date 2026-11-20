@@ -417,6 +417,32 @@ What waits for the human is one small file per event in `gtt-domain/pending/`, a
 - **Tell the human once.** If something is pending, end your report with `@gtt · Needs you`: print `bash .gtt/scripts/gtt-pending.sh notice --report` (it prints nothing the second time in a turn). A decision shows as «For your information».
 - **Sonar shows the rest; the chat does not repeat it.** `gtt sonar` draws everything that waits for the human (questions with one command per option, Stories that are `Blocked`, Epics to approve) from the files, at no token cost. So: (1) whatever waits for the human is recorded where Sonar reads it, never only in the chat: a decision or a key as an event (`--blocks STORY-NNN` when it holds a Story), a Story that cannot continue as `Blocked` in the backlog; (2) after the batch has been shown once, do not list or tabulate pending items again in later reports: say in one line that `gtt sonar` has them; (3) never build a table of what the human owes in the chat; (4) a decision the human owes is an event the moment it appears, not a line in a later summary: what lives only in the conversation Sonar cannot show and the next session loses; (5) the session context carries a `## Sonar` line: say it once, in your first report, as it reads (it tells where the page is and how many things wait), never again. This changes where the information lives, not who decides: Sonar only copies commands, and the answer stays the human's.
 
+## Domain migration
+
+`gtt update` replaces the Bootstrap package and never touches `gtt-domain/`: it is the project's, not the package's. A newer
+Bootstrap can ask more of it (a validator, a format), and bringing the content up to that needs reading it, so it is yours, not
+the CLI's. GTT hands it to you as the next action (`gtt-project.sh next-action`: kind `domain-migration`), computed by
+`bash .gtt/scripts/gtt-domain-migrate.sh status`: a project that began with no Epic is stamped `clean` and never asked; one that
+already had Epics is asked only while `gtt-check-backlog.sh` fails on it or a migration was begun and not finished.
+
+The order of work, at a cut point and never in the middle of a Story:
+
+1. Say it in one line. `bash .gtt/scripts/gtt-domain-migrate.sh begin` makes the zip of `gtt-domain/` and `docs/ideas/` under
+   `.gtt/local/migrations/` and takes the invariants. Tell the human to keep a copy of the zip somewhere else too (`begin --to DIR`
+   makes that copy for them).
+2. Rewrite **only Stories** in `gtt-domain/backlog.md`: `Implements:` (the anchors of the design), `Done when:` (an example of the
+   design and its executable evidence). Take the text from the Story itself and from the Epic's design; when a fact is missing
+   (an anchor that does not exist, evidence nobody wrote), leave it as a gap and ask: never invent it.
+3. Never edit an Epic's heading block (Goal, Scope, Out of Scope, `Approved`), never add or remove an Epic, never touch
+   `gtt-domain/context/`, `gtt-domain/adr/`, a registered proposal or an idea, never drop a Story and never change a Story's status
+   to move it: a migration moves content, not progress. What an Epic needs from the new format is a proposal (`gtt-propose-change`,
+   form 4). A frozen design is written only by the change flow; the hooks already refuse it.
+4. `bash .gtt/scripts/gtt-domain-migrate.sh verify` proves it: same Epics with the same heading block, no Story lost or changed of status,
+   governed files identical, and `check-backlog` passing. `done` runs it and stamps the format. If it refuses, fix it or undo with
+   `gtt-domain-migrate.sh restore --apply` (it puts the backlog back; the zip holds everything else).
+
+A migration never blocks ordinary work: say what is pending and keep going on a Story that is `In Progress`.
+
 ## Disk and work copies
 
 A full disk stops every agent at once and can corrupt the work in progress, so one rule is in force by default, for every ADE: **at most 3 work copies at a time, work copies and ADE folders under 15 GB, at least 10 GB free.** It is advice with numbers, never a gate: it does not stop ordinary work, it keeps the work from running out of room. The numbers are data (`.gtt/contract/disk.json`); `bash .gtt/scripts/gtt-disk.sh check` computes them from Git (`git worktree list`), so it holds for any ADE, whatever folder it keeps its copies in.

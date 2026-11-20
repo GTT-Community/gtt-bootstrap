@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "618e0fce12517bf39a01970293c9d494abf517cc62f0f68058a016a59d93be83",
+      "sha256": "d49101e27539adef5b0b282464508499ea4b1af28ace953cb88ad820fb965020",
       "aliases": [],
       "sections": [
         {
@@ -174,7 +174,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 364
+          "line_end": 370
         },
         {
           "heading": "Mission",
@@ -393,60 +393,68 @@
           "line_end": 336
         },
         {
+          "heading": "Domain migration",
+          "level": 2,
+          "anchor": "domain-migration",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Domain migration",
+          "line_start": 337,
+          "line_end": 342
+        },
+        {
           "heading": "Working without unnecessary interruption",
           "level": 2,
           "anchor": "working-without-unnecessary-interruption",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Working without unnecessary interruption",
-          "line_start": 337,
-          "line_end": 340
+          "line_start": 343,
+          "line_end": 346
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Design assessment",
-          "line_start": 341,
-          "line_end": 344
+          "line_start": 347,
+          "line_end": 350
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 345,
-          "line_end": 348
+          "line_start": 351,
+          "line_end": 354
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
-          "line_start": 349,
-          "line_end": 352
+          "line_start": 355,
+          "line_end": 358
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 353,
-          "line_end": 356
+          "line_start": 359,
+          "line_end": 362
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 357,
-          "line_end": 360
+          "line_start": 363,
+          "line_end": 366
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 361,
-          "line_end": 364
+          "line_start": 367,
+          "line_end": 370
         }
       ],
       "references": [],
@@ -1208,7 +1216,7 @@
       "title": null,
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "3ae46461d93125da6caad7c9fcbfb81ecccf0c7cd65cdb4b2e9d1c643f2d49ab",
+      "sha256": "24cdfc37100ac08b9667dcc37572ff9addbc5c334621b2297eb20af18e20c7e1",
       "aliases": [],
       "sections": [
         {
@@ -1217,7 +1225,7 @@
           "anchor": "claude-code-specifics",
           "path": "Claude Code specifics",
           "line_start": 5,
-          "line_end": 71
+          "line_end": 72
         }
       ],
       "references": [],
@@ -3411,7 +3419,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "303d297f6f1099c8a052ef3ae26626af7505119108573b23880e3ebe0758f523",
+      "sha256": "f28b7ded29e68ae8e9cc2ee3c81e80073702b8f775a379dc10f203c0bd2aa19c",
       "aliases": [],
       "sections": [
         {
@@ -3420,7 +3428,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 449
+          "line_end": 475
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3519,20 +3527,28 @@
           "line_end": 419
         },
         {
+          "heading": "Domain migration",
+          "level": 2,
+          "anchor": "domain-migration",
+          "path": "Working inside a governed project > Domain migration",
+          "line_start": 420,
+          "line_end": 445
+        },
+        {
           "heading": "Disk and work copies",
           "level": 2,
           "anchor": "disk-and-work-copies",
           "path": "Working inside a governed project > Disk and work copies",
-          "line_start": 420,
-          "line_end": 430
+          "line_start": 446,
+          "line_end": 456
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 431,
-          "line_end": 449
+          "line_start": 457,
+          "line_end": 475
         }
       ],
       "references": [],
@@ -5486,7 +5502,7 @@
       "title": "GTT Bootstrap — Usage Guide",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "85f39dc9d3364c293c5d2517f0209f2dc47e057507ddfb5609314f816be8d256",
+      "sha256": "1df9e37ae210fca9dad65b248c6cf06e3e8aec1219fc112e7d0e8a043a5ff076",
       "aliases": [],
       "sections": [
         {
@@ -5495,7 +5511,7 @@
           "anchor": "gtt-bootstrap--usage-guide",
           "path": "GTT Bootstrap — Usage Guide",
           "line_start": 1,
-          "line_end": 511
+          "line_end": 537
         },
         {
           "heading": "The normal workflow",
@@ -5586,148 +5602,156 @@
           "line_end": 211
         },
         {
+          "heading": "Updating a project: one command",
+          "level": 2,
+          "anchor": "updating-a-project-one-command",
+          "path": "GTT Bootstrap — Usage Guide > Updating a project: one command",
+          "line_start": 212,
+          "line_end": 237
+        },
+        {
           "heading": "Disk: agents never run you out of space",
           "level": 2,
           "anchor": "disk-agents-never-run-you-out-of-space",
           "path": "GTT Bootstrap — Usage Guide > Disk: agents never run you out of space",
-          "line_start": 212,
-          "line_end": 235
+          "line_start": 238,
+          "line_end": 261
         },
         {
           "heading": "Sonar: see everything in one page",
           "level": 2,
           "anchor": "sonar-see-everything-in-one-page",
           "path": "GTT Bootstrap — Usage Guide > Sonar: see everything in one page",
-          "line_start": 236,
-          "line_end": 257
+          "line_start": 262,
+          "line_end": 283
         },
         {
           "heading": "Ideas",
           "level": 3,
           "anchor": "ideas",
           "path": "GTT Bootstrap — Usage Guide > Sonar: see everything in one page > Ideas",
-          "line_start": 249,
-          "line_end": 257
+          "line_start": 275,
+          "line_end": 283
         },
         {
           "heading": "Protected artifacts (GTTGuard)",
           "level": 2,
           "anchor": "protected-artifacts-gttguard",
           "path": "GTT Bootstrap — Usage Guide > Protected artifacts (GTTGuard)",
-          "line_start": 258,
-          "line_end": 297
+          "line_start": 284,
+          "line_end": 323
         },
         {
           "heading": "Request example (            )",
           "level": 2,
           "anchor": "request-example-------------",
           "path": "GTT Bootstrap — Usage Guide > Request example (            )",
-          "line_start": 298,
-          "line_end": 330
+          "line_start": 324,
+          "line_end": 356
         },
         {
           "heading": "Context layers",
           "level": 2,
           "anchor": "context-layers",
           "path": "GTT Bootstrap — Usage Guide > Context layers",
-          "line_start": 331,
-          "line_end": 369
+          "line_start": 357,
+          "line_end": 395
         },
         {
           "heading": "L0 — governed context",
           "level": 3,
           "anchor": "l0--governed-context",
           "path": "GTT Bootstrap — Usage Guide > Context layers > L0 — governed context",
-          "line_start": 333,
-          "line_end": 340
+          "line_start": 359,
+          "line_end": 366
         },
         {
           "heading": "L1 — architecture decisions",
           "level": 3,
           "anchor": "l1--architecture-decisions",
           "path": "GTT Bootstrap — Usage Guide > Context layers > L1 — architecture decisions",
-          "line_start": 341,
-          "line_end": 348
+          "line_start": 367,
+          "line_end": 374
         },
         {
           "heading": "L2 — documentation",
           "level": 3,
           "anchor": "l2--documentation",
           "path": "GTT Bootstrap — Usage Guide > Context layers > L2 — documentation",
-          "line_start": 349,
-          "line_end": 356
+          "line_start": 375,
+          "line_end": 382
         },
         {
           "heading": "L3 — implementation",
           "level": 3,
           "anchor": "l3--implementation",
           "path": "GTT Bootstrap — Usage Guide > Context layers > L3 — implementation",
-          "line_start": 357,
-          "line_end": 369
+          "line_start": 383,
+          "line_end": 395
         },
         {
           "heading": "Freeze and the two-regime model",
           "level": 2,
           "anchor": "freeze-and-the-two-regime-model",
           "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model",
-          "line_start": 370,
-          "line_end": 395
+          "line_start": 396,
+          "line_end": 421
         },
         {
           "heading": "Bootstrap regime",
           "level": 3,
           "anchor": "bootstrap-regime",
           "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model > Bootstrap regime",
-          "line_start": 374,
-          "line_end": 381
+          "line_start": 400,
+          "line_end": 407
         },
         {
           "heading": "Governed regime",
           "level": 3,
           "anchor": "governed-regime",
           "path": "GTT Bootstrap — Usage Guide > Freeze and the two-regime model > Governed regime",
-          "line_start": 382,
-          "line_end": 395
+          "line_start": 408,
+          "line_end": 421
         },
         {
           "heading": "Keeping context useful",
           "level": 2,
           "anchor": "keeping-context-useful",
           "path": "GTT Bootstrap — Usage Guide > Keeping context useful",
-          "line_start": 396,
-          "line_end": 407
+          "line_start": 422,
+          "line_end": 433
         },
         {
           "heading": "Tool-specific adapters",
           "level": 2,
           "anchor": "tool-specific-adapters",
           "path": "GTT Bootstrap — Usage Guide > Tool-specific adapters",
-          "line_start": 408,
-          "line_end": 432
+          "line_start": 434,
+          "line_end": 458
         },
         {
           "heading": "Operational checklist",
           "level": 2,
           "anchor": "operational-checklist",
           "path": "GTT Bootstrap — Usage Guide > Operational checklist",
-          "line_start": 433,
-          "line_end": 460
+          "line_start": 459,
+          "line_end": 486
         },
         {
           "heading": "Guiding principle",
           "level": 2,
           "anchor": "guiding-principle",
           "path": "GTT Bootstrap — Usage Guide > Guiding principle",
-          "line_start": 461,
-          "line_end": 511
+          "line_start": 487,
+          "line_end": 537
         },
         {
           "heading": "Deployment target: bootstrap repository vs. host project",
           "level": 3,
           "anchor": "deployment-target-bootstrap-repository-vs-host-project",
           "path": "GTT Bootstrap — Usage Guide > Guiding principle > Deployment target: bootstrap repository vs. host project",
-          "line_start": 467,
-          "line_end": 511
+          "line_start": 493,
+          "line_end": 537
         }
       ],
       "references": [],
@@ -5749,7 +5773,7 @@
       "title": "GTT Bootstrap — Guía de uso",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "4840552ab996d30cc5798970f2d67c358210f511ad96d46213eb292b80991c7b",
+      "sha256": "ab58fd1763eefbb30e006ff54f1eff7f7b084c1ce033d8664d012745b76e7687",
       "aliases": [],
       "sections": [
         {
@@ -5758,7 +5782,7 @@
           "anchor": "gtt-bootstrap--guía-de-uso",
           "path": "GTT Bootstrap — Guía de uso",
           "line_start": 1,
-          "line_end": 516
+          "line_end": 541
         },
         {
           "heading": "Flujo normal",
@@ -5849,148 +5873,156 @@
           "line_end": 214
         },
         {
+          "heading": "Actualizar un proyecto: un solo comando",
+          "level": 2,
+          "anchor": "actualizar-un-proyecto-un-solo-comando",
+          "path": "GTT Bootstrap — Guía de uso > Actualizar un proyecto: un solo comando",
+          "line_start": 215,
+          "line_end": 239
+        },
+        {
           "heading": "Disco: los agentes nunca te dejan sin espacio",
           "level": 2,
           "anchor": "disco-los-agentes-nunca-te-dejan-sin-espacio",
           "path": "GTT Bootstrap — Guía de uso > Disco: los agentes nunca te dejan sin espacio",
-          "line_start": 215,
-          "line_end": 238
+          "line_start": 240,
+          "line_end": 263
         },
         {
           "heading": "Sonar: todo en una página",
           "level": 2,
           "anchor": "sonar-todo-en-una-página",
           "path": "GTT Bootstrap — Guía de uso > Sonar: todo en una página",
-          "line_start": 239,
-          "line_end": 260
+          "line_start": 264,
+          "line_end": 285
         },
         {
           "heading": "Ideas",
           "level": 3,
           "anchor": "ideas",
           "path": "GTT Bootstrap — Guía de uso > Sonar: todo en una página > Ideas",
-          "line_start": 252,
-          "line_end": 260
+          "line_start": 277,
+          "line_end": 285
         },
         {
           "heading": "Artefactos protegidos (GTTGuard)",
           "level": 2,
           "anchor": "artefactos-protegidos-gttguard",
           "path": "GTT Bootstrap — Guía de uso > Artefactos protegidos (GTTGuard)",
-          "line_start": 261,
-          "line_end": 304
+          "line_start": 286,
+          "line_end": 329
         },
         {
           "heading": "Ejemplo de solicitud (            )",
           "level": 2,
           "anchor": "ejemplo-de-solicitud-------------",
           "path": "GTT Bootstrap — Guía de uso > Ejemplo de solicitud (            )",
-          "line_start": 305,
-          "line_end": 335
+          "line_start": 330,
+          "line_end": 360
         },
         {
           "heading": "Capas de contexto",
           "level": 2,
           "anchor": "capas-de-contexto",
           "path": "GTT Bootstrap — Guía de uso > Capas de contexto",
-          "line_start": 336,
-          "line_end": 374
+          "line_start": 361,
+          "line_end": 399
         },
         {
           "heading": "L0 — contexto gobernado",
           "level": 3,
           "anchor": "l0--contexto-gobernado",
           "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L0 — contexto gobernado",
-          "line_start": 338,
-          "line_end": 345
+          "line_start": 363,
+          "line_end": 370
         },
         {
           "heading": "L1 — decisiones arquitectónicas",
           "level": 3,
           "anchor": "l1--decisiones-arquitectónicas",
           "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L1 — decisiones arquitectónicas",
-          "line_start": 346,
-          "line_end": 353
+          "line_start": 371,
+          "line_end": 378
         },
         {
           "heading": "L2 — documentación",
           "level": 3,
           "anchor": "l2--documentación",
           "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L2 — documentación",
-          "line_start": 354,
-          "line_end": 361
+          "line_start": 379,
+          "line_end": 386
         },
         {
           "heading": "L3 — implementación",
           "level": 3,
           "anchor": "l3--implementación",
           "path": "GTT Bootstrap — Guía de uso > Capas de contexto > L3 — implementación",
-          "line_start": 362,
-          "line_end": 374
+          "line_start": 387,
+          "line_end": 399
         },
         {
           "heading": "Freeze y modelo de dos regímenes",
           "level": 2,
           "anchor": "freeze-y-modelo-de-dos-regímenes",
           "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes",
-          "line_start": 375,
-          "line_end": 400
+          "line_start": 400,
+          "line_end": 425
         },
         {
           "heading": "Régimen de bootstrap",
           "level": 3,
           "anchor": "régimen-de-bootstrap",
           "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes > Régimen de bootstrap",
-          "line_start": 379,
-          "line_end": 386
+          "line_start": 404,
+          "line_end": 411
         },
         {
           "heading": "Régimen gobernado",
           "level": 3,
           "anchor": "régimen-gobernado",
           "path": "GTT Bootstrap — Guía de uso > Freeze y modelo de dos regímenes > Régimen gobernado",
-          "line_start": 387,
-          "line_end": 400
+          "line_start": 412,
+          "line_end": 425
         },
         {
           "heading": "Mantener útil el contexto",
           "level": 2,
           "anchor": "mantener-útil-el-contexto",
           "path": "GTT Bootstrap — Guía de uso > Mantener útil el contexto",
-          "line_start": 401,
-          "line_end": 412
+          "line_start": 426,
+          "line_end": 437
         },
         {
           "heading": "Adaptadores por herramienta",
           "level": 2,
           "anchor": "adaptadores-por-herramienta",
           "path": "GTT Bootstrap — Guía de uso > Adaptadores por herramienta",
-          "line_start": 413,
-          "line_end": 437
+          "line_start": 438,
+          "line_end": 462
         },
         {
           "heading": "Checklist operativo",
           "level": 2,
           "anchor": "checklist-operativo",
           "path": "GTT Bootstrap — Guía de uso > Checklist operativo",
-          "line_start": 438,
-          "line_end": 465
+          "line_start": 463,
+          "line_end": 490
         },
         {
           "heading": "Principio rector",
           "level": 2,
           "anchor": "principio-rector",
           "path": "GTT Bootstrap — Guía de uso > Principio rector",
-          "line_start": 466,
-          "line_end": 516
+          "line_start": 491,
+          "line_end": 541
         },
         {
           "heading": "Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
           "level": 3,
           "anchor": "destino-del-despliegue-repositorio-bootstrap-vs-proyecto-anfitrión",
           "path": "GTT Bootstrap — Guía de uso > Principio rector > Destino del despliegue: repositorio Bootstrap vs. proyecto anfitrión",
-          "line_start": 472,
-          "line_end": 516
+          "line_start": 497,
+          "line_end": 541
         }
       ],
       "references": [],
@@ -8564,6 +8596,9 @@
     "actualización al modelo de dos regímenes": [
       "DOC-GUIDE-ES#actualización-al-modelo-de-dos-regímenes"
     ],
+    "actualizar un proyecto: un solo comando": [
+      "GTT-USAGE-ES#actualizar-un-proyecto-un-solo-comando"
+    ],
     "adaptadores de ade": [
       "DOC-GUIDE-ES#adaptadores-de-ade"
     ],
@@ -8938,6 +8973,10 @@
     ],
     "documents": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#documents"
+    ],
+    "domain migration": [
+      "AGENTS#domain-migration",
+      "DOC-OPERATIONS#domain-migration"
     ],
     "domain-driven design · method pack": [
       "METHOD-DDD#domain-driven-design--method-pack"
@@ -9960,6 +9999,9 @@
     ],
     "unknowns": [
       "GTT-GTT-INITIAL-DESIGN-QUESTIONNAIRE#unknowns"
+    ],
+    "updating a project: one command": [
+      "GTT-USAGE#updating-a-project-one-command"
     ],
     "upgrading to the two-regime model": [
       "DOC-GUIDE#upgrading-to-the-two-regime-model"

@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "notice": "Domain migration contract: the format of a project's gtt-domain that this Bootstrap expects, and what a migration may write. Data only. The scripts read it; they never infer it from README text.",
+  "format": 1,
+  "state_file": ".gtt/domain-migration.json",
+  "backup_dir": ".gtt/local/migrations/",
+  "may_write": ["gtt-domain/backlog.md"],
+  "never_write": ["an Epic's heading block (Goal, Scope, Out of Scope, Approved)", "gtt-domain/context/", "gtt-domain/adr/", "gtt-domain/proposals/PROP-*", "docs/ideas/IDEA-*"],
+  "bump_when": "a release changes what gtt-domain must contain in a way a validator or a script reads; a mechanical step for the change is added to the migration, the judgment is the agent's"
+}

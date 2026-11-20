@@ -209,6 +209,32 @@ with `git commit --no-verify`, so the guaranteed layer is CI: run
 
 ---
 
+## Updating a project: one command
+
+`gtt update` brings the whole suite up. If a newer `gtt` exists it replaces itself first (verified, the previous binary kept as
+`gtt.old`) and continues with the Bootstrap that release ships; then it updates this project's Bootstrap, transactionally.
+The CLI and the Bootstrap end on the same version.
+
+It also recovers a project that was cloned, moved to another machine or shared: the install ledger is rebuilt from the published
+release of the version the project runs (no `--base` needed), files that were deleted come back and files that were moved are
+followed. Your own edits to package files are kept (the release's version is saved beside as `.gtt-new`); it never replaces
+them without your confirmation.
+
+What it does **not** do is touch `gtt-domain/`: your backlog, context, ADRs and proposals are the project's, not the package's.
+What the new validators find in them is reported as findings, never as a reason to stay on the old version, and the update stands.
+Bringing that content up to a newer format is work for the agent, not for the CLI. `gtt update` keeps a zip of `gtt-domain/` outside the
+project and tells you when it is needed; your agent then gets it as its next action, makes a second zip inside the project
+(`gtt-domain-migrate.sh begin`) and rewrites **only Stories**. An Epic's Goal, Scope and `Approved`, anything governed and every Story's
+status stay exactly as they were: `gtt-domain-migrate.sh verify` proves it, and `restore` undoes it. **Keep a copy of the zip somewhere
+else too** (another disk or the cloud): it is the only thing that survives losing the machine.
+
+```bash
+gtt update              # gtt first (if there is a newer one), then this project's Bootstrap
+gtt update --no-cli     # only this project's Bootstrap
+```
+
+---
+
 ## Disk: agents never run you out of space
 
 Agents that work in parallel each get a work copy (a Git worktree) with its own dependencies, and a disk that fills stops
