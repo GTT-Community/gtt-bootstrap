@@ -419,29 +419,35 @@ What waits for the human is one small file per event in `gtt-domain/pending/`, a
 
 ## Domain migration
 
-`gtt update` replaces the Bootstrap package and never touches `gtt-domain/`: it is the project's, not the package's. A newer
-Bootstrap can ask more of it (a validator, a format), and bringing the content up to that needs reading it, so it is yours, not
-the CLI's. GTT hands it to you as the next action (`gtt-project.sh next-action`: kind `domain-migration`), computed by
-`bash .gtt/scripts/gtt-domain-migrate.sh status`: a project that began with no Epic is stamped `clean` and never asked; one that
-already had Epics is asked only while `gtt-check-backlog.sh` fails on it or a migration was begun and not finished.
+`gtt update` replaces the Bootstrap package and never touches `gtt-domain/`: it is the project's, not the package's. Most releases
+change nothing in what the backlog must carry, and then nothing is asked of anyone. A release that **does** change that structure
+declares it in `.gtt/contract/domain.json` (`format_changes`, one row per release); the update tells the Bootstrap which version the
+project was on (`domain.check --from`) and only a declared change **after** that version stamps the migration `pending`. Findings
+of `gtt-check-backlog.sh` in the project's own backlog are never the trigger: they are work to do, reported by the validators. A
+project that began with no Epic is stamped `clean`. GTT then hands you the evaluation as the next action (`gtt-project.sh next-action`:
+kind `domain-migration`) and, for a session that was already open, at the person's next message.
 
-The order of work, at a cut point and never in the middle of a Story:
+It is an **evaluation, never an automatic rewrite**. The order of work, at a cut point and never in the middle of a Story:
 
-1. Say it in one line. `bash .gtt/scripts/gtt-domain-migrate.sh begin` makes the zip of `gtt-domain/` and `docs/ideas/` under
+1. Run `bash .gtt/scripts/gtt-domain-migrate.sh status`: it names the declared change and lists what the validator finds in this
+   backlog. Judge whether this project's Stories need it. If they do not, say so and `gtt-domain-migrate.sh dismiss`.
+2. If they might, say what you found in one line and **ask the human** whether they want it done. Do not begin without their answer.
+3. Only if they agree: `bash .gtt/scripts/gtt-domain-migrate.sh begin` makes the zip of `gtt-domain/` and `docs/ideas/` under
    `.gtt/local/migrations/` and takes the invariants. Tell the human to keep a copy of the zip somewhere else too (`begin --to DIR`
    makes that copy for them).
-2. Rewrite **only Stories** in `gtt-domain/backlog.md`: `Implements:` (the anchors of the design), `Done when:` (an example of the
+4. Rewrite **only Stories** in `gtt-domain/backlog.md`: `Implements:` (the anchors of the design), `Done when:` (an example of the
    design and its executable evidence). Take the text from the Story itself and from the Epic's design; when a fact is missing
    (an anchor that does not exist, evidence nobody wrote), leave it as a gap and ask: never invent it.
-3. Never edit an Epic's heading block (Goal, Scope, Out of Scope, `Approved`), never add or remove an Epic, never touch
+5. Never edit an Epic's heading block (Goal, Scope, Out of Scope, `Approved`), never add or remove an Epic, never touch
    `gtt-domain/context/`, `gtt-domain/adr/`, a registered proposal or an idea, never drop a Story and never change a Story's status
    to move it: a migration moves content, not progress. What an Epic needs from the new format is a proposal (`gtt-propose-change`,
    form 4). A frozen design is written only by the change flow; the hooks already refuse it.
-4. `bash .gtt/scripts/gtt-domain-migrate.sh verify` proves it: same Epics with the same heading block, no Story lost or changed of status,
+6. `bash .gtt/scripts/gtt-domain-migrate.sh verify` proves it: same Epics with the same heading block, no Story lost or changed of status,
    governed files identical, and `check-backlog` passing. `done` runs it and stamps the format. If it refuses, fix it or undo with
    `gtt-domain-migrate.sh restore --apply` (it puts the backlog back; the zip holds everything else).
 
-A migration never blocks ordinary work: say what is pending and keep going on a Story that is `In Progress`.
+A migration that was begun and not finished is resumed or undone only after the human is asked; it never blocks ordinary work: say what is
+pending and keep going on a Story that is `In Progress`.
 
 ## Disk and work copies
 

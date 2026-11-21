@@ -132,8 +132,11 @@ def main():
             done = subprocess.run([sys.executable, ".claude/hooks/pending-watch.py"], cwd=legacy, capture_output=True, text=True,
                                   input=json.dumps({"session_id": session, "prompt": "seguimos"}))
             return json.loads(done.stdout)["hookSpecificOutput"]["additionalContext"] if done.stdout.strip() else ""
+        silent = hear("s0")
+        check("with no structural change declared since the project's version, the hook says nothing", silent == "", silent[:120])
+        bash(legacy, ".gtt/scripts/gtt-domain-migrate.sh", "check", "--apply", "--from", "1.16.0")      # what `gtt update` does after the update
         first = hear("s1")
-        check("the first message of an open session carries the migration order", "gtt-domain" in first and "migra" in first.lower(), first[:200])
+        check("the first message of an open session carries the evaluation, and it asks the human first", "gtt-domain" in first and "ASK the human" in first, first[:200])
         check("the second message of that session says nothing", hear("s1") == "")
         check("a different session hears it too", "gtt-domain" in hear("s2"))
         write(os.path.join(legacy, "gtt-domain/backlog.md"), dm.LEGACY + "\n")

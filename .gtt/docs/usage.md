@@ -222,8 +222,9 @@ them without your confirmation.
 
 What it does **not** do is touch `gtt-domain/`: your backlog, context, ADRs and proposals are the project's, not the package's.
 What the new validators find in them is reported as findings, never as a reason to stay on the old version, and the update stands.
-Bringing that content up to a newer format is work for the agent, not for the CLI. `gtt update` keeps a zip of `gtt-domain/` outside the
-project and tells you when it is needed; your agent then gets it as its next action, makes a second zip inside the project
+Most updates ask nothing of it. Only when a release **declares a change in the structure** the backlog must carry does the update tell you,
+and then your agent only **evaluates** whether your project needs it and **asks you before changing anything**; it never rewrites on its own.
+`gtt update` keeps a zip of `gtt-domain/` outside the project; if you say yes, your agent makes a second zip inside the project
 (`gtt-domain-migrate.sh begin`) and rewrites **only Stories**. An Epic's Goal, Scope and `Approved`, anything governed and every Story's
 status stay exactly as they were: `gtt-domain-migrate.sh verify` proves it, and `restore` undoes it. **Keep a copy of the zip somewhere
 else too** (another disk or the cloud): it is the only thing that survives losing the machine.

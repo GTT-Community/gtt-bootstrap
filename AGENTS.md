@@ -336,7 +336,7 @@ In `.gtt/docs/agents/operations.md` → *Disk and work copies*.
 
 ## Domain migration
 
-When `## Next action` (or `bash .gtt/scripts/gtt-project.sh next-action`) says the gtt-domain must be migrated, say it in one line and, at a cut point (never in the middle of a Story), run `bash .gtt/scripts/gtt-domain-migrate.sh begin` (it zips gtt-domain/ and takes the invariants), rewrite only Stories in `gtt-domain/backlog.md`, then run `gtt-domain-migrate.sh done`. Never an Epic's heading, never anything governed, never a Story dropped or moved to another status: a need of an Epic is a proposal. Tell the human to keep a copy of the zip somewhere else too.
+Most updates ask nothing of the gtt-domain. Only when a release **declared a change of structure** in what the backlog must carry does `## Next action` (or `bash .gtt/scripts/gtt-project.sh next-action`) say so, and then it is an **evaluation, never an order to rewrite**: run `bash .gtt/scripts/gtt-domain-migrate.sh status`, judge whether this project's Stories need it, say what you found in one line and **ask the human**. Never begin on your own, and never in the middle of a Story. Only if they agree: `gtt-domain-migrate.sh begin` (zip + invariants), rewrite only Stories in `gtt-domain/backlog.md`, then `gtt-domain-migrate.sh done`. Never an Epic's heading, never anything governed, never a Story dropped or moved to another status: an Epic's need is a proposal. If nothing needs it or the human declines: `gtt-domain-migrate.sh dismiss`. Validator findings in the backlog are ordinary work, not a migration.
 
 In `.gtt/docs/agents/operations.md` → *Domain migration*.
 

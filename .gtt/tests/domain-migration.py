@@ -122,6 +122,9 @@ def main():
         release = json.load(open(os.path.join(project, ".gtt/contract/release.json"), encoding="utf-8"))
         check("release.json lists the contract", release["contracts"].get("domain") == 1)
         ops = json.load(open(os.path.join(project, ".gtt/contract/operations.json"), encoding="utf-8"))["operations"]
+        chk = ops.get("domain.check")
+        check("the operation domain.check is declared: it takes the version the project was on and stamps the state", bool(chk) and chk["mutates"] is True
+              and {a["name"] for a in chk["args"]} == {"from", "apply"})
         op = ops.get("domain.status")
         check("the operation domain.status is declared and read-only", bool(op) and op["mutates"] is False and op["human_authority"] is False)
         manifest = open(os.path.join(project, ".gtt/scaffold/manifest.yaml"), encoding="utf-8").read()
@@ -129,34 +132,54 @@ def main():
               all(item in manifest for item in (".gtt/contract/domain.json", ".gtt/domain-migration.json", ".gtt/local/migrations/")))
 
         # M2 ----------------------------------------------------------------------------------------------------
-        print("M2  status")
+        print("M2  status: only a structure a release declared is asked")
         empty = fixture(project, tmp, "empty", backlog="# Project Backlog\n\n## Epics\n")
         st = status(empty)
         check("a project with no Epic has nothing to migrate", st["needed"] is False and st["epics"] == 0)
         legacy = fixture(project, tmp, "legacy")
         st = status(legacy)
-        check("a legacy backlog needs a migration", st["needed"] is True and st["epics"] == 1)
-        check("it says why, in the validator's own words", any("Implements" in why for why in st["why"]) and any("Done when" in why for why in st["why"]))
-        check("the findings are clean lines, not the validator's footer", all(not why.startswith("gtt-check-backlog") for why in st["why"]))
-        code, out, _ = run(legacy, MIGRATE, "status")
-        check("the plain status is one readable paragraph with the way to begin", code == 0 and "gtt-domain-migrate.sh begin" in out)
+        check("a backlog with validator findings is work, not a migration: nothing is asked", st["needed"] is False and st["epics"] == 1)
         check("status never writes", not os.path.exists(os.path.join(legacy, STATE)))
+        check("the contract declares the structural changes by release", bool(domain.get("format_changes")) and all("since" in c and "en" in c and "es" in c for c in domain["format_changes"]))
+        code, out, _ = run(legacy, MIGRATE, "check", "--apply", "--from", "1.28.0")
+        check("an update from a version after every declared change asks nothing", code == 0 and status(legacy)["needed"] is False
+              and json.load(open(os.path.join(legacy, STATE), encoding="utf-8"))["status"] == "clean")
+        unknown = fixture(project, tmp, "unknown")
+        run(unknown, MIGRATE, "check", "--apply")
+        check("with no version to compare nothing is guessed", status(unknown)["needed"] is False)
+        run(unknown, MIGRATE, "check", "--apply", "--from", "garbage")
+        check("an unreadable version asks nothing either", status(unknown)["needed"] is False)
+        code, out, _ = run(legacy, MIGRATE, "check", "--apply", "--from", "1.16.0")
+        st = status(legacy)
+        check("an update from before a declared change stamps it pending and asks", st["needed"] is True and st["state"] == "pending" and st["from"] == "1.16.0", str(st))
+        check("it says why: the structural change the release declared", any("Implements" in why for why in st["why"]) and any("Done when" in why for why in st["why"]), str(st["why"]))
+        code, out, _ = run(legacy, MIGRATE, "status")
+        check("the plain status tells the person the agent will ask first", code == 0 and "ask" in out and "1.16.0" in out, out)
+        check("and lists what the validator finds, as evidence for the agent's judgment", "finds" in out and "Implements" in out, out)
+        code, out, _ = run(empty, MIGRATE, "check", "--apply", "--from", "1.16.0")
+        check("a project with no Epic is never asked even when a change was declared", status(empty)["needed"] is False)
+        fine = fixture(project, tmp, "fine", backlog=migrated(LEGACY))
         ok_backlog = migrated(LEGACY)
-        fine = fixture(project, tmp, "fine", backlog=ok_backlog)
-        check("a backlog that already passes needs nothing", status(fine)["needed"] is False)
 
         # M3 ----------------------------------------------------------------------------------------------------
-        print("M3  the order reaches the agent")
+        print("M3  the evaluation reaches the agent, and it asks first")
         code, out, _ = run(legacy, NEXT, "next-action", "--json")
         found = json.loads(out)["next_action"] if code == 0 else None
         check("the next action is the domain migration", bool(found) and found["kind"] == "domain-migration")
+        check("it is an evaluation, never an order to rewrite", bool(found) and "EVALUATION" in found["text"] and "never an order to rewrite" in found["text"])
+        check("it tells the agent to ask the human and never begin on its own", bool(found) and "ASK the human" in found["text"] and "never begin on your own" in found["text"])
+        check("it carries the way out: dismiss when nothing is needed or the human declines", bool(found) and "dismiss" in found["text"])
         check("it carries the procedure and the zip advice", bool(found) and "gtt-domain-migrate.sh begin" in found["text"] and "copy" in found["text"])
-        check("it never obstructs: it says a cut point", bool(found) and "cut point" in found["text"])
+        check("it never obstructs: it says a cut point", bool(found) and "cut point" in found["text"] or bool(found) and "middle of a Story" in found["text"])
+        check("the person's line says the agent asks first", bool(found) and "ask you before" in (found["human"] or ""))
+        code, out, _ = run(unknown, NEXT, "next-action", "--json")
+        check("a backlog full of findings that no release declared gets no order", json.loads(out)["next_action"] is None or json.loads(out)["next_action"]["kind"] != "domain-migration")
         spanish = fixture(project, tmp, "spanish", lang="es")
+        run(spanish, MIGRATE, "check", "--apply", "--from", "1.16.0")
         code, out, _ = run(spanish, NEXT, "next-action", "--json")
         found_es = json.loads(out)["next_action"]
-        check("in Spanish when the project speaks it", found_es["kind"] == "domain-migration" and "migración" in found_es["text"] and "otro lugar" in found_es["text"])
-        check("and the person's line is in Spanish too", "primera respuesta" in (found_es["human"] or ""))
+        check("in Spanish when the project speaks it", found_es["kind"] == "domain-migration" and "EVALUACIÓN" in found_es["text"] and "PREGUNTA" in found_es["text"] and "otro lugar" in found_es["text"])
+        check("and the person's line is in Spanish too", "te preguntará" in (found_es["human"] or ""))
         fresh = fixture(project, tmp, "fresh", backlog="# Project Backlog\n\n## Epics\n")
         code, out, _ = run(fresh, NEXT, "next-action", "--json", "--session-start")
         check("a project that begins with no Epic gets no order", json.loads(out)["next_action"] is None or json.loads(out)["next_action"]["kind"] != "domain-migration")
@@ -166,6 +189,13 @@ def main():
         code, out, _ = run(fresh, NEXT, "next-action", "--json", "--session-start")
         action = json.loads(out)["next_action"]
         check("a failure of ordinary work later is never mistaken for a legacy migration", action is None or action["kind"] != "domain-migration")
+        dismissable = fixture(project, tmp, "dismiss")
+        run(dismissable, MIGRATE, "check", "--apply", "--from", "1.16.0")
+        code, out, _ = run(dismissable, MIGRATE, "dismiss")
+        stamped = json.load(open(os.path.join(dismissable, STATE), encoding="utf-8"))
+        check("dismiss records the human's decision: nothing is migrated and it is not asked again", code == 0 and status(dismissable)["needed"] is False
+              and stamped["status"] == "done" and stamped.get("dismissed") is True, out)
+        check("an unrelated later update (no change declared after it) keeps it quiet", run(dismissable, MIGRATE, "check", "--apply", "--from", stamped["bootstrap"])[0] == 0 and status(dismissable)["needed"] is False)
 
         # M4 ----------------------------------------------------------------------------------------------------
         print("M4  begin")
@@ -330,7 +360,7 @@ def main():
         check("operations.md holds the order of work", "## Domain migration" in read(".gtt/docs/agents/operations.md"))
         check("operations.md forbids what the migration may not do",
               "never edit an Epic's heading block" in read(".gtt/docs/agents/operations.md").replace("**Never", "Never").replace("Never edit", "never edit") or "Never edit an Epic's heading block" in read(".gtt/docs/agents/operations.md"))
-        check("the Claude table has a row for it", "gtt-domain-migrate.sh begin" in read(".claude/CLAUDE.md"))
+        check("the Claude table has a row for it", "gtt-domain-migrate.sh status" in read(".claude/CLAUDE.md") and "ask the human" in read(".claude/CLAUDE.md"))
         check("the usage guides explain it in both languages",
               "gtt-domain" in read(".gtt/docs/usage.md") and "gtt-domain" in read(".gtt/docs/usage.es.md"))
     finally:

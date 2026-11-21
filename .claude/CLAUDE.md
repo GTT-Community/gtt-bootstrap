@@ -13,7 +13,7 @@ Use these skills instead of improvising the format:
 | Architectural or context change needed | `gtt-propose-change` |
 | A change was approved and needs recording | `gtt-adr` |
 | Verify the governed context still matches the code | `gtt-audit` |
-| `## Next action` says the gtt-domain must be migrated | none - at a cut point run `bash .gtt/scripts/gtt-domain-migrate.sh begin`, rewrite only Stories, then `gtt-domain-migrate.sh done` (`AGENTS.md` → *Domain migration*) |
+| `## Next action` says a release changed what the gtt-domain must carry | none - evaluate (`bash .gtt/scripts/gtt-domain-migrate.sh status`), say what you found and **ask the human**; only if they agree `begin`, rewrite only Stories, `done`; if not needed or declined `dismiss` (`AGENTS.md` → *Domain migration*) |
 | Creating a work copy (git worktree), launching agents in parallel, or finishing an agent or a Story | none - run `bash .gtt/scripts/gtt-disk.sh check` first and `gtt-disk.sh prune <path> --apply` for a finished copy (`AGENTS.md` → *Disk and work copies*) |
 | Ordinary work: implementing, refactoring, testing, writing and closing Stories | none - do it; nobody approves it (`AGENTS.md` → *The two planes*) |
 | An Epic must be added, removed, or its goal or scope materially changed | `gtt-propose-change` (form 4) |

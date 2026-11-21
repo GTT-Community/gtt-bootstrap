@@ -1,10 +1,25 @@
 {
   "schema": 1,
-  "notice": "Domain migration contract: the format of a project's gtt-domain that this Bootstrap expects, and what a migration may write. Data only. The scripts read it; they never infer it from README text.",
+  "notice": "Domain migration contract: the format of a project's gtt-domain that this Bootstrap expects, the structural changes each release declared, and what a migration may write. Data only. The scripts read it; they never infer it from README text.",
   "format": 1,
   "state_file": ".gtt/domain-migration.json",
   "backup_dir": ".gtt/local/migrations/",
-  "may_write": ["gtt-domain/backlog.md"],
-  "never_write": ["an Epic's heading block (Goal, Scope, Out of Scope, Approved)", "gtt-domain/context/", "gtt-domain/adr/", "gtt-domain/proposals/PROP-*", "docs/ideas/IDEA-*"],
-  "bump_when": "a release changes what gtt-domain must contain in a way a validator or a script reads; a mechanical step for the change is added to the migration, the judgment is the agent's"
+  "may_write": [
+    "gtt-domain/backlog.md"
+  ],
+  "never_write": [
+    "an Epic's heading block (Goal, Scope, Out of Scope, Approved)",
+    "gtt-domain/context/",
+    "gtt-domain/adr/",
+    "gtt-domain/proposals/PROP-*",
+    "docs/ideas/IDEA-*"
+  ],
+  "bump_when": "a release changes the STRUCTURE of what gtt-domain must contain in a way a validator or a script reads: add a row to format_changes with that release. A release that changes nothing in the structure adds nothing and a project updated to it is never asked. A mechanical step for the change may be added to the migration; the judgment is the agent's, and so is asking the human before touching anything",
+  "format_changes": [
+    {
+      "since": "1.17.0",
+      "en": "a Story carries `Implements` (the anchors of the design it builds) and `Done when` with executable evidence (a test file or `run: <command>`)",
+      "es": "una Story lleva `Implements` (las anclas del diseño que construye) y `Done when` con evidencia ejecutable (un archivo de test o `run: <comando>`)"
+    }
+  ]
 }

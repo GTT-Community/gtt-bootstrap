@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""GTT - bring a project's gtt-domain up to the format of the Bootstrap it now runs, without losing anything.
+"""GTT - bring a project's gtt-domain up to the structure of the Bootstrap it now runs, without losing anything, and only when asked.
 
-  gtt_domain_migrate.py status [--json]        read-only: does this project's gtt-domain need a migration, and why
-  gtt_domain_migrate.py check  [--apply]       the same; --apply stamps the state (`clean`, or `pending` when something is found)
+  gtt_domain_migrate.py status [--json]        read-only: is a migration waiting, and why (text mode lists what the validator finds)
+  gtt_domain_migrate.py check  --apply [--from V]  the update calls it with the version the project WAS on: it stamps `pending` only when a
+                                               release DECLARED a structural change (contract/domain.json format_changes) after V, else `clean`
   gtt_domain_migrate.py begin  [--to DIR]      zip of gtt-domain/ and docs/ideas/, the invariants before, state `in-progress`
   gtt_domain_migrate.py verify [--json]        compare the work with the invariants taken at `begin`, then check-backlog
   gtt_domain_migrate.py done                   verify; when it holds, stamp the state `done` at the current format
+  gtt_domain_migrate.py dismiss                the human decided nothing is to be migrated: stamp it, it is not asked again
   gtt_domain_migrate.py restore [--apply]      put gtt-domain/backlog.md back from the zip of the last `begin`
 
-`gtt update` replaces the Bootstrap package and never touches gtt-domain/: it is the project's, not the package's. A
-newer Bootstrap can ask more of it (a format, a validator). Bringing the content to that is work that needs reading
-it, so it is the agent's: the scripts compute and guard, the agent writes. The order reaches the agent as the next
-action (`gtt-project.sh next-action`); the procedure is in .gtt/docs/agents/operations.md -> *Domain migration*.
+`gtt update` replaces the Bootstrap package and never touches gtt-domain/: it is the project's, not the package's. A release that
+changes the STRUCTURE of what gtt-domain must contain declares it (format_changes); one that changes nothing there asks nothing, and a
+backlog with validator findings is work to do, not a migration. When a release did declare one, judging whether this project needs it
+takes reading its content, so it is the agent's, and the agent ASKS the human before it changes anything: the scripts compute and
+guard, the agent evaluates, the human decides, the agent writes. It reaches the agent as the next action (`gtt-project.sh next-action`)
+and, for a session already open, at the person's next message; the procedure is in .gtt/docs/agents/operations.md -> *Domain migration*.
 
 What the migration may write: gtt-domain/backlog.md, and nothing else. A Story is the agent's (rewrite, split, define
 `Implements:` and `Done when:`). An Epic is the human's: its heading block (Goal, Scope, Out of Scope, `Approved`) must stay
@@ -48,31 +52,41 @@ RELEASE = ".gtt/contract/release.json"
 
 MSG = {
     "en": {
-        "needed": "Your gtt-domain needs to be brought to the format of Bootstrap {version}: {why}. Nothing is lost: back it up first (`bash .gtt/scripts/gtt-domain-migrate.sh begin`).",
-        "order": ("GTT is waiting on a domain migration. The Bootstrap was updated and the project's gtt-domain does not satisfy it yet: {why}. "
-                  "Say it in one line, then follow AGENTS.md -> *Domain migration* at this cut point (never in the middle of a Story): "
-                  "run `bash .gtt/scripts/gtt-domain-migrate.sh begin` (it makes the zip and the invariants), rewrite only Stories in gtt-domain/backlog.md, "
-                  "never an Epic and never anything governed (an Epic's need is a proposal), then `gtt-domain-migrate.sh done`. "
-                  "Tell the human to keep a copy of the zip somewhere else too."),
-        "human": "Open the project in the Primary ADE and write anything: its first answer starts the migration of your gtt-domain (a zip is made first).",
+        "needed": "The Bootstrap changed what the backlog must carry since your version ({frm}): {why}. Your agent will evaluate whether this project needs it and will ask you before changing anything.",
+        "order": ("The Bootstrap changed what the backlog must carry since this project's version ({frm}): {why}. This is an EVALUATION, never an order to rewrite. "
+                  "Run `bash .gtt/scripts/gtt-domain-migrate.sh status` (it lists what the validator finds in this backlog) and judge whether this project's Stories need it. "
+                  "Then say what you found in one line and ASK the human whether they want it done; never begin on your own and never in the middle of a Story. "
+                  "Only if they agree: `bash .gtt/scripts/gtt-domain-migrate.sh begin` (it makes the zip and the invariants), rewrite only Stories in gtt-domain/backlog.md "
+                  "(never an Epic, never anything governed: an Epic's need is a proposal), then `gtt-domain-migrate.sh done`. "
+                  "If nothing needs it, or they decline: `gtt-domain-migrate.sh dismiss` and it is not asked again. When it is done, tell the human to keep a copy of the zip somewhere else too."),
+        "resume": ("A migration of the gtt-domain was begun and not finished. Do not continue it on your own: tell the human in one line and ASK whether to continue it "
+                   "(rewrite only Stories, then `bash .gtt/scripts/gtt-domain-migrate.sh done`) or to undo it (`gtt-domain-migrate.sh restore --apply`, then `dismiss` if nothing is needed). "
+                   "AGENTS.md -> *Domain migration*."),
+        "in_progress": "a migration was begun and not finished",
+        "human": "Your agent will evaluate whether your gtt-domain needs the new structure and will ask you before it changes anything.",
+        "dismissed": "gtt-domain-migrate: dismissed - nothing is migrated and it is not asked again until a release declares another structural change.",
         "backup": "Backup: {zip}\n  Keep a copy of it somewhere else too (another disk or the cloud): it is the only thing that survives losing this machine.",
         "restore": "To undo: bash .gtt/scripts/gtt-domain-migrate.sh restore --apply",
     },
     "es": {
-        "needed": "Tu gtt-domain debe llevarse al formato del Bootstrap {version}: {why}. No se pierde nada: primero el respaldo (`bash .gtt/scripts/gtt-domain-migrate.sh begin`).",
-        "order": ("GTT espera una migración del gtt-domain. El Bootstrap se actualizó y el gtt-domain del proyecto todavía no lo cumple: {why}. "
-                  "Dilo en una línea y sigue AGENTS.md -> *Domain migration* en este punto de corte (nunca a mitad de una Story): "
-                  "ejecuta `bash .gtt/scripts/gtt-domain-migrate.sh begin` (hace el zip y las invariantes), reescribe solo Stories en gtt-domain/backlog.md, "
-                  "nunca un Epic ni nada gobernado (lo que pida un Epic es una propuesta), y luego `gtt-domain-migrate.sh done`. "
-                  "Dile a la persona que guarde también una copia del zip en otro lugar."),
-        "human": "Abre el proyecto en el ADE principal y escribe cualquier cosa: su primera respuesta empieza la migración de tu gtt-domain (primero se hace un zip).",
+        "needed": "El Bootstrap cambió lo que el backlog debe llevar desde tu versión ({frm}): {why}. Tu agente evaluará si este proyecto lo necesita y te preguntará antes de cambiar nada.",
+        "order": ("El Bootstrap cambió lo que el backlog debe llevar desde la versión de este proyecto ({frm}): {why}. Esto es una EVALUACIÓN, nunca una orden de reescribir. "
+                  "Ejecuta `bash .gtt/scripts/gtt-domain-migrate.sh status` (lista lo que el validador encuentra en este backlog) y juzga si las Stories de este proyecto lo necesitan. "
+                  "Luego di en una línea lo que encontraste y PREGUNTA a la persona si quiere que se haga; nunca empieces por tu cuenta ni a mitad de una Story. "
+                  "Solo si acepta: `bash .gtt/scripts/gtt-domain-migrate.sh begin` (hace el zip y las invariantes), reescribe solo Stories en gtt-domain/backlog.md "
+                  "(nunca un Epic ni nada gobernado: lo que pida un Epic es una propuesta) y luego `gtt-domain-migrate.sh done`. "
+                  "Si nada lo necesita, o ella no quiere: `gtt-domain-migrate.sh dismiss` y no se vuelve a preguntar. Al terminar, dile que guarde también una copia del zip en otro lugar."),
+        "resume": ("Una migración del gtt-domain se empezó y no se terminó. No la continúes por tu cuenta: dilo en una línea y PREGUNTA a la persona si se continúa "
+                   "(reescribe solo Stories y luego `bash .gtt/scripts/gtt-domain-migrate.sh done`) o se deshace (`gtt-domain-migrate.sh restore --apply`, y luego `dismiss` si nada hace falta). "
+                   "AGENTS.md -> *Domain migration*."),
+        "in_progress": "se empezó una migración y no se terminó",
+        "human": "Tu agente evaluará si tu gtt-domain necesita la estructura nueva y te preguntará antes de cambiar nada.",
+        "dismissed": "gtt-domain-migrate: descartada - no se migra nada y no se vuelve a preguntar hasta que un release declare otro cambio de estructura.",
         "backup": "Respaldo: {zip}\n  Guarda también una copia en otro lugar (otro disco o la nube): es lo único que sobrevive si pierdes esta máquina.",
         "restore": "Para deshacer: bash .gtt/scripts/gtt-domain-migrate.sh restore --apply",
     },
 }
 
-
-# --- small helpers ---------------------------------------------------------------------------------------------
 
 def read_json(path):
     try:
@@ -203,13 +217,35 @@ def split_findings(lines):
     return mine, theirs
 
 
+def vtuple(version):
+    try:
+        return tuple(int(x) for x in str(version).split("-")[0].split(".")[:3])
+    except (ValueError, TypeError):
+        return None
+
+
+def changes_between(spec, frm, to):
+    """The structural changes a release declared (format_changes) in (frm, to]. Empty when a version is unknown: nothing is guessed."""
+    a, b = vtuple(frm), vtuple(to)
+    if a is None or b is None:
+        return []
+    return [c for c in spec.get("format_changes", []) if vtuple(c.get("since")) is not None and a < vtuple(c["since"]) <= b]
+
+
+def change_texts(changes):
+    return [c.get(lang()) or c.get("en") or "" for c in changes]
+
+
 def evaluate():
-    """{needed, status, why, epics, format, current}. Read-only and cheap: one parse and one structural check."""
+    """{needed, state, why, from, changes, epics, format, current}. Read-only and cheap: it reads the state file and counts Epics.
+    It never runs the validator: a backlog with findings is work, not a migration. A migration is asked of the agent only when a
+    release DECLARED a change of structure between the version the project was on and the one it runs now (`check --from`)."""
     spec = contract()
     current = int(spec.get("format", 1))
     state = read_json(STATE) or {}
     out = {"schema": 1, "kind": "gtt-domain-status", "format": state.get("format"), "current": current,
-           "state": state.get("status"), "needed": False, "why": [], "epics": 0, "bootstrap": bootstrap_version()}
+           "state": state.get("status"), "needed": False, "why": [], "epics": 0, "bootstrap": bootstrap_version(),
+           "from": state.get("from"), "changes": state.get("changes") or []}
     if not os.path.isfile(BACKLOG):
         return out
     try:
@@ -218,19 +254,17 @@ def evaluate():
         return out
     out["epics"] = len(epics)
     if state.get("status") == "in-progress":
-        out.update(needed=True, why=["a migration was begun and not finished"])
-        return out
-    if state.get("status") == "pending":
-        out.update(needed=True, why=state.get("why") or ["something was found when the Bootstrap was updated"])
-        return out
-    if state.get("status") in ("clean", "done") and int(state.get("format") or 0) >= current:
-        return out
-    if not epics:
-        return out                      # nothing to carry over: a new project has nothing to migrate
-    code, lines = run_check_backlog()
-    if code == 1:
-        out.update(needed=True, why=lines[:6] + ([f"(+{len(lines) - 6} more)"] if len(lines) > 6 else []) or ["the backlog does not pass check-backlog"])
+        out.update(needed=True, why=[MSG[lang()]["in_progress"]])
+    elif state.get("status") == "pending" and epics:
+        out.update(needed=True, why=change_texts(state.get("changes") or []))
     return out
+
+
+def order_text(result):
+    m = MSG[lang()]
+    if result.get("state") == "in-progress":
+        return m["resume"]
+    return m["order"].format(frm=result.get("from") or "?", why="; ".join(result.get("why") or []))
 
 
 def stamp_new(session_start=False):
@@ -260,44 +294,30 @@ def action(session_start=False):
     result = evaluate()
     if not result["needed"]:
         return None
-    why = "; ".join(result["why"]) or "see `bash .gtt/scripts/gtt-domain-migrate.sh status`"
-    text = MSG[lang()]
-    return {"kind": "domain-migration", "text": text["order"].format(why=why), "human": text["human"]}
+    return {"kind": "domain-migration", "text": order_text(result), "human": MSG[lang()]["human"]}
 
 
 def prompt_notice(session):
-    """The migration order for a session that is already open. The next action reaches only a session that STARTS, and the one
-    that was open while `gtt update` ran is the one that needs it. Said once per session (again only if the order changes), at the
-    person's next message. Computing it costs a pass over the backlog (a second on a big one), so the result is kept against the
-    backlog's size and time: a message that finds nothing changed reads one small file. Silent when nothing is to be migrated."""
+    """The same evaluation for a session that is already open: the next action reaches only a session that STARTS, and the one open
+    while `gtt update` ran is the one that needs it. Said once per session (again only if the text changes), at the person's next
+    message. Reading the state file is all it costs. Silent when no release declared a change for this project."""
     try:
-        spec = contract()
+        result = evaluate()
     except SystemExit:
         return ""
-    state = read_json(STATE) or {}
-    if state.get("status") in ("clean", "done") and int(state.get("format") or 0) >= int(spec.get("format", 1)):
+    if not result["needed"]:
         return ""
-    try:
-        stat = os.stat(BACKLOG)
-    except OSError:
-        return ""
-    sig = [stat.st_mtime_ns, stat.st_size, state.get("status"), lang()]
-    cache = read_json(NOTICE) or {}
-    if cache.get("sig") != sig:
-        result = evaluate()
-        why = "; ".join(result["why"]) or "see `bash .gtt/scripts/gtt-domain-migrate.sh status`"
-        cache = {"sig": sig, "needed": bool(result["needed"]), "text": MSG[lang()]["order"].format(why=why) if result["needed"] else "",
-                 "shown": cache.get("shown") or {}}
-    text = cache.get("text") or ""
+    text = order_text(result)
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+    cache = read_json(NOTICE) or {}
     shown = cache.setdefault("shown", {})
-    say = bool(text) and shown.get(session) != digest
-    if say:
-        shown[session] = digest
-        for old in list(shown)[:-5]:
-            shown.pop(old)
-    write_json(NOTICE, cache)
-    return text if say else ""
+    if shown.get(session) == digest:
+        return ""
+    shown[session] = digest
+    for old in list(shown)[:-5]:
+        shown.pop(old)
+    write_json(NOTICE, {"shown": shown})
+    return text
 
 
 # --- commands ----------------------------------------------------------------------------------------------------
@@ -306,23 +326,56 @@ def cmd_status(args):
     result = evaluate()
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
-    elif result["needed"]:
-        print(MSG[lang()]["needed"].format(version=result["bootstrap"], why="; ".join(result["why"])))
+        return 0
+    if result["needed"]:
+        print(MSG[lang()]["needed"].format(frm=result.get("from") or "?", version=result["bootstrap"], why="; ".join(result["why"])))
+        code, lines = run_check_backlog()          # what the validator finds now: the evidence for the agent's judgment, only when asked
+        mine, theirs = split_findings(lines) if code else ([], [])
+        for line in mine[:8]:
+            print(f"  finds   {line}")
+        if len(mine) > 8:
+            print(f"  finds   (+{len(mine) - 8} more Story findings)")
+        for line in theirs[:3]:
+            print(f"  epic    {line}   (an Epic is the human's: a proposal, never an edit)")
+        if not mine and not theirs:
+            print("  the validator finds nothing in this backlog: likely nothing to rewrite")
     else:
         print("gtt-domain-migrate: nothing to migrate" + (f" (format {result['format']})" if result["format"] else ""))
     return 0
 
 
 def cmd_check(args):
-    result = evaluate()
-    if args.apply:
-        spec = contract()
-        state = read_json(STATE) or {}
-        if state.get("status") not in ("in-progress",):
-            write_json(STATE, {"schema": 1, "format": int(spec.get("format", 1)) if not result["needed"] else state.get("format", 0),
-                               "status": "pending" if result["needed"] else "clean", "at": now(), "bootstrap": bootstrap_version(),
-                               "why": result["why"]})
+    """The update calls this with the version the project WAS on (--from): the changes a release declared since then decide whether
+    anything is asked. Without --from it compares with the version stamped last time; with neither, nothing is guessed."""
+    spec = contract()
+    state = read_json(STATE) or {}
+    if args.apply and state.get("status") != "in-progress":
+        to = bootstrap_version()
+        frm = args.frm or state.get("bootstrap")
+        epics = 0
+        try:
+            epics = len(gtt_backlog.parse(BACKLOG)[1]) if os.path.isfile(BACKLOG) else 0
+        except OSError:
+            pass
+        changes = changes_between(spec, frm, to) if epics else []
+        if changes:
+            write_json(STATE, {"schema": 1, "format": state.get("format", 0), "status": "pending", "at": now(), "from": frm, "to": to,
+                               "bootstrap": to, "changes": changes})
+        else:
+            write_json(STATE, {"schema": 1, "format": int(spec.get("format", 1)), "status": "clean", "at": now(), "bootstrap": to})
     return cmd_status(args)
+
+
+def cmd_dismiss(args):
+    state = read_json(STATE) or {}
+    if state.get("status") == "in-progress":
+        print("gtt-domain-migrate: a migration is in progress: finish it (`done`) or undo it (`restore --apply`).", file=sys.stderr)
+        return 1
+    spec = contract()
+    write_json(STATE, {"schema": 1, "format": int(spec.get("format", 1)), "status": "done", "dismissed": True, "at": now(),
+                       "bootstrap": bootstrap_version()})
+    print(MSG[lang()]["dismissed"])
+    return 0
 
 
 def zip_domain(destination):
@@ -493,7 +546,9 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog="gtt-domain-migrate", description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_status)
-    p = sub.add_parser("check"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_check)
+    p = sub.add_parser("check"); p.add_argument("--apply", action="store_true"); p.add_argument("--json", action="store_true")
+    p.add_argument("--from", dest="frm", help="the Bootstrap version the project was on before this update"); p.set_defaults(func=cmd_check)
+    p = sub.add_parser("dismiss"); p.set_defaults(func=cmd_dismiss)
     p = sub.add_parser("begin"); p.add_argument("--to"); p.set_defaults(func=cmd_begin)
     p = sub.add_parser("verify"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_verify)
     p = sub.add_parser("done"); p.set_defaults(func=cmd_done)

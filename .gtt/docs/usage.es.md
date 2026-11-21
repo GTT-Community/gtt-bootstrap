@@ -224,8 +224,9 @@ ediciones a archivos del paquete se conservan (la versión del release queda al 
 
 Lo que **no** hace es tocar `gtt-domain/`: tu backlog, contexto, ADRs y propuestas son del proyecto, no del paquete. Lo que los
 validadores nuevos encuentren en ellos se informa como hallazgos, nunca como motivo para quedarse en la versión vieja, y el update
-queda hecho. Llevar ese contenido a un formato más nuevo es trabajo del agente, no del CLI. `gtt update` guarda un zip de `gtt-domain/` fuera del
-proyecto y te avisa cuando hace falta; tu agente lo recibe como su siguiente acción, hace un segundo zip dentro del proyecto
+queda hecho. La mayoría de los updates no le piden nada. Solo cuando un release **declara un cambio en la estructura** que el backlog debe llevar te lo dice
+el update, y entonces tu agente solo **evalúa** si tu proyecto lo necesita y **te pregunta antes de cambiar nada**; nunca reescribe por su cuenta.
+`gtt update` guarda un zip de `gtt-domain/` fuera del proyecto; si dices que sí, tu agente hace un segundo zip dentro del proyecto
 (`gtt-domain-migrate.sh begin`) y reescribe **solo Stories**. El Goal, el Scope y el `Approved` de un Epic, todo lo gobernado y el estado
 de cada Story quedan exactamente como estaban: `gtt-domain-migrate.sh verify` lo prueba y `restore` lo deshace. **Guarda también una
 copia del zip en otro lugar** (otro disco o la nube): es lo único que sobrevive si pierdes la máquina.

@@ -139,6 +139,7 @@
     "guard.validate": { "version": 1, "implementation": ".gtt/scripts/gtt-check-protection.sh", "argv": [], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },
     "guard.sync": { "version": 1, "implementation": ".gtt/scripts/gtt-guard-sync.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
 
+    "domain.check": { "version": 1, "implementation": ".gtt/scripts/gtt-domain-migrate.sh", "argv": ["check", "--json"], "args": [ { "name": "from", "type": "string", "flag": "--from" }, { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "json", "contract": "domain-status" } },
     "domain.status": { "version": 1, "implementation": ".gtt/scripts/gtt-domain-migrate.sh", "argv": ["status", "--json"], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "json", "contract": "domain-status" } },
 
     "index": { "version": 1, "implementation": ".gtt/scripts/gtt-index.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
