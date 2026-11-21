@@ -464,6 +464,25 @@ It is an **evaluation, never an automatic rewrite**. The order of work, at a cut
 A migration that was begun and not finished is resumed or undone only after the human is asked; it never blocks ordinary work: say what is
 pending and keep going on a Story that is `In Progress`.
 
+## Sonar links
+
+A report that says `STORY-783`, `PROP-009` or `REV-011` makes the person look for it. Sonar has a place for each of those and is addressed by
+its own address, so `bash .gtt/scripts/gtt-link.sh REF [REF ...]` turns refs into links (one `REF  URL` line each) with one call and nothing
+searched or invented:
+
+| Ref | Sonar |
+|---|---|
+| `EPIC-n`, `STORY-n` | the Plan, filtered to it |
+| `PROP-n`, `IDEA-n`, `REV-n` | the Inbox card (a review opens the card of the entry it is about) |
+| `ASK-n`, `DEC-n` | the Plan, filtered to what waits for the person |
+| `ADR-n` | Design, the decisions |
+| `GAP-n`, `OBS-n`, a finding code (`GOV-…`, `DEF-…`, `DLV-…`, `GTT-…`) | Health, searched for it |
+
+The address is the one Sonar is served at when it is running and otherwise the static page the watcher keeps; for a project Sonar was never
+opened for it prints nothing (`gtt sonar` opens it) and a ref with no place is left out. Give the link after the thing it points to, on the
+same line or the next, and only for what you name: a report is not a table of links. `gtt-pending.sh show` already carries the link of each
+open question and review, so show its output as it is.
+
 ## Disk and work copies
 
 A full disk stops every agent at once and can corrupt the work in progress, so one rule is in force by default, for every ADE: **at most 3 work copies at a time, work copies and ADE folders under 15 GB, at least 10 GB free.** It is advice with numbers, never a gate: it does not stop ordinary work, it keeps the work from running out of room. The numbers are data (`.gtt/contract/disk.json`); `bash .gtt/scripts/gtt-disk.sh check` computes them from Git (`git worktree list`), so it holds for any ADE, whatever folder it keeps its copies in.

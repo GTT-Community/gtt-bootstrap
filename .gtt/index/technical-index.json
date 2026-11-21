@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "4e73c4d0264ef46032230813ba67899ac98f5418eef606f8e0f5a90056a57ad1",
+      "sha256": "3ed3b3120c16b08c5fb0ff2826fa542fb501132c9d26f86ec149fa70f1890ce9",
       "aliases": [],
       "sections": [
         {
@@ -174,7 +174,7 @@
           "anchor": "agentsmd--gtt-bootstrap-agent-contract",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract",
           "line_start": 1,
-          "line_end": 370
+          "line_end": 376
         },
         {
           "heading": "Mission",
@@ -385,76 +385,84 @@
           "line_end": 330
         },
         {
+          "heading": "Sonar links",
+          "level": 2,
+          "anchor": "sonar-links",
+          "path": "AGENTS.md — GTT Bootstrap Agent Contract > Sonar links",
+          "line_start": 331,
+          "line_end": 336
+        },
+        {
           "heading": "Disk and work copies",
           "level": 2,
           "anchor": "disk-and-work-copies",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Disk and work copies",
-          "line_start": 331,
-          "line_end": 336
+          "line_start": 337,
+          "line_end": 342
         },
         {
           "heading": "Domain migration",
           "level": 2,
           "anchor": "domain-migration",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Domain migration",
-          "line_start": 337,
-          "line_end": 342
+          "line_start": 343,
+          "line_end": 348
         },
         {
           "heading": "Working without unnecessary interruption",
           "level": 2,
           "anchor": "working-without-unnecessary-interruption",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Working without unnecessary interruption",
-          "line_start": 343,
-          "line_end": 346
+          "line_start": 349,
+          "line_end": 352
         },
         {
           "heading": "Design assessment",
           "level": 2,
           "anchor": "design-assessment",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Design assessment",
-          "line_start": 347,
-          "line_end": 350
+          "line_start": 353,
+          "line_end": 356
         },
         {
           "heading": "Initial Design Questionnaire",
           "level": 2,
           "anchor": "initial-design-questionnaire",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Initial Design Questionnaire",
-          "line_start": 351,
-          "line_end": 354
+          "line_start": 357,
+          "line_end": 360
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Provenance, gaps, sources and working agreements",
-          "line_start": 355,
-          "line_end": 358
+          "line_start": 361,
+          "line_end": 364
         },
         {
           "heading": "Two confirmations",
           "level": 2,
           "anchor": "two-confirmations",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Two confirmations",
-          "line_start": 359,
-          "line_end": 362
+          "line_start": 365,
+          "line_end": 368
         },
         {
           "heading": "Source preservation",
           "level": 2,
           "anchor": "source-preservation",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Source preservation",
-          "line_start": 363,
-          "line_end": 366
+          "line_start": 369,
+          "line_end": 372
         },
         {
           "heading": "Completion report",
           "level": 2,
           "anchor": "completion-report",
           "path": "AGENTS.md — GTT Bootstrap Agent Contract > Completion report",
-          "line_start": 367,
-          "line_end": 370
+          "line_start": 373,
+          "line_end": 376
         }
       ],
       "references": [],
@@ -1216,7 +1224,7 @@
       "title": null,
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "84b77f25713a7163751d7d8693e032800833c64d4f6ee6d81ae241304f66e3ce",
+      "sha256": "53a8356f624faf26cc6d9f4e75b7f4fd1473d86aed95f063d68afd21dfc086fe",
       "aliases": [],
       "sections": [
         {
@@ -1225,7 +1233,7 @@
           "anchor": "claude-code-specifics",
           "path": "Claude Code specifics",
           "line_start": 5,
-          "line_end": 72
+          "line_end": 73
         }
       ],
       "references": [],
@@ -3419,7 +3427,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "297bc1fa51337172266537eb5e26b9e600c9175072c2a24d428ec99968aece4f",
+      "sha256": "bb35c52621f823945f8af2d1c514e3c0ba8780914c4beacc8b054809803b49c1",
       "aliases": [],
       "sections": [
         {
@@ -3428,7 +3436,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 496
+          "line_end": 515
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3543,20 +3551,28 @@
           "line_end": 466
         },
         {
+          "heading": "Sonar links",
+          "level": 2,
+          "anchor": "sonar-links",
+          "path": "Working inside a governed project > Sonar links",
+          "line_start": 467,
+          "line_end": 485
+        },
+        {
           "heading": "Disk and work copies",
           "level": 2,
           "anchor": "disk-and-work-copies",
           "path": "Working inside a governed project > Disk and work copies",
-          "line_start": 467,
-          "line_end": 477
+          "line_start": 486,
+          "line_end": 496
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 478,
-          "line_end": 496
+          "line_start": 497,
+          "line_end": 515
         }
       ],
       "references": [],
@@ -9806,6 +9822,10 @@
     ],
     "solution vision": [
       "CTX-SOLUTION-VISION#solution-vision"
+    ],
+    "sonar links": [
+      "AGENTS#sonar-links",
+      "DOC-OPERATIONS#sonar-links"
     ],
     "sonar: see everything in one page": [
       "GTT-USAGE#sonar-see-everything-in-one-page"

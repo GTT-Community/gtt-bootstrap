@@ -946,6 +946,35 @@ def notice_text(c):
     return "\n".join(lines)
 
 
+_LINK_BASE = []
+
+
+def sonar_link(ev):
+    """The Sonar address of what an event is about (the entry of a review, the Epic or Story a question blocks, else the event itself), or
+    None when Sonar was not opened for this project. Silent on any failure: a link is a courtesy, never a reason to fail."""
+    try:
+        import gtt_link
+        if not _LINK_BASE:
+            _LINK_BASE.append(gtt_link.base())
+        prefix, served = _LINK_BASE[0]
+        if prefix is None:
+            return None
+        refs = []
+        if ev["kind"] == "REV" and ev["fields"].get("entry"):
+            refs.append(ev["fields"]["entry"])
+        else:
+            text = " ".join([str(ev["fields"].get("blocks", "")), str(ev.get("title", ""))] + list(ev.get("lines", [])[:6]))
+            refs += re.findall(r"(?:EPIC|STORY|PROP|IDEA)-[A-Za-z0-9]+", text)
+        refs.append(f"{ev['kind']}-{int(ev['number']):03d}")
+        for ref in refs:
+            url = gtt_link.url_for(ref, prefix, served)
+            if url:
+                return url
+    except Exception:
+        return None
+    return None
+
+
 def batch_text(c):
     """The open questions as one batch for the chat, each in the form of its event, then the decisions to tell."""
     m = messages(c)
@@ -962,6 +991,9 @@ def batch_text(c):
                 body = [re.sub(r"(sha: [0-9a-f]{12})[0-9a-f]{52}", r"\1…", l) for l in body]
             topic = ev["fields"].get("entry") if ev["kind"] == "REV" else ev["fields"].get("topic", ev["title"][:24])
             out += ["", f"── {index}/{len(asks)} · {topic} · {ev['kind']}-{ev['number']:03d} ──"] + [l for l in body[:1]] + [l for l in body[2:] if l.strip()]
+            link = sonar_link(ev)
+            if link:
+                out.append(f"↳ Sonar: {link}")
         out += ["", m["batch_tail"]] + ([m["review_tail"]] if any(e["kind"] == "REV" for e in asks) else [])
     for ev in decisions:
         out.append(f"{m['fyi']}: {ev['number']} {ev['title']}")

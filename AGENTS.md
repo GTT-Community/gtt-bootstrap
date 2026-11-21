@@ -328,6 +328,12 @@ Settle simple, reversible questions yourself: take the simplest option and conti
 
 In `.gtt/docs/agents/operations.md` → *Pending events*.
 
+## Sonar links
+
+When you tell the human about an Epic, a Story, a proposal, an idea, a review, a decision or a gap, give its Sonar link so they go straight to it: `bash .gtt/scripts/gtt-link.sh REF [REF ...]` (one call for all the refs you name). It prints nothing when Sonar was not opened for the project and leaves out what has no place in it. Never build an address by hand, and never search for one.
+
+In `.gtt/docs/agents/operations.md` → *Sonar links*.
+
 ## Disk and work copies
 
 Before creating a work copy (a Git worktree) or launching agents in parallel, run `bash .gtt/scripts/gtt-disk.sh check`; when an agent or a Story ends, remove its merged, clean copy with `gtt-disk.sh prune <path> --apply`. By default at most 3 work copies, 15 GB and 10 GB free. It never blocks ordinary work, and only the human changes the limits (`gtt-disk.sh set`).
