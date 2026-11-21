@@ -119,6 +119,7 @@ td .stack{display:flex;flex-direction:column;gap:3px}
 .sigs{display:flex;flex-direction:column}
 .sig{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line-soft);align-items:baseline}
 .sig:last-child{border-bottom:0}
+.sig.hit{background:var(--agent-bg);outline:1px solid var(--agent)}
 .filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--muted)}
 .dayh{font:500 12px var(--mono);color:#B6C4D3;margin:0;padding:10px 18px;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
 .dayh:first-child{border-top:0}
@@ -623,8 +624,9 @@ function mineChip(snap) {
 function healthPanel(snap) {
   var rows = snap.health || []; if (!rows.length) return null;
   var box = h("div", { class: "panel sigs" });
+  var hit = readHash().hc || "";
   rows.forEach(function (c) {
-    box.appendChild(h("div", { class: "sig" }, h("span", { class: "tag " + (c.status === "ok" ? "ok" : c.status === "fail" ? "red" : "amber"), text: c.status }),
+    box.appendChild(h("div", { class: "sig" + (hit && hit === c.id ? " hit" : ""), id: "chk-" + c.id }, h("span", { class: "tag " + (c.status === "ok" ? "ok" : c.status === "fail" ? "red" : "amber"), text: c.status }),
       h("b", { text: c.title }), c.detail ? h("span", { text: c.detail }) : null, c.stale ? h("span", { class: "tag amber", text: T.staleHealth }) : null));
   });
   return h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), box);
@@ -1340,27 +1342,73 @@ function viewActivity() {
   return main;
 }
 
-/* ---------- Health: every finding by plane, with a link to its item, and the state of each check ---------- */
+/* ---------- Health: every finding by plane, filtered by level, by whose it is and by text, each one linked to its content ---------- */
+function encq(s) { return encodeURIComponent(s); }
+// The document a path names, among the governed documents the snapshot carries (a line number after the path is ignored).
+function docFor(snap, path) {
+  var p = String(path || "").replace(/:\d+$/, ""); if (!p || !snap.docs) return null;
+  return (snap.docs.items || []).filter(function (d) { return d.path === p; })[0] || null;
+}
+// Where the content of a finding is: the Epic or Story in the Plan, the card in the Inbox, the governed document in Design, or the check in this view.
+function findingLink(snap, f) {
+  var ref = f.ref || "", code = f.code || "";
+  var target = (f.epic || (ref.indexOf("EPIC-") === 0 || ref.indexOf("STORY-") === 0 ? ref : null));
+  if (target) return "#/view=plan&q=" + encq(ref.indexOf("STORY-") === 0 ? ref : target);
+  if (code.indexOf("DEF-INBOX-") === 0) return "#/view=inbox&card=" + encq(ref);
+  var doc = docFor(snap, f.where) || docFor(snap, ref);
+  if (doc) return "#/view=design&dt=docs&repo=" + encq(snap.repo.path) + "&doc=" + encq(doc.id);
+  if (code === "GOV-VALIDATION" && (snap.health || []).some(function (c) { return c.id === ref; })) return "#/view=health&hc=" + encq(ref);
+  if (f.plane === "delivery") return "#/view=plan";                          // the plan is where the date, the hours and the fronts live
+  if (f.plane === "code" && snap.code) return "#/view=code";                // the module map and the findings of the code
+  return null;
+}
+function findingHit(f, fl) {
+  if (fl.lvl && f.level !== fl.lvl) return false;
+  if (fl.who && f.owner !== fl.who) return false;
+  if (fl.q && [f.ref, f.code, f.text, f.where, f.epic, f["for"]].join(" ").toLowerCase().indexOf(fl.q) < 0) return false;
+  return true;
+}
+function healthFilters(all, fl) {
+  var levels = ["BLOCKING", "WARNING", "NOTICE"].filter(function (l) { return all.some(function (f) { return f.level === l; }); });
+  all.forEach(function (f) { if (f.level && levels.indexOf(f.level) < 0) levels.push(f.level); });
+  function count(fn) { return all.filter(fn).length; }
+  function chip(label, patch, on) { return h("button", { type: "button", class: "chip", "aria-pressed": on ? "true" : "false", on: { click: function () { go(patch); } }, text: label }); }
+  var row = h("div", { class: "chips", role: "group", "aria-label": L("filtros de salud", "health filters") });
+  row.appendChild(chip(L("todos ", "all ") + all.length, { hl: "" }, !fl.lvl));
+  levels.forEach(function (l) { row.appendChild(chip(l + " " + count(function (f) { return f.level === l; }), { hl: fl.lvl === l ? "" : l }, fl.lvl === l)); });
+  row.appendChild(chip(L("te tocan ", "yours ") + count(function (f) { return f.owner === "human"; }), { ho: fl.who === "human" ? "" : "human" }, fl.who === "human"));
+  row.appendChild(chip(L("le tocan a claude ", "the agent's ") + count(function (f) { return f.owner === "agent"; }), { ho: fl.who === "agent" ? "" : "agent" }, fl.who === "agent"));
+  var q = h("input", { type: "text", id: "health-q", placeholder: L("buscar por id, código o texto", "search by id, code or text"), "aria-label": L("buscar en la salud", "search health"), style: "min-width:280px", value: readHash().hq || "" });
+  q.value = readHash().hq || "";
+  q.addEventListener("input", debounced(function (v) { go({ hq: v }); }, 250));
+  row.appendChild(q);
+  if (fl.lvl || fl.who || fl.q) row.appendChild(h("button", { type: "button", class: "chip", on: { click: function () { go({ hl: "", ho: "", hq: "" }); } }, text: L("quitar filtros", "clear filters") }));
+  return row;
+}
 function viewHealth() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
+  var st = readHash(), fl = { lvl: st.hl || "", who: st.ho || "", q: String(st.hq || "").trim().toLowerCase() }, filtered = !!(fl.lvl || fl.who || fl.q);
+  var all = snap.findings || [];
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Salud", "Health") }), h("span", { class: "small", text: snap.repo.name }))));
   var dn = degradedNote(snap); if (dn) main.appendChild(dn);
+  if (all.length) main.appendChild(healthFilters(all, fl));
   var planes = [["governance", L("gobierno", "governance")], ["delivery", L("entrega", "delivery")], ["definition", L("definición", "definition")], ["code", L("código", "code")]];
   planes.forEach(function (p) {
-    var rows = (snap.findings || []).filter(function (f) { return f.plane === p[0]; });
-    if (!rows.length && p[0] === "code") return;
+    var inPlane = all.filter(function (f) { return f.plane === p[0]; });
+    var rows = inPlane.filter(function (f) { return findingHit(f, fl); });
+    if (!inPlane.length && p[0] === "code") return;
     var box = h("div", { class: "panel sigs" });
-    if (!rows.length) box.appendChild(h("div", { class: "empty", text: L("nada que avisar", "nothing to report") }));
+    if (!rows.length) box.appendChild(h("div", { class: "empty", text: filtered && inPlane.length ? L("ningún hallazgo con este filtro", "no finding matches this filter") : L("nada que avisar", "nothing to report") }));
     rows.forEach(function (f) {
-      var target = (f.epic || (f.ref.indexOf("EPIC-") === 0 || f.ref.indexOf("STORY-") === 0 ? f.ref : null));
-      var href = target ? "#/view=plan&q=" + encodeURIComponent(f.ref.indexOf("STORY-") === 0 ? f.ref : target) : (f.code.indexOf("DEF-INBOX-") === 0 ? "#/view=inbox&card=" + encodeURIComponent(f.ref) : null);
+      var href = findingLink(snap, f);
       box.appendChild(h("div", { class: "sig" }, lvlTag(f.level), href ? h("a", { class: "ref", href: href, text: f.ref }) : h("span", { class: "ref", text: f.ref }), h("span", { class: "mono small", text: f.code }), h("span", { text: f.text }),
         h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" })));
     });
-    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + rows.length), box));
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + (filtered ? rows.length + " / " + inPlane.length : rows.length)), box));
   });
   var hp = healthPanel(snap); if (hp) main.appendChild(hp);
   else main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), h("div", { class: "panel empty", text: L("Aún no hay resultados de chequeos: corre gtt-validate.sh.", "No check results yet: run gtt-validate.sh.") })));
+  if (st.hc) setTimeout(function () { var el = document.getElementById("chk-" + st.hc); if (el && el.scrollIntoView) el.scrollIntoView({ block: "center" }); }, 0);
   return main;
 }
 
@@ -1510,7 +1558,7 @@ function viewHelp2() {
     L("Plan: las épicas en el orden en que se construyen, con sus historias, lo que le falta a cada una y a quién le toca. Aquí lo llenas.", "Plan: the Epics in the order they are built, with their Stories, what each still lacks and whom it is up to. You fill it in here."),
     L("Bandeja: ideas sin triage, propuestas sin confirmar y borradores de ADR a medias.", "Inbox: ideas not triaged, proposals not confirmed and ADR drafts half written."),
     L("Actividad: qué hace claude ahora, con o sin hooks; lo que pasó, día por día; y lo que vio en su última sesión.", "Activity: what claude is doing now, with or without hooks; what happened, day by day; and what it saw in its last session."),
-    L("Salud: todo lo que GTT detecta, por plano, con enlace a su épica o historia, y el estado de cada chequeo.", "Health: everything GTT detects, by plane, linked to its Epic or Story, and the state of each check."),
+    L("Salud: todo lo que GTT detecta, por plano, filtrable por nivel, por a quién le toca y por texto; cada hallazgo enlaza a su contenido (la épica o historia, la tarjeta de la bandeja, el documento de diseño o el chequeo), y abajo el estado de cada chequeo.", "Health: everything GTT detects, by plane, filterable by level, by whose it is and by text; each finding links to its content (the Epic or Story, the inbox card, the design document or the check), and below it the state of each check."),
     L("Diseño: el contexto gobernado, los ADR adoptados y el diseño de cada épica.", "Design: the governed context, the adopted ADRs and the design of each Epic."),
     L("Código: los módulos de stack.md contra las importaciones reales, qué se construyó, quién lo construyó y si respeta la arquitectura.", "Code: the modules of stack.md against the real imports, what was built, who built it and whether it respects the architecture.")]));
   main.appendChild(panel(L("Cómo se lee", "How to read it"), [

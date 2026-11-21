@@ -7,7 +7,7 @@
 # NOT a grounding source, NOT a substitute for an ADR. Governed context
 # (gtt-domain/context/, gtt-domain/adr/) and gtt-domain/backlog.md prevail over this file.
 #
-# Generated: 2026-11-21T05:21:13Z
+# Generated: 2026-11-21T05:46:10Z
 
 ## Review (computed from the repository - what to look at first; never a decision)
 @gtt · Review
@@ -71,4 +71,4 @@ unresolved references: 0
 ## Repository (resume hints)
 branch: master; uncommitted paths: 0
 recent commits:
-035b771 catalog
+d20b2e3 catalog

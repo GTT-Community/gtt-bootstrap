@@ -170,6 +170,32 @@ def plan_checks(tmp, chrome):
     health = words(dom(static, "health"))
     check("governance" in health and "delivery" in health and "definition" in health and "GOV-GAP" in health and "DEF-STORY-ESTIMATE" in health, "Health shows the findings by plane")
     check(re.search(r'href="#/view=plan&amp;q=STORY-003"', dom(static, "health")) is not None, "each finding links to its item")
+    print("Health: filters by level, by whose it is and by text, kept in the address; every finding that has a content links to it")
+    hall = dom(static, "health")
+    rows_of = lambda page: re.findall(r'<div class="sig">(.*?)</div>(?=<div class="sig"|</div></section>)', body_of(page), flags=re.S)
+    findings = json.load(open(snap_path, encoding="utf-8")).get("findings", [])
+    check(len(findings) >= 3, "(the demo project has findings to filter)", str(len(findings)))
+    check('id="health-q"' in hall and re.search(r'aria-label="(search health|buscar en la salud)"', hall) and "clear filters" not in words(hall),
+          "the filter bar is there: a search box, and no `clear filters` while nothing is filtered")
+    check(all(x in words(hall) for x in ("all", "yours", "the agent's")), "the chips: all, yours, the agent's")
+    level = findings[0]["level"]
+    by_level = rows_of(dom(static, "health&hl=" + level))
+    check(0 < len(by_level) <= len([f for f in findings if f["level"] == level]) + 0 and all(level in r for r in by_level), "a level chip keeps only the findings of that level", f"{len(by_level)}")
+    check("clear filters" in words(dom(static, "health&hl=" + level)), "`clear filters` appears when something is filtered")
+    mine = rows_of(dom(static, "health&ho=human"))
+    theirs = rows_of(dom(static, "health&ho=agent"))
+    check(all("yours" in re.sub(r"<[^>]+>", " ", r) for r in mine) and all("the agent" in re.sub(r"<[^>]+>", " ", r) for r in theirs) and len(mine) + len(theirs) <= len(findings),
+          "`yours` and `the agent's` split the findings by owner")
+    one = rows_of(dom(static, "health&hq=STORY-003"))
+    check(one and all("STORY-003" in r for r in one) and len(one) < len(rows_of(hall)), "the text search keeps only what names it", f"{len(one)}")
+    none = dom(static, "health&hq=zzz-nothing-matches")
+    check("no finding matches this filter" in words(none) and not rows_of(none), "a filter that matches nothing says so")
+    check(re.search(r"(governance|delivery|definition|code) · \d+ / \d+", words(dom(static, "health&hl=" + level))) is not None, "each plane shows how many of its findings the filter keeps")
+    linked = len(re.findall(r'<a class="ref" href="#/view=(?:plan|inbox|design|health|code)', body_of(hall)))
+    check(linked >= 3, "the findings that have a content link to it", str(linked))
+    designs = [f for f in findings if f.get("where", "").startswith("gtt-domain/context/") and not f.get("epic") and not str(f.get("ref", "")).startswith(("EPIC-", "STORY-"))]
+    if designs:
+        check(re.search(r'href="#/view=design&amp;dt=docs&amp;repo=[^"]*&amp;doc=', hall) is not None, "a finding about a governed document links to it in Design", designs[0]["where"])
     shutil.rmtree(os.path.dirname(project), ignore_errors=True)
 
 
