@@ -742,7 +742,11 @@ def cmd_update(args):
                 else:
                     actions.append(("KEEP", ade, rel, "modified locally; catalog unchanged"))
             elif os.path.exists(rel):
-                actions.append(("CONFLICT", ade, rel, "exists but was not installed by GTT"))
+                if os.path.isfile(rel) and sha(src) == sha(rel):
+                    # What an interrupted update left behind, byte for byte the catalog's file: recorded, never a conflict.
+                    actions.append(("REFRESH", ade, rel, "already equals the catalog; recorded in the ledger"))
+                else:
+                    actions.append(("CONFLICT", ade, rel, "exists but was not installed by GTT"))
             else:
                 actions.append(("ADD", ade, rel, ""))
         for rel in sorted(set(files) - set(wanted)):

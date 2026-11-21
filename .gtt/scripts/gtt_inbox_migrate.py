@@ -181,6 +181,7 @@ def run(args, c):
         print("(dry run - nothing written; re-run with --apply)")
         return 0
 
+    moved, removed = [], []                  # what the migration takes from the identity registry's view: told to it at the end
     # -------------------------------------------------- apply: the desk first, so the proposals can cite its idea
     if kind == "migrate" and not existing:
         header = eng.header_line(c, author=eng.author_value(c, "human", who), created=day, type=L["type"]["solicitud"],
@@ -194,10 +195,12 @@ def run(args, c):
             target = idea_path if not existing else path_of_idea(created_idea, cr, c)
             written = eng.read(target) if target else None
             if written is not None and (block in written or existing):
+                removed.append(change.REQUEST)
                 os.remove(change.REQUEST)
             else:
                 notes.append("the desk was kept: the idea could not be confirmed to hold its block")
         else:
+            removed.append(change.REQUEST)
             os.remove(change.REQUEST)
 
     # -------------------------------------------------- apply: the proposals
@@ -225,6 +228,7 @@ def run(args, c):
         e = eng.load(target, c)
         eng.add_line(e, c, "review", f"REV-{rev:03d}", "gtt")
         if (eng.read(target) or "").find(p["body"][:200]) >= 0:
+            moved.append((p["path"], target))
             os.remove(p["path"])
         report.append(f"{ref}: REV-{rev:03d} waits for the human (gtt answer {rev} 1)")
         idea = p["origin"] and eng.path_of(p["origin"], c)
@@ -240,12 +244,34 @@ def run(args, c):
             json.dump(spec, handle, indent=2)
             handle.write("\n")
 
+    record_identity(moved, removed)
     print("gtt-inbox: migrated. Report:")
     for line in report:
         print(f"  {line}")
     for note in notes:
         print(f"  note: {note}")
     return 0
+
+
+def record_identity(moved, removed):
+    """The files this migration moved or removed are registered artifacts: say so to the identity registry, or the next
+    `gtt-index.sh` refuses until someone reconciles by hand. Best effort: a project with no registry has nothing to tell."""
+    try:
+        with open(".gtt/index/artifacts.json", encoding="utf-8") as handle:
+            live = {e["path"]: e["id"] for e in json.load(handle).get("artifacts", []) if e.get("status", "active") == "active"}
+    except (OSError, ValueError):
+        return
+    args = []
+    for old, new in moved:
+        if old in live and os.path.isfile(new):
+            args += ["--map", f"{old}={new}"]
+    for old in removed:
+        if old in live:
+            args += ["--retire", live[old]]
+    if not args:
+        return
+    subprocess.run(["bash", ".gtt/scripts/gtt-reconcile.sh", "--apply", *args], capture_output=True)
+    subprocess.run(["bash", ".gtt/scripts/gtt-index.sh"], capture_output=True)
 
 
 def lang_es():

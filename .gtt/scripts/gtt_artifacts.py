@@ -444,6 +444,10 @@ def register_new(state):
     added = []
     for path in state.unregistered:
         aid, typ = derive(path)
+        if aid in state.entries and typ == "proposal" and path.startswith("gtt-domain/proposals/"):
+            # A promotion set stages a copy of a file under the name of its destination, so two sets stage two files
+            # called EPIC-023.md. The first keeps the plain id; the next is told apart by its folder, the same on every run.
+            aid = "PROP-" + slug_id(path[len("gtt-domain/proposals/"):-3])
         if aid in state.entries:
             other = state.entries[aid]
             die(f"duplicate logical identity {aid}: {path} collides with "
