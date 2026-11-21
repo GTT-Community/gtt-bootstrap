@@ -68,6 +68,26 @@ TAG = {
 
 # ------------------------------------------------------------------ helpers
 
+_MOVED = None
+
+
+def moved_paths():
+    """The paths files had before they were moved, taken from the identity registry (`history`), for the files that still exist.
+    A governed document may cite `[FUENTE: <path>]` of a file the inbox migration later renamed; the citation was true when it was
+    written and the context is frozen, so it follows the move instead of failing."""
+    global _MOVED
+    if _MOVED is None:
+        _MOVED = set()
+        try:
+            with open(os.path.join(".gtt", "index", "artifacts.json"), encoding="utf-8") as handle:
+                for entry in json.load(handle).get("artifacts", []):
+                    if entry.get("status", "active") == "active" and os.path.exists(entry.get("path", "")):
+                        _MOVED.update(entry.get("history", []))
+        except (OSError, ValueError):
+            pass
+    return _MOVED
+
+
 def read(path):
     try:
         with open(path, encoding="utf-8") as handle:
@@ -373,7 +393,7 @@ def run_checks(only=None, prefreeze=False):
                 continue
             head = token.split(":")[0]
             head = head.split("@")[0]
-            ok = head in known_ids or bool(glob.glob(head))
+            ok = head in known_ids or bool(glob.glob(head)) or head in moved_paths()
             if not ok:
                 level = "FAIL" if (manifest or strict) else "WARN"
                 findings.add(level, "tags", where, f"[FUENTE: {arg}] does not resolve to a declared source or an existing path")

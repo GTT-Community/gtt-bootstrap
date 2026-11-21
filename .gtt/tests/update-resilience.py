@@ -12,6 +12,8 @@
 
   U5  a session that was already open when the update ran hears the migration order once, at its next message
 
+  U6  a [FUENTE: path] of a governed document follows a file the inbox migration renamed instead of failing
+
   python3 .gtt/tests/update-resilience.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
 """
@@ -138,6 +140,24 @@ def main():
         check("a changed backlog does not repeat it to a session that heard it", hear("s1") == "")
         write(os.path.join(legacy, ".gtt/domain-migration.json"), json.dumps({"schema": 1, "format": 1, "status": "done"}))
         check("once the migration is done nobody hears it", hear("s3") == "")
+        print("U6  a governed citation of a file the inbox migration moved")
+        cite = make_host(project, tmp, "cited")
+        empty_registry(cite)
+        write(os.path.join(cite, "gtt-domain/change-request.md"), isess.DESK)
+        write(os.path.join(cite, "gtt-domain/proposals/PROPOSAL-redis.md"), f"# PROPOSAL - Redis sessions\n\n{canon}\n\nRequest: CR-20261001-101500\n\n{isess.FORM1}")
+        write(os.path.join(cite, "gtt-domain/context/architecture.md"),
+              "# Architecture\n\nSessions live in Redis. [FUENTE: gtt-domain/proposals/PROPOSAL-redis.md]\n")
+        bash(cite, ".gtt/scripts/gtt-index.sh")
+        rc, out, err = bash(cite, ".gtt/scripts/gtt-check-provenance.sh")
+        check("before the migration the citation resolves (the file is there)", "PROPOSAL-redis.md] does not resolve" not in out + err, out + err)
+        rc, out, err = bash(cite, ".gtt/scripts/gtt-inbox.sh", "migrate", "--apply")
+        check("the migration runs", rc == 0, out + err)
+        check("the proposal was renamed", not os.path.exists(os.path.join(cite, "gtt-domain/proposals/PROPOSAL-redis.md")))
+        rc, out, err = bash(cite, ".gtt/scripts/gtt-check-provenance.sh")
+        check("after it the same citation still resolves, following the move", "PROPOSAL-redis.md] does not resolve" not in out + err, out + err)
+        write(os.path.join(cite, "gtt-domain/context/architecture.md"), "# Architecture\n\nSessions. [FUENTE: gtt-domain/proposals/NOPE.md]\n")
+        rc, out, err = bash(cite, ".gtt/scripts/gtt-check-provenance.sh")
+        check("a citation of a file that never existed still fails", "NOPE.md] does not resolve" in out + err, out + err)
     finally:
         if args.keep:
             print(f"kept: {tmp}")
