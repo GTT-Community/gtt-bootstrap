@@ -10,6 +10,8 @@
 
   U4  a record the project writes (the completion report) is declared state, so an update never offers to replace it
 
+  U5  a session that was already open when the update ran hears the migration order once, at its next message
+
   python3 .gtt/tests/update-resilience.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
 """
@@ -116,6 +118,26 @@ def main():
         manifest = open(os.path.join(project, ".gtt/scaffold/manifest.yaml"), encoding="utf-8").read()
         row = next((l for l in manifest.splitlines() if ".gtt/docs/gtt-completion.md" in l and "path:" in l), "")
         check("the completion report is declared state: it is the project's history, appended by the bootstrap", "state: true" in row, row)
+        print("U5  a session that was already open hears the migration order")
+        dspec = importlib.util.spec_from_file_location("domain_migration", os.path.join(HERE, "domain-migration.py"))
+        dm = importlib.util.module_from_spec(dspec)
+        dspec.loader.exec_module(dm)
+        legacy = dm.fixture(project, tmp, "open-session")
+        os.makedirs(os.path.join(legacy, ".claude/hooks"), exist_ok=True)
+        shutil.copy2(os.path.join(project, ".claude/hooks/pending-watch.py"), os.path.join(legacy, ".claude/hooks/pending-watch.py"))
+
+        def hear(session):
+            done = subprocess.run([sys.executable, ".claude/hooks/pending-watch.py"], cwd=legacy, capture_output=True, text=True,
+                                  input=json.dumps({"session_id": session, "prompt": "seguimos"}))
+            return json.loads(done.stdout)["hookSpecificOutput"]["additionalContext"] if done.stdout.strip() else ""
+        first = hear("s1")
+        check("the first message of an open session carries the migration order", "gtt-domain" in first and "migra" in first.lower(), first[:200])
+        check("the second message of that session says nothing", hear("s1") == "")
+        check("a different session hears it too", "gtt-domain" in hear("s2"))
+        write(os.path.join(legacy, "gtt-domain/backlog.md"), dm.LEGACY + "\n")
+        check("a changed backlog does not repeat it to a session that heard it", hear("s1") == "")
+        write(os.path.join(legacy, ".gtt/domain-migration.json"), json.dumps({"schema": 1, "format": 1, "status": "done"}))
+        check("once the migration is done nobody hears it", hear("s3") == "")
     finally:
         if args.keep:
             print(f"kept: {tmp}")

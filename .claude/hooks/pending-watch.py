@@ -43,9 +43,19 @@ def main() -> int:
             engine.store_prompt(prompt, c)
         state = engine.begin_turn(session, prompt, c)
 
+        # A migration of the project's gtt-domain, said to a session that was already open when the Bootstrap was updated (one that
+        # starts reads it in its next action). Once per session; a message that finds nothing to say reads one small file.
+        migrate = ""
+        try:
+            import gtt_domain_migrate
+            migrate = gtt_domain_migrate.prompt_notice(session)
+        except Exception:
+            migrate = ""
         s = engine.summary(c)
         open_events = s["asks"] + s["decisions"]
         if not open_events and not s["to_apply"]:
+            if migrate:
+                print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "GTT: " + migrate}}))
             return 0
         apply_lines = [f"{r['id']} is answered («{r['answer'][:60]}»): apply it where it belongs, cite it there, then "
                        f"`bash .gtt/scripts/gtt-pending.sh done {r['number']} --in <where> --apply`." for r in s["to_apply"]]
@@ -72,10 +82,12 @@ def main() -> int:
                          "`bash .gtt/scripts/gtt-pending.sh show`, shown in the chat.")
         if not lines:
             engine.save_state(c, state)
+            if migrate:
+                print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "GTT: " + migrate}}))
             return 0
         engine.save_state(c, state)
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
-                                                 "additionalContext": "GTT pending: " + " ".join(lines)}}))
+                                                 "additionalContext": "GTT pending: " + " ".join(lines) + ((" GTT: " + migrate) if migrate else "")}}))
     except Exception:
         return 0
     return 0

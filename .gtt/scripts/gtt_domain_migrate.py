@@ -40,6 +40,7 @@ import gtt_backlog  # noqa: E402
 
 CONTRACT = ".gtt/contract/domain.json"
 STATE = ".gtt/domain-migration.json"
+NOTICE = ".gtt/local/domain-notice.json"      # what the per-message hook last computed and to which sessions it said it
 BACKLOG = gtt_backlog.DEFAULT
 FROZEN = "gtt-domain/.frozen"
 METHOD = ".gtt/methodology.json"
@@ -262,6 +263,41 @@ def action(session_start=False):
     why = "; ".join(result["why"]) or "see `bash .gtt/scripts/gtt-domain-migrate.sh status`"
     text = MSG[lang()]
     return {"kind": "domain-migration", "text": text["order"].format(why=why), "human": text["human"]}
+
+
+def prompt_notice(session):
+    """The migration order for a session that is already open. The next action reaches only a session that STARTS, and the one
+    that was open while `gtt update` ran is the one that needs it. Said once per session (again only if the order changes), at the
+    person's next message. Computing it costs a pass over the backlog (a second on a big one), so the result is kept against the
+    backlog's size and time: a message that finds nothing changed reads one small file. Silent when nothing is to be migrated."""
+    try:
+        spec = contract()
+    except SystemExit:
+        return ""
+    state = read_json(STATE) or {}
+    if state.get("status") in ("clean", "done") and int(state.get("format") or 0) >= int(spec.get("format", 1)):
+        return ""
+    try:
+        stat = os.stat(BACKLOG)
+    except OSError:
+        return ""
+    sig = [stat.st_mtime_ns, stat.st_size, state.get("status"), lang()]
+    cache = read_json(NOTICE) or {}
+    if cache.get("sig") != sig:
+        result = evaluate()
+        why = "; ".join(result["why"]) or "see `bash .gtt/scripts/gtt-domain-migrate.sh status`"
+        cache = {"sig": sig, "needed": bool(result["needed"]), "text": MSG[lang()]["order"].format(why=why) if result["needed"] else "",
+                 "shown": cache.get("shown") or {}}
+    text = cache.get("text") or ""
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+    shown = cache.setdefault("shown", {})
+    say = bool(text) and shown.get(session) != digest
+    if say:
+        shown[session] = digest
+        for old in list(shown)[:-5]:
+            shown.pop(old)
+    write_json(NOTICE, cache)
+    return text if say else ""
 
 
 # --- commands ----------------------------------------------------------------------------------------------------
