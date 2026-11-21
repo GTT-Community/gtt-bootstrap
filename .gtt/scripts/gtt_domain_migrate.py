@@ -25,6 +25,7 @@ Exit 0 = ok, 1 = verify refused or nothing to restore, 2 = cannot run.
 import argparse
 import hashlib
 import json
+import re
 import os
 import subprocess
 import sys
@@ -191,6 +192,16 @@ def run_check_backlog():
     return proc.returncode, [line.strip()[len(marker):] for line in text.splitlines() if line.strip().startswith(marker)]
 
 
+def split_findings(lines):
+    """(the agent's, the human's). A finding that names an Epic and no Story - a status, a design file, a goal - is about what the
+    human owns: the agent cannot fix it and a migration must not wait for it. Anything else blocks, as before."""
+    epic_only = re.compile(r"^(Epic\b|.*\bEPIC-\d+\b)")
+    mine, theirs = [], []
+    for line in lines:
+        (theirs if epic_only.match(line) and "STORY-" not in line else mine).append(line)
+    return mine, theirs
+
+
 def evaluate():
     """{needed, status, why, epics, format, current}. Read-only and cheap: one parse and one structural check."""
     spec = contract()
@@ -221,9 +232,9 @@ def evaluate():
     return out
 
 
-def action(session_start=False):
-    """The next action for the agent, or None. Called by gtt-project.sh next-action; it writes the `clean` stamp for a
-    project that begins with no Epic, so that a later ordinary failure is never mistaken for a legacy one."""
+def stamp_new(session_start=False):
+    """A project that begins with no Epic is stamped `clean` at the current format, so that an ordinary failure later is never
+    mistaken for a legacy one. Called first by next-action: a new project is in THINK or the questionnaire, which return earlier."""
     try:
         spec = contract()
     except SystemExit:
@@ -237,7 +248,14 @@ def action(session_start=False):
         if not epics:
             write_json(STATE, {"schema": 1, "format": int(spec.get("format", 1)), "status": "clean", "at": now(),
                                "bootstrap": bootstrap_version()})
-            return None
+            return True
+    return None
+
+
+def action(session_start=False):
+    """The next action for the agent, or None. Writes the `clean` stamp of a project with no Epic (see stamp_new)."""
+    if stamp_new(session_start):
+        return None
     result = evaluate()
     if not result["needed"]:
         return None
@@ -373,9 +391,14 @@ def cmd_verify(args):
     problems, notes = compare(before, after)
     code, lines = run_check_backlog()
     if code != 0:
-        problems += [f"check-backlog: {l}" for l in lines[:8]] or ["check-backlog failed"]
-        if len(lines) > 8:
-            problems.append(f"check-backlog: (+{len(lines) - 8} more)")
+        mine, theirs = split_findings(lines)
+        problems += [f"check-backlog: {l}" for l in mine[:8]] or ([] if theirs else ["check-backlog failed"])
+        if len(mine) > 8:
+            problems.append(f"check-backlog: (+{len(mine) - 8} more)")
+        for l in theirs[:6]:
+            notes.append(f"for the human, not blocking (an Epic is theirs; if it matters, a proposal): {l}")
+        if len(theirs) > 6:
+            notes.append(f"for the human, not blocking: (+{len(theirs) - 6} more Epic-level findings in `gtt-check-backlog.sh`)")
     if args.json:
         print(json.dumps({"schema": 1, "kind": "gtt-domain-verify", "ok": not problems, "problems": problems, "notes": notes,
                           "backup": os.path.join(folder, "gtt-domain.zip").replace(os.sep, "/")}, indent=2, ensure_ascii=False))

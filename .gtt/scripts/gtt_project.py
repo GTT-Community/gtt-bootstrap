@@ -762,6 +762,7 @@ def next_action(session_start=False):
     yet - the design itself.
     `text` is the agent's instruction; `human` is what the person does next.
     Computed, never a decision."""
+    domain_migration_stamp(session_start)
     plan = think_plan()
     if plan["active"] and plan["current"] and (plan["violations"] or design_candidates() or glob.glob("SOURCE-BRIEF.*")):
         candidates = design_candidates()
@@ -802,6 +803,17 @@ def next_action(session_start=False):
                 "human": "Open the project in the Primary ADE and write anything: its first answer starts the design - "
                          "from your document, or through the guided questionnaire."}
     return next_story()
+
+
+def domain_migration_stamp(session_start=False):
+    """A project with no Epic is stamped clean before anything else is asked of it (see gtt_domain_migrate.stamp_new). Silent on failure."""
+    if not os.path.isfile(os.path.join(CONTRACT, "domain.json")):
+        return
+    try:
+        import gtt_domain_migrate
+        gtt_domain_migrate.stamp_new(session_start)
+    except (Exception, SystemExit):
+        pass
 
 
 def domain_migration_action(session_start=False):

@@ -12,6 +12,7 @@
   M6  done: stamps the format; afterwards there is nothing to migrate and no order
   M7  restore: dry run changes nothing; --apply puts the backlog back and the migration is pending again
   M8  the contract every ADE reads: AGENTS.md, operations.md, the Claude table, the usage guides
+  M9  scale: an invented backlog of 12 Epics and 108 Stories in every shape; nothing lost, one change found by id
 
   python3 .gtt/tests/domain-migration.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
@@ -30,7 +31,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("acc", os.path.join(HERE, "bootstrap-acceptance.py"))
 acc = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(acc)
-check, write = acc.check, acc.write
+write = acc.write
+
+
+def check(label, cond, detail=""):
+    """The acceptance harness takes (condition, label); this file reads better label first. Swapping them
+    silently makes every check pass (a non-empty string is true), so the adapter lives in one place."""
+    assert isinstance(label, str), "check(label, condition): the label comes first"
+    acc.check(bool(cond), label, detail)
 
 MIGRATE = ".gtt/scripts/gtt-domain-migrate.sh"
 NEXT = ".gtt/scripts/gtt-project.sh"
@@ -249,6 +257,71 @@ def main():
         nothing = fixture(project, tmp, "nothing")
         code, _, err = run(nothing, MIGRATE, "restore", "--apply")
         check("with no backup there is nothing to restore", code == 1)
+
+        # M9 ----------------------------------------------------------------------------------------------------
+        print("M9  a large, varied backlog (scale)")
+        import re
+        import time
+        gspec = importlib.util.spec_from_file_location("synthetic_backlog", os.path.join(HERE, "fixtures", "synthetic_backlog.py"))
+        synth = importlib.util.module_from_spec(gspec)
+        gspec.loader.exec_module(synth)
+        template = open(os.path.join(project, "gtt-domain/backlog.md"), encoding="utf-8").read()
+        big = synth.build(template, epics=12, stories=9)
+        size = synth.counts(big)
+        check("the synthetic project is large and invented", size == {"epics": 12, "stories": 108} and "ñ" in big and "(none)" in big, str(size))
+        bigroot = fixture(project, tmp, "big", backlog=big)
+        synth.write_designs(bigroot, epics=12, stories=9)
+        bigfile = os.path.join(bigroot, "gtt-domain/backlog.md")
+        t0 = time.time()
+        code, out, err = run(bigroot, MIGRATE, "begin")
+        check("begin takes the invariants of 108 Stories", code == 0, out + err)
+
+        def rewrite(text):
+            """What the agent does: give every Story that lacks anchors its Implements and Done when. Status and Epics stay."""
+            parts = re.split(r"(?m)^(?=##### STORY-)", text)
+            out_parts = [parts[0]]
+            for part in parts[1:]:
+                epic = re.search(r"STORY-(\d+)", part).group(1)
+                if "- **Implements:** design/" not in part:
+                    anchors = "- **Implements:** design/EPIC-001#R-1"
+                    if "- **Implements:** (none)" in part:
+                        part = part.replace("- **Implements:** (none)", anchors)
+                    else:
+                        part = re.sub(r"(- \*\*Status:\*\* [^\n]*\n)", lambda m: m.group(1) + anchors + "\n", part, count=1)
+                    if "**Done when:**" not in part:
+                        part = part.replace(anchors, anchors + "\n- **Done when:** E-1 - run: pytest", 1)
+                out_parts.append(part)
+            return "".join(out_parts)
+
+        agent = rewrite(big)
+        check("the rewrite changed something and kept every Story", agent != big and synth.counts(agent) == size)
+        write(bigfile, agent)
+        code, out, err = run(bigroot, MIGRATE, "verify")
+        check("rewriting Stories across 12 Epics is accepted", code == 0 and "verify OK" in out, out + err)
+        slow = time.time() - t0
+        check("it stays fast (begin + verify under 20 s)", slow < 20, f"{slow:.1f}s")
+        write(bigfile, agent.replace("línea 7, con acentos", "línea 7, sin acentos"))
+        code, out, _ = run(bigroot, MIGRATE, "verify")
+        check("one accent edited in one Epic Goal among 12 is refused", code == 1 and "EPIC-007" in out, out)
+        victim = re.search(r"(?m)^##### STORY-053 — .*\n(?:.*\n)*?(?=\n##### STORY-|\n### EPIC-|\n---)", agent)
+        check("(the Story to drop exists)", victim is not None)
+        write(bigfile, agent.replace(victim.group(0), "", 1) if victim else agent)
+        code, out, _ = run(bigroot, MIGRATE, "verify")
+        check("one Story dropped in the middle of 108 is refused by id", code == 1 and "STORY-053" in out and "gone" in out, out)
+        moved = re.sub(r"(##### STORY-077 — .*\n\n- \*\*Status:\*\* )(\w[\w ]*)", lambda m: m.group(1) + ("Done" if m.group(2) != "Done" else "Planned"), agent, count=1)
+        write(bigfile, moved)
+        code, out, _ = run(bigroot, MIGRATE, "verify")
+        check("one Story moved to another status is refused by id", code == 1 and "STORY-077" in out and "status changed" in out, out)
+        tampered = re.sub(r"\*\*Approved:\*\* ana", "**Approved:** bruno", agent, count=1)
+        check("(the Approved line to change exists)", tampered != agent)
+        write(bigfile, tampered)
+        code, out, _ = run(bigroot, MIGRATE, "verify")
+        check("a rewritten `Approved` among the Epics is refused", code == 1 and "EPIC-" in out, out)
+        write(bigfile, agent)
+        code, out, err = run(bigroot, MIGRATE, "done")
+        check("done stamps the large project", code == 0 and json.load(open(os.path.join(bigroot, STATE)))["status"] == "done", out + err)
+        code, out, err = run(bigroot, MIGRATE, "restore", "--apply")
+        check("restore returns the backlog byte for byte", code == 0 and open(bigfile, encoding="utf-8").read() == big, out + err)
 
         # M8 ----------------------------------------------------------------------------------------------------
         print("M8  the contract every ADE reads")
