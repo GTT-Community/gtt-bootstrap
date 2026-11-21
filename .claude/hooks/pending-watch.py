@@ -64,7 +64,7 @@ def main() -> int:
             names = ", ".join(r["id"] for r in open_events)
             wait_lines.append(f"Waiting for the human: {names}. If their message answers one, write it down with "
                               f"`bash .gtt/scripts/gtt-pending.sh record <n> <answer> --quote \"<their exact words>\" --apply` "
-                              f"(`record all ok` for «ok» to every decision); never write the answer yourself. If you have not shown them yet, show the open questions "
+                              f"(`record all ok` for «ok» to every decision; a pasted block that starts `Respuesta para GTT:` goes through `bash .gtt/scripts/gtt-consult.sh answers --text '<block>' --apply`); never write the answer yourself. If you have not shown them yet, show the open questions "
                               f"to the human in the chat as one batch: run `bash .gtt/scripts/gtt-pending.sh show` and show its output. The files are the "
                               f"silent record: do not announce them.")
         due = engine.reminder_due(c, state)

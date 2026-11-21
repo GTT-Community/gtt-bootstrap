@@ -120,6 +120,11 @@ td .stack{display:flex;flex-direction:column;gap:3px}
 .sig{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line-soft);align-items:baseline}
 .sig:last-child{border-bottom:0}
 .sig.hit{background:var(--agent-bg);outline:1px solid var(--agent)}
+.consult{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 22px;border-bottom:1px solid var(--line);background:var(--surface)}
+.consult .ct{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.consult .small.warn{color:var(--amber, #c98a00)}
+.consult .cmd{margin:0}
+.consult-row{margin-top:6px}
 .filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--muted)}
 .dayh{font:500 12px var(--mono);color:#B6C4D3;margin:0;padding:10px 18px;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
 .dayh:first-child{border-top:0}
@@ -570,6 +575,8 @@ function inboxCard(snap, r, open, mineCheck) {
     h("span", { class: "small", text: meta.join(" · ") }),
     last.length ? h("div", { class: "trail" }, last.map(function (l) { return h("div", { text: (l.label || l.key) + ": " + (l.value || "") + " · " + (l.at || "") + (l.actor ? " · " + l.actor : "") }); })) : null,
     r.command ? h("div", null, h("span", { class: "small", text: T.youDo }), cmdBlock(r.command)) : null);
+  var cq = consultButton(snap, r.ref);
+  if (cq) card.appendChild(h("div", { class: "consult-row" }, cq));
   if (open) {
     card.appendChild(h("span", { class: "small", text: T.trailW }));
     card.appendChild(h("div", { class: "trail" }, (r.trail || []).map(function (l) { return h("div", { text: (l.label || l.key) + ": " + (l.value || "") + " · " + (l.at || "") + (l.actor ? " · " + l.actor : "") + (l.detail ? " (" + l.detail + ")" : "") }); })));
@@ -859,6 +866,60 @@ function topBar2(view, snap) {
     h("div", { class: "meta" }, suite ? h("span", { text: L("suite ", "suite ") + suite }) : null, mode, live));
 }
 
+/* ---------- the consultation thread: ONE conversation in Claude web, always at the top; the questions point to it ---------- */
+function legacyCopy(text) {
+  var ta = h("textarea", { "aria-hidden": "true", tabindex: "-1", style: "position:fixed;left:-9999px;top:0;opacity:0" });
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  var done = false; try { done = document.execCommand("copy"); } catch (e) { done = false; }
+  document.body.removeChild(ta); return done;
+}
+function copyToClipboard(text, ok, bad) {
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, function () { if (legacyCopy(text)) ok(); else bad(); });
+  else if (legacyCopy(text)) ok(); else bad();
+}
+function consultTarget(snap) { var c = snap.consult || {}; return c.thread && c.thread.url ? c.thread.url : c.new_url; }
+/* The window opens FIRST, inside the click (opened after an asynchronous copy it is taken for a popup and blocked); then the text is copied. */
+function consultGo(btn, text, url) {
+  var label = btn.textContent;
+  var back = function () { setTimeout(function () { btn.textContent = label; }, 3500); };
+  try { window.open(url, "_blank", "noopener,noreferrer"); } catch (e) {}
+  copyToClipboard(text, function () { btn.textContent = L("copiado: pégalo en el hilo (Ctrl+V)", "copied: paste it in the thread (Ctrl+V)"); back(); },
+    function () { btn.textContent = L("no se pudo copiar", "could not copy"); back(); });
+}
+function consultButton(snap, ref) {
+  var c = snap.consult; var text = c && c.items ? c.items[ref] : null;
+  if (!text) return null;
+  var b = h("button", { type: "button", class: "btn ghost consult-q", "aria-label": L("Consultar ", "Consult ") + ref + L(" en el hilo de Claude", " in the Claude thread"), text: L("Consultar en Claude", "Consult in Claude") });
+  b.addEventListener("click", function (ev) { ev.stopPropagation(); consultGo(b, text, consultTarget(snap)); });
+  return b;
+}
+function consultBar(snap) {
+  var c = snap && snap.consult; if (!c) return null;
+  var bar = h("div", { class: "consult", role: "region", "aria-label": L("Hilo de consulta en Claude web", "Consultation thread in Claude web") });
+  bar.appendChild(h("span", { class: "ct", text: L("Claude web · hilo del proyecto", "Claude web · project thread") }));
+  var hasThread = !!(c.thread && c.thread.url);
+  if (hasThread) {
+    bar.appendChild(h("a", { class: "btn go", href: c.thread.url, target: "_blank", rel: "noopener noreferrer", text: L("Abrir el hilo ↗", "Open the thread ↗") }));
+    if (c.count > 0 && c.batch) {
+      var all = h("button", { type: "button", class: "btn", text: L("Consultar las abiertas (", "Consult the open ones (") + c.count + ")" });
+      all.addEventListener("click", function () { consultGo(all, c.batch, c.thread.url); });
+      bar.appendChild(all);
+    } else bar.appendChild(h("span", { class: "small", text: L("sin preguntas abiertas", "no open questions") }));
+    if (c.changes && c.changes.length) bar.appendChild(h("span", { class: "small warn", title: c.changes.map(function (x) { return x.path; }).join("\n"), text: L("el diseño cambió (", "the design changed (") + c.changes.length + L("): va en el próximo lote", "): it goes in the next batch") }));
+    var reseed = h("button", { type: "button", class: "btn ghost", title: L("Para empezar un hilo nuevo (el actual se llenó): copia el mensaje inicial", "To start a new thread (this one filled up): copies the first message"), text: L("Mensaje inicial", "First message") });
+    reseed.addEventListener("click", function () { consultGo(reseed, c.seed, c.new_url); });
+    bar.appendChild(reseed);
+  } else {
+    var make = h("button", { type: "button", class: "btn go", text: L("Crear el hilo: copiar el mensaje inicial y abrir Claude", "Create the thread: copy the first message and open Claude") });
+    make.addEventListener("click", function () { consultGo(make, c.seed, c.new_url); });
+    bar.appendChild(make);
+    if (c.desktop_ok) bar.appendChild(h("a", { class: "btn ghost", href: c.desktop_new + encodeURIComponent(c.seed), title: L("Abre Claude Desktop con el mensaje ya escrito", "Opens Claude Desktop with the message already typed"), text: L("o en Claude Desktop (prellenado)", "or in Claude Desktop (prefilled)") }));
+    bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo: ", "Then register the thread's URL: ") }));
+    bar.appendChild(cmdBlock(c.set_command));
+  }
+  return bar;
+}
+
 /* ---------- the five figures, Now, the last events, I-need-you ---------- */
 function needItems(snap) {
   var out = [];
@@ -966,7 +1027,7 @@ function needsBlock(snap) {
   if (!items.length) box.appendChild(h("div", { class: "empty", text: L("Nada te espera.", "Nothing waits for you.") }));
   shown.forEach(function (n) {
     box.appendChild(h("div", { class: "nrow" }, h("span", { class: "ref", text: n.ref }),
-      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })), actNode(snap, n)));
+      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })), consultButton(snap, n.ref) || consultButton(snap, n.target) || null, actNode(snap, n)));
   });
   if (items.length > 3) box.appendChild(h("div", { class: "nrow more" }, h("button", { type: "button", class: "btn ghost", on: { click: function () { go({ na: all ? "" : "1" }); } }, text: all ? L("ver menos", "see less") : L("ver todo (", "see all (") + items.length + ")" })));
   return items.length ? box : null;
@@ -1586,6 +1647,7 @@ function render() {
   if (document.activeElement && (document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "INPUT")) { try { sel = [document.activeElement.selectionStart, document.activeElement.selectionEnd]; } catch (e) { sel = null; } }
   while (app.firstChild) app.removeChild(app.firstChild);
   app.appendChild(topBar2(view, snap));
+  var cbar = snap ? consultBar(snap) : null; if (cbar) app.appendChild(cbar);
   var banner = staleBanner();
   var page = view === "plan" ? viewPlan() : view === "inbox" ? viewInbox() : view === "activity" ? viewActivity() : view === "health" ? viewHealth() : view === "design" ? viewDesign() : view === "code" ? viewCode() : view === "portfolio" ? viewPortfolio2() : viewHelp2();
   if (banner && !SERVED) page.insertBefore(banner, page.firstChild);

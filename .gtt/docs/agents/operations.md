@@ -464,6 +464,24 @@ It is an **evaluation, never an automatic rewrite**. The order of work, at a cut
 A migration that was begun and not finished is resumed or undone only after the human is asked; it never blocks ordinary work: say what is
 pending and keep going on a Story that is `In Progress`.
 
+## Consultation thread
+
+A business question needs more thinking than a coding agent should spend its context on, and a long conversation that holds the project's context
+is the right place for it. So the questions that need thinking go to **one thread per project in Claude web**, and the human works them there.
+
+- **Sonar** carries, at the top of every view, the first message of the thread (summaries of the design, each with its anchor, within the size a
+  link carries) and, once the thread exists, a link to it; each open question and each proposal's card has a **Consult in Claude** button that
+  copies the question (with its options, the proposal behind a review and what changed in the design since the human's last answer) and opens the
+  thread. The person pastes. Nothing is sent by GTT.
+- **The thread is a workspace and GTT is the memory.** The decisions, the ADRs and the recorded answers are the authority; when the thread fills,
+  Sonar's *First message* starts another from those records.
+- **The answer comes back as a block** the thread ends its message with: `Respuesta para GTT:` and one `<number>: <answer>` line per question. The human pastes
+  it into the prompt; you run `bash .gtt/scripts/gtt-consult.sh answers --text '<the block>' --apply`, which records each answer through
+  `gtt-pending.sh record` (their words are the quote, so it is theirs) and bumps the thread's baseline. Without `--apply` it only says what it would do. An answer to
+  a question that is not open is refused, never invented.
+- `gtt-consult.sh status | seed | batch [REF] | set URL | clear | seen` are the same pieces from the terminal. The URL is only a Claude web conversation
+  (`https://claude.ai/chat/<id>` or `/project/<id>`); the state is the person's own (`.gtt/local/consult.json`, never committed).
+
 ## Sonar links
 
 A report that says `STORY-783`, `PROP-009` or `REV-011` makes the person look for it. Sonar has a place for each of those and is addressed by

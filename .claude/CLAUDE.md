@@ -15,6 +15,7 @@ Use these skills instead of improvising the format:
 | Verify the governed context still matches the code | `gtt-audit` |
 | `## Next action` says a release changed what the gtt-domain must carry | none - evaluate (`bash .gtt/scripts/gtt-domain-migrate.sh status`), say what you found and **ask the human**; only if they agree `begin`, rewrite only Stories, `done`; if not needed or declined `dismiss` (`AGENTS.md` → *Domain migration*) |
 | Creating a work copy (git worktree), launching agents in parallel, or finishing an agent or a Story | none - run `bash .gtt/scripts/gtt-disk.sh check` first and `gtt-disk.sh prune <path> --apply` for a finished copy (`AGENTS.md` → *Disk and work copies*) |
+| The human pastes a block that starts `Respuesta para GTT:` | none - record it: `bash .gtt/scripts/gtt-consult.sh answers --text '<the block>' --apply` (`AGENTS.md` → *Consultation thread*) |
 | You name an Epic, Story, proposal, review, decision or gap to the human | none - add its Sonar link: `bash .gtt/scripts/gtt-link.sh REF...` (`AGENTS.md` → *Sonar links*) |
 | Ordinary work: implementing, refactoring, testing, writing and closing Stories | none - do it; nobody approves it (`AGENTS.md` → *The two planes*) |
 | An Epic must be added, removed, or its goal or scope materially changed | `gtt-propose-change` (form 4) |

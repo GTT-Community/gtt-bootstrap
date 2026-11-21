@@ -328,6 +328,12 @@ Settle simple, reversible questions yourself: take the simplest option and conti
 
 In `.gtt/docs/agents/operations.md` → *Pending events*.
 
+## Consultation thread
+
+A question that needs thinking (business, product, architecture) is taken by the human to ONE conversation in Claude web, from Sonar's top bar: the thread holds the project's context and answers with them. You do not run it. When the human pastes a block that starts `Respuesta para GTT:` (lines like `13: 1`), record it in their words: `bash .gtt/scripts/gtt-consult.sh answers --text '<the pasted block>' --apply`; it records each answer and Sonar marks the question answered. If they give you the thread's URL, `gtt-consult.sh set <URL>` registers it. Never write an answer yourself.
+
+In `.gtt/docs/agents/operations.md` → *Consultation thread*.
+
 ## Sonar links
 
 When you tell the human about an Epic, a Story, a proposal, an idea, a review, a decision or a gap, give its Sonar link so they go straight to it: `bash .gtt/scripts/gtt-link.sh REF [REF ...]` (one call for all the refs you name). It prints nothing when Sonar was not opened for the project and leaves out what has no place in it. Never build an address by hand, and never search for one.

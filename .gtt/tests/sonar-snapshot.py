@@ -64,7 +64,7 @@ BACKLOG = """# Backlog
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
        "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs",
        "working_now", "throughput", "refresh", "degraded", "inbox", "inbox_counts", "decisions", "me", "adrs", "proposal_files",
-       "mode", "sources", "findings", "readiness", "activity", "project_extra", "agreements", "shadow", "forecast_range", "code", "prefs"}
+       "mode", "sources", "findings", "readiness", "activity", "project_extra", "agreements", "shadow", "forecast_range", "code", "prefs", "consult"}
 HOSTILE = '<img src=x onerror="window.PWNED=9"> & <script>window.PWNED=8</script>'
 
 

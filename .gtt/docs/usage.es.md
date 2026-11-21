@@ -282,6 +282,23 @@ GTT guarda el texto tal cual. Cada entrada tiene una etapa y un rastro de línea
 con un REV, aceptada, ratificada, en trabajo, cerrada. Aparcarla (`gtt inbox park`), reabrirla, rechazarla, fijar la prioridad (`gtt inbox priority REF urgente|normal|baja`)
 y descartarla (`gtt idea drop`) es tuyo. Sonar muestra el panel Bandeja; `session.md` le dice al agente cuántas entradas esperan (`Bandeja: n nuevas · n en revisión · n por ratificar`).
 
+
+### Pensar las preguntas en Claude web
+
+Una pregunta de negocio necesita más pensamiento del que un agente de código debe gastar de su contexto. La **barra de arriba** de Sonar (en todas las vistas) es la puerta a
+**una conversación por proyecto en Claude web**, donde Claude tiene el contexto del proyecto y piensas la pregunta con él:
+
+1. La primera vez, **Crear el hilo** copia el mensaje inicial (resúmenes de tu diseño, cada uno con su ancla, dentro del tamaño que cabe en un enlace; la opción
+   *o en Claude Desktop* lo abre prellenado) y abre Claude. Pegas, Claude responde «listo». Copia la URL de esa conversación y regístrala:
+   `bash .gtt/scripts/gtt-consult.sh set <URL>`. Desde entonces la barra muestra **Abrir el hilo**.
+2. Cada pregunta abierta y la tarjeta de cada propuesta tienen **Consultar en Claude**; la barra tiene **Consultar las abiertas**. Copian la pregunta (sus opciones, la propuesta
+   detrás de una revisión y lo que cambió en tu diseño desde tu última respuesta) y abren el hilo. Tú pegas.
+3. Cuando decides, el hilo termina con un bloque `Respuesta para GTT:` (una línea `13: 1` por pregunta). Pégalo en el prompt de tu agente: registra cada respuesta con tus palabras
+   (`gtt-consult.sh answers`) y Sonar muestra la pregunta como respondida.
+
+El hilo es un espacio de trabajo y GTT es la memoria: tus decisiones, los ADR y las respuestas registradas son la autoridad. Cuando el hilo se llena, **Mensaje inicial** empieza otro desde esos registros.
+GTT no envía nada: tú haces clic y pegas. La URL se guarda solo en tu máquina (`.gtt/local/consult.json`).
+
 ---
 
 ## Artefactos protegidos (GTTGuard)

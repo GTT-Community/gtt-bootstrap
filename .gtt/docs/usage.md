@@ -280,6 +280,22 @@ GTT keeps the text exactly as written. Each entry has a stage and a trail of dat
 with a REV, accepted, ratified, in work, closed. Parking (`gtt inbox park`), reopening, rejecting, setting the priority (`gtt inbox priority REF urgent|normal|low`)
 and dropping (`gtt idea drop`) are yours. Sonar shows the Inbox panel; `session.md` tells the agent how many entries wait (`Bandeja: n new · n in review · n to ratify`).
 
+### Thinking the questions through in Claude web
+
+A business question needs more thinking than a coding agent should spend its context on. Sonar's **top bar** (on every view) is the door to **one conversation
+per project in Claude web**, where Claude has the project's context and you think the question through with it:
+
+1. The first time, **Create the thread** copies the first message (summaries of your design, each with its anchor, within the size a link carries; the
+   option *or in Claude Desktop* opens it prefilled) and opens Claude. You paste, Claude answers «listo». Copy the URL of that conversation and register it:
+   `bash .gtt/scripts/gtt-consult.sh set <URL>`. From then on the bar shows **Open the thread**.
+2. Each open question and each proposal's card has **Consult in Claude**; the bar has **Consult the open ones**. They copy the question (its options, the proposal
+   behind a review, and what changed in your design since your last answer) and open the thread. You paste.
+3. When you decide, the thread ends with a block `Respuesta para GTT:` (one `13: 1` line per question). Paste it into your agent's prompt: it records each answer in your words
+   (`gtt-consult.sh answers`) and Sonar shows the question answered.
+
+The thread is a workspace and GTT is the memory: your decisions, the ADRs and the recorded answers are the authority. When the thread fills, **First message** starts another from those records.
+Nothing is sent by GTT: you click and you paste. The URL is kept only on your machine (`.gtt/local/consult.json`).
+
 ---
 
 ## Protected artifacts (GTTGuard)

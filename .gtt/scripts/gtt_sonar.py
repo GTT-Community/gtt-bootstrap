@@ -658,6 +658,16 @@ def shadow_signals():
         return []
 
 
+def consult_snapshot():
+    """The consultation thread (gtt_consult.py): the thread the person registered, the first message for a new one, the open questions as text
+    for the thread and what changed in the design. Read only; None when this Bootstrap has no consultation contract."""
+    try:
+        import gtt_consult
+        return gtt_consult.data()
+    except SystemExit:
+        return None
+
+
 def code_snapshot():
     """The last map of the code (what the watcher or the render left); None when this Bootstrap has no code map or nobody built one yet.
     A snapshot never builds the index: it is the expensive part."""
@@ -1058,6 +1068,7 @@ def build(root, docs=False):
         "shadow": safe(lambda: [{"path": s["artifact"], "level": s["level"]} for s in __import__("gtt_observe").observe_shadow()]),
         "forecast_range": (delivery_data or {}).get("forecast", {}).get("eta_range") if delivery_data else None,
         "code": safe(code_snapshot),
+        "consult": safe(consult_snapshot),
         "prefs": {k: v for k, v in prefs().items() if k in PREF_KEYS or k == "open_epics"} or None,
     }
 
