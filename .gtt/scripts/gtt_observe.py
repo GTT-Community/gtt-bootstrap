@@ -643,6 +643,7 @@ def correlate(ledger, signals):
         if item["status"] == "resolved" or (item["status"] == "accepted" and decided != sig["state"]):
             item.update(status="open", reopened=today)
             item.pop("resolution", None)
+            item.pop("resolved", None)          # an open observation never carries the date it was resolved
             fresh.append(item)
         item.update({k: sig[k] for k in ("level", "guards", "detail", "state", "rule", "kind", "artifact")})
     for item in ledger["items"]:
@@ -702,6 +703,8 @@ def run(args, checking):
     announce = [i for i in fresh if i["level"] != "NOTICE" and i not in stopping] + stopping
     if checking:
         announce = failing + [i for i in announce if i not in failing]
+        if getattr(args, "for_freeze", False):
+            announce = list(failing)          # a freeze asks which observations hold IT: the others are noise on that screen
     if args.json:
         print(json.dumps({"schema": SCHEMA, "frozen": base["frozen"], "baseline": base, "notes": notes,
                           "new": [i["id"] for i in fresh], "stopping": [i["id"] for i in stopping],
@@ -712,6 +715,9 @@ def run(args, checking):
         if announce:
             print("@gtt · Observation")
             print("\n".join(line(i) for i in announce))
+            if checking and getattr(args, "for_freeze", False):
+                others = sum(1 for i in ledger["items"] if i["status"] in OPEN_STATES) - len(announce)
+                print(f"  {len(announce)} observation(s) hold this freeze; {max(others, 0)} other open one(s) do not and stay in the backlog.")
             print("  detail: bash .gtt/scripts/gtt-observe.sh backlog")
         elif args.verbose or checking:
             count = sum(1 for i in ledger["items"] if i["status"] in OPEN_STATES)

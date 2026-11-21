@@ -18,6 +18,11 @@ read the command. It looks at what the command did:
         the command wrote is kept under gtt-domain/proposals/withdrawn/ (archived,
         never lost), and the agent and the human are told.
 
+A human act that overlapped the command is not the command's. `gtt promote`, `undo`, `approve` and `freeze` write governed files for
+a few seconds (apply, freeze, put back when the freeze refuses) and record that window outside the project (gtt_act.human_act). A path
+changed INSIDE that window is the human's and is kept; a path changed outside it is put back as always. Without it a promotion that ran
+while an agent command was in flight was read as the agent's, reverted and archived, and the project was left half promoted.
+
 Git history is not a write. When the command moved HEAD (a pull of a promotion a teammate
 made, a checkout, a merge), a file that now holds exactly what the new HEAD holds, and
 whose content was already in a commit made before the command started, is accepted.
@@ -136,13 +141,47 @@ def keep(root, where, now, commit):
         json.dump({"files": now, "head": commit}, handle)
 
 
+def alive(pid):
+    try:
+        os.kill(int(pid), 0)
+    except (OSError, ValueError, TypeError):
+        return False
+    try:                                                     # best effort: the process named in the lease is a GTT one
+        with open(f"/proc/{int(pid)}/cmdline", "rb") as handle:
+            return b"gtt" in handle.read()
+    except OSError:
+        return True
+
+
+def human_window(where):
+    """(started, ended, running) of the human act recorded by gtt_act.human_act, or None. A window left open by a process that died
+    ends at the lease's last write."""
+    path = os.path.join(where, "human-act.json")
+    try:
+        with open(path, encoding="utf-8") as handle:
+            record = json.load(handle)
+        started, ended = float(record["started"]), record.get("ended")
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if ended is None:
+        if alive(record.get("pid")):
+            return started, time.time(), True
+        try:
+            return started, os.path.getmtime(path), False
+        except OSError:
+            return None
+    return started, float(ended), False
+
+
 def pre(root):
     now = state(root)
     if FROZEN not in now:
         return
     where, commit = shadow(root), head(root)
     os.makedirs(where, exist_ok=True)
-    if load(where) != {"files": now, "head": commit}:
+    window = human_window(where)
+    # While a human act is running the governed files are in between: that is not a state to remember.
+    if load(where) != {"files": now, "head": commit} and not (window and window[2]):
         keep(root, where, now, commit)
     with open(os.path.join(where, "call.json"), "w", encoding="utf-8") as handle:
         json.dump({"head": commit, "at": time.time()}, handle)
@@ -234,6 +273,32 @@ def post(root, event):
     if now == before:
         return None
     commit = head(root)
+    window = human_window(where)
+    if window:                                                # the human's act overlapped this command: its writes are not the agent's
+        try:
+            with open(os.path.join(where, "call.json"), encoding="utf-8") as handle:
+                began = float(json.load(handle).get("at", 0))
+        except (OSError, ValueError, TypeError):
+            began = 0.0
+        low, high = window[0] - 2, window[1] + 2
+        for rel in sorted(set(before) | set(now)):
+            if before.get(rel) == now.get(rel):
+                continue
+            if rel in now:
+                try:
+                    inside = low <= os.path.getmtime(os.path.join(root, rel)) <= high
+                except OSError:
+                    inside = False
+            else:                                              # removed: the act's, when its window reaches this command
+                inside = high >= began
+            if inside:
+                if rel in now:
+                    before[rel] = now[rel]
+                else:
+                    before.pop(rel, None)
+        if now == before:
+            keep(root, where, now, commit)
+            return None
     for rel in engine_writes(root, where, before, now, event):
         if rel in now:
             before[rel] = now[rel]

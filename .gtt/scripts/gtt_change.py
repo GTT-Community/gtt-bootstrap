@@ -344,6 +344,12 @@ def cmd_last(args):
 
 
 def cmd_undo(args):
+    import gtt_act
+    with gtt_act.human_act("undo"):
+        return _cmd_undo(args)
+
+
+def _cmd_undo(args):
     items = promotions()
     if not items:
         print("gtt-change: REFUSED - there is no promotion to undo.", file=sys.stderr)
@@ -387,7 +393,7 @@ def cmd_undo(args):
                 gtt_artifacts.save_manifest(manifest)
                 subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-index.sh")], capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
-        if gtt_act.refuse_before_asking("gtt-change", prepare=rehearse):
+        if gtt_act.refuse_before_asking("gtt-change", prepare=rehearse, writes=[e["to"] for e in last.get("files", [])]):
             return 1
     if not args.apply:
         print("(dry run - nothing written; re-run with --apply)")

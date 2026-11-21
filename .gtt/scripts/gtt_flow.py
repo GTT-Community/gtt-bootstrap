@@ -627,13 +627,25 @@ def restore(name, quiet=False):
             shutil.copyfile(os.path.join(folder, entry["backup"]), entry["to"])
         elif os.path.isfile(entry["to"]):
             os.remove(entry["to"])
+    # "Put back" is a claim about bytes: check each file against the copy it came from, and keep that copy when anything differs.
+    wrong = []
+    for entry in record["files"]:
+        if entry["existed"]:
+            if sha256(entry["to"]) != sha256(os.path.join(folder, entry["backup"])):
+                wrong.append(entry["to"])
+        elif os.path.isfile(entry["to"]):
+            wrong.append(entry["to"])
+    if wrong:
+        print(f"gtt-promote: NOT every file is back as it was ({', '.join(wrong[:5])}" + (f" and {len(wrong) - 5} more" if len(wrong) > 5 else "") +
+              f"). The copy of the originals is kept in {folder}/: nothing was deleted.", file=sys.stderr)
+        return 1
     shutil.rmtree(folder, ignore_errors=True)
     if record.get("origin"):           # what `inbox reconcile` reads to bring the entry back to `accepted` (T16)
         os.makedirs(UNDONE, exist_ok=True)
         with open(os.path.join(UNDONE, name + ".json"), "w", encoding="utf-8", newline="\n") as handle:
             json.dump({"name": name, "origin": record["origin"], "at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}, handle)
     if not quiet:
-        print(f"gtt-promote: `{name}` undone - {len(record['files'])} file(s) back to what they were. Nothing was staged or committed.")
+        print(f"gtt-promote: `{name}` undone - {len(record['files'])} file(s) back to what they were (checked against the copies). Nothing was staged or committed.")
     return 0
 
 
@@ -701,6 +713,12 @@ def log_change(change_id, reason):
 
 
 def cmd_promote(args):
+    import gtt_act
+    with gtt_act.human_act("promote"):
+        return _cmd_promote(args)
+
+
+def _cmd_promote(args):
     if args.undo:
         return restore(args.name)
     folder, spec, problem = load_set(args.name)
@@ -722,7 +740,7 @@ def cmd_promote(args):
                 if entry["from"] is not None:
                     os.makedirs(os.path.dirname(entry["to"]) or ".", exist_ok=True)
                     shutil.copyfile(os.path.join(root, folder, entry["from"]), entry["to"])
-        if gtt_act.refuse_before_asking("gtt-promote", prepare=rehearse):
+        if gtt_act.refuse_before_asking("gtt-promote", prepare=rehearse, writes=[e["to"] for e in spec["files"]]):
             return 1
     if args.non_interactive and not args.confirmed:
         for lines in diffs.values():
@@ -786,8 +804,8 @@ def cmd_promote(args):
         if change_id and not log_change(change_id, spec.get("reason", "") + (f" ({spec['origin']})" if str(spec.get("origin", "")).startswith("PROP-") else "")):
             raise OSError(f"{STACK} has no map change log (section 6) to record {change_id} in")
     except OSError as error:
-        restore(args.name, quiet=True)
-        print(f"gtt-promote: failed ({error}); every file was put back. Nothing was changed.", file=sys.stderr)
+        back = restore(args.name, quiet=True) == 0
+        print(f"gtt-promote: failed ({error}); " + ("every file was put back (checked). Nothing was changed." if back else "the files could NOT all be verified back: see above, and the copy of the originals is kept."), file=sys.stderr)
         return 1
     if frozen_change:
         # The freeze observes, and it would record the promotion's own files as the governed state moved
@@ -797,7 +815,7 @@ def cmd_promote(args):
         freeze = subprocess.run([bash_executable(), os.path.join(".gtt", "scripts", "gtt-freeze.sh")], capture_output=True, text=True, encoding="utf-8", errors="replace")
         import gtt_act
         if not gtt_act.ok(freeze.returncode):
-            restore(args.name, quiet=True)
+            back = restore(args.name, quiet=True) == 0
             if ledger_before is None:
                 if os.path.isfile(ledger):
                     os.remove(ledger)
@@ -805,7 +823,11 @@ def cmd_promote(args):
                 with open(ledger, "wb") as handle:
                     handle.write(ledger_before)
             print((freeze.stdout + freeze.stderr).rstrip(), file=sys.stderr)
-            print("gtt-promote: the new freeze failed, so nothing was promoted: every file was put back.", file=sys.stderr)
+            if back:
+                print("gtt-promote: the new freeze failed, so nothing was promoted: every file was put back (checked against the copies).", file=sys.stderr)
+            else:
+                print("gtt-promote: the new freeze failed and the files could NOT all be verified back (see above). The copy of the originals is kept: "
+                      f"bash .gtt/scripts/gtt-promote.sh --undo {args.name}", file=sys.stderr)
             return 1
         print(("Specification change recorded as " + change_id + " in the map change log. " if change_id else "Architectural change, with its ADR. ")
               + "A new freeze was recorded with this confirmation.")

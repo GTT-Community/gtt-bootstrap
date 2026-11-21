@@ -26,6 +26,7 @@ import sys
 
 INDEX = ".gtt/local/code-index.json"
 MAP = ".gtt/local/code-map.json"
+RESOLVER = 2      # bump when how an import is resolved changes: a map left by an older resolver is derived state and is not read
 STACK = "gtt-domain/context/stack.md"
 FROZEN = "gtt-domain/.frozen"
 MAX_FILE = 400_000
@@ -201,10 +202,13 @@ def save_index(index):
 def target_module(imp, lang, here, mods):
     """The module an import points to, or None (a library, a standard package, something outside every module)."""
     raw = imp
+    relative = False
     if lang in ("js", "ruby", "php") and (raw.startswith(".") or "/" in raw) and not raw.startswith("@"):
-        base = os.path.normpath(os.path.join(os.path.dirname(here), raw)).replace(os.sep, "/") if raw.startswith(".") else raw
+        relative = raw.startswith(".")
+        base = os.path.normpath(os.path.join(os.path.dirname(here), raw)).replace(os.sep, "/") if relative else raw
         candidates = [base + "/"]
     elif lang == "python" and raw.startswith("."):
+        relative = True
         dots = len(raw) - len(raw.lstrip("."))
         base = here
         for _ in range(dots):
@@ -217,9 +221,13 @@ def target_module(imp, lang, here, mods):
         wrapped = "/" + cand
         for m in mods:
             stem = m["path"].rstrip("/")
-            if ("/" + stem + "/") in wrapped or wrapped.startswith("/" + stem + "/") or (cand.startswith(m["path"])):
-                if best is None or len(m["path"]) > len(best["path"]):
-                    best = m
+            # A relative import resolves to the file's real path from the project root, so the module it reaches is the one that path STARTS
+            # with. A folder called `plugins` in the middle of the path (core/kernel/plugins/...) is not the module `plugins/`: matching it
+            # anywhere made the kernel's own relative imports read as `core/ depends on plugins/`. The looser match stays for the imports that
+            # name a package, where the source root is not the project root (src/main/java/com/acme/...).
+            hit = cand.startswith(m["path"]) if relative else (("/" + stem + "/") in wrapped or wrapped.startswith("/" + stem + "/") or cand.startswith(m["path"]))
+            if hit and (best is None or len(m["path"]) > len(best["path"])):
+                best = m
     return best
 
 
@@ -433,7 +441,7 @@ def build_map(since=None, epic=None, story=None, refresh=True):
                                      "stories": (who.get(f) or {}).get("stories"), "who": (who.get(f) or {}).get("actors"), "last": (who.get(f) or {}).get("last")} for f in files[:80]],
                          "may": m["may"], "must_not": m["must_not"]})
     epics_out = epic_files()
-    return {"schema": 1, "kind": "gtt-code-map", "at": now_utc(), "since": since or "head", "epics": epics_out, "modules": out_mods, "edges": sorted(edges.values(), key=lambda e: (e["from"], e["to"])),
+    return {"schema": 1, "resolver": RESOLVER, "kind": "gtt-code-map", "at": now_utc(), "since": since or "head", "epics": epics_out, "modules": out_mods, "edges": sorted(edges.values(), key=lambda e: (e["from"], e["to"])),
             "outside": outside[:40], "ctags": classes is not None, "files": len(index), "design_to_code": d2c, "journal": bool(who)}
 
 
@@ -468,8 +476,10 @@ def cmd_refresh(args):
 
 
 def last_map():
-    """The map the watcher left (what a snapshot reads); None when there is none."""
-    return read_json(MAP)
+    """The map the watcher left (what a snapshot reads); None when there is none, or when an older resolver made it: its edges may be
+    false (derived state), and the next map the watcher builds replaces it."""
+    data = read_json(MAP)
+    return data if data and data.get("resolver") == RESOLVER else None
 
 
 def findings():

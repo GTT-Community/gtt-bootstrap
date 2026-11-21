@@ -3419,7 +3419,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "471720a07baa98924d42a613004b11815e685ae48eeb81c13d0a3ddc7cda8a87",
+      "sha256": "297bc1fa51337172266537eb5e26b9e600c9175072c2a24d428ec99968aece4f",
       "aliases": [],
       "sections": [
         {
@@ -3428,7 +3428,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 481
+          "line_end": 496
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3519,36 +3519,44 @@
           "line_end": 404
         },
         {
+          "heading": "Why a freeze or a promotion is refused, and what keeps it from failing late",
+          "level": 2,
+          "anchor": "why-a-freeze-or-a-promotion-is-refused-and-what-keeps-it-from-failing-late",
+          "path": "Working inside a governed project > Why a freeze or a promotion is refused, and what keeps it from failing late",
+          "line_start": 405,
+          "line_end": 419
+        },
+        {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
-          "line_start": 405,
-          "line_end": 419
+          "line_start": 420,
+          "line_end": 434
         },
         {
           "heading": "Domain migration",
           "level": 2,
           "anchor": "domain-migration",
           "path": "Working inside a governed project > Domain migration",
-          "line_start": 420,
-          "line_end": 451
+          "line_start": 435,
+          "line_end": 466
         },
         {
           "heading": "Disk and work copies",
           "level": 2,
           "anchor": "disk-and-work-copies",
           "path": "Working inside a governed project > Disk and work copies",
-          "line_start": 452,
-          "line_end": 462
+          "line_start": 467,
+          "line_end": 477
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 463,
-          "line_end": 481
+          "line_start": 478,
+          "line_end": 496
         }
       ],
       "references": [],

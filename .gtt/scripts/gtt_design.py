@@ -793,6 +793,12 @@ def write_approval(epic, design, path, stamp):
 
 
 def cmd_approve(args):
+    import gtt_act
+    with gtt_act.human_act("approve"):
+        return _cmd_approve(args)
+
+
+def _cmd_approve(args):
     stories, epics = backlog()
     epic = next((e for e in epics if e["id"] == args.epic), None)
     if epic is None:

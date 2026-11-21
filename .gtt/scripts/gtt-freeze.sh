@@ -39,6 +39,13 @@ if [ "$CHECK" -eq 1 ]; then
   [ -f "$LEDGER" ] && { LEDGER_SAVE="$(mktemp "${TMPDIR:-/tmp}/.gtt-freeze-ledger.XXXXXX")"; cp "$LEDGER" "$LEDGER_SAVE"; }
   trap 'if [ -n "$LEDGER_SAVE" ]; then cp "$LEDGER_SAVE" "$LEDGER"; rm -f "$LEDGER_SAVE"; else rm -f "$LEDGER"; fi' EXIT
 fi
+# The writing freeze is a human act that changes governed files for a few seconds: tell the sentinel (a promotion that runs the freeze
+# already did, and GTT_HUMAN_ACT says so), so it does not read those writes as an agent's and put them back.
+if [ "$CHECK" -eq 0 ] && [ -z "${GTT_HUMAN_ACT:-}" ]; then
+  bash "$HERE/gtt-run-python.sh" "$HERE/gtt_act.py" begin freeze "$$" >/dev/null 2>&1 || true
+  export GTT_HUMAN_ACT=freeze
+  trap 'bash "$HERE/gtt-run-python.sh" "$HERE/gtt_act.py" end >/dev/null 2>&1 || true' EXIT
+fi
 CANON_REF="> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
 CANON_RE='https://github\.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL(-v[0-9]+(\.[0-9]+)*)?\.md'
 
@@ -52,6 +59,17 @@ while IFS= read -r f; do
   awk -v ref="$CANON_REF" 'NR==1 && /^# /{print; print ""; print ref; next} NR==1{print ref; print ""} {print}' "$f" > "$f.gtt-tmp" \
     && mv "$f.gtt-tmp" "$f" && added+=("$f")
 done < <(find "$CTX" gtt-domain/adr -path gtt-domain/adr/drafts -prune -o -name '*.md' -print 2>/dev/null | sort)
+# The gate checks the whole domain, and a freeze that repairs less than the gate asks for fails after the person confirmed: whatever
+# else under gtt-domain/ the gate flags (a proposal, the workflow file, the backlog) gets the same deterministic fix.
+if [ -f "$HERE/gtt-check-markdown.sh" ]; then
+  while IFS= read -r f; do
+    case "$f" in gtt-domain/*.md) ;; *) continue ;; esac
+    [ -f "$f" ] || continue
+    if [ "$CHECK" -eq 1 ]; then added+=("$f"); continue; fi
+    awk -v ref="$CANON_REF" 'NR==1 && /^# /{print; print ""; print ref; next} NR==1{print ref; print ""} {print}' "$f" > "$f.gtt-tmp" \
+      && mv "$f.gtt-tmp" "$f" && added+=("$f")
+  done < <(bash "$HERE/gtt-check-markdown.sh" 2>/dev/null | sed -n 's/^FAIL  //p')
+fi
 if [ "${#added[@]}" -gt 0 ]; then
   if [ "$CHECK" -eq 1 ]; then
     echo "gtt-freeze: the freeze will add the canonical reference line to ${#added[@]} governed file(s): ${added[*]}"
@@ -159,7 +177,7 @@ if ! bash "$HERE/gtt-observe.sh" boundaries >/dev/null; then
   fail=1
 fi
 if [ "$REFREEZE" -eq 1 ] && ! bash "$HERE/gtt-observe.sh" check --strict --for-freeze >&2; then
-  echo "gtt-freeze: undecided observations remain in the governance backlog (see above). Decide each one, then try again:" >&2
+  echo "gtt-freeze: undecided observations hold this freeze (the ones listed above; the other open ones do not). Decide each of those, then try again:" >&2
   echo "  bash .gtt/scripts/gtt-observe.sh accept OBS-NNNN --by <you> --apply   # it stands; this freeze ratifies it" >&2
   echo "  bash .gtt/scripts/gtt-observe.sh reject OBS-NNNN --by <you> --apply   # it must be undone; it stops the work until it is" >&2
   echo "  bash .gtt/scripts/gtt-observe.sh defer  OBS-NNNN --by <you> --apply   # later; it does not hold up this freeze" >&2

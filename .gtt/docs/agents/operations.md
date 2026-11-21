@@ -402,6 +402,21 @@ When the human has to execute something, give them one line saying what it does 
 - **The hand-over.** Say exactly the message `generate` prints (`@gtt · To run`, what it does, `gtt run <n>`). `gtt run` lists what is pending.
 - **Never** edit a generated script, run `gtt run <n>` or `gtt-run.sh execute` (the hook denies it), or write `gtt-domain/run/done/` or `log.jsonl`. A hand-edited script is refused (RUN-05). The human's run is logged and, when it succeeds, archived in `gtt-domain/run/done/` (the last 20 are kept).
 
+## Why a freeze or a promotion is refused, and what keeps it from failing late
+
+A promotion, an undo, an approval and a freeze are the human's, and each ends in a freeze that must hold. Three things make that dependable:
+
+- **The check before the confirmation is a real rehearsal.** `gtt_act.refuse_before_asking` applies the act in a throwaway copy and runs
+  `gtt-freeze.sh --check` there, so a refusal arrives before the person is asked, not after. The copy holds the GTT kit (`.gtt/`, `gtt-domain/`,
+  the ADE folders) and links to everything else, so it takes a fraction of a second on a project of gigabytes and an unreadable folder (a
+  database volume) cannot switch it off. If no copy can be made at all it says so, and the act is verified as it is applied and put back
+  (checked against the saved copies, which stay when anything differs) if the freeze refuses.
+- **The freeze and the Markdown gate have one scope.** Working drafts under `gtt-domain/proposals/staged/` and the archive under `withdrawn/`
+  are not kit documents; any other domain file that lacks the canonical reference line gets it from the freeze, listed.
+- **A human act is not an agent's write.** The act records its window outside the project (`gtt_act.human_act`); the Claude sentinel keeps
+  what was written inside that window and still puts back everything else, so an agent command in flight while the human promotes no longer
+  reverts the promotion. `gtt-observe.sh check --for-freeze` lists only the observations that hold the freeze.
+
 ## Pending events
 
 What waits for the human is one small file per event in `gtt-domain/pending/`, and only that. Normally the folder is empty. Only `.gtt/scripts/gtt-pending.sh` writes it.
