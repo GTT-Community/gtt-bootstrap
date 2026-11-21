@@ -8,7 +8,7 @@
 
   U3  the inbox migration tells the identity registry what it moved and removed: the index works right after it
 
-  U4  a record the project writes (the completion report) is declared state, so an update never offers to replace it
+  U4  a record the project writes (the completion report) is declared a record: shipped, and never offered for replacement; no shipped document links a never-shipped file
 
   U5  a session that was already open when the update ran hears the migration order once, at its next message
 
@@ -119,7 +119,22 @@ def main():
         print("U4  a record the project writes is never offered for replacement")
         manifest = open(os.path.join(project, ".gtt/scaffold/manifest.yaml"), encoding="utf-8").read()
         row = next((l for l in manifest.splitlines() if ".gtt/docs/gtt-completion.md" in l and "path:" in l), "")
-        check("the completion report is declared state: it is the project's history, appended by the bootstrap", "state: true" in row, row)
+        check("the completion report is declared a record: shipped as a template, never offered for replacement", "record: true" in row and "state: true" not in row, row)
+        import re as _re
+        state_paths = [m.group(1).strip() for m in _re.finditer(r"path:\s*([^,}]+),(?:[^}]*,)?\s*state:\s*true", manifest)]
+        linked = []
+        for base_dir, _dirs, names in os.walk(os.path.join(project, ".gtt", "docs")):
+            for name in names:
+                if not name.endswith(".md"):
+                    continue
+                full = os.path.join(base_dir, name)
+                for target in _re.findall(r"\]\(([^)#\s]+)\)", open(full, encoding="utf-8", errors="replace").read()):
+                    if "://" in target:
+                        continue
+                    rel = os.path.relpath(os.path.normpath(os.path.join(base_dir, target)), project).replace(os.sep, "/")
+                    if any(rel == s or rel.startswith(s) for s in state_paths):
+                        linked.append(f"{os.path.relpath(full, project)} -> {target}")
+        check("no shipped document links a file that is never shipped (a project initialised from this package would fail its own integrity check)", not linked, "; ".join(linked))
         print("U5  a session that was already open hears the migration order")
         dspec = importlib.util.spec_from_file_location("domain_migration", os.path.join(HERE, "domain-migration.py"))
         dm = importlib.util.module_from_spec(dspec)
