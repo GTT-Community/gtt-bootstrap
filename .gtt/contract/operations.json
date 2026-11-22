@@ -140,6 +140,13 @@
     "guard.sync": { "version": 1, "implementation": ".gtt/scripts/gtt-guard-sync.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
 
     "domain.check": { "version": 1, "implementation": ".gtt/scripts/gtt-domain-migrate.sh", "argv": ["check", "--json"], "args": [ { "name": "from", "type": "string", "flag": "--from" }, { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "json", "contract": "domain-status" } },
+    "consult.status": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["status"], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.seed": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["seed"], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.batch": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["batch"], "args": [ { "name": "ref", "type": "string", "positional": true } ], "mutates": false, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.set": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["set"], "args": [ { "name": "url", "type": "string", "positional": true, "required": true }, { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.clear": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["clear"], "args": [ { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.seen": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["seen"], "args": [ { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
+    "consult.answers": { "version": 1, "implementation": ".gtt/scripts/gtt-consult.sh", "argv": ["answers"], "args": [ { "name": "text", "type": "string", "flag": "--text", "required": true }, { "name": "apply", "type": "bool", "flag": "--apply" } ], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },
     "domain.status": { "version": 1, "implementation": ".gtt/scripts/gtt-domain-migrate.sh", "argv": ["status", "--json"], "args": [], "mutates": false, "human_authority": false, "outputs": { "format": "json", "contract": "domain-status" } },
 
     "index": { "version": 1, "implementation": ".gtt/scripts/gtt-index.sh", "argv": [], "args": [], "mutates": true, "human_authority": false, "outputs": { "format": "text" } },

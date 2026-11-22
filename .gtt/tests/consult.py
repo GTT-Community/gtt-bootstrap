@@ -161,7 +161,10 @@ def main():
         check("the block is read: the number and the answer of each line", [(n, a) for n, a, _ in rows] == [(asked, "2"), (reviewed, "1")], str(rows))
         check("a conversation without the block is not read as one", gtt_consult.parse_answers("we should do 3: it depends\nyes") == [])
         rc, out, err = script(p, "answers", "--text", pasted)
-        check("without --apply it only says what it would do", "dry run" in out, out + err)
+        check("without --apply it only says what it would do, and gives the person's own command for each valid answer",
+              "dry run" in out and f"gtt answer {asked} 2" in out and f"gtt answer {reviewed} 1" in out, out + err)
+        rc, out, err = script(p, "answers", "--text", f"Respuesta para GTT:\n{reviewed}: 9")
+        check("a dry run checks the answer against the question: option 9 of a review with four is refused", rc == 1 and "options 1 to" in out, out + err)
         # The agent records the human's words: the hook keeps their last messages; the quote must be in them.
         import gtt_pending
         c = gtt_pending.contract()
@@ -170,6 +173,9 @@ def main():
         events = {int(e["number"]): e for e in gtt_pending.events(c)}
         check("applied, each answer is recorded and the question is answered", rc == 0 and events[asked]["answered"] and events[reviewed]["answered"], out + err)
         check("the answered questions are no longer open", gtt_consult.batch()[0] is None)
+        rc, out, err = script(p, "answers", "--text", "Respuesta para GTT:\\n99: 1")
+        check("a block whose line breaks come as the text `\\n` (how an operation argument carries it) is read the same",
+              rc == 1 and "99" in out and "no open question" in out, out + err)
         rc, out, err = script(p, "answers", "--text", "no block here")
         check("text with no answer lines is refused with the format", rc == 1 and "13: 1" in err, out + err)
         rc, out, err = script(p, "answers", "--text", "Respuesta para GTT:\n99: 1", "--apply")

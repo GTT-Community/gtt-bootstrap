@@ -295,6 +295,8 @@ per project in Claude web**, where Claude has the project's context and you thin
 
 The thread is a workspace and GTT is the memory: your decisions, the ADRs and the recorded answers are the authority. When the thread fills, **First message** starts another from those records.
 Nothing is sent by GTT: you click and you paste. The URL is kept only on your machine (`.gtt/local/consult.json`).
+The same pieces are in the terminal: `gtt consult` (where things stand), `gtt consult seed`, `gtt consult batch [REF]`, `gtt consult set <URL>`, `gtt consult clear`, `gtt consult seen`
+and `gtt consult answers` (reads the block and gives you the `gtt answer N X` command of each line: an answer is yours, so the CLI records nothing).
 
 ---
 

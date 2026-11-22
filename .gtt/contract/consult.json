@@ -10,21 +10,58 @@
   "seed": {
     "max_chars": 12000,
     "desktop_prefill_max_chars": 12000,
-    "caps": { "vision": 1800, "architecture": 1800, "constraints": 900, "principles": 700, "stack": 1400, "glossary": 900, "adr": 1500, "epics": 2200 },
+    "caps": {
+      "vision": 1800,
+      "architecture": 1800,
+      "constraints": 900,
+      "principles": 700,
+      "stack": 1400,
+      "glossary": 900,
+      "adr": 1500,
+      "epics": 2200
+    },
     "sections_per_doc": 8,
     "summary_chars": 150,
     "glossary_terms": 14,
     "epics_listed": 12,
     "context_files": [
-      { "key": "vision", "file": "solution-vision.md" },
-      { "key": "architecture", "file": "architecture.md" },
-      { "key": "constraints", "file": "constraints.md" },
-      { "key": "principles", "file": "principles.md" }
+      {
+        "key": "vision",
+        "file": "solution-vision.md"
+      },
+      {
+        "key": "architecture",
+        "file": "architecture.md"
+      },
+      {
+        "key": "constraints",
+        "file": "constraints.md"
+      },
+      {
+        "key": "principles",
+        "file": "principles.md"
+      }
     ],
-    "priority": ["vision", "architecture", "constraints", "stack", "epics", "adr", "principles", "glossary"]
+    "priority": [
+      "vision",
+      "architecture",
+      "constraints",
+      "stack",
+      "epics",
+      "adr",
+      "principles",
+      "glossary"
+    ]
   },
-  "item": { "summary_fields": 6, "field_chars": 220, "body_chars": 900 },
-  "answers": { "header": "Respuesta para GTT", "line": "^\\s*(?:(?:REV|ASK|DEC)[- ]?)?0*(\\d+)\\s*[:=]\\s*(.+?)\\s*$" },
+  "item": {
+    "summary_fields": 6,
+    "field_chars": 220,
+    "body_chars": 900
+  },
+  "answers": {
+    "header": "Respuesta para GTT",
+    "line": "^\\s*(?:(?:REV|ASK|DEC)[- ]?)?0*(\\d+)\\s*[:=]\\s*(.+?)\\s*$"
+  },
   "texts": {
     "es": {
       "seed_title": "# Hilo de consulta de GTT · {project}",
@@ -74,7 +111,8 @@
       "answers_dry": "gtt-consult: simulación; nada se escribió. Con --apply se registran.",
       "answers_line_ok": "  {n}: {answer} -> {result}",
       "answers_line_bad": "  {n}: {answer} -> no se pudo: {why}",
-      "sonar_note": "Sonar no se abrió para este proyecto: `gtt sonar` lo abre."
+      "sonar_note": "Sonar no se abrió para este proyecto: `gtt sonar` lo abre.",
+      "answers_would": "  {n}: {answer} -> así se registraría; si prefieres hacerlo tú en tu terminal: gtt answer {n} {answer}"
     },
     "en": {
       "seed_title": "# GTT consultation thread · {project}",
@@ -124,7 +162,8 @@
       "answers_dry": "gtt-consult: dry run; nothing was written. With --apply they are recorded.",
       "answers_line_ok": "  {n}: {answer} -> {result}",
       "answers_line_bad": "  {n}: {answer} -> could not: {why}",
-      "sonar_note": "Sonar was not opened for this project: `gtt sonar` opens it."
+      "sonar_note": "Sonar was not opened for this project: `gtt sonar` opens it.",
+      "answers_would": "  {n}: {answer} -> it would be recorded like this; or do it yourself in your terminal: gtt answer {n} {answer}"
     }
   }
 }

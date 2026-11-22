@@ -298,6 +298,8 @@ Una pregunta de negocio necesita más pensamiento del que un agente de código d
 
 El hilo es un espacio de trabajo y GTT es la memoria: tus decisiones, los ADR y las respuestas registradas son la autoridad. Cuando el hilo se llena, **Mensaje inicial** empieza otro desde esos registros.
 GTT no envía nada: tú haces clic y pegas. La URL se guarda solo en tu máquina (`.gtt/local/consult.json`).
+Las mismas piezas están en la terminal: `gtt consult` (cómo van las cosas), `gtt consult seed`, `gtt consult batch [REF]`, `gtt consult set <URL>`, `gtt consult clear`, `gtt consult seen`
+y `gtt consult answers` (lee el bloque y te da el comando `gtt answer N X` de cada línea: una respuesta es tuya, así que el CLI no registra nada).
 
 ---
 

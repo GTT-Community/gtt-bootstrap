@@ -723,17 +723,30 @@ def cmd_seen(args):
 
 def cmd_answers(args):
     text = args.text if args.text is not None else sys.stdin.read()
+    if "\n" not in text:
+        text = text.replace("\\n", "\n")          # an operation argument cannot carry a line break (the contract refuses control characters): the CLI sends them as `\n`
     rows = parse_answers(text)
     if not rows:
         print(T("answers_none", header=contract()["answers"]["header"]), file=sys.stderr)
         return 1
     by_number = {int(e["number"]): e for e in open_events()}
     failed, recorded = 0, 0
+    import gtt_pending
+    pending_contract = gtt_pending.contract()
     for number, answer, raw in rows:
         ev = by_number.get(number)
         if not ev:
             print(T("answers_line_bad", n=number, answer=answer, why="no open question with that number"))
             failed += 1
+            continue
+        if not args.apply:
+            # A dry run needs no quote: it says whether the answer is valid for that question and gives the person their own command.
+            cleaned, error = gtt_pending.clean_answer(answer, ev, pending_contract)
+            if error:
+                print(T("answers_line_bad", n=number, answer=answer, why=error))
+                failed += 1
+            else:
+                print(T("answers_would", n=number, answer=cleaned))
             continue
         ok, result = record(event_ref(ev), answer, raw, args.apply)
         print(T("answers_line_ok" if ok else "answers_line_bad", n=number, answer=answer, result=result, why=result))
@@ -753,9 +766,9 @@ def main(argv):
     p = sub.add_parser("status"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_status)
     p = sub.add_parser("seed"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_seed)
     p = sub.add_parser("batch"); p.add_argument("ref", nargs="?"); p.add_argument("--json", action="store_true"); p.set_defaults(func=cmd_batch)
-    p = sub.add_parser("set"); p.add_argument("url"); p.set_defaults(func=cmd_set)
-    p = sub.add_parser("clear"); p.set_defaults(func=cmd_clear)
-    p = sub.add_parser("seen"); p.set_defaults(func=cmd_seen)
+    p = sub.add_parser("set"); p.add_argument("url"); p.add_argument("--apply", action="store_true", help="accepted for the operations contract; set always writes"); p.set_defaults(func=cmd_set)
+    p = sub.add_parser("clear"); p.add_argument("--apply", action="store_true", help="accepted for the operations contract"); p.set_defaults(func=cmd_clear)
+    p = sub.add_parser("seen"); p.add_argument("--apply", action="store_true", help="accepted for the operations contract"); p.set_defaults(func=cmd_seen)
     p = sub.add_parser("answers"); p.add_argument("--text"); p.add_argument("--apply", action="store_true"); p.set_defaults(func=cmd_answers)
     args = parser.parse_args(argv[1:])
     return args.func(args)

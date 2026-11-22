@@ -479,7 +479,7 @@ is the right place for it. So the questions that need thinking go to **one threa
   it into the prompt; you run `bash .gtt/scripts/gtt-consult.sh answers --text '<the block>' --apply`, which records each answer through
   `gtt-pending.sh record` (their words are the quote, so it is theirs) and bumps the thread's baseline. Without `--apply` it only says what it would do. An answer to
   a question that is not open is refused, never invented.
-- `gtt-consult.sh status | seed | batch [REF] | set URL | clear | seen` are the same pieces from the terminal. The URL is only a Claude web conversation
+- `gtt-consult.sh status | seed | batch [REF] | set URL | clear | seen` are the same pieces from the terminal, and `gtt consult ...` is the CLI's face of them (operations `consult.*`). The CLI's `gtt consult answers` only reads the block and gives the human the `gtt answer N X` command of each line: recording an answer stays the human's act or yours through the script with their words as the quote. The URL is only a Claude web conversation
   (`https://claude.ai/chat/<id>` or `/project/<id>`); the state is the person's own (`.gtt/local/consult.json`, never committed).
 
 ## Sonar links
