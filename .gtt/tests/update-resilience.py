@@ -14,6 +14,9 @@
 
   U6  a [FUENTE: path] of a governed document follows a file the inbox migration renamed instead of failing
 
+  U7  a ledger that is ahead of a protection hook (an update cut short by the sentinel of a running agent session) is repaired by the next
+      update, keeping the file that was there; an edited instruction file is still kept as it was; the update records its human window
+
   python3 .gtt/tests/update-resilience.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
 """
@@ -176,6 +179,40 @@ def main():
         write(os.path.join(cite, "gtt-domain/context/architecture.md"), "# Architecture\n\nSessions. [FUENTE: gtt-domain/proposals/NOPE.md]\n")
         rc, out, err = bash(cite, ".gtt/scripts/gtt-check-provenance.sh")
         check("a citation of a file that never existed still fails", "NOPE.md] does not resolve" in out + err, out + err)
+
+        print("U7  a ledger ahead of a protection hook")
+        ahead = make_host(project, tmp, "ahead")
+        empty_registry(ahead)
+        rc, out, err = bash(ahead, ".gtt/scripts/gtt-ade.sh", "install", "--from", project, "--participating", "claude", "--primary", "claude", "--apply")
+        check("(the Claude adapter installs)", rc == 0, out + err)
+        hook, doc = ".claude/hooks/pending-watch.py", ".claude/CLAUDE.md"
+        older = "# the release before this one shipped this\n"
+        write(os.path.join(ahead, hook), older)                    # what is left after a sentinel put the old hook back
+        with open(os.path.join(ahead, doc), "a", encoding="utf-8") as handle:
+            handle.write("\nthe project's own note\n")
+        ledger_before = json.load(open(os.path.join(ahead, ".gtt/ade.json"), encoding="utf-8"))["installed"]["claude"]["files"]
+        rc, out, err = bash(ahead, ".gtt/scripts/gtt-validate.sh")
+        rc2, o2, e2 = bash(ahead, ".gtt/scripts/gtt-ade.sh", "validate")
+        check("(the state is the one that made `gtt update` fail: the validator refuses the hook)", rc2 == 1 and f"protection hook changed since install: {hook}" in o2 + e2, o2 + e2)
+        cache = os.path.join(tmp, "cache")
+        env = dict(os.environ, XDG_CACHE_HOME=cache, LOCALAPPDATA="")
+        done = subprocess.run(["bash", ".gtt/scripts/gtt-ade.sh", "update", "--from", project], cwd=ahead, capture_output=True, text=True, env=env)
+        text = done.stdout + done.stderr
+        check("the dry run names the repair and refuses nothing", f"REPAIR     claude   {hook}" in text and done.returncode == 0, text)
+        check("an edited instruction file is still kept as it was", f"KEEP       claude   {doc}" in text, text)
+        check("the dry run wrote nothing", open(os.path.join(ahead, hook), encoding="utf-8").read() == older)
+        done = subprocess.run(["bash", ".gtt/scripts/gtt-ade.sh", "update", "--from", project, "--apply"], cwd=ahead, capture_output=True, text=True, env=env)
+        check("the apply succeeds", done.returncode == 0, done.stdout + done.stderr)
+        check("the hook is the catalog's again", open(os.path.join(ahead, hook), "rb").read() == open(os.path.join(project, hook), "rb").read())
+        kept = os.path.join(ahead, ".gtt/local/replaced", hook)
+        check("the file that was there is kept, not lost", os.path.isfile(kept) and open(kept, encoding="utf-8").read() == older)
+        check("the instruction file the project edited is untouched", "the project's own note" in open(os.path.join(ahead, doc), encoding="utf-8").read())
+        check("the ledger did not move", json.load(open(os.path.join(ahead, ".gtt/ade.json"), encoding="utf-8"))["installed"]["claude"]["files"].get(hook) == ledger_before[hook])
+        rc2, o2, e2 = bash(ahead, ".gtt/scripts/gtt-ade.sh", "validate")
+        check("and the validator is satisfied", rc2 == 0, o2 + e2)
+        leases = [os.path.join(r, f) for r, _, fs in os.walk(cache) for f in fs if f == "human-act.json"]
+        lease = json.load(open(leases[0], encoding="utf-8")) if leases else {}
+        check("the update recorded its human window, and closed it", lease.get("act") == "ade-update" and lease.get("ended") is not None, str(lease))
     finally:
         if args.keep:
             print(f"kept: {tmp}")

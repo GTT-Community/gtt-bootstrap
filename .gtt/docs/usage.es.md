@@ -231,6 +231,8 @@ el update, y entonces tu agente solo **evalúa** si tu proyecto lo necesita y **
 de cada Story quedan exactamente como estaban: `gtt-domain-migrate.sh verify` lo prueba y `restore` lo deshace. **Guarda también una
 copia del zip en otro lugar** (otro disco o la nube): es lo único que sobrevive si pierdes la máquina.
 
+Puedes actualizar con una sesión de agente abierta en el proyecto: `gtt update` registra que es un acto tuyo, así que el centinela de la sesión no toma los scripts y hooks nuevos como del agente. Si una actualización quedó cortada igualmente y deja un hook de protección que no es el que GTT instaló, el siguiente `gtt update` devuelve el hook de la versión y guarda el archivo que estaba en `.gtt/local/replaced/`.
+
 ```bash
 gtt update              # primero gtt (si hay uno más nuevo), luego el Bootstrap de este proyecto
 gtt update --no-cli     # solo el Bootstrap de este proyecto

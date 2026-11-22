@@ -705,7 +705,20 @@ def cmd_remove(args):
         die(f"remove failed and was rolled back: {exc}", 1)
 
 
+REPLACED = ".gtt/local/replaced"          # what `update` replaced of yours (a protection hook that was not what GTT installed)
+
+
 def cmd_update(args):
+    """`update --apply` writes hooks and scripts that the sentinel of a running agent session watches: it is the human's act, so it records
+    its window (the CLI's `gtt update` already holds one; a nested one does nothing)."""
+    if not args.apply:
+        return update_ade(args)
+    import gtt_act
+    with gtt_act.human_act("ade-update"):
+        return update_ade(args)
+
+
+def update_ade(args):
     cat = args.frm or die("--from <catalog root> is required.")
     m_new, reg_new = registry(cat)
     m_cur, reg = registry(".")
@@ -739,6 +752,12 @@ def cmd_update(args):
                     # Yours and the catalog's both changed. GTT never merges or overwrites your file: it keeps it, applies
                     # everything else, and leaves the catalog's version beside it to merge when you wish.
                     actions.append(("MERGE", ade, rel, f"kept as yours; the catalog's version is saved as {rel}.gtt-new to merge by hand"))
+                elif "/hooks/" in rel:
+                    # A protection hook that is not what GTT installed, and the ledger already holds the catalog's version: nobody recorded an
+                    # edit, and the validator would refuse it (the real-time protection may be off). What leaves it so is an update that
+                    # was cut short (a sentinel put back half of it, a restore) with the ledger written ahead of the files. The catalog's
+                    # hook goes back; the file that was there is kept under .gtt/local/replaced/, never lost.
+                    actions.append(("REPAIR", ade, rel, f"a protection hook that is not what GTT installed; restored from the catalog, yours kept in {REPLACED}/{rel}"))
                 else:
                     actions.append(("KEEP", ade, rel, "modified locally; catalog unchanged"))
             elif os.path.exists(rel):
@@ -777,6 +796,9 @@ def cmd_update(args):
                 files[rel] = sha(rel)
             elif kind == "REFRESH":
                 files[rel] = sha(rel)
+            elif kind == "REPAIR":
+                txn.copy(rel, os.path.join(REPLACED, rel))              # the file that was there
+                txn.copy(os.path.join(cat, rel), rel)                   # the ledger already holds this one's hash
             elif kind == "MERGE":
                 txn.copy(os.path.join(cat, rel), rel + ".gtt-new")      # the ledger keeps your file's baseline: it stays yours
             elif kind == "STALE":

@@ -229,6 +229,8 @@ and then your agent only **evaluates** whether your project needs it and **asks 
 status stay exactly as they were: `gtt-domain-migrate.sh verify` proves it, and `restore` undoes it. **Keep a copy of the zip somewhere
 else too** (another disk or the cloud): it is the only thing that survives losing the machine.
 
+You can update while an agent session is open in the project: `gtt update` records that it is your act, so the session's sentinel does not read the new scripts and hooks as the agent's. If an update was cut short anyway and leaves a protection hook that is not what GTT installed, the next `gtt update` puts the release's hook back and keeps the file that was there under `.gtt/local/replaced/`.
+
 ```bash
 gtt update              # gtt first (if there is a newer one), then this project's Bootstrap
 gtt update --no-cli     # only this project's Bootstrap
