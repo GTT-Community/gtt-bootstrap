@@ -48,6 +48,10 @@ SCHEMA = 1
 # (the Human Promotion Boundary). Unresolved references there are reported.
 GOVERNED_PREFIXES = ("gtt-domain/context/", "gtt-domain/adr/")
 
+# A pending event (ASK/DEC/REV) lives until it is attended and the next session deletes it: it has no identity to keep.
+# Registering it left a ghost in the manifest every time it was cleaned (reconcile: MISSING, index: refusing, checks: FAIL).
+EPHEMERAL_RE = re.compile(r"^gtt-domain/pending/(?:ASK|DEC|REV)-\d+\.md$")
+
 CANONICAL_RE = re.compile(r"GTT-CANONICAL-(v\d+(?:\.\d+)*)\.md")
 ADR_ID_RE = re.compile(r"^(ADR-(?:\d+|TEMPLATE))(?=$|[-_.\s])")
 ID_REF_RE = re.compile(r"\[\[([A-Za-z0-9][A-Za-z0-9._-]*)\]\]")
@@ -139,6 +143,8 @@ def tracked_files():
                     continue
                 if name == "session.md" and norm(dirpath) == "gtt-domain":
                     continue                # derived, never an artifact
+                if EPHEMERAL_RE.match(norm(os.path.join(dirpath, name))):
+                    continue                # a pending event: it is deleted once attended, so it is never an artifact
                 found.append(norm(os.path.join(dirpath, name)))
     return sorted(set(found))
 
@@ -306,7 +312,9 @@ class State:
         self.alias_paths = {p for e in self.manifest["artifacts"] for p in e.get("aliases", [])}
         self.disk = tracked_files()
         self.disk_set = set(self.disk)
-        self.missing = sorted(p for p in self.by_path if p not in self.disk_set)
+        # What an older release registered and a session has since cleaned (or still holds): it is not "missing".
+        self.ephemeral = sorted(p for p in self.by_path if EPHEMERAL_RE.match(p))
+        self.missing = sorted(p for p in self.by_path if p not in self.disk_set and p not in self.ephemeral)
         known = set(self.by_path) | self.alias_paths
         self.unregistered = sorted(p for p in self.disk if p not in known)
         self._text = {}
@@ -474,10 +482,14 @@ def cmd_index(_args):
         print("Run .gtt/scripts/gtt-reconcile.sh first.", file=sys.stderr)
         return 1
     added = register_new(state)
-    if added:
+    for p in state.ephemeral:
+        state.by_path.pop(p)["status"] = "retired"    # registered by an older release: its identity ends with the event
+    if added or state.ephemeral:
         save_manifest(state.manifest)
         for p in added:
             print(f"registered  {state.by_path[p]['id']}  {p}")
+        if state.ephemeral:
+            print(f"retired     {len(state.ephemeral)} pending event(s) an older release had registered (they are never artifacts)")
     index, _ = build_index(state)
     write_json(INDEX, index)
     print(f"gtt-index: OK - {len(index['documents'])} artifact(s), "

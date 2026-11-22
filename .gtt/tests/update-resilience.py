@@ -17,6 +17,10 @@
   U7  a ledger that is ahead of a protection hook (an update cut short by the sentinel of a running agent session) is repaired by the next
       update, keeping the file that was there; an edited instruction file is still kept as it was; the update records its human window
 
+  U8  a pending event (ASK/DEC/REV) is never an artifact: one an older release registered and the session then cleaned is retired
+      by the next index instead of leaving a ghost (reconcile MISSING, index refusing, integrity FAIL); a file that really went
+      missing is still refused
+
   python3 .gtt/tests/update-resilience.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
 """
@@ -213,6 +217,41 @@ def main():
         leases = [os.path.join(r, f) for r, _, fs in os.walk(cache) for f in fs if f == "human-act.json"]
         lease = json.load(open(leases[0], encoding="utf-8")) if leases else {}
         check("the update recorded its human window, and closed it", lease.get("act") == "ade-update" and lease.get("ended") is not None, str(lease))
+        print("U8  pending events are never artifacts")
+        pend = make_host(project, tmp, "pending-ghosts")
+        empty_registry(pend)
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-index.sh")
+        check("(a project with no pending event indexes)", rc == 0, out + err)
+        manifest_path = os.path.join(pend, ".gtt/index/artifacts.json")
+        manifest = json.load(open(manifest_path, encoding="utf-8"))
+        ghosts = {"REV-001": "gtt-domain/pending/REV-001.md", "ASK-002": "gtt-domain/pending/ASK-002.md"}
+        for ref, rel in ghosts.items():          # what 1.31.1 and before did: register the event, then delete it once attended
+            manifest["artifacts"].append({"id": "ART-GTT-DOMAIN-PENDING-" + ref, "type": "documentation", "path": rel,
+                                          "status": "active", "history": [], "aliases": []})
+        write(manifest_path, json.dumps(manifest, indent=2))
+        write(os.path.join(pend, ghosts["REV-001"]), "# REV-001 · a review still waiting\n")     # still open: on disk
+        write(os.path.join(pend, "gtt-domain/pending/DEC-003.md"), "# DEC-003 · a new decision\n")   # never registered
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-reconcile.sh")
+        check("reconcile does not report an event as missing", rc == 0 and "MISSING" not in out + err, out + err)
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-check-integrity.sh")
+        check("integrity does not fail for an event that was cleaned", "pending/" not in out + err and "unreconciled" not in out + err, out + err)   # (a bare fixture lacks readme-gtt.md: not this check's business)
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-index.sh")
+        check("the index retires what an older release registered, and refuses nothing", rc == 0 and "retired     2 pending event(s)" in out, out + err)
+        registered = {e["id"]: e for e in json.load(open(manifest_path, encoding="utf-8"))["artifacts"]}
+        check("both old entries are retired (an id is never reused), the new event was not registered",
+              all(registered["ART-GTT-DOMAIN-PENDING-" + r]["status"] == "retired" for r in ghosts)
+              and not any(e["path"].endswith("DEC-003.md") for e in registered.values()), str(sorted(registered)))
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-index.sh")
+        check("a second run changes nothing", rc == 0 and "retired" not in out and "registered" not in out, out + err)
+        os.remove(os.path.join(pend, ghosts["REV-001"]))                                              # the session cleans it
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-check-integrity.sh")
+        check("and cleaning the event afterwards leaves nothing to reconcile", "pending/" not in out + err and "unreconciled" not in out + err, out + err)
+        write(os.path.join(pend, "gtt-domain/notes.md"), "# Notes\n")
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-index.sh")
+        check("(an ordinary document registers)", rc == 0 and "gtt-domain/notes.md" in out, out + err)
+        os.remove(os.path.join(pend, "gtt-domain/notes.md"))
+        rc, out, err = bash(pend, ".gtt/scripts/gtt-index.sh")
+        check("a document that really went missing is still refused", rc == 1 and "gtt-domain/notes.md" in err, out + err)
     finally:
         if args.keep:
             print(f"kept: {tmp}")

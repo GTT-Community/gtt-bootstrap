@@ -182,7 +182,8 @@ truth, never evidence in itself; the Markdown it points to is authoritative.
 Regenerate it with `.gtt/scripts/gtt-index.sh`; never hand-edit it. After any move
 run `.gtt/scripts/gtt-reconcile.sh` (dry-run first). `.gtt/scripts/gtt-check-integrity.sh`
 (part of `gtt-validate.sh`) fails on unreconciled moves, duplicate logical identity,
-broken or old-path references, unresolved `[[ID]]`, and a stale index. Agents
+broken or old-path references, unresolved `[[ID]]`, and a stale index. A pending event
+(`gtt-domain/pending/ASK|DEC|REV-NNN.md`) is never an artifact: it ends when attended, so it has no identity to keep. Agents
 operate through these scripts and MUST NOT own an artifact's identity or authority,
 and never rewrite frozen `gtt-domain/context/` or `gtt-domain/adr/` files to fix a reference.
 

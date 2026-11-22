@@ -3435,7 +3435,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "c0781b0605f68947817e320ff0beda9d19962db9fb29891e22f22eb3a541ac3c",
+      "sha256": "0d543161c6daac46128bc92934405db0934071df960eb48bfd1bd800685a2cc6",
       "aliases": [],
       "sections": [
         {
@@ -3444,7 +3444,7 @@
           "anchor": "working-inside-a-governed-project",
           "path": "Working inside a governed project",
           "line_start": 1,
-          "line_end": 533
+          "line_end": 534
         },
         {
           "heading": "Working without unnecessary interruption",
@@ -3476,119 +3476,119 @@
           "anchor": "artifact-identity-and-technical-index",
           "path": "Working inside a governed project > Artifact identity and technical index",
           "line_start": 174,
-          "line_end": 188
+          "line_end": 189
         },
         {
           "heading": "Validation",
           "level": 2,
           "anchor": "validation",
           "path": "Working inside a governed project > Validation",
-          "line_start": 189,
-          "line_end": 210
+          "line_start": 190,
+          "line_end": 211
         },
         {
           "heading": "Provenance, gaps, sources and working agreements",
           "level": 2,
           "anchor": "provenance-gaps-sources-and-working-agreements",
           "path": "Working inside a governed project > Provenance, gaps, sources and working agreements",
-          "line_start": 211,
-          "line_end": 242
+          "line_start": 212,
+          "line_end": 243
         },
         {
           "heading": "Inbox",
           "level": 2,
           "anchor": "inbox",
           "path": "Working inside a governed project > Inbox",
-          "line_start": 243,
-          "line_end": 295
+          "line_start": 244,
+          "line_end": 296
         },
         {
           "heading": "Observation",
           "level": 2,
           "anchor": "observation",
           "path": "Working inside a governed project > Observation",
-          "line_start": 296,
-          "line_end": 346
+          "line_start": 297,
+          "line_end": 347
         },
         {
           "heading": "Backlog in detail",
           "level": 2,
           "anchor": "backlog-in-detail",
           "path": "Working inside a governed project > Backlog in detail",
-          "line_start": 347,
-          "line_end": 379
+          "line_start": 348,
+          "line_end": 380
         },
         {
           "heading": "Delivery planning",
           "level": 2,
           "anchor": "delivery-planning",
           "path": "Working inside a governed project > Delivery planning",
-          "line_start": 380,
-          "line_end": 394
+          "line_start": 381,
+          "line_end": 395
         },
         {
           "heading": "Simple execution",
           "level": 2,
           "anchor": "simple-execution",
           "path": "Working inside a governed project > Simple execution",
-          "line_start": 395,
-          "line_end": 404
+          "line_start": 396,
+          "line_end": 405
         },
         {
           "heading": "Why a freeze or a promotion is refused, and what keeps it from failing late",
           "level": 2,
           "anchor": "why-a-freeze-or-a-promotion-is-refused-and-what-keeps-it-from-failing-late",
           "path": "Working inside a governed project > Why a freeze or a promotion is refused, and what keeps it from failing late",
-          "line_start": 405,
-          "line_end": 419
+          "line_start": 406,
+          "line_end": 420
         },
         {
           "heading": "Pending events",
           "level": 2,
           "anchor": "pending-events",
           "path": "Working inside a governed project > Pending events",
-          "line_start": 420,
-          "line_end": 434
+          "line_start": 421,
+          "line_end": 435
         },
         {
           "heading": "Domain migration",
           "level": 2,
           "anchor": "domain-migration",
           "path": "Working inside a governed project > Domain migration",
-          "line_start": 435,
-          "line_end": 466
+          "line_start": 436,
+          "line_end": 467
         },
         {
           "heading": "Consultation thread",
           "level": 2,
           "anchor": "consultation-thread",
           "path": "Working inside a governed project > Consultation thread",
-          "line_start": 467,
-          "line_end": 484
+          "line_start": 468,
+          "line_end": 485
         },
         {
           "heading": "Sonar links",
           "level": 2,
           "anchor": "sonar-links",
           "path": "Working inside a governed project > Sonar links",
-          "line_start": 485,
-          "line_end": 503
+          "line_start": 486,
+          "line_end": 504
         },
         {
           "heading": "Disk and work copies",
           "level": 2,
           "anchor": "disk-and-work-copies",
           "path": "Working inside a governed project > Disk and work copies",
-          "line_start": 504,
-          "line_end": 514
+          "line_start": 505,
+          "line_end": 515
         },
         {
           "heading": "Agent roles and the evidence boundary",
           "level": 2,
           "anchor": "agent-roles-and-the-evidence-boundary",
           "path": "Working inside a governed project > Agent roles and the evidence boundary",
-          "line_start": 515,
-          "line_end": 533
+          "line_start": 516,
+          "line_end": 534
         }
       ],
       "references": [],
