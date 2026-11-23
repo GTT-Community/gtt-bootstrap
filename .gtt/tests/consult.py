@@ -8,6 +8,7 @@
   C5  the answer block the person pastes is read and recorded, always in their words, and the question is answered
   C6  Sonar: the bar is at the top of EVERY view, with the first message when there is no thread and the thread when there is; each question points to it
   C7  an open gap carries what the person needs to decide it (scope, design lines, Stories) and Sonar shows it as a card: what it asks, the context, Claude
+  C8  every view says what it is, what it is for and how it is used; the Inbox says what each stage is and what is yours; the session line names the thread
 
   python3 .gtt/tests/consult.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
@@ -218,6 +219,33 @@ def main():
                   'class="need me"' in html and "nask" in html and "Show context" in html and "Consult in Claude" in html, str(html.count("need me")))
             check("the context holds the Epic, the Story and the design line, and the design line opens the document in a new tab",
                   all(w in html for w in ("nctx", "STORY-005", "Base platform")) and 'target="_blank"' in html and "view=design&amp;dt=docs" in html, "")
+
+        # C8 ----------------------------------------------------------------------------------------------------
+        print("C8  the views explain themselves, and the thread is not forgotten")
+        if chrome:
+            def view(frag):
+                return subprocess.run([chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=3000", "--dump-dom", f"file://{gpage}#/view={frag}"], capture_output=True, text=True).stdout
+            for frag in ("inbox", "activity", "plan", "health", "design"):
+                body = view(frag)
+                check(f"{frag}: it says what it is, what it is for and how it is used, and the person can hide it",
+                      'class="how"' in body and "what it is for" in body and "how to use it" in body and "Hide the explanation" in body, frag)
+            inbox = view("inbox")
+            check("the Inbox says what each stage is and what is yours in it", "colhelp" in inbox and "ratifying is yours alone" in inbox, "")
+            act = view("activity")
+            check("the Activity references are links to where they live", 'class="refl"' in act and "view=plan&amp;q=STORY-" in act or "view=inbox&amp;card=" in act, str(act.count("refl")))
+            plan = view("plan")
+            check("the Plan explains its words (Epic, Story, to define, open gap...) and its figures say what they count on hover", "dl class=\"terms\"" in plan and "to define" in plan and "title=\"How much of the work is done" in plan, "")
+            check("Health explains the levels and puts Consult in Claude on an open gap", "BLOCKING" in view("health") and "Consult in Claude" in view("health"), "")
+            check("Design offers to have Claude explain any document", "Ask Claude to explain it" in view("design"), "")
+            guide = view("help")
+            check("the Guide lists the words you will meet and where Claude can help", "The words you will meet" in guide and "Where you can ask Claude for help" in guide, "")
+            check("every tab says in a tooltip what it holds", guide.count("title=\"") > 6 and "Where changes to the design come in" in guide, "")
+        env = dict(os.environ, GTT_SONAR_NO_WATCH="1")
+        line = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "start"], cwd=demo, capture_output=True, text=True, env=env).stdout
+        check("with no thread registered, the session line names it once", "consultation thread" in line or "hilo de consulta" in line, line)
+        subprocess.run(["bash", ".gtt/scripts/gtt-consult.sh", "set", THREAD], cwd=demo, capture_output=True, text=True, env=env)
+        line = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "start"], cwd=demo, capture_output=True, text=True, env=env).stdout
+        check("with the thread registered, the session line adds nothing about it", line.startswith("Sonar:") and "consultation thread" not in line and "hilo de consulta" not in line, line)
 
         # C6 ----------------------------------------------------------------------------------------------------
         print("C6  Sonar: the bar on top of every view, and the questions pointing to the thread")

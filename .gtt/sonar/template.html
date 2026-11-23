@@ -284,6 +284,23 @@ nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
 .nctx .v .sub{color:var(--muted)}
 .nctx .v .tag{margin-left:6px}
 @media (max-width:640px){.nctx{grid-template-columns:minmax(0,1fr)}}
+/* what a view is, what it is for and how it is used: in words, visible until the person hides it */
+.how{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;padding:13px 16px;border:1px solid var(--line);border-left:4px solid var(--agent);border-radius:8px;background:var(--surface);font-size:13.5px;line-height:1.55;max-width:1100px}
+.how .k{font:10.5px var(--mono);color:var(--agent);text-transform:uppercase;letter-spacing:.04em;padding-top:3px}
+.how .v{color:var(--text);min-width:0}
+.how ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.howwrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.colhelp{font-size:12px;line-height:1.45;color:var(--muted);margin:0}
+.colhelp.me{color:var(--needs)}
+.youdo{display:flex;flex-direction:column;gap:4px}
+.youdo .small{color:var(--needs);line-height:1.45}
+.refl{color:var(--agent);text-decoration:none;border-bottom:1px dotted var(--agent)}
+.sumline{display:flex;gap:14px;flex-wrap:wrap;font:12px var(--mono);color:var(--muted)}
+.sumline b{color:var(--text);font-weight:500}
+.how dl.terms{margin:0;display:grid;grid-template-columns:170px minmax(0,1fr);gap:5px 14px;font-size:13px}
+.how dl.terms dt{font-weight:600;color:var(--text)}.how dl.terms dd{margin:0;color:var(--muted)}
+.docbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 10px;margin-bottom:10px;border-bottom:1px solid var(--line-soft)}
+@media (max-width:640px){.how{grid-template-columns:minmax(0,1fr)}.how dl.terms{grid-template-columns:minmax(0,1fr)}}
 .cref{all:unset;cursor:pointer;color:var(--dim);font:12px var(--mono);padding:0 4px}.cref:hover{color:var(--agent)}
 
 .codegrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
@@ -353,7 +370,7 @@ var STR = {
     health: "salud del proyecto", staleHealth: "desactualizado", uncommitted: "sin commit", flow14: "cerradas en 14 días", genAt: "generado", watchStopped: "el vigilante se detuvo: la página no se actualiza sola. Corre `gtt sonar`",
     degradedTitle: "Este proyecto usa un Bootstrap más antiguo que GTT", degradedMissing: { forecast: "fecha estimada y calibración", pending: "preguntas pendientes (te necesito)", refresh: "actualización automática" },
     degradedFix: "Se ve con lo que se puede leer. Para verlo completo:", derivedNote: "reconstruido de las líneas «Closed» del backlog",
-    inbox: "bandeja", inboxHint: "Todo lo que pide cambiar el diseño, en una sola tubería. Borde sólido: lo escribió una persona; punteado: el agente.", inboxNone: "La bandeja está vacía.",
+    inbox: "bandeja", inboxHint: "Cada cambio al diseño avanza por etapas, de izquierda a derecha. Borde sólido: lo escribió una persona; punteado: el agente.", inboxNone: "La bandeja está vacía.",
     inboxCols: { "new": "Nuevas", "review": "En revisión", "ratify": "Por ratificar", "work": "En trabajo", "closed": "Cerradas (7 días)", "accepted": "Aceptadas", "parked": "Aparcadas", "rejected": "Rechazadas" },
     inboxActive: "activas", inboxEvery: "todas", mine: "para mí", mineHint: "incluye lo que no tiene dueño", noneCol: "nada aquí",
     ityp: { "idea": "idea", "solicitud": "solicitud", "adr": "ADR", "proposal": "propuesta" }, ihuman: "persona", iagent: "agente", fromW: "de", forW: "para", daysW: "d en la etapa",
@@ -406,7 +423,7 @@ var STR = {
     health: "project health", staleHealth: "out of date", uncommitted: "uncommitted", flow14: "closed in 14 days", genAt: "generated", watchStopped: "the watcher stopped: the page no longer updates by itself. Run `gtt sonar`",
     degradedTitle: "This project runs an older Bootstrap than GTT", degradedMissing: { forecast: "forecast and calibration", pending: "pending questions (needs you)", refresh: "automatic refresh" },
     degradedFix: "Showing what can be read. To see it all:", derivedNote: "rebuilt from the backlog's `Closed` lines",
-    inbox: "inbox", inboxHint: "Everything that asks the design to change, in one pipeline. Solid border: a person wrote it; dashed: the agent.", inboxNone: "The inbox is empty.",
+    inbox: "inbox", inboxHint: "Each change to the design moves through stages, left to right. Solid border: a person wrote it; dashed: the agent.", inboxNone: "The inbox is empty.",
     inboxCols: { "new": "New", "review": "In review", "ratify": "To ratify", "work": "In work", "closed": "Closed (7 days)", "accepted": "Accepted", "parked": "Parked", "rejected": "Rejected" },
     inboxActive: "active", inboxEvery: "all", mine: "for me", mineHint: "includes what has no owner", noneCol: "nothing here",
     ityp: { "idea": "idea", "solicitud": "request", "adr": "ADR", "proposal": "proposal" }, ihuman: "person", iagent: "agent", fromW: "from", forW: "for", daysW: "d in stage",
@@ -592,7 +609,7 @@ function inboxCard(snap, r, open, mineCheck) {
     h("button", { type: "button", class: "tt", "aria-expanded": open ? "true" : "false", "aria-label": (open ? T.closeCard : T.openCard) + " " + r.ref, on: { click: function () { go({ card: open ? "" : r.ref }); } }, text: r.title || r.ref }),
     h("span", { class: "small", text: meta.join(" · ") }),
     last.length ? h("div", { class: "trail" }, last.map(function (l) { return h("div", { text: (l.label || l.key) + ": " + (l.value || "") + " · " + (l.at || "") + (l.actor ? " · " + l.actor : "") }); })) : null,
-    r.command ? h("div", null, h("span", { class: "small", text: T.youDo }), cmdBlock(r.command)) : null);
+    r.command ? youDoNode(r) : null);
   var cq = consultButton(snap, r.ref);
   if (cq) card.appendChild(h("div", { class: "consult-row" }, cq));
   if (open) {
@@ -618,7 +635,9 @@ function inboxPanel(snap) {
   cols.forEach(function (stage) {
     var list = rows.filter(function (r) { return r.stage === stage && ok(r); });
     if (stage === "accepted" && !list.length) return;      // the column of what the agent is packaging shows only when it holds something
+    var sh = stageHelp()[stage];
     board.appendChild(h("div", { class: "bcol" }, h("h3", null, T.inboxCols[stage], h("span", { class: "n", text: list.length })),
+      sh ? h("p", { class: "colhelp" + (sh[1] && list.length ? " me" : ""), text: sh[0] }) : null,
       list.length ? list.map(function (r) { return inboxCard(snap, r, st.card === r.ref); }) : h("span", { class: "small", text: T.noneCol })));
   });
   if (!rows.length) board = h("div", { class: "panel empty", text: T.inboxNone });
@@ -714,6 +733,7 @@ function backlogDesign(snap, st) {
     });
   });
   var body = h("article", { class: "panel md" });
+  body.appendChild(h("div", { class: "docbar" }, h("code", { class: "small", text: cur.path }), consultAction(snap, L("Pedirle a Claude que lo explique", "Ask Claude to explain it"), function () { return docMessage(cur); }, L("Copia una petición con el nombre del documento y abre tu hilo de Claude", "Copies a request with the document's name and opens your Claude thread"))));
   if (cur.omitted) body.appendChild(h("p", null, T.bkOmitted + " ", h("code", { text: cur.path })));
   else {
     body.appendChild(paintBlocks(cur.blocks));
@@ -861,7 +881,11 @@ function topBar2(view, snap) {
   function tab(id, label, count, amber) {
     var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.view = id; if (id !== "plan") { delete x.q; }
     var href = "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&");
-    var a = h("a", { href: href }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null);
+    var tabHelp = { portfolio: L("Todos tus proyectos de un vistazo", "All your projects at a glance"), plan: L("Épicas e historias: cuánto falta y qué te espera", "Epics and Stories: how much is left and what waits for you"),
+      inbox: L("Por donde entran los cambios al diseño", "Where changes to the design come in"), activity: L("Quién hizo qué y en qué trabaja el agente ahora", "Who did what and what the agent works on now"),
+      code: L("Lo construido frente al diseño", "What was built against the design"), health: L("Lo que GTT detectó solo, y de quién es", "What GTT detected by itself, and whose it is"),
+      design: L("Los documentos que mandan, y las decisiones", "The documents that rule, and the decisions"), help: L("Qué es cada vista y las palabras que verás", "What each view is and the words you will meet") };
+    var a = h("a", { href: href, title: tabHelp[id] || "" }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null);
     if (view === id) a.setAttribute("aria-current", "page");
     return a;
   }
@@ -915,6 +939,7 @@ function consultBar(snap) {
   var c = snap && snap.consult; if (!c) return null;
   var bar = h("div", { class: "consult", role: "region", "aria-label": L("Hilo de consulta en Claude web", "Consultation thread in Claude web") });
   bar.appendChild(h("span", { class: "ct", text: L("Claude web · hilo del proyecto", "Claude web · project thread") }));
+  bar.appendChild(h("span", { class: "small", text: L("Una sola conversación de Claude web que conoce tu proyecto, para pensar ahí las decisiones difíciles. Los botones «Consultar en Claude» le llevan su pregunta con el contexto; tú traes la respuesta de vuelta.", "One Claude web conversation that knows your project, for thinking the hard decisions through. The “Consult in Claude” buttons take it their question with the context; you bring the answer back.") }));
   var hasThread = !!(c.thread && c.thread.url);
   if (hasThread) {
     bar.appendChild(h("a", { class: "btn go", href: c.thread.url, target: "_blank", rel: "noopener noreferrer", text: L("Abrir el hilo ↗", "Open the thread ↗") }));
@@ -974,7 +999,12 @@ function figures(snap) {
   if (snap.forecast_range || (s.calibration && s.calibration.uncalibrated)) etaSub.push(L("sin calibrar", "uncalibrated"));
   var toDef = rc ? rc.to_define : null;
   var nextN = (snap.stories || []).filter(function (x) { return x.next && x.ready === "to_define"; }).length;
-  function cell(k, v, sub, cls, key) { return h("div", { class: "fig", "data-fig": key }, h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub })); }
+  var figHelp = { progress: L("Cuánto del trabajo está hecho: por horas si hay estimaciones, si no por historias.", "How much of the work is done: by hours if there are estimates, otherwise by Stories."),
+    eta: L("Cuándo terminaría al ritmo actual. «sin calibrar» = aún hay pocos datos, es un rango.", "When it would finish at the current pace. “uncalibrated” = still little data, it is a range."),
+    needs: L("Cosas que solo tú puedes resolver: preguntas, decisiones abiertas, aprobaciones.", "Things only you can resolve: questions, open decisions, approvals."),
+    define: L("Historias a las que les falta información antes de poder empezar.", "Stories that lack information before they can start."),
+    alerts: L("Avisos que GTT detectó solos; el detalle está en la vista Salud.", "Notices GTT detected by itself; the detail is in the Health view.") };
+  function cell(k, v, sub, cls, key) { return h("div", { class: "fig", "data-fig": key, title: figHelp[key] || "" }, h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub })); }
   var estimated = hrs && hrs.total ? L("de ", "of ") + fmtH(hrs.total) + " h · " : "";
   return h("section", { class: "strip", "aria-label": L("cifras", "figures") },
     cell(L("avance", "progress"), pct === null || pct === undefined ? "—" : pct + "%", (hrs && hrs.total ? fmtH(hrs.done) + " " + estimated : "") + (s.stories_done || 0) + "/" + (s.stories_total || 0) + " " + L("historias", "Stories"), "", "progress"),
@@ -1041,7 +1071,7 @@ function needsBlock(snap) {
   var shown = all ? items : items.slice(0, 3);
   var box = h("section", { class: "needs", "aria-labelledby": "needs-h" },
     h("div", { class: "top" }, h("h2", { id: "needs-h", text: L("te necesito", "I need you") }), h("span", { class: "count", text: items.length }),
-      h("span", { class: "hint", text: L("Respondes aquí. Lo que cambia el diseño entra a la Bandeja; aprobar y promover se copian a tu terminal.", "You answer here. What changes the design goes to the Inbox; approve and promote are copied to your terminal.") })));
+      h("span", { class: "hint", text: L("Lo que solo tú puedes resolver. Respóndelo aquí o, si necesitas pensarlo, usa «Consultar en Claude». Lo que cambia el diseño entra a la Bandeja; aprobar y promover se copian a tu terminal.", "What only you can resolve. Answer it here or, if you need to think it through, use “Consult in Claude”. What changes the design goes to the Inbox; approve and promote are copied to your terminal.") })));
   if (!items.length) box.appendChild(h("div", { class: "empty", text: L("Nada te espera.", "Nothing waits for you.") }));
   shown.forEach(function (n) {
     box.appendChild(h("div", { class: "nrow" }, h("span", { class: "ref", text: n.ref }),
@@ -1130,12 +1160,12 @@ function epicTags(snap, e) {
   tags.push(h("span", { class: "tag " + (isProp ? "hollowa" : e.state === "in_progress" ? "ok" : ""), text: isProp ? L("propuesta", "proposed") : stLabel }));
   var own = (snap.findings || []).filter(function (f) { return f.ref === e.ref && f.plane === "definition"; });
   var nDef = (snap.stories || []).filter(function (s) { return s.epic === e.ref && s.ready === "to_define" && s.status !== "Done" && s.status !== "Cancelled"; }).length + own.length;
-  if (own.some(function (f) { return f.code === "DEF-EPIC-DESIGN"; })) tags.push(h("span", { class: "tag hollow", text: L("sin diseño", "no design") }));
-  if (own.some(function (f) { return f.code === "DEF-EPIC-ESTIMATE"; })) tags.push(h("span", { class: "tag hollow", text: L("sin estimación", "no estimate") }));
-  if (nDef && !isProp) tags.push(h("span", { class: "tag hollow", text: nDef + " " + L("por definir", "to define") }));
+  if (own.some(function (f) { return f.code === "DEF-EPIC-DESIGN"; })) tags.push(h("span", { class: "tag hollow", title: L("Falta el documento de diseño de esta épica; es trabajo del agente.", "This Epic's design document is missing; it is the agent's work."), text: L("sin diseño", "no design") }));
+  if (own.some(function (f) { return f.code === "DEF-EPIC-ESTIMATE"; })) tags.push(h("span", { class: "tag hollow", title: L("Falta estimarla en horas; es trabajo del agente.", "It still needs an estimate in hours; it is the agent's work."), text: L("sin estimación", "no estimate") }));
+  if (nDef && !isProp) tags.push(h("span", { class: "tag hollow", title: L("Historias de esta épica a las que les falta información antes de poder empezar.", "Stories of this Epic that lack information before they can start."), text: nDef + " " + L("por definir", "to define") }));
   var gaps = (snap.findings || []).filter(function (f) { return f.code === "GOV-GAP" && f.epic === e.ref; }).length;
-  if (gaps) tags.push(h("span", { class: "tag amber", text: gaps + " " + L(gaps > 1 ? "vacíos abiertos" : "vacío abierto", gaps > 1 ? "open gaps" : "open gap") }));
-  if (e.stories.blocked) tags.push(h("span", { class: "tag red", text: e.stories.blocked + " " + L(e.stories.blocked > 1 ? "bloqueadas" : "bloqueada", "blocked") }));
+  if (gaps) tags.push(h("span", { class: "tag amber", title: L("Decisiones que el diseño dejó pendientes y solo tú puedes cerrar: ábrelas más abajo, cada una con su contexto.", "Decisions the design left open and only you can close: open them below, each with its context."), text: gaps + " " + L(gaps > 1 ? "vacíos abiertos" : "vacío abierto", gaps > 1 ? "open gaps" : "open gap") }));
+  if (e.stories.blocked) tags.push(h("span", { class: "tag red", title: L("Historias que no pueden avanzar hasta que se resuelva algo.", "Stories that cannot move until something is resolved."), text: e.stories.blocked + " " + L(e.stories.blocked > 1 ? "bloqueadas" : "bloqueada", "blocked") }));
   if (e.origin) tags.push(h("span", { class: "tag", text: T.bkOrigin + ": " + e.origin }));
   if (e.priority && e.priority !== "normal") tags.push(h("span", { class: "tag " + (e.priority === "urgent" ? "amber" : ""), text: T.bkPriority + ": " + e.priority }));
   return h("div", { class: "tags" }, tags);
@@ -1162,6 +1192,74 @@ function findRow(snap, f) {
   if (f.fix && f.fix.about) row.appendChild(aporte(snap, f.ref, true));
   return row;
 }
+/* ---------- each view says what it is, what it is for and how it is used; the person can hide it ---------- */
+function howHidden(view) { try { return localStorage.getItem("gtt-sonar-how-" + view) === "1"; } catch (e) { return false; } }      /* what the person hid stays hidden: it is a preference of theirs, not of the project */
+function howSet(view, v) { try { if (v) localStorage.setItem("gtt-sonar-how-" + view, "1"); else localStorage.removeItem("gtt-sonar-how-" + view); } catch (e) { /* storage may be blocked */ } }
+/* The words a person meets in Sonar, in plain language; each view shows the ones it uses and the guide shows them all. */
+function TERMS() {
+  return {
+    epic: [L("Épica", "Epic"), L("Un objetivo grande del proyecto. Tiene objetivo, alcance y diseño; la apruebas tú.", "A big goal of the project. It has a goal, a scope and a design; you approve it.")],
+    story: [L("Historia", "Story"), L("Un paso pequeño que construye parte de una épica. El agente las crea, las hace y las cierra sin pedirte permiso.", "A small step that builds part of an Epic. The agent creates, does and closes them without asking you.")],
+    states: [L("planeada · en curso · hecha · propuesta", "planned · in progress · done · proposed"), L("Estado de una épica. «Propuesta» espera tu aprobación.", "State of an Epic. “Proposed” waits for your approval.")],
+    todefine: [L("por definir", "to define"), L("A la historia le falta información antes de empezar (cuánto toma, qué parte del diseño construye, cuándo está hecha).", "The Story lacks information before it can start (how long it takes, which part of the design it builds, when it is done).")],
+    gap: [L("vacío abierto (GAP)", "open gap (GAP)"), L("Una decisión que el diseño dejó pendiente y que solo tú puedes cerrar.", "A decision the design left open and only you can close.")],
+    blocked: [L("bloqueada", "blocked"), L("No puede avanzar hasta que se resuelva algo, por ejemplo una pregunta tuya o un vacío.", "It cannot move until something is resolved, for example a question to you or a gap.")],
+    uncal: [L("sin calibrar", "uncalibrated"), L("La fecha estimada aún se apoya en pocos datos: es un rango, no una promesa.", "The estimated date still rests on little data: it is a range, not a promise.")],
+    whose: [L("te toca · le toca a claude", "your move · the agent's"), L("Quién debe actuar. Siempre se dice con palabras, no solo con color.", "Who must act. Always said in words, not only in colour.")],
+    inbox: [L("Bandeja", "Inbox"), L("Por donde entra todo cambio al diseño: ideas tuyas y propuestas del agente.", "Where every change to the design comes in: your ideas and the agent's proposals.")],
+    ratify: [L("ratificar / promover", "ratify / promote"), L("Pasar un cambio aceptado al diseño. Solo tú, con un comando en tu terminal.", "Move an accepted change into the design. Only you, with a command in your terminal.")],
+    freeze: [L("congelar (freeze)", "freeze"), L("Fijar el diseño que aprobaste como la autoridad. Después, todo cambio al diseño pasa por la Bandeja.", "Fix the design you approved as the authority. After that, every change to the design goes through the Inbox.")],
+    adr: [L("ADR", "ADR"), L("Registro de una decisión de arquitectura: qué se decidió, por qué y qué alternativas había.", "Record of an architecture decision: what was decided, why, and which alternatives there were.")],
+    levels: [L("BLOCKING · WARNING · NOTICE", "BLOCKING · WARNING · NOTICE"), L("Detiene lo afectado · atiéndelo pronto · es informativo.", "Stops what it affects · attend to it soon · informative.")]
+  };
+}
+function howTo(view, what, forWhat, steps, termKeys) {
+  var hidden = howHidden(view), wrap = h("div", { class: "howwrap" });
+  var tog = h("button", { type: "button", class: "btn ghost", "aria-expanded": hidden ? "false" : "true", text: hidden ? L("¿Cómo se usa esta vista?", "How is this view used?") : L("Ocultar la explicación", "Hide the explanation") });
+  tog.addEventListener("click", function () { howSet(view, !hidden); render(); });
+  if (hidden) { wrap.appendChild(tog); return wrap; }
+  var T0 = TERMS(), box = h("div", { class: "how", role: "note" },
+    h("div", { class: "k", text: L("qué es", "what it is") }), h("div", { class: "v", text: what }),
+    h("div", { class: "k", text: L("para qué sirve", "what it is for") }), h("div", { class: "v", text: forWhat }),
+    h("div", { class: "k", text: L("cómo se usa", "how to use it") }), h("div", { class: "v" }, h("ol", null, steps.map(function (x) { return h("li", null, x); }))));
+  if (termKeys && termKeys.length) {
+    box.appendChild(h("div", { class: "k", text: L("palabras", "words") }));
+    box.appendChild(h("div", { class: "v" }, h("dl", { class: "terms" }, termKeys.map(function (k) { return [h("dt", { text: T0[k][0] }), h("dd", { text: T0[k][1] })]; }).reduce(function (a, b) { return a.concat(b); }, []))));
+  }
+  wrap.appendChild(box);
+  wrap.appendChild(tog);
+  return wrap;
+}
+/* A reference in a text becomes a link to where it lives: Epics and Stories in the Plan, proposals and ideas in the Inbox. */
+function linkRefs(text) {
+  var s = String(text || ""), out = [], last = 0, re = /\b(STORY|EPIC|PROP|IDEA)-\d+\b/g, m;
+  while ((m = re.exec(s))) {
+    if (m.index > last) out.push(s.slice(last, m.index));
+    var ref = m[0];
+    out.push(h("a", { class: "refl", href: (m[1] === "STORY" || m[1] === "EPIC" ? "#/view=plan&q=" : "#/view=inbox&card=") + encodeURIComponent(ref), text: ref }));
+    last = m.index + ref.length;
+  }
+  if (last < s.length) out.push(s.slice(last));
+  return out;
+}
+function stageHelp() {
+  return {
+    "new": [L("Ideas sin revisar. El agente las convierte en propuestas. Tú: nada, o escribe una idea abajo.", "Ideas not yet reviewed. The agent turns them into proposals. You: nothing, or write an idea below."), false],
+    "review": [L("Propuestas que esperan tu decisión: aceptar o rechazar. Tú: decidir; si dudas, «Consultar en Claude».", "Proposals waiting for your decision: accept or reject. You: decide; if unsure, “Consult in Claude”."), true],
+    "accepted": [L("Aceptadas: el agente prepara el paquete de cambios. Tú: nada, espera.", "Accepted: the agent prepares the package of changes. You: nothing, wait."), false],
+    "ratify": [L("Paquete listo. Tú: corre en tu terminal el comando de la tarjeta; eso pasa el cambio al diseño (ratificar es solo tuyo).", "Package ready. You: run the card's command in your terminal; that moves the change into the design (ratifying is yours alone)."), true],
+    "work": [L("Ya es parte del diseño; el agente lo aplica y lo cierra. Tú: nada.", "Already part of the design; the agent applies and closes it. You: nothing."), false],
+    "closed": [L("Terminadas en los últimos 7 días.", "Finished in the last 7 days."), false],
+    "parked": [L("Pausadas a propósito: no avanzan hasta que las reabras.", "Paused on purpose: they do not move until you reopen them."), false],
+    "rejected": [L("Descartadas por decisión tuya.", "Dropped by your decision."), false]
+  };
+}
+function youDoNode(r) {
+  var why = T.youDo + ": " + (r.stage === "ratify" ? L("corre esto en tu terminal. Pasa este cambio al diseño (nada se aplica hasta que lo hagas tú).", "run this in your terminal. It moves this change into the design (nothing is applied until you do).")
+    : L("corre esto en tu terminal.", "run this in your terminal."));
+  return h("div", { class: "youdo" }, h("span", { class: "small", text: why }), cmdBlock(r.command));
+}
+
 /* ---------- a finding that is the person's decision: what it asks, the context behind it, a way to think it through in Claude ---------- */
 var CTX_OPEN = {};                    /* which contexts are open, by finding: a repaint keeps them open */
 function fmt(t, o) { return String(t || "").replace(/\{(\w+)\}/g, function (_, k) { return o[k] === undefined || o[k] === null ? "" : o[k]; }); }
@@ -1213,6 +1311,25 @@ function gapMessage(snap, f) {
   if (rel.list.length) parts.push(fmt(rel.cited ? T2.gap_stories_cited : T2.gap_stories_of_epic, { list: rel.list.map(function (x) { return x.ref + " [" + x.status + "] " + (x.title || ""); }).join("; ") }));
   parts.push(fmt(T2.gap_answer, { gap: id }));
   return parts.join("\n");
+}
+function epicMessage(e) {
+  return ["### " + e.ref + " · " + (e.title || ""),
+    L("Es una épica propuesta que espera mi aprobación.", "It is a proposed Epic waiting for my approval."),
+    e.goal ? L("Objetivo: ", "Goal: ") + e.goal : "", e.scope ? L("Alcance: ", "Scope: ") + e.scope : "", e.out_of_scope ? L("Fuera de alcance: ", "Out of scope: ") + e.out_of_scope : "",
+    e.design ? L("Diseño: ", "Design: ") + e.design : "",
+    L("Dime con tu recomendación si el objetivo y el alcance son coherentes con el diseño del proyecto y qué riesgos ves. La aprobación la doy yo, en mi terminal.", "Tell me, with your recommendation, whether the goal and scope fit the project's design and which risks you see. I give the approval myself, in my terminal.")].filter(Boolean).join("\n");
+}
+function docMessage(d) {
+  return L("Estoy leyendo «" + d.title + "» (" + d.path + ") de mi proyecto. Explícamelo con palabras simples: qué decide, qué consecuencias tiene para el proyecto y qué debería revisar yo. Si algo me falta para decidir, dímelo.",
+    "I am reading “" + d.title + "” (" + d.path + ") of my project. Explain it in simple words: what it decides, what consequences it has for the project and what I should review. If something is missing for me to decide, tell me.");
+}
+function consultAction(snap, label, textFn, title) {
+  if (snap.consult) {
+    var b = h("button", { type: "button", class: "btn go", title: title || "", text: label });
+    b.addEventListener("click", function (ev) { ev.stopPropagation(); consultGo(b, textFn(), consultTarget(snap)); });
+    return b;
+  }
+  return copyText(L("copiar para el chat", "copy for the chat"), textFn());
 }
 function needCard(snap, f) {
   var human = f.owner === "human", key = "ctx|" + f.code + "|" + f.ref + "|" + (f.epic || "");
@@ -1313,6 +1430,7 @@ function itemForm(snap, item, isEpic) {
     acts.appendChild(save);
   }
   var chat = isEpic ? ((fs.filter(function (f) { return f.fix && f.fix.chat; }).map(function (f) { return f.fix.chat; }).join(" ")) || null) : storyChat(snap, item);
+  if (isEpic && (item.raw_status === "Proposed" || item.state === "proposed")) acts.appendChild(consultAction(snap, L("Consultar en Claude", "Consult in Claude"), function () { return epicMessage(item); }, L("Copia la épica con su objetivo y alcance y abre tu hilo de Claude para que la pienses ahí", "Copies the Epic with its goal and scope and opens your Claude thread so you can think it through")));
   if (chat) acts.appendChild(copyText(edit ? L("o pedírselo a claude: copiar para el chat", "or ask claude: copy for the chat") : L("copiar para el chat", "copy for the chat"), chat));
   fs.forEach(function (f) { if (f.fix && f.fix.command) acts.appendChild(cmdLine(f.fix.command)); });
   if (FORM_MSG[ref]) acts.appendChild(h("span", { class: "small", text: FORM_MSG[ref] }));
@@ -1398,6 +1516,14 @@ function viewPlan() {
     h("div", { class: "headrow" }, h("h1", { text: snap.repo.name }), h("span", { class: "tag dev", text: snap.project.phase }), h("span", { class: "small", text: meta.filter(Boolean).join(" · ") })));
   var main = h("main", { id: "plan" }, head);
   var dn = degradedNote(snap); if (dn) main.appendChild(dn);
+  main.appendChild(howTo("plan",
+    L("El plan de construcción: cada épica (un objetivo grande) con sus historias (los pasos pequeños que la construyen), en el orden en que se construyen.", "The build plan: each Epic (a big goal) with its Stories (the small steps that build it), in the order they are built."),
+    L("Para saber cuánto falta, qué está en curso, qué te espera a ti y qué está bloqueado, sin leer el backlog.", "To know how much is left, what is in progress, what waits for you and what is blocked, without reading the backlog."),
+    [L("Arriba están las cifras: avance, fecha estimada, lo que te espera y lo que falta definir.", "At the top are the figures: progress, estimated date, what waits for you and what is left to define."),
+     L("«te necesito» es lo único que espera una decisión tuya: respóndelo ahí, o usa «Consultar en Claude» si necesitas pensarlo.", "“I need you” is the only thing waiting for a decision of yours: answer it there, or use “Consult in Claude” if you need to think it through."),
+     L("Abre una épica con un clic: verás su objetivo, alcance y sus historias. Los vacíos abiertos traen su contexto y un botón para consultarlos.", "Open an Epic with a click: you will see its goal, scope and Stories. Open gaps come with their context and a button to consult them."),
+     L("Con los filtros y la búsqueda acotas; pasa el mouse sobre una cifra o una etiqueta para ver qué significa.", "Narrow with the filters and the search; hover a figure or a tag to see what it means.")],
+    ["epic", "story", "states", "todefine", "gap", "blocked", "uncal", "whose"]));
   main.appendChild(figures(snap)); main.appendChild(nowBlock(snap));
   var nb = needsBlock(snap); if (nb) main.appendChild(nb);
   var sh = shadowStrip(snap); if (sh) main.appendChild(sh);
@@ -1438,6 +1564,13 @@ function viewPlan() {
 function viewInbox() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Bandeja", "Inbox") }), h("span", { class: "small", text: snap.repo.name }))));
+  main.appendChild(howTo("inbox",
+    L("El único camino por donde un cambio entra al diseño: tus ideas y las propuestas del agente, de izquierda a derecha, por etapas.", "The only path by which a change enters the design: your ideas and the agent's proposals, left to right, in stages."),
+    L("Para que nada cambie el diseño sin pasar por ti, y para ver de un vistazo qué espera tu decisión y qué solo espera al agente.", "So nothing changes the design without passing through you, and to see at a glance what waits for your decision and what only waits for the agent."),
+    [L("Escribe una idea abajo (o `gtt idea add`): el agente la convierte en una propuesta.", "Write an idea below (or `gtt idea add`): the agent turns it into a proposal."),
+     L("En «En revisión» decide: acepta o rechaza (`gtt answer N k`). Si dudas, «Consultar en Claude» abre el hilo con la propuesta y su contexto.", "In “In review” decide: accept or reject (`gtt answer N k`). If unsure, “Consult in Claude” opens the thread with the proposal and its context."),
+     L("En «Por ratificar» corre en tu terminal el comando de la tarjeta: es lo único que cambia el diseño, y solo tú lo ejecutas.", "In “To ratify” run the card's command in your terminal: it is the only thing that changes the design, and only you run it."),
+     L("Solo lo marcado «te toca» es tuyo; lo demás espera al agente. Haz clic en el título de una tarjeta para leer su texto completo.", "Only what says “your move” is yours; the rest waits for the agent. Click a card's title to read its full text.")]));
   var mc = mineChip(snap); if (mc) main.appendChild(mc);
   main.appendChild(inboxPanel(snap));
   var owed = (snap.findings || []).filter(function (f) { return f.code.indexOf("DEF-INBOX-") === 0; });
@@ -1475,6 +1608,12 @@ function viewActivity() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var st = readHash(); var a = snap.activity;
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Actividad", "Activity") }), h("span", { class: "small", text: snap.repo.name }))));
+  main.appendChild(howTo("activity",
+    L("El diario del proyecto: quién hizo qué y cuándo (Claude, tú o GTT), y lo que el agente está haciendo ahora.", "The project's journal: who did what and when (Claude, you or GTT), and what the agent is doing right now."),
+    L("Para saber qué cambió desde la última vez que miraste, ver en qué trabaja el agente sin preguntarle, y notar trabajo hecho sin historia.", "To know what changed since you last looked, see what the agent is working on without asking it, and spot work done with no Story."),
+    [L("«ahora» dice quién trabaja, en qué historia y qué archivos toca.", "“now” says who is working, on which Story and which files it touches."),
+     L("Filtra por quién (claude, tú, gtt) con los botones; haz clic en un STORY-, EPIC-, PROP- o IDEA- para ir a él.", "Filter by who (claude, you, gtt) with the buttons; click a STORY-, EPIC-, PROP- or IDEA- to go to it."),
+     L("«lo que vio claude» es lo que el agente lee al abrir cada sesión: si algo ahí está mal, el agente actuará sobre eso.", "“what claude saw” is what the agent reads when it opens each session: if something there is wrong, the agent will act on it.")]));
   main.appendChild(nowBlock(snap));
   if (!a) { main.appendChild(h("div", { class: "empty", text: L("sin dato: actualiza GTT en este repo.", "no data: update GTT in this repo.") })); return main; }
   var cur = ["all", "claude", "human", "gtt", "none"].indexOf(st.act) >= 0 ? st.act : "all";
@@ -1489,7 +1628,7 @@ function viewActivity() {
     var d = (e.at || "").slice(0, 10);
     if (d !== day) { day = d; box.appendChild(h("h3", { class: "dayh", text: d || "—" })); }
     box.appendChild(h("div", { class: "ev" }, h("time", { text: hhmm(e.at) }), h("span", { class: "dot " + (e.actor === "agent" ? "agent" : e.actor === "human" ? "human" : e.actor === "gtt" ? "gtt" : "unknown"), "aria-hidden": "true" }),
-      h("span", { text: e.text || "" }), h("span", { class: "small", text: " · " + label[actorKey(e)] })));
+      h("span", null, linkRefs(e.text)), h("span", { class: "small", text: " · " + label[actorKey(e)] })));
   });
   main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("lo que pasó", "what happened")), box));
   var runs = a.runs || [];
@@ -1499,7 +1638,8 @@ function viewActivity() {
     main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("gtt run: resultado", "gtt run: result")), rb));
   }
   if (a.session) main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("lo que vio claude", "what claude saw")),
-    h("div", { class: "panel", style: "padding:12px 16px" }, h("span", { class: "small", text: L("session.md de su última sesión · ", "session.md of its last session · ") + hhmm(a.session.at) + " · " + L("solo lectura", "read only") }), h("pre", { class: "sessionpre", text: (a.session.lines || []).join("\n") }))));
+    h("div", { class: "panel", style: "padding:12px 16px" }, h("span", { class: "small", text: L("Su memoria operativa al abrir la última sesión (session.md, derivada del repositorio; no es autoridad) · ", "Its operating memory when it opened the last session (session.md, derived from the repository; not authority) · ") + hhmm(a.session.at) + " · " + L("solo lectura", "read only") }),
+      h("details", null, h("summary", { class: "small", text: L("ver las ", "show the ") + (a.session.lines || []).length + L(" líneas", " lines") }), h("pre", { class: "sessionpre", text: (a.session.lines || []).join("\n") })))));
   return main;
 }
 
@@ -1552,6 +1692,14 @@ function viewHealth() {
   var all = snap.findings || [];
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Salud", "Health") }), h("span", { class: "small", text: snap.repo.name }))));
   var dn = degradedNote(snap); if (dn) main.appendChild(dn);
+  main.appendChild(howTo("health",
+    L("Todo lo que GTT revisó por su cuenta y encontró raro o incompleto, ordenado por plano: gobierno, entrega, definición y código.", "Everything GTT checked by itself and found odd or incomplete, ordered by plane: governance, delivery, definition and code."),
+    L("Para saber qué arreglar primero y de quién es cada cosa, sin abrir archivos ni preguntarle al agente.", "To know what to fix first and whose each thing is, without opening files or asking the agent."),
+    [L("Filtra por nivel y por a quién le toca: «te tocan» es lo tuyo; lo demás lo resuelve el agente.", "Filter by level and by whose it is: “yours” is for you; the rest the agent resolves."),
+     L("Haz clic en el id de un hallazgo para ir a su contenido: la épica o historia, la tarjeta de la Bandeja o el documento.", "Click a finding's id to go to its content: the Epic or Story, the Inbox card or the document."),
+     L("En un vacío abierto, «Consultar en Claude» lleva su pregunta con el contexto al hilo del proyecto.", "On an open gap, “Consult in Claude” takes its question with the context to the project thread."),
+     L("Abajo están los chequeos que GTT corre (validaciones); en rojo, el que falló.", "Below are the checks GTT runs (validations); in red, the one that failed.")],
+    ["levels", "whose", "gap"]));
   if (all.length) main.appendChild(healthFilters(all, fl));
   var planes = [["governance", L("gobierno", "governance")], ["delivery", L("entrega", "delivery")], ["definition", L("definición", "definition")], ["code", L("código", "code")]];
   planes.forEach(function (p) {
@@ -1563,7 +1711,8 @@ function viewHealth() {
     rows.forEach(function (f) {
       var href = findingLink(snap, f);
       box.appendChild(h("div", { class: "sig" }, lvlTag(f.level), href ? h("a", { class: "ref", href: href, text: f.ref }) : h("span", { class: "ref", text: f.ref }), h("span", { class: "mono small", text: f.code }), h("span", { text: f.text }),
-        h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" })));
+        h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" }),
+        (f.code === "GOV-GAP" && gapOf(snap, f) && (rows.length <= 40 || filtered)) ? consultAction(snap, L("Consultar en Claude", "Consult in Claude"), function () { return gapMessage(snap, f); }) : null));
     });
     main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + (filtered ? rows.length + " / " + inPlane.length : rows.length)), box));
   });
@@ -1577,9 +1726,17 @@ function viewHealth() {
 function viewDesign() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var st = readHash(); var tab = ["docs", "adr"].indexOf(st.dt) >= 0 ? st.dt : "docs";
+  var howDesign = howTo("design",
+    L("Los documentos que mandan: visión, arquitectura, restricciones, decisiones (ADR) y el diseño de cada épica.", "The documents that rule: vision, architecture, constraints, decisions (ADR) and the design of each Epic."),
+    L("Para leer la fuente de verdad del proyecto sin abrir el repositorio. Lo que está aquí el agente no lo cambia solo.", "To read the project's source of truth without opening the repository. The agent does not change what is here on its own."),
+    [L("Elige un documento en la lista de la izquierda; los enlaces del Plan, la Salud y la Actividad abren aquí el documento exacto.", "Pick a document in the list on the left; links from the Plan, Health and Activity open the exact document here."),
+     L("Si un texto es difícil, «Pedirle a Claude que lo explique» lleva el documento a tu hilo para que te lo cuente en palabras simples.", "If a text is hard, “Ask Claude to explain it” takes the document to your thread so it tells it to you in simple words."),
+     L("«Decisiones» muestra los ADR y los cambios registrados, con quién los produjo.", "“Decisions” shows the ADRs and the recorded changes, with who produced them.")],
+    ["adr", "freeze", "epic"]);
   function tl(id, label) { var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.dt = id; var a = h("a", { href: "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&"), text: label }); if (tab === id) a.setAttribute("aria-current", "page"); return a; }
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Diseño", "Design") }), h("span", { class: "small", text: snap.repo.name }))),
     h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);min-height:36px", "aria-label": L("Diseño", "Design") }, tl("docs", L("Contexto y diseño por épica", "Context and design by Epic")), tl("adr", L("Decisiones", "Decisions"))));
+  main.insertBefore(howDesign, main.children[1]);
   if (tab === "adr") { main.appendChild(decisionsPanel(snap)); main.appendChild(backlogAdr(snap, st)); }
   else main.appendChild(backlogDesign(snap, st));
   return main;
@@ -1597,7 +1754,16 @@ function viewPortfolio2() {
       h("td", { class: "mono", text: s.summary.progress_pct === null ? "—" : s.summary.progress_pct + "%" }), h("td", { class: "mono", text: String(needs) }), h("td", { class: "mono", text: rc ? rc.to_define + " (" + rc.mine + " " + L("tuyas", "yours") + ")" : L("sin dato", "no data") }),
       h("td", { class: "mono", text: String(hn.n) }), h("td", null, inboxWords(s))));
   });
-  var head = ["proyecto", "suite", "fase", "avance", "te necesito", "por definir", "alertas", "bandeja"].map(function (x, i) { return h("th", { text: L(x, ["project", "suite", "phase", "progress", "I need you", "to define", "alerts", "inbox"][i]) }); });
+  var heads = [L("El proyecto; haz clic para abrir su plan.", "The project; click to open its plan."), L("Versión de GTT instalada en el proyecto.", "Version of GTT installed in the project."), L("DEV = se está construyendo; THINK = aún se diseña.", "DEV = being built; THINK = still being designed."),
+    L("Cuánto del trabajo está hecho.", "How much of the work is done."), L("Cosas que solo tú puedes resolver.", "Things only you can resolve."), L("Historias a las que les falta información (y cuántas son tuyas).", "Stories that lack information (and how many are yours)."),
+    L("Avisos que GTT detectó solos.", "Notices GTT detected by itself."), L("Cambios al diseño en la Bandeja.", "Changes to the design in the Inbox.")];
+  var head = ["proyecto", "suite", "fase", "avance", "te necesito", "por definir", "alertas", "bandeja"].map(function (x, i) { return h("th", { title: heads[i], text: L(x, ["project", "suite", "phase", "progress", "I need you", "to define", "alerts", "inbox"][i]) }); });
+  main.appendChild(howTo("portfolio",
+    L("Todos tus proyectos con GTT de un vistazo, uno por fila.", "All your GTT projects at a glance, one per row."),
+    L("Para saber en cuál te espera algo y cuál avanza, sin abrirlos uno por uno.", "To know which one has something waiting for you and which one is moving, without opening them one by one."),
+    [L("Mira «te necesito» y «alertas»: ahí están las filas que piden tu atención.", "Look at “I need you” and “alerts”: those are the rows asking for your attention."),
+     L("Haz clic en el nombre de un proyecto para abrir su plan.", "Click a project's name to open its plan."),
+     L("Pasa el mouse sobre el título de una columna para ver qué cuenta.", "Hover a column's title to see what it counts.")], ["whose"]));
   main.appendChild(h("div", { class: "panel tablewrap" }, h("table", null, h("thead", null, h("tr", null, head)), rows)));
   return main;
 }
@@ -1617,6 +1783,12 @@ function viewCode() {
     main.appendChild(h("div", { class: "stale", role: "status", text: L("sin dato: actualiza GTT en este repo (gtt update) para ver el mapa del código.", "no data: update GTT in this repo (gtt update) to see the map of the code.") }));
     return main;
   }
+  main.appendChild(howTo("code",
+    L("¿Lo que se diseñó está construido y respeta la arquitectura? Cada módulo de stack.md contra el código real, y cada criterio de aceptación de una épica contra las historias, archivos y pruebas que lo cubren.", "Is what was designed built, and does it respect the architecture? Each module of stack.md against the real code, and each acceptance criterion of an Epic against the Stories, files and tests that cover it."),
+    L("Para ver qué parte del diseño aún no tiene código, qué dependencias rompen lo que stack.md permite y qué se tocó desde el freeze o ayer.", "To see which part of the design still has no code, which dependencies break what stack.md allows, and what was touched since the freeze or yesterday."),
+    [L("Elige una épica arriba: aparece «del diseño al código», con una fila por criterio de aceptación.", "Pick an Epic above: “from design to code” appears, one row per acceptance criterion."),
+     L("Estado: «sin código» = ninguna historia lo construye; «en construcción» = hay historia o archivos; «cerrado» = la historia terminó.", "State: “no code” = no Story builds it; “being built” = there is a Story or files; “closed” = the Story finished."),
+     L("Haz clic en un módulo del mapa para ver sus archivos y quién los construyó; la flecha roja es una dependencia que stack.md no permite.", "Click a module on the map to see its files and who built them; a red arrow is a dependency stack.md does not allow.")]));
   main.appendChild(h("p", { class: "small", text: L("Módulos de stack.md (5. Dependency rules) contra las importaciones reales del código. Calculado a partir de archivos; nada se guarda en el repo.", "Modules of stack.md (5. Dependency rules) against the real imports of the code. Computed from files; nothing is stored in the repo.") }));
   var since = codeFilter(st); var epicSel = st.ce || "";
   var chips = h("div", { class: "filters" });
@@ -1699,14 +1871,27 @@ function viewCode() {
   }
   var d2c = code.design_to_code;
   if (epicSel && d2c && d2c[epicSel]) {
-    var t2 = h("table", null, h("thead", null, h("tr", null, [L("ítem del diseño", "design item"), L("historias", "Stories"), L("archivos", "files"), L("evidencia", "evidence"), L("estado", "state")].map(function (x) { return h("th", { text: x }); }))),
-      h("tbody", null, d2c[epicSel].map(function (r) {
-        return h("tr", null, h("td", null, h("b", { class: "mono", text: r.item }), r.text ? h("div", { class: "small", text: r.text.replace(/^\s*[-*]\s+\*\*[A-Z]+-\d+\*\*\s*/, "") }) : null),
-          h("td", null, r.stories.length ? r.stories.map(function (x) { return h("span", { class: "tag", text: x }); }) : h("span", { class: "tag hollow", text: L("pendiente", "pending") })),
+    var rowsD = d2c[epicSel], epicRow = epicOf(snap, epicSel);
+    var designPath = epicRow && epicRow.design ? (String(epicRow.design).match(/[\w.\/-]+\.md/) || [null])[0] : null;
+    var nNo = rowsD.filter(function (r) { return !r.built && !r.closed; }).length, nBuilding = rowsD.filter(function (r) { return r.built && !r.closed; }).length, nClosed = rowsD.filter(function (r) { return r.closed; }).length;
+    var t2 = h("table", null, h("thead", null, h("tr", null, [L("criterio del diseño", "design criterion"), L("historias que lo construyen", "Stories that build it"), L("archivos", "files"), L("prueba (evidencia)", "test (evidence)"), L("estado", "state")].map(function (x) { return h("th", { text: x }); }))),
+      h("tbody", null, rowsD.map(function (r) {
+        var state = r.closed ? L("cerrado", "closed") : r.built ? L("en construcción", "being built") : L("sin código", "no code");
+        return h("tr", null, h("td", null, h("b", { class: "mono" }, designPath ? docLink(snap, designPath, r.item) : r.item), r.text ? h("div", { class: "small", text: r.text.replace(/^\s*[-*]\s+\*\*[A-Z]+-\d+\*\*\s*/, "") }) : null),
+          h("td", null, r.stories.length ? r.stories.map(function (x) { return h("a", { class: "tag", href: "#/view=plan&q=" + encodeURIComponent(x), text: x }); }) : h("span", { class: "tag hollow", title: L("ninguna historia lo construye todavía", "no Story builds it yet"), text: L("ninguna", "none") })),
           h("td", { class: "mono small", text: (r.files || []).join(", ") || "—" }), h("td", { class: "small", text: (r.evidence || []).join(" · ") || "—" }),
-          h("td", null, h("span", { class: "tag " + (r.closed ? "ok" : r.built ? "hollowa" : "hollow"), text: r.closed ? L("cerrado", "closed") : r.built ? L("en construcción", "being built") : L("sin código", "no code") })));
+          h("td", null, h("span", { class: "tag " + (r.closed ? "ok" : r.built ? "hollowa" : "hollow"), text: state })));
       })));
-    main.appendChild(h("div", { class: "panel", style: "padding:16px 18px" }, h("h2", { class: "sec", text: L("del diseño al código · ", "from design to code · ") + epicSel }), h("div", { class: "tablewrap" }, t2)));
+    var panel = h("div", { class: "panel", style: "padding:16px 18px;display:flex;flex-direction:column;gap:10px" }, h("h2", { class: "sec", text: L("del diseño al código · ", "from design to code · ") + epicSel }),
+      h("div", { class: "sumline" }, h("span", null, h("b", { text: rowsD.length }), L(" criterios", " criteria")), h("span", null, h("b", { text: nNo }), L(" sin código", " with no code")), h("span", null, h("b", { text: nBuilding }), L(" en construcción", " being built")), h("span", null, h("b", { text: nClosed }), L(" cerrados", " closed"))));
+    var missing = rowsD.filter(function (r) { return !r.stories.length && !r.closed; }).map(function (r) { return r.item; });
+    if (missing.length) {
+      panel.appendChild(h("div", { class: "acts" }, copyText(L("Copiar para el chat: crear historias para los " + missing.length + " criterios sin historia", "Copy for the chat: create Stories for the " + missing.length + " criteria with no Story"),
+        L("Agrega historias para " + epicSel + " que construyan estos criterios del diseño: " + missing.join(", ") + ". Cada una con `Implements` y `Done when`.", "Add Stories for " + epicSel + " that build these design criteria: " + missing.join(", ") + ". Each with `Implements` and `Done when`.")),
+        h("span", { class: "small", text: L("Crear historias es trabajo del agente; no necesitas consultar el hilo.", "Creating Stories is the agent's work; you do not need to consult the thread.") })));
+    }
+    panel.appendChild(h("div", { class: "tablewrap" }, t2));
+    main.appendChild(panel);
   } else if (epicSel) main.appendChild(h("div", { class: "empty small", text: L("Esta épica no tiene diseño con ítems todavía.", "This Epic has no design with items yet.") }));
   return main;
 }
@@ -1730,6 +1915,13 @@ function viewHelp2() {
     L("Con «gtt sonar» (editable): responder una pregunta, llenar los campos de una historia o de una épica propuesta, y dejar un aporte sobre una épica, un diseño o un vacío.", "With `gtt sonar` (editable): answer a question, fill the fields of a Story or of a proposed Epic, and leave input on an Epic, a design or a gap."),
     L("Aprobar, promover, correr, deshacer y congelar siguen en tu terminal: Sonar te deja el comando para copiar.", "Approve, promote, run, undo and freeze stay in your terminal: Sonar leaves you the command to copy."),
     L("Con «gtt sonar --static» (solo lectura): en vez de formularios hay comandos y texto para copiar al chat.", "With `gtt sonar --static` (read only): instead of forms there are commands and text to copy into the chat.")]));
+  var T1 = TERMS();
+  main.appendChild(h("section", { class: "panel" }, h("h2", { class: "sec", text: L("Las palabras que verás", "The words you will meet") }),
+    h("dl", { class: "terms", style: "display:grid;grid-template-columns:200px minmax(0,1fr);gap:6px 16px;margin:0;padding:0 4px" }, Object.keys(T1).map(function (k) { return [h("dt", { style: "font-weight:600", text: T1[k][0] }), h("dd", { style: "margin:0;color:var(--muted)", text: T1[k][1] })]; }).reduce(function (a, b) { return a.concat(b); }, []))));
+  main.appendChild(panel(L("Dónde puedes pedirle ayuda a Claude", "Where you can ask Claude for help"), [
+    L("La barra de arriba es el hilo de Claude web del proyecto: una sola conversación que conoce tu contexto. Los botones «Consultar en Claude» le llevan una pregunta con su contexto; tú traes la respuesta de vuelta.", "The bar at the top is the project's Claude web thread: one conversation that knows your context. The “Consult in Claude” buttons take it a question with its context; you bring the answer back."),
+    L("Hay botón en: las preguntas de «te necesito», las propuestas de la Bandeja, los vacíos abiertos (Plan y Salud) y las épicas propuestas. En Diseño, «Pedirle a Claude que lo explique» sirve para cualquier documento.", "There is a button on: the “I need you” questions, the Inbox proposals, open gaps (Plan and Health) and proposed Epics. In Design, “Ask Claude to explain it” works for any document."),
+    L("Claude puede recomendar, pero la decisión y los actos que cambian el diseño (aprobar, ratificar, congelar) son solo tuyos.", "Claude can recommend, but the decision and the acts that change the design (approve, ratify, freeze) are yours alone.")]));
   main.appendChild(h("p", { class: "small" }, L("Más en ", "More at "), h("a", { href: "https://gtt-method.org/sonar/", target: "_blank", rel: "noopener noreferrer", text: "gtt-method.org/sonar/" })));
   return main;
 }

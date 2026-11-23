@@ -1404,13 +1404,22 @@ def cmd_start(args):
         uri = pathlib.Path(page_path).as_uri()
         waiting = len(snap.get("needs_you") or [])
         blocked = (snap.get("summary") or {}).get("stories_blocked") or 0
+        # The consultation thread (Claude web) is part of the same line while none is registered: one clause, said once, so the person knows it exists.
+        no_thread = False
+        try:
+            import gtt_consult
+            no_thread = not gtt_consult.state().get("thread")
+        except Exception:                              # noqa: BLE001
+            no_thread = False
         if snap.get("lang") == "es":
             head = f"{waiting} cosa(s) te esperan" if waiting else "nada te espera"
             tail = f" · {blocked} historia(s) bloqueada(s)" if blocked else ""
+            tail += " · sin hilo de consulta en Claude web (arriba en Sonar: «Crear el hilo»)" if no_thread else ""
             line = f"Sonar: {head}{tail} · {uri} (también `gtt sonar`)"
         else:
             head = f"{waiting} thing(s) wait for you" if waiting else "nothing waits for you"
             tail = f" · {blocked} blocked Stor{'y' if blocked == 1 else 'ies'}" if blocked else ""
+            tail += " · no consultation thread in Claude web yet (top of Sonar: “Create the thread”)" if no_thread else ""
             line = f"Sonar: {head}{tail} · {uri} (also `gtt sonar`)"
         spawn_watcher()
         if prefs().get("open_on_start"):
