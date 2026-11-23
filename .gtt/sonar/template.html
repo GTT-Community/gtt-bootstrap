@@ -762,8 +762,7 @@ function backlogDesign(snap, st) {
     body.appendChild(paintBlocks(cur.blocks));
     if (cur.truncated) body.appendChild(h("p", { class: "small" }, T.bkTruncated + " ", h("code", { text: cur.path })));
   }
-  var split = h("div", { class: "split" }, list, body);
-  return h("div", { style: "display:flex;flex-direction:column;gap:16px" }, contextStrip(snap, items, cur), split);
+  return h("div", { class: "split" }, list, body);
 }
 
 /* The six pages of the governed context, always in view: each with its file, its title and whether it exists. Never a missing page hidden. */
@@ -776,14 +775,21 @@ var CTX_PAGES = [
   { f: "stack", es: "Las tecnologías decididas y los módulos del código", en: "The decided technologies and the code modules" }
 ];
 function plainParts(parts) { return (parts || []).map(function (p) { return p[1]; }).join("").trim(); }
-function contextStrip(snap, items, cur) {
-  var by = {}; items.forEach(function (d) { if (d.group === "context") by[d.path.replace(/^.*\//, "").replace(/\.md$/, "")] = d; });
+function contextStrip(snap, st) {
+  var items = snap.docs && snap.docs.items; if (!items || !items.length) return null;
+  var cur = st.dt === "adr" ? { id: null } : (items.filter(function (d) { return d.id === st.doc; })[0] || items[0]);
+  var by = {}, extra = [];
+  items.forEach(function (d) {
+    if (d.group !== "context") return;
+    var name = d.path.replace(/^.*\//, "").replace(/\.md$/, "");
+    if (CTX_PAGES.some(function (pg) { return pg.f === name; })) by[name] = d; else extra.push({ f: name, es: "Otra hoja del contexto de este proyecto", en: "Another page of this project's context", d: d });
+  });
   var box = h("section", { class: "panel ctxstrip", "aria-label": L("Contexto del proyecto", "Project context") });
   box.appendChild(h("div", { class: "ctxhead" }, h("strong", { text: L("Contexto del proyecto", "Project context") }), h("code", { class: "small", text: "gtt-domain/context/" }),
-    h("span", { class: "small", text: L("Las 6 hojas que mandan sobre todo lo demás. Elige una para leerla completa.", "The 6 pages that rule over everything else. Pick one to read it in full.") })));
+    h("span", { class: "small", text: L("Las hojas que mandan sobre todo lo demás. Elige una para leerla completa.", "The pages that rule over everything else. Pick one to read it in full.") })));
   var grid = h("div", { class: "ctxgrid" });
-  CTX_PAGES.forEach(function (pg, i) {
-    var d = by[pg.f];
+  CTX_PAGES.concat(extra).forEach(function (pg, i) {
+    var d = pg.d || by[pg.f];
     var inner = [h("span", { class: "ctxn", text: String(i + 1) }), h("span", { class: "ctxf", text: pg.f + ".md" }),
       h("span", { class: "ctxt", text: d ? d.title : L("no existe en este proyecto", "does not exist in this project") }), h("span", { class: "small", text: L(pg.es, pg.en) })];
     if (d) {
@@ -1791,6 +1797,8 @@ function viewDesign() {
   var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Diseño", "Design") }), h("span", { class: "small", text: snap.repo.name }))),
     h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);min-height:36px", "aria-label": L("Diseño", "Design") }, tl("docs", L("Contexto y diseño por épica", "Context and design by Epic")), tl("adr", L("Decisiones", "Decisions"))));
   main.insertBefore(howDesign, main.children[1]);
+  var strip = contextStrip(snap, { dt: tab, doc: st.doc });
+  if (strip) main.appendChild(strip);                 /* the project's context is in view on both tabs */
   if (tab === "adr") { main.appendChild(decisionsPanel(snap)); main.appendChild(backlogAdr(snap, st)); }
   else main.appendChild(backlogDesign(snap, st));
   return main;
