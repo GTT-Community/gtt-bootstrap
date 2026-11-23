@@ -104,6 +104,10 @@
         "chat": {
           "en": "missing: {what}; the Epic is still a proposal",
           "es": "falta: {what}; la épica sigue siendo una propuesta"
+        },
+        "ask": {
+          "en": "Write the goal, the scope and what is left out in your own words; with that the Epic can be approved.",
+          "es": "Escribe con tus palabras el objetivo, el alcance y lo que queda fuera; con eso la épica puede aprobarse."
         }
       }
     },
@@ -160,6 +164,10 @@
         "chat": {
           "en": "complete proposal, waiting for your approval",
           "es": "propuesta completa, espera tu aprobación"
+        },
+        "ask": {
+          "en": "Review the proposal: approve it if you agree, or say what to change.",
+          "es": "Revisa la propuesta: apruébala si estás de acuerdo, o dime qué cambiar."
         }
       }
     },
@@ -238,6 +246,10 @@
         "chat": {
           "en": "cites {gap}, still {state}",
           "es": "cita {gap}, que sigue {state}"
+        },
+        "ask": {
+          "en": "This Story waits for an open decision. Decide the gap, or say the Story does not need it, and it is released.",
+          "es": "Esta historia espera una decisión abierta. Decide el GAP, o dime que la historia no lo necesita, y se libera."
         }
       }
     },
@@ -274,6 +286,10 @@
         "chat": {
           "en": "blocked by {ask}",
           "es": "bloqueada por {ask}"
+        },
+        "ask": {
+          "en": "Something only you can answer holds it back: answer it and it is released.",
+          "es": "Algo que solo tú puedes responder la tiene detenida: respóndelo y se libera."
         }
       }
     },
@@ -348,6 +364,10 @@
         "chat": {
           "en": "ADR draft incomplete: {what}",
           "es": "borrador de ADR incompleto: {what}"
+        },
+        "ask": {
+          "en": "The decision draft is incomplete: fill in what is missing, or tell me which option you choose.",
+          "es": "El borrador de decisión está incompleto: completa lo que falta, o dime qué opción eliges."
         }
       }
     },
@@ -438,6 +458,10 @@
         "chat": {
           "en": "{gap} ({kind}): {topic}",
           "es": "{gap} ({kind}): {topic}"
+        },
+        "ask": {
+          "en": "The design left this decision open and only you can close it. Write it in one line (yes, no or a value) and, if it matters, why. Not sure? Consult it in Claude first.",
+          "es": "El diseño dejó esta decisión abierta y solo tú puedes cerrarla. Escríbela en una línea (sí, no o un valor) y, si importa, por qué. ¿No estás seguro? Consúltala antes en Claude."
         }
       }
     },

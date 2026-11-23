@@ -266,6 +266,24 @@ nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
 .aportebox{padding:2px 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
 .aporte{display:inline-flex;flex-direction:column;gap:6px;min-width:260px;max-width:520px}
 .aporte textarea{min-height:34px}
+/* a decision that is the person's: colour says whose it is, the words say what is asked, the context is one click away */
+.need{border:1px solid var(--line);border-left:4px solid var(--needs);border-radius:8px;background:var(--needs-bg);padding:11px 14px;display:flex;flex-direction:column;gap:9px;max-width:940px}
+.need.ag{border-left-color:var(--agent);background:var(--agent-bg)}
+.need .ntop{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.need .ntitle{font-weight:600;font-size:14px;color:var(--text);line-height:1.4}
+.need .nask{margin:0;font-size:13.5px;line-height:1.55;color:var(--text)}
+.need .nacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.need .aporte{max-width:none;width:100%}
+.need .aporte textarea{min-height:56px}
+.nctx{display:grid;grid-template-columns:104px minmax(0,1fr);gap:8px 14px;padding:11px 13px;border:1px solid var(--line);border-radius:6px;background:var(--rail);font-size:12.5px;line-height:1.5}
+.nctx[hidden]{display:none}
+.nctx .k{font:10.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.nctx .v{color:var(--text);min-width:0;overflow-wrap:anywhere}
+.nctx .v ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.nctx .v .where{font:11px var(--mono);color:var(--agent);margin-right:6px}
+.nctx .v .sub{color:var(--muted)}
+.nctx .v .tag{margin-left:6px}
+@media (max-width:640px){.nctx{grid-template-columns:minmax(0,1fr)}}
 .cref{all:unset;cursor:pointer;color:var(--dim);font:12px var(--mono);padding:0 4px}.cref:hover{color:var(--agent)}
 
 .codegrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
@@ -1136,12 +1154,95 @@ function storyMeta(s) {
   return metaLine([["implements", s.implements], ["done when", s.done_when], ["release", s.release], [L("frente", "front"), s.front], ["origin", s.origin], [L("cierre", "closed"), s.closed], [L("bloqueada por", "blocked by"), s.blocked_by]]);
 }
 function findRow(snap, f) {
+  if (f.fix && (f.fix.about || f.fix.ask)) return needCard(snap, f);
   var shown = f.text.length > 190 ? f.text.slice(0, 187) + "…" : f.text;
   var row = h("div", { class: "find" }, lvlTag(f.level), h("span", { text: shown, title: f.text }), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }),
     f.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null);
   if (f.fix && f.fix.command) row.appendChild(cmdLine(f.fix.command));
   if (f.fix && f.fix.about) row.appendChild(aporte(snap, f.ref, true));
   return row;
+}
+/* ---------- a finding that is the person's decision: what it asks, the context behind it, a way to think it through in Claude ---------- */
+var CTX_OPEN = {};                    /* which contexts are open, by finding: a repaint keeps them open */
+function fmt(t, o) { return String(t || "").replace(/\{(\w+)\}/g, function (_, k) { return o[k] === undefined || o[k] === null ? "" : o[k]; }); }
+function gapIdOf(f) { var m = (f.code === "GOV-GAP" ? f.ref : (f.text || "")).match(/GAP-\d+/); return m ? m[0] : null; }
+function aboutRef(f) { return gapIdOf(f) || f.ref; }
+function epicOf(snap, ref) { return (snap.epics || []).filter(function (e) { return e.ref === ref; })[0]; }
+function storyOf(snap, ref) { return (snap.stories || []).filter(function (x) { return x.ref === ref; })[0]; }
+function gapOf(snap, f) { var id = gapIdOf(f); return id && snap.consult && snap.consult.gaps ? snap.consult.gaps[id] || null : null; }
+function relatedStories(snap, f, gap) {
+  var cited = ((gap && gap.stories) || []).map(function (r) { return storyOf(snap, r); }).filter(Boolean);
+  if (cited.length) return { cited: true, list: cited };
+  var own = storyOf(snap, f.ref);
+  if (own) return { cited: true, list: [own] };
+  var live = (snap.stories || []).filter(function (x) { return x.epic === f.epic && x.status !== "Done" && x.status !== "Cancelled"; });
+  return { cited: false, list: live.slice(0, 4) };
+}
+/* The governed document opens in Sonar's Design view, in a tab of its own: the person reads the whole page the line comes from. */
+function docLink(snap, path, text) {
+  var doc = path ? docFor(snap, path) : null;
+  if (!doc) return h("span", { class: "where", text: text });
+  return h("a", { class: "where", href: "#/view=design&dt=docs&repo=" + encq(snap.repo.path) + "&doc=" + encq(doc.id), target: "_blank", rel: "noopener", title: L("Abrir el documento en una pestaña nueva", "Open the document in a new tab"), text: text + " ↗" });
+}
+function ctxRow(label, node) { return [h("div", { class: "k", text: label }), h("div", { class: "v" }, node)]; }
+function contextNode(snap, f) {
+  var gap = gapOf(snap, f), e = epicOf(snap, f.epic || (storyOf(snap, f.ref) || {}).epic), rel = relatedStories(snap, f, gap);
+  var box = h("div", { class: "nctx" }), any = false;
+  function add(label, node) { ctxRow(label, node).forEach(function (n) { box.appendChild(n); }); any = true; }
+  if (gap && gap.scope) add(L("la decisión", "the decision"), [gap.scope, " ", docLink(snap, f.where ? f.where.replace(/:\d+$/, "") : null, L("registro", "register"))]);
+  if (e) {
+    var bits = [h("b", { text: e.ref + " · " + (e.title || "") }), h("span", { class: "tag", text: e.raw_status || e.state || "" })];
+    if (e.goal) bits.push(h("div", { class: "sub", text: L("objetivo: ", "goal: ") + e.goal }));
+    if (e.scope) bits.push(h("div", { class: "sub", text: L("alcance: ", "scope: ") + e.scope }));
+    if (e.design) bits.push(h("div", { class: "sub" }, L("diseño: ", "design: "), docLink(snap, String(e.design).match(/[\w.\/-]+\.md/) ? String(e.design).match(/[\w.\/-]+\.md/)[0] : null, e.design)));
+    add(L("la épica", "the Epic"), bits);
+  }
+  if (gap && gap.design && gap.design.length) add(L("el diseño dice", "the design says"), h("ul", null, gap.design.map(function (d) { return h("li", null, docLink(snap, d.path, d.where), d.text); })));
+  if (rel.list.length) add(rel.cited ? L("historia relacionada", "related Story") : L("historias de la épica", "Epic Stories"),
+    h("ul", null, rel.list.map(function (x) { var d = [h("span", { class: "where", text: x.ref }), x.title || "", h("span", { class: "tag", text: x.status })]; if (x.done_when) d.push(h("div", { class: "sub", text: "done when: " + x.done_when })); return h("li", null, d); })));
+  return any ? box : null;
+}
+/* The message for the thread, made from what the page already holds and the contract's own words: the person pastes it and thinks it through. */
+function gapMessage(snap, f) {
+  var c = snap.consult, T2 = c && c.gap_texts, gap = gapOf(snap, f); if (!T2 || !gap) return null;
+  var id = gapIdOf(f), e = epicOf(snap, f.epic || (storyOf(snap, f.ref) || {}).epic), rel = relatedStories(snap, f, gap);
+  var parts = [fmt(T2.item_head, { ref: id, title: gap.topic || f.text }), fmt(T2.gap_open, { kind: gap.kind || "OPEN" })];
+  if (gap.scope) parts.push(fmt(T2.gap_scope, { scope: gap.scope }));
+  if (e) parts.push(fmt(T2.gap_epic, { ref: e.ref, title: e.title || "", status: e.raw_status || e.state || "", goal: e.goal || "—" }));
+  if (gap.design && gap.design.length) parts.push(T2.gap_design_head), gap.design.forEach(function (d) { parts.push("- " + d.where + ": " + d.text); });
+  if (rel.list.length) parts.push(fmt(rel.cited ? T2.gap_stories_cited : T2.gap_stories_of_epic, { list: rel.list.map(function (x) { return x.ref + " [" + x.status + "] " + (x.title || ""); }).join("; ") }));
+  parts.push(fmt(T2.gap_answer, { gap: id }));
+  return parts.join("\n");
+}
+function needCard(snap, f) {
+  var human = f.owner === "human", key = "ctx|" + f.code + "|" + f.ref + "|" + (f.epic || "");
+  var card = h("div", { class: "need " + (human ? "me" : "ag") });
+  card.appendChild(h("div", { class: "ntop" }, lvlTag(f.level), h("span", { class: "ntitle", text: f.text }),
+    h("span", { class: "who " + (human ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }),
+    f.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null));
+  if (f.fix && f.fix.ask) card.appendChild(h("p", { class: "nask", text: f.fix.ask }));
+  var ctx = contextNode(snap, f), acts = h("div", { class: "nacts" });
+  if (ctx) {
+    ctx.hidden = !CTX_OPEN[key];
+    var tog = h("button", { type: "button", class: "btn", "aria-expanded": CTX_OPEN[key] ? "true" : "false", text: CTX_OPEN[key] ? L("Ocultar contexto", "Hide context") : L("Ver contexto: épica, historia y diseño", "Show context: Epic, Story and design") });
+    tog.addEventListener("click", function () {
+      CTX_OPEN[key] = !CTX_OPEN[key]; ctx.hidden = !CTX_OPEN[key];
+      tog.setAttribute("aria-expanded", CTX_OPEN[key] ? "true" : "false");
+      tog.textContent = CTX_OPEN[key] ? L("Ocultar contexto", "Hide context") : L("Ver contexto: épica, historia y diseño", "Show context: Epic, Story and design");
+    });
+    acts.appendChild(tog);
+  }
+  var msg = gapMessage(snap, f);
+  if (msg) {
+    var ask = h("button", { type: "button", class: "btn go", title: L("Copia la pregunta con su contexto y abre tu hilo de Claude para que la pienses ahí", "Copies the question with its context and opens your Claude thread so you can think it through"), text: L("Consultar en Claude", "Consult in Claude") });
+    ask.addEventListener("click", function (ev) { ev.stopPropagation(); consultGo(ask, msg, consultTarget(snap)); });
+    acts.appendChild(ask);
+  }
+  if (acts.firstChild) card.appendChild(acts);
+  if (ctx) card.appendChild(ctx);
+  if (f.fix && f.fix.command) card.appendChild(cmdLine(f.fix.command));
+  if (f.fix && f.fix.about) card.appendChild(aporte(snap, aboutRef(f), false));
+  return card;
 }
 function aporte(snap, ref, compact) {
   var key = "about|" + ref;
@@ -1240,8 +1341,7 @@ function storyRow(snap, s) {
       if (!fs.length && s.blocked_by) note.appendChild(h("span", { class: "small", text: L("bloqueada: ", "blocked: ") + s.blocked_by }));
       wrap.appendChild(note);
     }
-    var human = findingsOf(snap, s.ref).filter(function (f) { return f.owner === "human" && f.fix && f.fix.about; });
-    human.forEach(function (f) { wrap.appendChild(h("div", { class: "aportebox" }, h("span", { class: "small", text: f.text + " · " + L("te toca · aporte:", "yours · input:") }), aporte(snap, f.code.indexOf("GAP") >= 0 ? (f.text.match(/GAP-\d+/) || [s.ref])[0] : s.ref))); });
+    if (undefd) findingsOf(snap, s.ref).filter(function (f) { return f.owner === "human" && f.fix && f.fix.about; }).forEach(function (f) { wrap.appendChild(h("div", { class: "aportebox" }, needCard(snap, f))); });
   }
   return wrap;
 }

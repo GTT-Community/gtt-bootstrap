@@ -74,7 +74,8 @@ def make(code, ref, where, source, epic=None, level=None, owner=None, **params):
             "text": fill(spec["text"][lang], params),
             "fix": {"fields": list(fix.get("fields") or []), "about": bool(fix.get("about")),
                     "command": fill(command, params) if command else None,
-                    "chat": fill((fix.get("chat") or {}).get(lang, ""), params) if (fix.get("chat") or {}).get(lang) else None}}
+                    "chat": fill((fix.get("chat") or {}).get(lang, ""), params) if (fix.get("chat") or {}).get(lang) else None,
+                    "ask": fill(fix["ask"][lang], params) if (fix.get("ask") or {}).get(lang) else None}}
 
 
 def collect():

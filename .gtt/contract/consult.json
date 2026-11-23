@@ -112,7 +112,14 @@
       "answers_line_ok": "  {n}: {answer} -> {result}",
       "answers_line_bad": "  {n}: {answer} -> no se pudo: {why}",
       "sonar_note": "Sonar no se abrió para este proyecto: `gtt sonar` lo abre.",
-      "answers_would": "  {n}: {answer} -> así se registraría; si prefieres hacerlo tú en tu terminal: gtt answer {n} {answer}"
+      "answers_would": "  {n}: {answer} -> así se registraría; si prefieres hacerlo tú en tu terminal: gtt answer {n} {answer}",
+      "gap_open": "Decisión abierta ({kind}) que el diseño dejó sin cerrar; solo la persona puede cerrarla.",
+      "gap_scope": "Alcance: {scope}",
+      "gap_epic": "Épica: {ref} · {title} [{status}]. Objetivo: {goal}",
+      "gap_design_head": "Lo que dice el diseño sobre esto:",
+      "gap_stories_cited": "Historias que la citan: {list}",
+      "gap_answer": "Cuando lleguemos a una decisión, dámela en UNA línea (sí, no o un valor y, si importa, el porqué) para que la pegue en el cuadro «tu aporte sobre {gap}» de Sonar.",
+      "gap_stories_of_epic": "Historias de la épica: {list}"
     },
     "en": {
       "seed_title": "# GTT consultation thread · {project}",
@@ -163,7 +170,19 @@
       "answers_line_ok": "  {n}: {answer} -> {result}",
       "answers_line_bad": "  {n}: {answer} -> could not: {why}",
       "sonar_note": "Sonar was not opened for this project: `gtt sonar` opens it.",
-      "answers_would": "  {n}: {answer} -> it would be recorded like this; or do it yourself in your terminal: gtt answer {n} {answer}"
+      "answers_would": "  {n}: {answer} -> it would be recorded like this; or do it yourself in your terminal: gtt answer {n} {answer}",
+      "gap_open": "Open decision ({kind}) that the design left unclosed; only the person can close it.",
+      "gap_scope": "Scope: {scope}",
+      "gap_epic": "Epic: {ref} · {title} [{status}]. Goal: {goal}",
+      "gap_design_head": "What the design says about it:",
+      "gap_stories_cited": "Stories that cite it: {list}",
+      "gap_answer": "When we reach a decision, give it to me in ONE line (yes, no or a value and, if it matters, why) so I can paste it in the «your input on {gap}» box in Sonar.",
+      "gap_stories_of_epic": "Stories of the Epic: {list}"
     }
+  },
+  "gap": {
+    "design_lines": 3,
+    "line_chars": 240,
+    "stories": 4
   }
 }

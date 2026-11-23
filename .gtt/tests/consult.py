@@ -7,6 +7,7 @@
   C4  the thread is registered, forgotten and taken as up to date; what changed is what the person has not seen
   C5  the answer block the person pastes is read and recorded, always in their words, and the question is answered
   C6  Sonar: the bar is at the top of EVERY view, with the first message when there is no thread and the thread when there is; each question points to it
+  C7  an open gap carries what the person needs to decide it (scope, design lines, Stories) and Sonar shows it as a card: what it asks, the context, Claude
 
   python3 .gtt/tests/consult.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
@@ -181,6 +182,42 @@ def main():
         rc, out, err = script(p, "answers", "--text", "Respuesta para GTT:\n99: 1", "--apply")
         check("an answer to a question that is not open is refused, never invented", rc == 1 and "no open question" in out, out + err)
         os.chdir(here)
+
+        # C7 ----------------------------------------------------------------------------------------------------
+        print("C7  an open gap: what it asks, its context, a way to think it through in Claude")
+        os.chdir(here)
+        fx = importlib.util.spec_from_file_location("sonar_demo", os.path.join(HERE, "fixtures", "sonar-demo.py"))
+        sonar_demo = importlib.util.module_from_spec(fx)
+        fx.loader.exec_module(sonar_demo)
+        demo = sonar_demo.build(os.path.join(tmp, "gapdemo"))
+        with open(os.path.join(demo, "gtt-domain", "context", "design", "EPIC-001.md"), "a", encoding="utf-8") as handle:
+            handle.write("\n- [VAC\u00cdO: GAP-004] The queue storage (Postgres or Redis) is undecided. [FUENTE: KER:L10]\n")
+        os.chdir(demo)
+        d = gtt_consult.data()
+        g = (d.get("gaps") or {}).get("GAP-004") or {}
+        check("the open gap is in the consultation with its topic and scope", g.get("topic") == "queue storage" and "STORY-005" in (g.get("scope") or ""), str(g))
+        check("it carries the line of the design that declares it open, with its file and line, and no provenance tag",
+              any(x["path"].endswith("EPIC-001.md") and re.match(r"EPIC-001\.md:\d+$", x["where"]) and "undecided" in x["text"] and "FUENTE" not in x["text"] for x in g.get("design", [])), str(g.get("design")))
+        check("it names the Story that cites it, not a copy of it", g.get("stories") == ["STORY-005"], str(g.get("stories")))
+        check("the words of the message come from the contract, once", "{gap}" in d["gap_texts"].get("gap_answer", "") and "gap_open" in d["gap_texts"], str(list(d.get("gap_texts", {}))))
+        check("a gap adds no copy of its message to `items` (a project can have hundreds)", "GAP-004" not in d["items"], str(list(d["items"])))
+        import gtt_findings
+        gf = next((f for f in gtt_findings.report()["findings"] if f["code"] == "GOV-GAP" and f["ref"] == "GAP-004"), None)
+        ask = ((gf or {}).get("fix") or {}).get("ask") or ""
+        check("the finding of a gap says in plain words what is asked of the person", bool(gf) and ("one line" in ask or "una línea" in ask), str(gf))
+        os.chdir(here)
+        chrome = shutil.which("google-chrome") or shutil.which("chromium") or shutil.which("chromium-browser")
+        if chrome:
+            snapj = subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json", "--docs"], cwd=demo, capture_output=True, text=True).stdout     # the documents are what the links open
+            open(os.path.join(demo, "snap.json"), "w", encoding="utf-8").write(snapj)
+            gpage = os.path.join(tmp, "sonar-gap.html")
+            subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", gpage, "snap.json"], cwd=demo, capture_output=True, text=True)
+            html = subprocess.run([chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=3000", "--dump-dom", f"file://{gpage}#/view=plan&open=EPIC-001"],
+                                  capture_output=True, text=True).stdout
+            check("Sonar draws the gap as a card of the person's colour, with the ask, the context button and Consult in Claude",
+                  'class="need me"' in html and "nask" in html and "Show context" in html and "Consult in Claude" in html, str(html.count("need me")))
+            check("the context holds the Epic, the Story and the design line, and the design line opens the document in a new tab",
+                  all(w in html for w in ("nctx", "STORY-005", "Base platform")) and 'target="_blank"' in html and "view=design&amp;dt=docs" in html, "")
 
         # C6 ----------------------------------------------------------------------------------------------------
         print("C6  Sonar: the bar on top of every view, and the questions pointing to the thread")

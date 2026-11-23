@@ -493,6 +493,70 @@ def item_text(ev):
     return "\n".join(p for p in parts if p)
 
 
+# ------------------------------------------------------------------------------------------------------------- the open gaps
+
+class _Sink:
+    """gtt_provenance.load_gaps reports problems to a collector; here there is nobody to tell (gtt-check owns that)."""
+    def add(self, *args, **kw):
+        pass
+
+
+def open_gaps():
+    try:
+        import gtt_provenance
+        gaps, _ = gtt_provenance.load_gaps(_Sink())
+    except Exception:
+        return []
+    return [g for g in gaps if g["kind"] in ("OPEN", "BLOCKING")]
+
+
+def design_path(epic_ref, fields):
+    """The design document of an Epic: the one its `Design` field names, else the conventional gtt-domain/context/design/<EPIC>.md."""
+    named = re.search(r"[\w./-]+\.md", (fields or {}).get("Design") or "")
+    for cand in ([named.group(0)] if named else []) + [os.path.join(CONTEXT, "design", f"{epic_ref}.md")]:
+        if os.path.isfile(cand):
+            return cand
+    return None
+
+
+def gap_design_lines(path, gid, limit, chars):
+    """The lines of a design document that cite the gap: the one that declares it open first, then the rest."""
+    text = read_text(path) if path else None
+    if not text:
+        return []
+    declared, cited = [], []
+    for number, line in enumerate(text.splitlines(), 1):
+        if not re.search(rf"\b{re.escape(gid)}\b", line):
+            continue
+        row = {"where": f"{os.path.basename(path)}:{number}", "path": path, "text": clean(line, chars)}
+        if not row["text"]:
+            continue
+        (declared if re.search(rf"\[VAC[IÍ]O:\s*{re.escape(gid)}\]", line) else cited).append(row)
+    return (declared + cited)[:limit]
+
+
+def gap_context(gap, stories, epics):
+    """What the person needs to decide a gap without opening the repository, kept small because a project can have hundreds: the scope the
+    register gives it, the lines of the design that cite it and the Stories that cite it. The Epic and the Stories are named, not copied:
+    the page already holds them. Deterministic, read only, no tokens."""
+    cfg = contract()["gap"]
+    gid = gap["id"]
+    by_id = {e["id"]: e for e in epics}
+    design = []
+    for ref in re.findall(r"EPIC-\d+", gap.get("affects") or ""):
+        e = by_id.get(ref)
+        if e:
+            design += gap_design_lines(design_path(ref, e.get("fields")), gid, cfg["design_lines"], cfg["line_chars"])
+    cited = [s["id"] for s in stories if re.search(rf"\b{re.escape(gid)}\b", json.dumps(s.get("fields") or {}, ensure_ascii=False))]
+    return {"kind": gap["kind"], "topic": clean(gap.get("topic"), 140), "scope": clean(gap.get("scope"), 240) or None, "design": design[: cfg["design_lines"]], "stories": cited[: cfg["stories"]]}
+
+
+def gap_texts():
+    """The words Sonar needs to write the message of a gap for the thread, from the contract (one copy, in the person's language)."""
+    table = contract()["texts"][lang()]
+    return {k: v for k, v in table.items() if k.startswith("gap_") or k in ("item_head", "item_link")}
+
+
 def answer_contract(events):
     header = contract()["answers"]["header"]
     example = f"{int(events[0]['number'])}: 1" if events else "13: 1"
@@ -619,10 +683,14 @@ def _data():
         entry = (e.get("fields") or {}).get("entry") if e["kind"] == "REV" else None
         if entry:
             items.setdefault(entry, text)            # the card of the proposal in the Inbox finds its review
+    gaps = {}
+    stories, epics = backlog()
+    for g in open_gaps():
+        gaps[g["id"]] = gap_context(g, stories, epics)
     text, refs = batch()
     sd = seed()
     return {"schema": 1, "thread": st.get("thread") or None, "seed": sd["text"], "seed_chars": sd["chars"], "seed_omitted": sd["omitted"], "desktop_ok": sd["desktop_ok"],
-            "batch": text, "refs": refs, "items": items, "count": len(events), "changes": [{k: v for k, v in c.items() if k != "link"} for c in changes()],
+            "batch": text, "refs": refs, "items": items, "gaps": gaps, "gap_texts": gap_texts(), "count": len(events), "changes": [{k: v for k, v in c.items() if k != "link"} for c in changes()],
             "new_url": contract()["thread_url"]["new"], "desktop_new": contract()["thread_url"]["desktop_new"],
             "set_command": "bash .gtt/scripts/gtt-consult.sh set <URL>"}
 
