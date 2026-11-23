@@ -354,7 +354,7 @@ def collect_docs():
     """The governed documents of the project as blocks, within a size budget: context, then ADRs, then Epic designs.
     One that does not fit is listed with `omitted` and its path, never silently dropped."""
     import glob
-    order = ["solution-vision", "architecture", "stack", "constraints", "principles", "glossary"]
+    order = ["solution-vision", "principles", "glossary", "constraints", "architecture", "stack"]
     context = sorted(glob.glob("gtt-domain/context/*.md"), key=lambda p: (order.index(os.path.basename(p)[:-3]) if os.path.basename(p)[:-3] in order else 99, p))
     adrs = [p for p in sorted(glob.glob("gtt-domain/adr/ADR-*.md")) if "TEMPLATE" not in p]
     designs = sorted(glob.glob("gtt-domain/context/design/EPIC-*.md"))
