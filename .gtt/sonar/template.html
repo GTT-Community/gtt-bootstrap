@@ -1017,7 +1017,7 @@ function consultBar(snap) {
     make.addEventListener("click", function () { consultGo(make, c.seed, c.new_url); });
     bar.appendChild(make);
     if (c.desktop_ok) bar.appendChild(h("a", { class: "btn ghost", href: c.desktop_new + encodeURIComponent(c.seed), title: L("Abre Claude Desktop con el mensaje ya escrito", "Opens Claude Desktop with the message already typed"), text: L("o en Claude Desktop (prellenado)", "or in Claude Desktop (prefilled)") }));
-    bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo: ", "Then register the thread's URL: ") }));
+    bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo, una sola vez (GTT la recuerda siempre): ", "Then register the thread's URL, once (GTT remembers it for good): ") }));
     bar.appendChild(cmdBlock(c.set_command));
   }
   return bar;

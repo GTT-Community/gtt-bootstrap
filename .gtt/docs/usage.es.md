@@ -299,7 +299,7 @@ Una pregunta de negocio necesita más pensamiento del que un agente de código d
    (`gtt-consult.sh answers`) y Sonar muestra la pregunta como respondida.
 
 El hilo es un espacio de trabajo y GTT es la memoria: tus decisiones, los ADR y las respuestas registradas son la autoridad. Cuando el hilo se llena, **Mensaje inicial** empieza otro desde esos registros.
-GTT no envía nada: tú haces clic y pegas. La URL se guarda solo en tu máquina (`.gtt/local/consult.json`).
+GTT no envía nada: tú haces clic y pegas. Registras el hilo **una sola vez**: la URL se guarda solo en tu máquina, en `.gtt/local/consult.json` y en tu propio registro (`~/.gtt/threads.json`), así que un clon nuevo, un worktree o un `.gtt/local` limpiado no vuelve a pedirla (un proyecto se reconoce por su primer commit, su remote y su carpeta). Solo `gtt consult clear` la olvida.
 Las mismas piezas están en la terminal: `gtt consult` (cómo van las cosas), `gtt consult seed`, `gtt consult batch [REF]`, `gtt consult set <URL>`, `gtt consult clear`, `gtt consult seen`
 y `gtt consult answers` (lee el bloque y te da el comando `gtt answer N X` de cada línea: una respuesta es tuya, así que el CLI no registra nada).
 

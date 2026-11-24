@@ -13,6 +13,7 @@ Exit 0 = every check held, 1 = at least one failed.
 """
 
 import argparse
+import atexit
 import glob
 import hashlib
 import json
@@ -25,6 +26,10 @@ import tempfile
 import time
 
 FAILS, COUNT = [], 0
+
+# The person's own ~/.gtt (their register of consultation threads...) never receives what a test registers: every run gets a home of its own.
+os.environ["GTT_HOME"] = tempfile.mkdtemp(prefix="gtt-home-")
+atexit.register(shutil.rmtree, os.environ["GTT_HOME"], ignore_errors=True)
 
 # The release under test, read once from the release descriptor: the suite carries no version literal.
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "contract", "release.json"), encoding="utf-8") as _handle:

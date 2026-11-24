@@ -95,11 +95,119 @@ def state_path():
 
 
 def state():
-    return read_json(state_path()) or {"schema": 1}
+    """The person's consultation state. The thread is registered ONCE and remembered for good: the project's own file (.gtt/local) and the person's
+    register (~/.gtt/threads.json) hold it, so a new clone, a worktree, a moved folder or a cleaned .gtt/local does not ask for it again."""
+    st = read_json(state_path()) or {"schema": 1}
+    mine = st.get("thread") if isinstance(st.get("thread"), dict) else {}
+    kept, cut = remembered(), cleared()
+    if mine.get("url") and cut and str(mine.get("set_at") or "") <= cut:
+        st.pop("thread", None)                                 # forgotten (`clear`) from another copy of the project after this one was set
+        mine = {}
+    if mine.get("url"):
+        if kept is None:
+            remember(mine)                                     # a thread registered before the register existed: kept from now on
+        elif kept["set_at"] > str(mine.get("set_at") or ""):
+            st["thread"] = kept                                # set later from another copy of the project (a new thread): the latest wins
+    elif kept is not None:
+        st["thread"] = kept                                    # nothing here, but the person already registered this project: adopted, in silence
+    return st
 
 
 def now_iso():
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+# --------------------------------------------------------------------------------------- the person's register of threads
+
+def register_path():
+    """~/.gtt/threads.json (GTT_HOME when set, like the CLI): the person's own, outside every project, never committed."""
+    home = os.environ.get("GTT_HOME") or os.path.join(os.path.expanduser("~"), ".gtt")
+    return os.path.join(home, "threads.json")
+
+
+def _git(*args):
+    try:
+        done = subprocess.run(["git", *args], capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return done.stdout.strip() if done.returncode == 0 else ""
+
+
+_IDENTITIES = {}
+
+
+def identities():
+    """How this project is recognised again, most stable first: the first commit of its repository (the same in every clone and worktree),
+    its remote (the same when history was rewritten), and its folder (the same when .gtt/local was wiped). A project inside a bigger repository
+    adds its folder's place in it, so two projects of one repository do not share a thread."""
+    here = os.getcwd()
+    if here in _IDENTITIES:
+        return _IDENTITIES[here]
+    keys = []
+    inside = _git("rev-parse", "--show-prefix").strip("/")
+    roots = sorted(_git("rev-list", "--max-parents=0", "HEAD").split())
+    if roots:
+        keys.append("git:" + roots[0] + ("/" + inside if inside else ""))
+    remote = _git("config", "--get", "remote.origin.url").lower()
+    if remote:
+        remote = re.sub(r"^[a-z+]+://", "", remote)
+        remote = re.sub(r"^[^@/]*@", "", remote).replace(":", "/")
+        remote = re.sub(r"(\.git)?/*$", "", remote)
+        keys.append("remote:" + remote + ("/" + inside if inside else ""))
+    keys.append("path:" + os.path.realpath(here))
+    _IDENTITIES[here] = keys
+    return keys
+
+
+def remembered():
+    """The thread the person registered for this project (from any copy of it), or None. The register is a file the person can edit: the URL is
+    checked again, as `set` does."""
+    threads = (read_json(register_path()) or {}).get("threads")
+    if not isinstance(threads, dict):
+        return None
+    best, cut = None, cleared()
+    for key in identities():
+        entry = threads.get(key)
+        url = thread_url(entry.get("url")) if isinstance(entry, dict) else None
+        if url:
+            found = {"url": url, "set_at": str(entry.get("set_at") or "")}
+            if cut and found["set_at"] <= cut:
+                continue                                       # forgotten after it was set
+            if best is None or found["set_at"] > best["set_at"]:
+                best = found
+    return best
+
+
+def remember(thread):
+    """Keeps the thread under every identity of the project. Best effort: a home that cannot be written must never stop the work."""
+    try:
+        data = read_json(register_path()) or {}
+        threads = data.get("threads") if isinstance(data.get("threads"), dict) else {}
+        for key in identities():
+            threads[key] = {"url": thread["url"], "set_at": thread.get("set_at") or now_iso(), "project": project_name()}
+        write_json(register_path(), {"schema": 1, "threads": threads})
+    except OSError:
+        pass
+
+
+def cleared():
+    """When the person last forgot the thread of this project (`clear`), or "". A thread set before that is a forgotten one, in any copy."""
+    threads = (read_json(register_path()) or {}).get("threads")
+    stamps = [str(e.get("cleared_at") or "") for k, e in (threads or {}).items() if k in identities() and isinstance(e, dict) and not e.get("url")]
+    return max(stamps) if stamps else ""
+
+
+def forget():
+    """`clear` is the only thing that makes GTT forget this project's thread: it leaves a mark (with its time), so a copy that still holds the old
+    thread does not bring it back."""
+    try:
+        data = read_json(register_path()) or {}
+        threads = data.get("threads") if isinstance(data.get("threads"), dict) else {}
+        for key in identities():
+            threads[key] = {"cleared_at": now_iso(), "project": project_name()}
+        write_json(register_path(), {"schema": 1, "threads": threads})
+    except OSError:
+        pass
 
 
 def project_name():
@@ -767,6 +875,7 @@ def cmd_set(args):
     st = state()
     st["thread"] = {"url": url, "set_at": now_iso()}
     write_json(state_path(), st)
+    remember(st["thread"])                       # once and for good: the person's register keeps it for every copy of this project
     mark_seen()                                  # the thread was just seeded with today's design
     refresh_sonar()
     print(T("set_ok"))
@@ -777,6 +886,7 @@ def cmd_clear(args):
     st = state()
     st.pop("thread", None)
     write_json(state_path(), st)
+    forget()                                     # the one act that makes GTT forget the thread, here and in the person's register
     refresh_sonar()
     print(T("clear_ok"))
     return 0

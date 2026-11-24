@@ -481,7 +481,7 @@ is the right place for it. So the questions that need thinking go to **one threa
   `gtt-pending.sh record` (their words are the quote, so it is theirs) and bumps the thread's baseline. Without `--apply` it only says what it would do. An answer to
   a question that is not open is refused, never invented.
 - `gtt-consult.sh status | seed | batch [REF] | set URL | clear | seen` are the same pieces from the terminal, and `gtt consult ...` is the CLI's face of them (operations `consult.*`). The CLI's `gtt consult answers` only reads the block and gives the human the `gtt answer N X` command of each line: recording an answer stays the human's act or yours through the script with their words as the quote. The URL is only a Claude web conversation
-  (`https://claude.ai/chat/<id>` or `/project/<id>`); the state is the person's own (`.gtt/local/consult.json`, never committed).
+  (`https://claude.ai/chat/<id>` or `/project/<id>`); the state is the person's own (`.gtt/local/consult.json` and the register `threads.json` in `GTT_HOME`, default `~/.gtt`; never committed). The thread is registered once and remembered for good: a clone, a worktree or a wiped `.gtt/local` adopts it without asking (the project is recognised by its first commit, remote or folder); the latest `set` wins and only `clear` forgets it. Never ask the human for the URL again when `gtt-consult.sh status` shows one.
 
 ## Sonar links
 

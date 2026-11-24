@@ -9,6 +9,7 @@
   C6  Sonar: the bar is at the top of EVERY view, with the first message when there is no thread and the thread when there is; each question points to it
   C7  an open gap carries what the person needs to decide it (scope, design lines, Stories) and Sonar shows it as a card: what it asks, the context, Claude
   C8  every view says what it is, what it is for and how it is used; the Inbox says what each stage is and what is yours; the session line names the thread
+  C9  the thread is registered once and remembered for good: a wiped .gtt/local, a clone or a worktree do not ask for it again
 
   python3 .gtt/tests/consult.py [--project .] [--keep]
 Exit 0 = every check held, 1 = at least one failed.
@@ -22,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("acc", os.path.join(HERE, "bootstrap-acceptance.py"))
@@ -327,6 +329,77 @@ def main():
             check("`First message` (to start another thread) opens Claude's new chat with the first message", res.get("open") == ["https://claude.ai/new"] and res.get("copied") == snapthread["seed"], str(res)[:300])
             res = click(page, "design", "Array.prototype.filter.call(document.querySelectorAll('.consult button'),function(x){return /Create the thread/.test(x.textContent)})[0]")
             check("with no thread, `Create the thread` opens Claude's new chat with the first message", res.get("open") == ["https://claude.ai/new"] and "GTT consultation thread" in res.get("copied", ""), str(res)[:300])
+
+        # C9 ----------------------------------------------------------------------------------------------------
+        print("C9  the thread is registered once and remembered for good")
+        os.chdir(here)
+        THREAD2 = "https://claude.ai/chat/9c8d7e6f-1a2b-4c3d-8e9f-0a1b2c3d4e5f"
+        home = os.environ["GTT_HOME"]
+        reg = os.path.join(home, "threads.json")
+        a = build_project(project, tmp, "keep-a")
+        script(a, "set", THREAD)
+        check("`set` also writes the person's register, outside the project", os.path.isfile(reg) and THREAD in open(reg, encoding="utf-8").read())
+        shutil.rmtree(os.path.join(a, ".gtt", "local"))
+        rc, out, err = script(a, "status")
+        check("with .gtt/local wiped the thread is still there, not asked again", THREAD in out and "No thread registered" not in out, out + err)
+        moved = os.path.join(tmp, "keep-a-moved")
+        shutil.copytree(a, moved)
+        shutil.rmtree(os.path.join(moved, ".gtt", "local"), ignore_errors=True)
+        rc, out, err = script(moved, "status")
+        check("without git a copy in another folder is another project: it is asked once, and never given a thread that is not its own", THREAD not in out and "No thread registered" in out, out + err)
+        other = build_project(project, tmp, "keep-other")
+        rc, out, err = script(other, "status")
+        check("another project is not given this thread", THREAD not in out and "No thread registered" in out, out + err)
+        keys = list(json.load(open(reg, encoding="utf-8"))["threads"])
+        with open(reg, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps({"schema": 1, "threads": {k: {"url": "https://evil.example/chat/0b6e1f2a-4c3d-4e5f", "set_at": "2999-01-01T00:00:00Z"} for k in keys}}))
+        rc, out, err = script(a, "status")
+        check("a register someone edited to a URL that is not Claude web is not believed", "evil.example" not in out, out + err)
+        with open(reg, "w", encoding="utf-8") as handle:
+            handle.write("{ not json")
+        rc, out, err = script(a, "status")
+        check("a damaged register never stops the work", rc == 0, out + err)
+        script(a, "set", THREAD)
+        os.remove(reg)
+        rc, out, err = script(a, "status")
+        check("the project's own file is a copy too: with no register, the thread there is kept and written back", THREAD in out and os.path.isfile(reg), out + err)
+        if shutil.which("git"):
+            g = lambda *x, cwd=None: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *x], cwd=cwd, capture_output=True, text=True)
+            repo = os.path.join(tmp, "repo-a")
+            shutil.copytree(a, repo)
+            write(os.path.join(repo, ".gtt", "local", ".gitignore"), "# Local GTT state: never committed.\n*\n")      # what the installer leaves in a project
+            g("init", "-q", cwd=repo)
+            g("add", "-A", cwd=repo)
+            g("commit", "-q", "-m", "x", cwd=repo)
+            script(repo, "set", THREAD2)
+            clone = os.path.join(tmp, "repo-clone")
+            g("clone", "-q", repo, clone)
+            check("a clone starts with no .gtt/local", not os.path.exists(os.path.join(clone, ".gtt", "local", "consult.json")))
+            rc, out, err = script(clone, "status")
+            check("a fresh clone knows the thread: it is the same project (first commit), nothing is asked", THREAD2 in out, out + err)
+            wt = os.path.join(tmp, "repo-worktree")
+            g("worktree", "add", "-q", wt, "-b", "side", cwd=repo)
+            rc, out, err = script(wt, "status")
+            check("so does a worktree", THREAD2 in out, out + err)
+        time.sleep(1.1)
+        script(a, "set", THREAD)
+        rc, out, err = script(a, "status")
+        check("setting another thread replaces it (the latest wins)", THREAD in out and THREAD2 not in out, out + err)
+        time.sleep(1.1)
+        script(a, "clear")
+        rc, out, err = script(a, "status")
+        check("`clear` is the one thing that forgets it, here and in the register", "No thread registered" in out and THREAD not in out, out + err)
+        shutil.rmtree(os.path.join(a, ".gtt", "local"), ignore_errors=True)
+        rc, out, err = script(a, "status")
+        check("and a forgotten thread does not come back by itself", "No thread registered" in out, out + err)
+        script(a, "set", THREAD2)
+        rc, out, err = script(a, "status")
+        check("after forgetting, the person registers a thread once more and it stays", THREAD2 in out, out + err)
+        ro = os.path.join(tmp, "home-is-a-file")
+        open(ro, "w").close()
+        env = dict(os.environ, GTT_HOME=ro)
+        done = subprocess.run(["bash", ".gtt/scripts/gtt-consult.sh", "set", THREAD], cwd=a, capture_output=True, text=True, env=env)
+        check("a home that cannot be written never stops `set`: the project's file still holds it", done.returncode == 0, done.stdout + done.stderr)
     finally:
         os.chdir(here)
         if args.keep:
