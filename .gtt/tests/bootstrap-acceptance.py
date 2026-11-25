@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import time
+PLAIN_CONTEXT = "A decision for the person who was not in the session: what is being decided and what it unblocks."
 
 FAILS, COUNT = [], 0
 
@@ -55,8 +56,8 @@ def accepted_prop(p, level="spec", slug="change", idea_text=None):
     """A PROP the human accepted, by the real route of the inbox (idea, propose, triage, answer in the chat): returns its ref.
     After the freeze `gtt-stage.sh` arms a governed set only for such an entry (`--origin PROP-n`)."""
     CANON = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
-    forms = {"spec": ("2", "Proposed Context Change\n\nFile: gtt-domain/context/glossary.md\nCurrent statement: order\nSuggested change: add a term\nReason: new word\nImpact: low\nRisk: low\n"),
-             "arch": ("1", "Proposed Architecture Change\n\nCurrent decision: sessions live in memory\nSuggested change: sessions live in Redis\nReason: horizontal scaling\n"
+    forms = {"spec": ("2", "Proposed Context Change\n\nIn plain words: the team wants this change so the project and the people who read it speak the same words.\nFile: gtt-domain/context/glossary.md\nCurrent statement: order\nSuggested change: add a term\nReason: new word\nImpact: low\nRisk: low\n"),
+             "arch": ("1", "Proposed Architecture Change\n\nIn plain words: the team wants this change so the project and the people who read it speak the same words.\nCurrent decision: sessions live in memory\nSuggested change: sessions live in Redis\nReason: horizontal scaling\n"
                            "Impact: one new service\nRisk: operational\nAffected files: gtt-domain/context/architecture.md\nAlternatives considered: sticky sessions\n")}
     form, body = forms[level]
     first, _, rest = body.partition("\n")
@@ -4047,7 +4048,7 @@ def question_form(project, tmp):
     def ask(question, typ="product", blocks="STORY-467", header="pdfkit (PDF)", options=None, recommended="1", apply=True):
         options = options if options is not None else ["Yes, approve pdfkit | I add it to apps/api and close STORY-467.", "No, another library | You name it in the answer and I use it.",
                                                          "Leave the PDF for later | STORY-467 stays partial (XLSX only)."]
-        args = ["ask", "--type", typ, "--question", question, "--why", "It closes STORY-467.", "--recommended", recommended]
+        args = ["ask", "--type", typ, "--question", question, "--context", PLAIN_CONTEXT, "--why", "It closes STORY-467.", "--recommended", recommended]
         for o in options:
             args += ["--option", o]
         if header is not None:
@@ -4060,10 +4061,10 @@ def question_form(project, tmp):
     rc, out = ask(Q)
     text = open(os.path.join(pdir, "ASK-001.md"), encoding="utf-8").read()
     lines = text.splitlines()
-    check(rc == 0 and lines[0] == "# ASK-001 · " + Q and "Topic: pdfkit (PDF)" in lines[2] and lines[4] == "1. Yes, approve pdfkit (recommended)"
-          and lines[5].startswith("   I add it") and lines[10] == "4. Something else: write it in «Answer»" and lines[11].startswith("5. Talk about it in the chat"),
+    check(rc == 0 and lines[0] == "# ASK-001 · " + Q and "Topic: pdfkit (PDF)" in lines[2] and lines[3].startswith("In plain words: ") and lines[5] == "1. Yes, approve pdfkit (recommended)"
+          and lines[6].startswith("   I add it") and lines[11] == "4. Something else: write it in «Answer»" and lines[12].startswith("5. Talk about it in the chat"),
           "the question is the topic, the question, three numbered options with what happens, something else and the chat", text)
-    check(pend("check")[0] == 0 and len(lines) <= 16, "the question passes the engine's own check and fits 16 lines")
+    check(pend("check")[0] == 0 and len(lines) <= 18 and any(l.startswith("What you do: ") for l in lines), "the question passes the engine's own check, fits 18 lines and says what the person does")
     check(ask("Which colour?", typ="product", blocks="")[0] == 1, "a product question that blocks nothing is refused: it is not necessary")
     check(ask("Which colour?", typ="governed", blocks="")[0] == 1, "a governed question that blocks nothing is refused too")
     check(ask("Do you pay the invoice for the PDF service?", typ="money", blocks="")[0] == 0, "an account, key, money or legal question is always the human's")
@@ -4103,7 +4104,7 @@ def question_form(project, tmp):
     es = fresh(project, tmp, "qform-es")
     save_json(os.path.join(es, ".gtt", "methodology.json"), {"schema": 1, "profile": "medium", "language": "es"})
     os.makedirs(os.path.join(es, "gtt-domain", "pending"), exist_ok=True)
-    proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--header", "PDF", "--question", "¿Apruebas pdfkit?", "--why", "Cierra la 467.", "--option", "Sí | Lo agrego.", "--option", "No | Otra librería.",
+    proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--header", "PDF", "--question", "¿Apruebas pdfkit?", "--context", PLAIN_CONTEXT, "--why", "Cierra la 467.", "--option", "Sí | Lo agrego.", "--option", "No | Otra librería.",
                            "--recommended", "1", "--blocks", "STORY-467", "--apply"], cwd=es, capture_output=True, text=True, encoding="utf-8", errors="replace")
     text_es = open(os.path.join(es, "gtt-domain", "pending", "ASK-001.md"), encoding="utf-8").read() if proc.returncode == 0 else proc.stdout + proc.stderr
     check("Tema: PDF" in text_es and "3. Otra respuesta: escríbela en «Respuesta»" in text_es and "4. Hablarlo en el chat: dime «hablemos»" in text_es,
@@ -4132,7 +4133,7 @@ def pending_events(project, tmp):
         except (ValueError, KeyError):
             return proc.returncode, proc.stdout
 
-    ASK = ["ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--why", "Decides if online billing enters v1.",
+    ASK = ["ask", "--type", "money", "--question", "Manual billing with an invoice in v1?", "--context", PLAIN_CONTEXT, "--why", "Decides if online billing enters v1.",
            "--header", "Billing in v1", "--option", "Yes, manual with invoice | I build the invoice flow and close STORY-066.",
            "--option", "No, online billing from v1 | I add the payment provider first and STORY-066 waits.", "--recommended", "1", "--blocks", "STORY-066"]
     DEC = ["decide", "--affects", "security", "--title", "Phone data goes unencrypted in v1", "--what", "Local data stays unencrypted until v1.1.",
@@ -4153,11 +4154,11 @@ def pending_events(project, tmp):
     check(pend("check")[0] == 0 and len(text.splitlines()) <= 12, "criterion 1: the files pass the engine's own check")
 
     long_q = "A question that is too long to be a plain one, because it keeps going and going without ever getting to the point, so it overruns the line?"
-    bad = [("a long question", ["ask", "--type", "money", "--question", long_q, "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
-           ("no question mark", ["ask", "--type", "money", "--question", "Manual billing", "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
-           ("four options", ["ask", "--type", "money", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b", "--option", "c", "--option", "d", "--recommended", "1"]),
-           ("two recommended / none", ["ask", "--type", "money", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b"]),
-           ("a type outside the list", ["ask", "--type", "technical", "--question", "Which?", "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+    bad = [("a long question", ["ask", "--type", "money", "--question", long_q, "--context", PLAIN_CONTEXT, "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+           ("no question mark", ["ask", "--type", "money", "--question", "Manual billing", "--context", PLAIN_CONTEXT, "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
+           ("four options", ["ask", "--type", "money", "--question", "Which?", "--context", PLAIN_CONTEXT, "--why", "w", "--option", "a", "--option", "b", "--option", "c", "--option", "d", "--recommended", "1"]),
+           ("two recommended / none", ["ask", "--type", "money", "--question", "Which?", "--context", PLAIN_CONTEXT, "--why", "w", "--option", "a", "--option", "b"]),
+           ("a type outside the list", ["ask", "--type", "technical", "--question", "Which?", "--context", PLAIN_CONTEXT, "--why", "w", "--option", "a", "--option", "b", "--recommended", "1"]),
            ("a decision without a valid Affects", ["decide", "--affects", "taste", "--title", "t", "--what", "w", "--why", "y", "--where", "src/sync/"]),
            ("a decision whose Where it landed does not exist", ["decide", "--affects", "cost", "--title", "t", "--what", "w", "--why", "y", "--where", "nowhere/at/all"]),
            ("a long line", ["decide", "--affects", "cost", "--title", "t", "--what", "x" * 130, "--why", "y", "--where", "src/sync/"])]
@@ -4167,9 +4168,9 @@ def pending_events(project, tmp):
         rc, out = pend(*args, "--apply")
         check(rc == 1, f"criteria 2 and 10: {label} is refused", out)
     check(sorted(os.listdir(pdir)) == [".seq", "ASK-001.md", "DEC-002.md", "README.md"], "criterion 2: a refused event leaves nothing behind")
-    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
+    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nIn plain words: a question written by hand for a person who was not there.\nWhat you do: answer it.\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
     rc, out = pend("check")
-    check(rc == 1 and "PEN-01" in out and "17 lines" in out, "criterion 2: a file of 13 lines fails the check", out)
+    check(rc == 1 and "PEN-01" in out and "19 lines" in out, "criterion 2: a file over the limit fails the check", out)
     os.remove(path("ASK-009.md"))
     write(path("DEC-008.md"), "# DEC-008 · No affects\n\nCreated: 2026-11-01\nWhat I decided: a\nWhy: b\nWhere it landed: src/sync/\n\nAnswer: (ok, or tell me what to change)\n")
     rc, out = pend("check")
@@ -4229,7 +4230,7 @@ def pending_events(project, tmp):
     check(rc == 1, "criterion 6: `done` must cite a place that exists", out)
     rc, out = pend("done", "1", "--in", "STORY-022", "--apply")
     check(rc == 0 and "Attended: 2026-11-01 · option 1 · applied in: STORY-022" in open(path("ASK-001.md"), encoding="utf-8").read(), "criterion 6: `done` writes the one-line mark", out)
-    pend("ask", "--type", "legal", "--header", "DPA", "--question", "Sign the DPA with the vendor?", "--why", "Needed before storing EU data.", "--option", "Yes | I record it and store EU data.", "--option", "No | EU data stays out.", "--recommended", "2", "--apply")
+    pend("ask", "--type", "legal", "--header", "DPA", "--question", "Sign the DPA with the vendor?", "--context", PLAIN_CONTEXT, "--why", "Needed before storing EU data.", "--option", "Yes | I record it and store EU data.", "--option", "No | EU data stays out.", "--recommended", "2", "--apply")
     pend("answer", "3", "1", "--confirmed-by-human")
     rc, out = pend("clean", "--apply")
     names = sorted(n for n in os.listdir(pdir) if n.endswith(".md") and n != "README.md")
@@ -4293,7 +4294,7 @@ def pending_events(project, tmp):
     for name in os.listdir(pdir):
         if name.startswith(("ASK", "DEC")):
             os.remove(path(name))
-    pend("ask", "--type", "dinero", "--header", "Cobro en v1", "--question", "¿Cobro manual con factura en v1?", "--why", "Decide si el cobro en línea entra en v1.", "--option", "Sí, manual con factura | Armo el flujo de factura.",
+    pend("ask", "--type", "dinero", "--header", "Cobro en v1", "--question", "¿Cobro manual con factura en v1?", "--context", PLAIN_CONTEXT, "--why", "Decide si el cobro en línea entra en v1.", "--option", "Sí, manual con factura | Armo el flujo de factura.",
          "--option", "No, cobro en línea desde v1 | Primero integro el proveedor de pagos.", "--recommended", "1", "--apply")
     pend("decide", "--affects", "seguridad", "--title", "Los datos del teléfono van sin cifrar en v1", "--what", "Lo guardado queda sin cifrar hasta v1.1.", "--why", "Cifrar exige un build nativo.",
          "--where", "src/sync/", "--apply")
@@ -4313,6 +4314,54 @@ def pending_events(project, tmp):
     check(bash(p, ".gtt/scripts/gtt-check-contract.sh")[0] == 0 and bash(p, ".gtt/scripts/gtt-check-agents.sh")[0] == 0, "the contracts and AGENTS.md stay consistent with pending.json and the pending.* operations")
     ops = read_json(os.path.join(p, ".gtt", "contract", "operations.json"))["operations"]
     check(ops["pending.answer"]["human_authority"] and not ops["pending.list"]["mutates"] and not ops["pending.check"]["mutates"], "pending.answer is human_authority; list and check only read")
+
+
+def plain_words(project, tmp):
+    print("[plain-words] a question explains itself to someone who was not in the session: what it is about, and what each code or name is")
+    p = fresh(project, tmp, "plain")
+    pdir = os.path.join(p, "gtt-domain", "pending")
+    os.makedirs(pdir, exist_ok=True)
+
+    def pend(*args):
+        proc = subprocess.run(["bash", ".gtt/scripts/gtt-pending.sh", *args], cwd=p, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              env=dict(os.environ, GTT_NOW="2026-11-24T10:00:00Z"))
+        return proc.returncode, proc.stdout + proc.stderr
+
+    def ask(question, options, *extra, header="Storage"):
+        args = ["ask", "--type", "money", "--header", header, "--question", question, "--why", "The backups cost money every month.", "--recommended", "1"]
+        for o in options:
+            args += ["--option", o]
+        return pend(*args, *extra)
+
+    OPTS = ["Cheap and slow | I pay less and wait longer to restore.", "Dear and fast | I pay more and restore at once."]
+    CTX = "The app keeps a copy of every photo your inspectors take, and it has to live somewhere that costs money."
+    rc, out = ask("Which storage do we use for the photo backups?", OPTS, "--apply")
+    check(rc == 1 and "explain itself" in out and "--context" in out, "a question with no `In plain words` is refused, and the refusal says what to write", out)
+    rc, out = ask("Which storage do we use for the photo backups?", OPTS, "--context", "Storage.", "--apply")
+    check(rc == 1 and "--context" in out, "a context that says nothing (too short) is refused", out)
+    q = "Which storage do we use for the photo backups?"
+    rc, out = ask(q, OPTS, "--context", q, "--apply")
+    check(rc == 1, "a context that only repeats the question is refused", out)
+    rc, out = ask("Do we use b2 for the photo backups?", OPTS, "--context", CTX, "--apply")
+    check(rc == 1 and "b2" in out and "--term" in out, "a code nobody explains (b2) is refused by name, with the way to explain it", out)
+    rc, out = ask("Which storage do we use for the photo backups?", ["S3 | I use the big provider.", "Local disk | I use your server."], "--context", CTX, "--apply")
+    check(rc == 1 and "S3" in out, "a code in an option is refused too", out)
+    rc, out = ask("Do we use b2 for the photo backups?", OPTS, "--context", CTX, "--term", "b2 = Backblaze B2, a cloud service that stores files for a low monthly price", "--apply")
+    text = open(os.path.join(pdir, "ASK-001.md"), encoding="utf-8").read() if rc == 0 else ""
+    check(rc == 0 and "In plain words: " + CTX in text and "Terms: b2 = Backblaze B2" in text, "the same question passes when the code is explained in `Terms`, and the file carries both lines", out + text)
+    rc, out = ask("Do we keep v1 of the backups on disk?", OPTS, "--context", CTX, "--apply", header="Backups v1")
+    check(rc == 0, "a plain version word (v1) and an id (STORY-467) need no explanation", out)
+    rc, out = ask("Which storage do we use for the invoices?", OPTS, "--context", CTX, "--term", "no equals sign here", "--apply")
+    check(rc == 1 and "--term" in out, "a term without `=` is refused", out)
+    rc, out = pend("list", "--json")
+    rows = json.loads(out) if rc == 0 else []
+    rows = rows if isinstance(rows, list) else rows.get("events", rows.get("all", []))
+    first = next((r for r in rows if r.get("id") == "ASK-001"), {})
+    check(first.get("context") == CTX and first.get("terms") == [{"term": "b2", "meaning": "Backblaze B2, a cloud service that stores files for a low monthly price"}],
+          "the engine hands Sonar the context and the terms as data", json.dumps(first)[:400])
+    write(os.path.join(pdir, "ASK-009.md"), "# ASK-009 · Old question?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n\nAnswer:\n")
+    rc, out = pend("check")
+    check("ASK-009" in out and "PEN-10" in out and "ASK-001.md: ok" in out, "an event written before this rule is told once (PEN-10), never blocked; the new ones are ok", out)
 
 
 def parse_answered(path):
@@ -4340,7 +4389,7 @@ def main():
     tmp = tempfile.mkdtemp(prefix="gtt-bootstrap-acceptance-")
     try:
         for scenario in (release_identity, compatibility, profiles, developer_experience, ade, cursor_and_openhands, antigravity, questionnaire, elicitation_start, think_plan, sources, export_and_clean, recovery,
-                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, nested_checkouts, human_handoff, pending_events, question_form, delivery_visibility):
+                         session_status_validation, fresh_host, any_ade_alone, protection_hooks, registry_safety, evolution, unsupported, guard_and_retrieval, backlog_model, observation, enforcement, continuity, design_sources, think_depth, method_governance, change_flow, freeze_validates, out_of_design, design_next_action, delivery_planning, skills_for_ades, simple_execution, nested_checkouts, human_handoff, pending_events, question_form, plain_words, delivery_visibility):
             if not args.only or scenario.__name__ in args.only:
                 scenario(project, tmp)
     finally:

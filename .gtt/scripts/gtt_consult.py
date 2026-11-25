@@ -800,7 +800,8 @@ def _data():
     return {"schema": 1, "thread": st.get("thread") or None, "seed": sd["text"], "seed_chars": sd["chars"], "seed_omitted": sd["omitted"], "desktop_ok": sd["desktop_ok"],
             "batch": text, "refs": refs, "items": items, "gaps": gaps, "gap_texts": gap_texts(), "count": len(events), "changes": [{k: v for k, v in c.items() if k != "link"} for c in changes()],
             "new_url": contract()["thread_url"]["new"], "desktop_new": contract()["thread_url"]["desktop_new"],
-            "set_command": "bash .gtt/scripts/gtt-consult.sh set <URL>"}
+            "set_command": "bash .gtt/scripts/gtt-consult.sh set <URL>",
+            "answer_line": contract()["answers"]["line"], "answer_header": contract()["answers"]["header"]}
 
 
 # ------------------------------------------------------------------------------------------------------------- the answers

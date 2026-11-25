@@ -125,6 +125,14 @@ td .stack{display:flex;flex-direction:column;gap:3px}
 .consult .small.warn{color:var(--amber, #c98a00)}
 .consult .cmd{margin:0}
 .consult-row{margin-top:6px}
+.await{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 22px;border-bottom:1px solid var(--line);background:var(--surface)}
+.await .at{font:12px var(--mono);color:var(--amber, #c98a00);text-transform:uppercase;letter-spacing:.04em}
+.cpanel{flex-basis:100%;display:grid;gap:8px;padding:6px 0}
+.cpanel textarea,.cpanel input[type=text]{width:100%;box-sizing:border-box}
+.cpanel .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cpanel .bad{color:var(--red, #c0392b)}
+.otro{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.otro input{flex:1 1 240px;min-width:0}
 .filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--muted)}
 .dayh{font:500 12px var(--mono);color:#B6C4D3;margin:0;padding:10px 18px;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
 .dayh:first-child{border-top:0}
@@ -195,7 +203,7 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 .tag.hollow{border:1px dashed var(--needs);color:var(--needs)}
 .tag.hollowa{border:1px dashed var(--agent);color:var(--agent)}
 .tag.ok{border-color:var(--agent);color:var(--agent)}
-.strip{grid-template-columns:repeat(5,1fr)}
+.strip{grid-template-columns:repeat(6,1fr)}
 .strip>.fig{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .strip .fig .k{font:11.5px var(--mono);color:var(--dim)}
 .strip .fig .v{font:500 20px var(--mono)}
@@ -207,6 +215,9 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 .meta .edit.ro{color:var(--muted);border-color:var(--line)}
 nav.tabs a b{font:500 11px var(--mono);padding:0 6px;border-radius:4px;background:var(--line);color:var(--text);margin-left:6px}
 nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
+nav.tabs a b.mute{background:transparent;border:1px solid var(--line);color:var(--muted);margin-left:4px}
+.lvlsep{font:10.5px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.05em;padding:6px 10px 2px;border-top:1px dashed var(--line)}
+.mutev{color:var(--muted)}
 .now{display:grid;grid-template-columns:1.3fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .now>div{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .k2{font:11.5px var(--mono);color:var(--dim)}.k2::before{content:"# "}
@@ -217,6 +228,21 @@ nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
 .files span::before{content:"~ ";color:var(--agent)}
 .nrow{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
 .nrow:last-child{border-bottom:0}.nrow.more{justify-content:center}
+.dcard{display:block}
+.dcard .dhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dcard .dplain{margin:8px 0 4px;font-size:14px;line-height:1.45}
+.dcard .dterms{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
+.dcard .dterms dt{font:12px var(--mono);color:var(--text)}
+.dcard .dterms dd{margin:0}
+.todo{margin:6px 0 2px;font-size:13px;padding:5px 9px;border-left:3px solid var(--amber, #c98a00);background:var(--surface)}
+.todo .k2{margin-right:6px}
+.dcard .dwhy{margin:8px 0 2px;font-size:13px;color:var(--muted)}
+.dcard .dopts{display:grid;gap:6px;margin:8px 0}
+.dcard .dopt{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:4px 12px;align-items:start;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
+.dcard .dopt.rec{border-color:var(--ok, #2f9e7a)}
+.dcard .dopt .does{font-size:13px;color:var(--muted)}
+.dcard .dopt .tagrec{font:10.5px var(--mono);color:var(--ok, #2f9e7a);text-transform:uppercase;letter-spacing:.04em;margin-left:6px}
+.dcard .duntil{font-size:12.5px;color:var(--dim);margin-top:4px}
 .acts{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{font:12px var(--mono);padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--cmd);color:var(--text);cursor:pointer;white-space:nowrap}
 .btn.pri{border-color:var(--needs);color:var(--needs)}.btn.go{border-color:var(--agent);color:var(--agent)}.btn.ghost{background:none;color:var(--muted)}
@@ -929,31 +955,31 @@ function storyChat(snap, s) {
 }
 function inboxN(snap) { var c = snap.inbox_counts; return c ? (c["new"] || 0) + (c.review || 0) + (c.ratify || 0) : 0; }
 function healthN(snap) {
-  var n = 0, worstLvl = null;
-  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { n++; if (f.level === "WARNING" || f.level === "BLOCKING") worstLvl = "w"; } });
-  (snap.health || []).forEach(function (c) { if (c.status !== "ok") { n++; if (c.status === "fail") worstLvl = "w"; } });
-  return { n: n, amber: worstLvl === "w" };
+  var n = 0, notices = 0;                             /* n = what to attend (BLOCKING, WARNING, a failed check); notices = what only informs */
+  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "WARNING" || f.level === "BLOCKING") n++; else notices++; } });
+  (snap.health || []).forEach(function (c) { if (c.status === "fail") n++; else if (c.status !== "ok") notices++; });
+  return { n: n, notices: notices, amber: n > 0 };
 }
 
 /* ---------- the bar ---------- */
 function topBar2(view, snap) {
   var st = readHash();
-  function tab(id, label, count, amber) {
+  function tab(id, label, count, amber, notices) {
     var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.view = id; if (id !== "plan") { delete x.q; }
     var href = "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&");
     var tabHelp = { portfolio: L("Todos tus proyectos de un vistazo", "All your projects at a glance"), plan: L("Épicas e historias: cuánto falta y qué te espera", "Epics and Stories: how much is left and what waits for you"),
       inbox: L("Por donde entran los cambios al diseño", "Where changes to the design come in"), activity: L("Quién hizo qué y en qué trabaja el agente ahora", "Who did what and what the agent works on now"),
       code: L("Lo construido frente al diseño", "What was built against the design"), health: L("Lo que GTT detectó solo, y de quién es", "What GTT detected by itself, and whose it is"),
       design: L("Los documentos que mandan, y las decisiones", "The documents that rule, and the decisions"), help: L("Qué es cada vista y las palabras que verás", "What each view is and the words you will meet") };
-    var a = h("a", { href: href, title: tabHelp[id] || "" }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null);
+    var a = h("a", { href: href, title: tabHelp[id] || "" }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null, notices ? h("b", { class: "mute", title: L("avisos informativos (NOTICE)", "informative notices (NOTICE)"), text: "+" + notices }) : null);
     if (view === id) a.setAttribute("aria-current", "page");
     return a;
   }
-  var hn = snap ? healthN(snap) : { n: 0, amber: false };
+  var hn = snap ? healthN(snap) : { n: 0, notices: 0, amber: false };
   var tabs = [];
   if (OK.length > 1) tabs.push(tab("portfolio", L("portafolio", "portfolio")));
   tabs.push(tab("plan", L("plan", "plan")), tab("inbox", L("bandeja", "inbox"), snap ? inboxN(snap) : 0, false), tab("activity", L("actividad", "activity")), snap && snap.code && snap.code.modules && snap.code.modules.length ? tab("code", L("código", "code")) : null,
-    tab("health", L("salud", "health"), hn.n, hn.amber), tab("design", L("diseño", "design")), tab("help", L("guía", "guide")));
+    tab("health", L("salud", "health"), hn.n, hn.amber, hn.notices), tab("design", L("diseño", "design")), tab("help", L("guía", "guide")));
   var paused = st.pause === "1";
   var mode = snap && editable(snap) ? h("span", { class: "edit", text: L("editable", "editable") }) : h("span", { class: "edit ro", text: L("solo lectura", "read only") });
   var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }),
@@ -1012,14 +1038,121 @@ function consultBar(snap) {
     var reseed = h("button", { type: "button", class: "btn ghost", title: L("Para empezar un hilo nuevo (el actual se llenó): copia el mensaje inicial", "To start a new thread (this one filled up): copies the first message"), text: L("Mensaje inicial", "First message") });
     reseed.addEventListener("click", function () { consultGo(reseed, c.seed, c.new_url); });
     bar.appendChild(reseed);
+    var pasteBtn = h("button", { type: "button", class: "btn", title: L("Trae a Sonar la respuesta que te dio el hilo", "Brings the thread's reply into Sonar"), text: L("Traer la respuesta del hilo", "Bring the thread's reply") });
+    pasteBtn.addEventListener("click", function () { CONSULT_UI.paste = !CONSULT_UI.paste; render(); });
+    bar.appendChild(pasteBtn);
+    if (editable(snap)) {
+      var chg = h("button", { type: "button", class: "btn ghost", text: L("Cambiar hilo", "Change thread") });
+      chg.addEventListener("click", function () { CONSULT_UI.form = !CONSULT_UI.form; render(); });
+      bar.appendChild(chg);
+    }
+    if (CONSULT_UI.paste) bar.appendChild(consultPaste(snap));
+    if (CONSULT_UI.form && editable(snap)) bar.appendChild(threadForm(snap, false));
   } else {
     var make = h("button", { type: "button", class: "btn go", text: L("Crear el hilo: copiar el mensaje inicial y abrir Claude", "Create the thread: copy the first message and open Claude") });
     make.addEventListener("click", function () { consultGo(make, c.seed, c.new_url); });
     bar.appendChild(make);
     if (c.desktop_ok) bar.appendChild(h("a", { class: "btn ghost", href: c.desktop_new + encodeURIComponent(c.seed), title: L("Abre Claude Desktop con el mensaje ya escrito", "Opens Claude Desktop with the message already typed"), text: L("o en Claude Desktop (prellenado)", "or in Claude Desktop (prefilled)") }));
-    bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo, una sola vez (GTT la recuerda siempre): ", "Then register the thread's URL, once (GTT remembers it for good): ") }));
-    bar.appendChild(cmdBlock(c.set_command));
+    if (editable(snap)) bar.appendChild(threadForm(snap, true));
+    else {
+      bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo, una sola vez (GTT la recuerda siempre): ", "Then register the thread's URL, once (GTT remembers it for good): ") }));
+      bar.appendChild(cmdBlock(c.set_command));
+    }
   }
+  return bar;
+}
+/* The thread is registered from the page, once (GTT remembers it for good), and the answer the thread gives is brought back here: no terminal, no chat. */
+var CONSULT_UI = { form: false, paste: false };
+function threadForm(snap, open) {
+  var c = snap.consult, key = "consult|url";
+  var box = h("div", { class: "cpanel" });
+  var input = h("input", { type: "text", id: "consult-url", placeholder: "claude.ai/chat/…", "aria-label": L("URL del hilo de Claude web", "URL of the Claude web thread"), maxlength: "300" });
+  input.value = DRAFTS[key] || "";
+  input.addEventListener("input", function () { DRAFTS[key] = input.value; });
+  var msg = h("span", { class: "small", text: FORM_MSG[key] || "" });
+  var go = h("button", { type: "button", class: "btn go", text: L("Registrar el hilo", "Register the thread") });
+  go.addEventListener("click", function () {
+    var url = (input.value || "").trim(); if (!url) return;
+    go.textContent = "…";
+    ACT("consult.set", { url: url }).then(function (r) {
+      go.textContent = L("Registrar el hilo", "Register the thread");
+      FORM_MSG[key] = r.ok ? L("registrado: GTT lo recuerda siempre en este proyecto", "registered: GTT remembers it for good in this project") : (r.body && r.body.error) || L("no se pudo", "could not");
+      if (r.ok) { DRAFTS[key] = ""; CONSULT_UI.form = false; }
+      msg.textContent = FORM_MSG[key]; poll2();
+    });
+  });
+  box.appendChild(h("span", { class: "small", text: open ? L("Pega la URL de tu conversación de Claude web (una sola vez; GTT la recuerda siempre):", "Paste the URL of your Claude web conversation (once; GTT remembers it for good):") : L("Pega la URL del hilo nuevo:", "Paste the new thread's URL:") }));
+  box.appendChild(h("div", { class: "row" }, input, go, msg));
+  return box;
+}
+function consultRows(c, text) {
+  var re; try { re = new RegExp(c.answer_line); } catch (e) { return []; }
+  var head = new RegExp(String(c.answer_header).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s*:?", "i").exec(text);
+  var body = head ? text.slice(head.index + head[0].length) : text; var rows = [];
+  body.split(/\r?\n/).forEach(function (raw) {
+    var m = re.exec(raw); if (!m) return;
+    var answer = m[2].replace(/\s+/g, " ").trim().replace(/^[*_`«»"]+|[*_`«»"]+$/g, "");
+    if (answer) rows.push({ n: parseInt(m[1], 10), answer: answer });
+  });
+  return rows;
+}
+function consultPaste(snap) {
+  var c = snap.consult, key = "consult|paste";
+  var box = h("div", { class: "cpanel" });
+  var area = h("textarea", { rows: "4", id: "consult-paste", placeholder: L("Pega aquí la respuesta de Claude (el bloque «Respuesta para GTT:»)", "Paste Claude's reply here (the “Respuesta para GTT:” block)"), "aria-label": L("respuesta del hilo", "the thread's reply") });
+  area.value = DRAFTS[key] || "";
+  var out = h("div", { class: "cpanel" });
+  function paint() {
+    DRAFTS[key] = area.value;
+    while (out.firstChild) out.removeChild(out.firstChild);
+    var rows = consultRows(c, area.value);
+    if (!area.value.trim()) return;
+    if (!rows.length) { out.appendChild(h("span", { class: "small bad", text: L("No encontré líneas de respuesta. Formato: «13: 1» bajo «Respuesta para GTT:».", "I found no answer lines. Format: “13: 1” under “Respuesta para GTT:”.") })); return; }
+    var open = {}; needItems(snap).forEach(function (n) { if (n.kind === "ask" || n.kind === "review") { var d = /(\d+)/.exec(n.ref); if (d) open[parseInt(d[1], 10)] = n; } });
+    var valid = [];
+    rows.forEach(function (r) {
+      var q = open[r.n];
+      var line = h("div", { class: "small" }, h("b", { text: (q ? q.ref : r.n) + " → " }), document.createTextNode(r.answer + (q ? "  · " + q.title : "")));
+      if (!q) { line.className = "small bad"; line.appendChild(document.createTextNode("  · " + L("no hay una pregunta abierta con ese número", "no open question with that number"))); } else valid.push(r);
+      out.appendChild(line);
+    });
+    if (!valid.length) return;
+    if (editable(snap)) {
+      var go = h("button", { type: "button", class: "btn go", text: L("Registrar ", "Record ") + valid.length + L(valid.length > 1 ? " respuestas" : " respuesta", valid.length > 1 ? " answers" : " answer") });
+      var note = h("span", { class: "small", text: FORM_MSG[key] || "" });
+      go.addEventListener("click", function () {
+        if (BUSY[key]) return; BUSY[key] = true; go.textContent = "…"; var failed = [];
+        valid.reduce(function (chain, r) { return chain.then(function () { return ACT("pending.answer", { ref: String(r.n), answer: r.answer }).then(function (res) { if (!res.ok) failed.push(r.n + ": " + ((res.body && res.body.error) || L("no se pudo", "could not"))); }); }); }, Promise.resolve())
+          .then(function () {
+            BUSY[key] = false;
+            FORM_MSG[key] = failed.length ? L("no se registró: ", "not recorded: ") + failed.join(" · ") : L("registradas: el agente las aplica en tu próximo mensaje", "recorded: the agent applies them at your next message");
+            if (!failed.length) { DRAFTS[key] = ""; area.value = ""; }
+            go.textContent = L("Registrar ", "Record ") + valid.length; note.textContent = FORM_MSG[key]; poll2();
+          });
+      });
+      out.appendChild(h("div", { class: "row" }, go, note));
+    } else valid.forEach(function (r) { out.appendChild(cmdLine("gtt answer " + r.n + " " + r.answer)); });
+  }
+  area.addEventListener("input", paint);
+  box.appendChild(h("span", { class: "small", text: L("Claude responde en el hilo con un bloque «Respuesta para GTT:». Pégalo aquí: lo leo, te muestro qué entendí y lo registras con un clic.", "Claude answers in the thread with a “Respuesta para GTT:” block. Paste it here: I read it, show what I understood and you record it with one click.") }));
+  box.appendChild(area); box.appendChild(out); paint();
+  return box;
+}
+/* What the person already did and the agent has not yet taken: a card that vanishes after an answer leaves no trace of what happens next. */
+function awaitingBar(snap) {
+  var a = snap && snap.awaiting; if (!a) return null;
+  var parts = [];
+  if (a.answered && a.answered.length) parts.push(a.answered.length + L(a.answered.length > 1 ? " respuestas" : " respuesta", a.answered.length > 1 ? " answers" : " answer") + " (" + a.answered.map(function (x) { return x.ref; }).slice(0, 4).join(", ") + ")");
+  if (a.ideas && a.ideas.length) parts.push(a.ideas.length + L(a.ideas.length > 1 ? " ideas sin tratar" : " idea sin tratar", a.ideas.length > 1 ? " ideas not triaged" : " idea not triaged") + " (" + a.ideas.slice(0, 4).join(", ") + ")");
+  if (a.accepted && a.accepted.length) parts.push(a.accepted.length + L(a.accepted.length > 1 ? " propuestas aceptadas por preparar" : " propuesta aceptada por preparar", a.accepted.length > 1 ? " accepted proposals to prepare" : " accepted proposal to prepare") + " (" + a.accepted.slice(0, 4).join(", ") + ")");
+  if (!parts.length) return null;
+  var bar = h("div", { class: "await", role: "status", "aria-label": L("esperando al agente", "waiting for the agent") });
+  bar.appendChild(h("span", { class: "at", text: L("esperando al agente", "waiting for the agent") }));
+  bar.appendChild(h("span", { class: "small", text: L("De tu parte está hecho: ", "Done on your side: ") + parts.join(" · ") + ". " + L("El agente lo toma en tu próximo mensaje a Claude Code: GTT se lo dice solo. Si no tienes una sesión abierta, queda guardado.", "The agent takes it at your next message to Claude Code: GTT tells it by itself. With no open session it stays recorded.") }));
+  var line = L("Aplica lo que respondí en Sonar y trata mis ideas nuevas.", "Apply what I answered in Sonar and triage my new ideas.");
+  var cp = h("button", { type: "button", class: "btn ghost", title: L("Copia una línea para pegarla en Claude Code si quieres que lo tome ya", "Copies a line to paste into Claude Code if you want it taken now"), text: L("Copiar aviso para Claude", "Copy a nudge for Claude") });
+  cp.addEventListener("click", function () { copyToClipboard(line, function () { cp.textContent = L("copiado: pégalo en Claude Code", "copied: paste it in Claude Code"); setTimeout(function () { cp.textContent = L("Copiar aviso para Claude", "Copy a nudge for Claude"); }, 3500); }, function () { cp.textContent = L("no se pudo copiar", "could not copy"); }); });
+  bar.appendChild(cp);
   return bar;
 }
 
@@ -1028,7 +1161,7 @@ function needItems(snap) {
   var out = [];
   (snap.needs_you || []).forEach(function (n) {
     out.push({ ref: n.ref, title: n.title || n.ref, sub: [(T.hows[n.how] || T.kinds[n.kind] || n.kind)].concat(n.unblocks && n.unblocks.length ? [L("destraba ", "unblocks ") + n.unblocks.join(", ")] : []).concat(n.note ? [n.note] : []).join(" · "),
-      choices: n.choices || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
+      choices: n.choices || null, context: n.context || null, terms: n.terms || null, todo: n.todo || null, why: n.why || null, until: n.until || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
   });
   (snap.findings || []).forEach(function (f) {
     if (f.owner !== "human") return;
@@ -1051,8 +1184,8 @@ function figures(snap) {
   if (kinds.e) needsSub.push(kinds.e + " " + L(kinds.e > 1 ? "épicas" : "épica", kinds.e > 1 ? "Epics" : "Epic"));
   if (kinds.g) needsSub.push(kinds.g + " " + L(kinds.g > 1 ? "vacíos" : "vacío", kinds.g > 1 ? "gaps" : "gap"));
   if (kinds.o) needsSub.push(kinds.o + " " + L("otros", "other"));
-  var alerts = { w: 0, n: 0 };
-  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "WARNING" || f.level === "BLOCKING") alerts.w++; else alerts.n++; } });
+  var alerts = { b: 0, w: 0, n: 0 };               /* BLOCKING, WARNING and NOTICE are three things: what stops, what to attend soon, what only informs */
+  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "BLOCKING") alerts.b++; else if (f.level === "WARNING") alerts.w++; else alerts.n++; } });
   (snap.signals || []).forEach(function (x) { if (!(snap.findings || []).length) { if (x.level === "WARNING" || x.level === "GOVERNANCE") alerts.w++; else alerts.n++; } });
   var eta = fmtRange(snap.forecast_range) || (s.forecast ? fmtDate(s.forecast) : null);
   var etaSub = [s.deadline ? L("plazo ", "deadline ") + fmtDate(s.deadline) : L("sin plazo", "no deadline")];
@@ -1063,7 +1196,8 @@ function figures(snap) {
     eta: L("Cuándo terminaría al ritmo actual. «sin calibrar» = aún hay pocos datos, es un rango.", "When it would finish at the current pace. “uncalibrated” = still little data, it is a range."),
     needs: L("Cosas que solo tú puedes resolver: preguntas, decisiones abiertas, aprobaciones.", "Things only you can resolve: questions, open decisions, approvals."),
     define: L("Historias a las que les falta información antes de poder empezar.", "Stories that lack information before they can start."),
-    alerts: L("Avisos que GTT detectó solos; el detalle está en la vista Salud.", "Notices GTT detected by itself; the detail is in the Health view.") };
+    alerts: L("WARNING: lo que GTT detectó y conviene atender pronto (BLOCKING detiene lo afectado). El detalle está en la vista Salud.", "WARNING: what GTT detected and should be attended soon (BLOCKING stops what it affects). The detail is in the Health view."),
+    notices: L("NOTICE: informativo. Sirve para saber, no hay que atenderlo ahora. Está aparte para que no tape lo urgente.", "NOTICE: informative. Good to know, nothing to attend now. Kept apart so it does not bury what is urgent.") };
   function cell(k, v, sub, cls, key) { return h("div", { class: "fig", "data-fig": key, title: figHelp[key] || "" }, h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub })); }
   var estimated = hrs && hrs.total ? L("de ", "of ") + fmtH(hrs.total) + " h · " : "";
   return h("section", { class: "strip", "aria-label": L("cifras", "figures") },
@@ -1071,7 +1205,8 @@ function figures(snap) {
     cell(L("fecha estimada", "estimated date"), eta || "—", etaSub.join(" · "), "", "eta"),
     cell(L("te necesito", "I need you"), String(needs.length), needsSub.join(" · ") || L("nada por ahora", "nothing for now"), needs.length ? "amberv" : "", "needs"),
     cell(L("por definir", "to define"), toDef === null ? "—" : String(toDef), rc ? nextN + " " + L("cerca de empezar", "close to starting") + " · " + (rc.mine || 0) + " " + L(rc.mine === 1 ? "tuya" : "tuyas", "yours") : L("sin dato", "no data"), toDef ? "amberv" : "", "define"),
-    cell(L("alertas", "alerts"), String(alerts.w + alerts.n), alerts.w + " WARNING · " + alerts.n + " NOTICE", alerts.w ? "redv" : "", "alerts"));
+    cell(L("alertas", "alerts"), String(alerts.b + alerts.w), alerts.b ? alerts.b + " BLOCKING · " + alerts.w + " WARNING" : "WARNING · " + L("atender pronto", "attend soon"), alerts.b + alerts.w ? "redv" : "", "alerts"),
+    cell(L("avisos", "notices"), String(alerts.n), "NOTICE · " + L("informativo", "informative"), "mutev", "notices"));
 }
 function nowBlock(snap) {
   var a = snap.activity;
@@ -1115,17 +1250,86 @@ function actNode(snap, n, small) {
         var b = h("button", { type: "button", class: "btn " + (i === 0 ? "pri" : ""), text: label });
         b.addEventListener("click", function () {
           if (BUSY[n.ref]) return; BUSY[n.ref] = true; b.textContent = "…";
-          ACT("pending.answer", { ref: m[1], answer: m[2] }).then(function (r) { BUSY[n.ref] = false; FORM_MSG[n.ref] = r.ok ? L("respondida", "answered") : (r.body && r.body.error) || L("no se pudo", "could not"); poll2(); });
+          ACT("pending.answer", { ref: m[1], answer: m[2] }).then(function (r) { BUSY[n.ref] = false; FORM_MSG[n.ref] = r.ok ? L("respondida: el agente la aplica en tu próximo mensaje", "answered: the agent applies it at your next message") : (r.body && r.body.error) || L("no se pudo", "could not"); poll2(); });
         });
         box.appendChild(b);
       } else box.appendChild(cmdLine(c.command));
     });
   } else if (n.command) box.appendChild(cmdLine(n.command));
   else if (n.about) box.appendChild(aporte(snap, n.about, true));
+  if (edit && n.kind === "ask" && !small) box.appendChild(otherAnswer(snap, n));
   if (FORM_MSG[n.ref]) box.appendChild(h("span", { class: "small", text: FORM_MSG[n.ref] }));
   return box;
 }
+/* An answer in the person's own words, when none of the options is it: a question is never a multiple choice with no way out. */
+function otherAnswer(snap, n) {
+  var m = /(\d+)/.exec(n.ref); if (!m) return document.createTextNode("");
+  var key = "ans|" + n.ref, number = String(parseInt(m[1], 10));
+  var input = h("input", { type: "text", id: "ans-" + n.ref, maxlength: "300", placeholder: L("otra respuesta, con tus palabras", "another answer, in your own words"), "aria-label": L("otra respuesta a ", "another answer to ") + n.ref });
+  input.value = DRAFTS[key] || "";
+  input.addEventListener("input", function () { DRAFTS[key] = input.value; });
+  var go = h("button", { type: "button", class: "btn", text: L("Responder", "Answer") });
+  var note = h("span", { class: "small", text: "" });
+  go.addEventListener("click", function () {
+    var text = (input.value || "").trim(); if (!text || BUSY[n.ref]) return;
+    BUSY[n.ref] = true; go.textContent = "…";
+    ACT("pending.answer", { ref: number, answer: text }).then(function (r) {
+      BUSY[n.ref] = false; go.textContent = L("Responder", "Answer");
+      FORM_MSG[n.ref] = r.ok ? L("respondida: el agente la aplica en tu próximo mensaje", "answered: the agent applies it at your next message") : (r.body && r.body.error) || L("no se pudo", "could not");
+      note.textContent = FORM_MSG[n.ref];                 /* the field has the focus, so the page does not repaint under it: the note is written here */
+      if (r.ok) { DRAFTS[key] = ""; input.value = ""; } poll2();
+    });
+  });
+  return h("div", { class: "otro" }, input, go, note);
+}
 function poll2() { if (typeof poll === "function") poll(); }
+/* A question is a card with what the person needs to decide: why it matters, what each option makes the agent do, which one is recommended, what happens
+   if they do not answer, and a way out (their own words, or thinking it in the thread). Before, the options came as bare labels. */
+function decisionCard(snap, n) {
+  var edit = editable(snap);
+  var card = h("div", { class: "nrow dcard" });
+  card.appendChild(h("div", { class: "dhead" }, h("span", { class: "ref", text: n.ref }),
+    h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })), consultButton(snap, n.ref) || consultButton(snap, n.target) || null));
+  if (n.context) card.appendChild(h("div", { class: "dplain" }, h("span", { class: "k2", text: L("en simple", "in plain words") }), document.createTextNode(" " + n.context)));
+  if (n.terms && n.terms.length) {
+    var dl = h("dl", { class: "dterms", "aria-label": L("términos de ", "terms of ") + n.ref });
+    n.terms.forEach(function (t) { dl.appendChild(h("dt", { text: t.term })); dl.appendChild(h("dd", { text: t.meaning })); });
+    card.appendChild(dl);
+  }
+  if (n.why) card.appendChild(h("div", { class: "dwhy" }, h("span", { class: "k2", text: L("por qué importa", "why it matters") }), document.createTextNode(" " + n.why)));
+  if (n.todo) card.appendChild(h("div", { class: "todo" }, h("span", { class: "k2", text: L("qué te toca", "what you do") }), document.createTextNode(n.todo)));
+  var opts = h("div", { class: "dopts", role: "group", "aria-label": L("opciones de ", "options of ") + n.ref });
+  var note = h("span", { class: "small", text: FORM_MSG[n.ref] || "" });
+  n.choices.forEach(function (c, i) {
+    var m = /gtt answer (\d+) (\d+)/.exec(c.command || "");
+    var row = h("div", { class: "dopt" + (c.recommended ? " rec" : "") });
+    var label = (i + 1) + " · " + c.label;
+    var left = h("div", null);
+    if (edit && m) {
+      var b = h("button", { type: "button", class: "btn " + (c.recommended ? "pri" : ""), text: label });
+      b.addEventListener("click", function () {
+        if (BUSY[n.ref]) return; BUSY[n.ref] = true; b.textContent = "…";
+        ACT("pending.answer", { ref: m[1], answer: m[2] }).then(function (r) {
+          BUSY[n.ref] = false; b.textContent = label;
+          FORM_MSG[n.ref] = r.ok ? L("respondida: el agente la aplica en tu próximo mensaje", "answered: the agent applies it at your next message") : (r.body && r.body.error) || L("no se pudo", "could not");
+          note.textContent = FORM_MSG[n.ref]; poll2();
+        });
+      });
+      left.appendChild(b);
+    } else left.appendChild(h("b", { text: label }));
+    if (c.recommended) left.appendChild(h("span", { class: "tagrec", text: L("recomendada", "recommended") }));
+    row.appendChild(left);
+    var right = h("div", { class: "does", text: c.does || "" });
+    if (!(edit && m) && c.command) right.appendChild(cmdLine(c.command));
+    row.appendChild(right);
+    opts.appendChild(row);
+  });
+  card.appendChild(opts);
+  if (edit && n.kind === "ask") card.appendChild(otherAnswer(snap, n));
+  if (n.until) card.appendChild(h("div", { class: "duntil", text: L("Si no respondes: ", "If you do not answer: ") + n.until }));
+  card.appendChild(note);
+  return card;
+}
 function needsBlock(snap) {
   var st = readHash(); var items = needItems(snap); var all = st.na === "1";
   var shown = all ? items : items.slice(0, 3);
@@ -1134,8 +1338,11 @@ function needsBlock(snap) {
       h("span", { class: "hint", text: L("Lo que solo tú puedes resolver. Respóndelo aquí o, si necesitas pensarlo, usa «Consultar en Claude». Lo que cambia el diseño entra a la Bandeja; aprobar y promover se copian a tu terminal.", "What only you can resolve. Answer it here or, if you need to think it through, use “Consult in Claude”. What changes the design goes to the Inbox; approve and promote are copied to your terminal.") })));
   if (!items.length) box.appendChild(h("div", { class: "empty", text: L("Nada te espera.", "Nothing waits for you.") }));
   shown.forEach(function (n) {
+    if (n.choices && n.choices.some(function (c) { return c.does; })) { box.appendChild(decisionCard(snap, n)); return; }
     box.appendChild(h("div", { class: "nrow" }, h("span", { class: "ref", text: n.ref }),
-      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })), consultButton(snap, n.ref) || consultButton(snap, n.target) || null, actNode(snap, n)));
+      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" }),
+        n.todo ? h("div", { class: "todo" }, h("span", { class: "k2", text: L("qué te toca", "what you do") }), document.createTextNode(n.todo)) : null),
+      consultButton(snap, n.ref) || consultButton(snap, n.target) || null, actNode(snap, n)));
   });
   if (items.length > 3) box.appendChild(h("div", { class: "nrow more" }, h("button", { type: "button", class: "btn ghost", on: { click: function () { go({ na: all ? "" : "1" }); } }, text: all ? L("ver menos", "see less") : L("ver todo (", "see all (") + items.length + ")" })));
   return items.length ? box : null;
@@ -1433,7 +1640,7 @@ function aporte(snap, ref, compact) {
     if (editable(snap)) {
       var send = h("button", { type: "button", class: "btn go", text: L("enviar a la Bandeja", "send to the Inbox") });
       send.addEventListener("click", function () {
-        ACT("inbox.add", { text: text, about: ref }).then(function (r) { FORM_MSG[key] = r.ok ? L("enviado a la Bandeja", "sent to the Inbox") : (r.body && r.body.error) || L("no se pudo", "could not"); if (r.ok) { DRAFTS[key] = ""; area.value = ""; } paint(); poll2(); });
+        ACT("inbox.add", { text: text, about: ref }).then(function (r) { FORM_MSG[key] = r.ok ? L("enviado: queda como idea en la Bandeja y el agente la tria en su próximo punto de corte", "sent: it stays as an idea in the Inbox and the agent triages it at its next cut point") : (r.body && r.body.error) || L("no se pudo", "could not"); if (r.ok) { DRAFTS[key] = ""; area.value = ""; } paint(); poll2(); });
       });
       out.appendChild(send);
     } else out.appendChild(cmdLine("gtt idea add --about " + ref + " '" + text.replace(/'/g, "'\\''") + "'"));
@@ -1723,6 +1930,11 @@ function findingLink(snap, f) {
   if (f.plane === "code" && snap.code) return "#/view=code";                // the module map and the findings of the code
   return null;
 }
+function lvlCounts(rows) {
+  var c = { BLOCKING: 0, WARNING: 0, NOTICE: 0 }; rows.forEach(function (f) { if (c[f.level] === undefined) c[f.level] = 0; c[f.level]++; });
+  var out = Object.keys(c).filter(function (k) { return c[k]; }).map(function (k) { return c[k] + " " + k; });
+  return out.length ? out.join(" · ") : "0";
+}
 function findingHit(f, fl) {
   if (fl.lvl && f.level !== fl.lvl) return false;
   if (fl.who && f.owner !== fl.who) return false;
@@ -1768,13 +1980,19 @@ function viewHealth() {
     if (!inPlane.length && p[0] === "code") return;
     var box = h("div", { class: "panel sigs" });
     if (!rows.length) box.appendChild(h("div", { class: "empty", text: filtered && inPlane.length ? L("ningún hallazgo con este filtro", "no finding matches this filter") : L("nada que avisar", "nothing to report") }));
+    var rankL = { BLOCKING: 0, WARNING: 1 };
+    rows = rows.slice().sort(function (a, b) { return (rankL[a.level] === undefined ? 2 : rankL[a.level]) - (rankL[b.level] === undefined ? 2 : rankL[b.level]); });
+    var sepAt = null;
     rows.forEach(function (f) {
       var href = findingLink(snap, f);
+      var grp = rankL[f.level] === undefined ? "n" : "w";
+      if (sepAt === "w" && grp === "n") { box.appendChild(h("div", { class: "lvlsep", text: "NOTICE · " + L("informativo, no hay que atenderlo ahora", "informative, nothing to attend now") })); }
+      sepAt = grp;
       box.appendChild(h("div", { class: "sig" }, lvlTag(f.level), href ? h("a", { class: "ref", href: href, text: f.ref }) : h("span", { class: "ref", text: f.ref }), h("span", { class: "mono small", text: f.code }), h("span", { text: f.text }),
         h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" }),
         (f.code === "GOV-GAP" && gapOf(snap, f) && (rows.length <= 40 || filtered)) ? consultAction(snap, L("Consultar en Claude", "Consult in Claude"), function () { return gapMessage(snap, f); }) : null));
     });
-    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + (filtered ? rows.length + " / " + inPlane.length : rows.length)), box));
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + (filtered ? rows.length + " / " + inPlane.length : lvlCounts(rows))), box));
   });
   var hp = healthPanel(snap); if (hp) main.appendChild(hp);
   else main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), h("div", { class: "panel empty", text: L("Aún no hay resultados de chequeos: corre gtt-validate.sh.", "No check results yet: run gtt-validate.sh.") })));
@@ -1814,7 +2032,7 @@ function viewPortfolio2() {
     var needs = (s.needs_you || []).length;
     rows.appendChild(h("tr", null, h("td", null, h("a", { href: href, text: s.repo.name })), h("td", { class: "mono", text: s.suite_version || "—" }), h("td", null, h("span", { class: "tag " + (s.project.phase === "DEV" ? "dev" : "think"), text: s.project.phase })),
       h("td", { class: "mono", text: s.summary.progress_pct === null ? "—" : s.summary.progress_pct + "%" }), h("td", { class: "mono", text: String(needs) }), h("td", { class: "mono", text: rc ? rc.to_define + " (" + rc.mine + " " + L("tuyas", "yours") + ")" : L("sin dato", "no data") }),
-      h("td", { class: "mono", text: String(hn.n) }), h("td", null, inboxWords(s))));
+      h("td", { class: "mono", title: hn.notices + " NOTICE", text: String(hn.n) + (hn.notices ? " +" + hn.notices : "") }), h("td", null, inboxWords(s))));
   });
   var heads = [L("El proyecto; haz clic para abrir su plan.", "The project; click to open its plan."), L("Versión de GTT instalada en el proyecto.", "Version of GTT installed in the project."), L("DEV = se está construyendo; THINK = aún se diseña.", "DEV = being built; THINK = still being designed."),
     L("Cuánto del trabajo está hecho.", "How much of the work is done."), L("Cosas que solo tú puedes resolver.", "Things only you can resolve."), L("Historias a las que les falta información (y cuántas son tuyas).", "Stories that lack information (and how many are yours)."),
@@ -2002,6 +2220,7 @@ function render() {
   while (app.firstChild) app.removeChild(app.firstChild);
   app.appendChild(topBar2(view, snap));
   var cbar = snap ? consultBar(snap) : null; if (cbar) app.appendChild(cbar);
+  var wbar = snap ? awaitingBar(snap) : null; if (wbar) app.appendChild(wbar);
   var banner = staleBanner();
   var page = view === "plan" ? viewPlan() : view === "inbox" ? viewInbox() : view === "activity" ? viewActivity() : view === "health" ? viewHealth() : view === "design" ? viewDesign() : view === "code" ? viewCode() : view === "portfolio" ? viewPortfolio2() : viewHelp2();
   if (banner && !SERVED) page.insertBefore(banner, page.firstChild);

@@ -202,6 +202,52 @@ async def drive(chrome, port):
         await asyncio.sleep(1)
         got = State.acts[-1] if len(State.acts) > before else {}
         check(got.get("body", {}).get("op") == "inbox.add" and got["body"]["args"] == {"text": "use a local file", "about": "GAP-004"}, "op inbox.add with the text and `about`", str(got)[:200])
+        print("the thread is registered from the page, once")
+        text = await page.ev("window.__text()")
+        check("Register the thread" in text, "with no thread the bar offers a field to register it, not a command to copy", text[:200])
+        await page.ev("window.__setv('consult-url', 'https://claude.ai/chat/0b6e1f2a-4c3d-4e5f-8a9b-1c2d3e4f5a6b')")
+        before = len(State.acts)
+        await page.ev("window.__click('Register the thread')")
+        await asyncio.sleep(1)
+        got = State.acts[-1] if len(State.acts) > before else {}
+        check(got.get("body", {}).get("op") == "consult.set" and got["body"]["args"] == {"url": "https://claude.ai/chat/0b6e1f2a-4c3d-4e5f-8a9b-1c2d3e4f5a6b"}, "op consult.set with the URL", str(got)[:200])
+        print("an answer in your own words, when no option is it")
+        ask_id = await page.ev("(document.querySelector('input[id^=ans-ASK]') || {}).id || null")
+        check(bool(ask_id), "a question offers a field for another answer", str(ask_id))
+        ask_no = str(int(re.search(r"(\d+)", ask_id or "0").group(1)))
+        await page.ev("window.__setv('%s', 'depends on the season')" % ask_id)
+        before = len(State.acts)
+        await page.ev("window.__click('Answer')")
+        await asyncio.sleep(1)
+        got = State.acts[-1] if len(State.acts) > before else {}
+        check(got.get("body", {}).get("op") == "pending.answer" and got["body"]["args"] == {"ref": ask_no, "answer": "depends on the season"}, "op pending.answer with the free text", str(got)[:200])
+        text = await page.ev("window.__text()")
+        check("applies it at your next message" in text.lower(), "and it says what happens next", text[-300:])
+        print("the thread's reply is brought back and recorded with one click")
+        State.snapshot = json.loads(json.dumps(State.snapshot))
+        State.snapshot["consult"]["thread"] = {"url": "https://claude.ai/chat/0b6e1f2a-4c3d-4e5f-8a9b-1c2d3e4f5a6b", "set_at": "2026-11-24T00:00:00Z"}
+        State.version += 1
+        await page.ev("document.activeElement && document.activeElement.blur()")
+        await asyncio.sleep(2.8)
+        check(bool(await page.ev("window.__click(\"Bring the thread's reply\")")), "with a thread, the bar offers to bring its reply")
+        await asyncio.sleep(0.3)
+        await page.ev("window.__setv('consult-paste', 'Claude says:\\nRespuesta para GTT:\\n%s: 1\\n999: 2')" % ask_no)
+        await asyncio.sleep(0.3)
+        text = await page.ev("window.__text()")
+        check(("ASK-%03d" % int(ask_no)) in text and "no open question with that number" in text, "it shows what it understood, and refuses a number with no question", text[:400])
+        before = len(State.acts)
+        await page.ev("window.__click('Record 1 answer')")
+        await asyncio.sleep(1)
+        got = State.acts[-1] if len(State.acts) > before else {}
+        check(got.get("body", {}).get("op") == "pending.answer" and got["body"]["args"] == {"ref": ask_no, "answer": "1"}, "recording sends only the valid line, through pending.answer", str(got)[:200])
+        print("what the agent has not taken yet is on the page")
+        State.snapshot = json.loads(json.dumps(State.snapshot))
+        State.snapshot["awaiting"] = {"answered": [{"ref": "ASK-002", "title": "x", "answer": "1"}], "ideas": ["IDEA-001"], "accepted": []}
+        State.version += 1
+        await page.ev("document.activeElement && document.activeElement.blur()")
+        await asyncio.sleep(2.8)
+        text = await page.ev("window.__text()")
+        check("waiting for the agent" in text.lower() and "ASK-002" in text and "IDEA-001" in text and "next message to claude code" in text.lower(), "a bar says what is done on your side and waits for the agent", text[:400])
     finally:
         await page.close()
 

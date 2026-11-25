@@ -53,6 +53,7 @@ PROMOTE = ".gtt/scripts/gtt-promote.sh"
 RECONCILE = (INBOX := flow.INBOX)
 FORM1 = """Proposed Architecture Change
 
+In plain words: the team wants this change so the project and the people who read it speak the same words.
 Current decision: sessions live in memory
 Suggested change: sessions live in Redis
 Reason: horizontal scaling

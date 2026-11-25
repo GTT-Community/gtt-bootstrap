@@ -6,7 +6,7 @@ a decision (DEC) is something the agent decided that changes scope, time, cost, 
 The human answers; the agent applies the answer where it belongs, cites it there and marks the event;
 the next session deletes what is marked. Only this engine writes the folder.
 
-  gtt_pending.py ask --type T --header "topic" --question "...?" --why W --option "A | what I do" --option "B | what I do" [--option "C | ..."]
+  gtt_pending.py ask --type T --header "topic" --question "...?" --context "what this is, in plain words" [--term "b2 = what it is"] --why W --option "A | what I do" --option "B | what I do" [--option "C | ..."]
                      --recommended N [--blocks STORY-NNN] [--apply]       an agent may run this
   gtt_pending.py decide --affects X --title T --what W --why W --where P [--apply]
                                                                          an agent may run this
@@ -298,7 +298,7 @@ def row(ev, c):
             "entry": ev["fields"].get("entry") if is_rev else None, "sha": ev["fields"].get("sha") if is_rev else None,
             "for": ev["fields"].get("for") if is_rev else None, "route": ev["fields"].get("route") if is_rev else None,
             "class": (ev["fields"].get("route") or "") if is_rev else (type_id(raw, table) or raw), "created": created(ev), "state": state_of(ev), "answer": ev["answer"],
-            "blocks": blocks_of(ev, c), "recommended": (ev["recommended"] or [None])[0], "options": [o[1] for o in ev["options"]], "notes": ev["notes"], "topic": ev["fields"].get("topic"), "discuss": ev["discuss"],
+            "blocks": blocks_of(ev, c), "recommended": (ev["recommended"] or [None])[0], "options": [o[1] for o in ev["options"]], "notes": ev["notes"], "why": ev["fields"].get("why_matters"), "context": ev["fields"].get("context"), "terms": [{"term": a, "meaning": b} for a, b in split_terms(ev["fields"].get("terms"), c)], "until": ev["fields"].get("until"), "topic": ev["fields"].get("topic"), "discuss": ev["discuss"],
             "closing": [labels(c)["other"], labels(c)["chat"]],
             "path": ev["path"], "problems": [{"rule": r, "message": m} for r, m in ev["problems"]]}
 
@@ -340,8 +340,9 @@ def review(ev, c, strict_where=True):
     max_chars = rev_lim.get("max_chars", lim["max_chars"]) if ev.get("kind") == "REV" else lim["max_chars"]
     if len(engine) > max_lines:
         out.append(("PEN-01", "fail", f"{len(engine)} lines; the limit is {max_lines}"))
+    plain_labels = {t[k].lower() + ":" for t in c["labels"].values() for k in ("context", "terms", "todo")}
     for number, line in enumerate(engine, 1):
-        if len(line) > max_chars:
+        if len(line) > (lim["plain_chars"] if any(line.lower().startswith(p) for p in plain_labels) else max_chars):
             out.append(("PEN-01", "fail", f"line {number} has {len(line)} characters; the limit is {max_chars}"))
     for number, line in enumerate(ev.get("answer_lines", []), 1):
         if len(line) > lim["answer_chars"]:
@@ -391,6 +392,10 @@ def review(ev, c, strict_where=True):
             out.append(("PEN-03", "fail", f"the type `{raw}` is not one of: {kinds}"))
         if not ev["fields"].get("why_matters"):
             out.append(("PEN-02", "fail", "there is no `why it matters` line"))
+        if not (ev["answered"] or ev["attended"]):          # an event written before 1.32 is told once, never blocked
+            problem = plain_problem(ev["title"], ev["fields"].get("topic", ""), [o[1] for o in ev["options"]], ev["fields"].get("context"), ev["fields"].get("terms"), c)
+            if problem:
+                out.append(("PEN-10", "warn", "it does not explain itself to someone who was not in the session: " + problem))
         if ev["answered"] and option_chosen(ev) and option_chosen(ev) > max([n for n, _ in ev["options"]] or [0]) + 2:
             out.append(("PEN-02", "fail", f"the answer chooses option {option_chosen(ev)}, which does not exist"))
     else:
@@ -433,20 +438,68 @@ def next_number(c):
     return max([last] + [e["number"] or 0 for e in events(c)]) + 1
 
 
+def todo_text(key, c):
+    """The fixed line that tells the person what to do with what waits for them (contract `todo`)."""
+    return c["todo"][key][language()]
+
+
+def split_terms(value, c):
+    """`b2 = what it is; S3 = what it is` -> [(term, meaning)]. Never raises: a part without the separator is skipped."""
+    plain = c["plain"]
+    out = []
+    for part in str(value or "").split(plain["term_separator"].strip()):
+        term, sep, meaning = part.partition(plain["term_equals"].strip())
+        if sep and term.strip() and meaning.strip():
+            out.append((term.strip(), meaning.strip()))
+    return out
+
+
+def undefined_codes(texts, defined, c):
+    """The codes (b2, S3, EC2...) that `texts` use and `defined` does not explain: what a person who was not in the session could not guess."""
+    plain = c["plain"]
+    pattern = re.compile(plain["code_pattern"])
+    allow = [re.compile(a, re.IGNORECASE) for a in plain["allow"]]
+    seen = []
+    for token in pattern.findall(" ".join(str(t) for t in texts)):
+        if any(a.fullmatch(token) for a in allow) or token.lower() in (s.lower() for s in seen):
+            continue
+        if re.search(rf"(?<![A-Za-z0-9]){re.escape(token)}(?![A-Za-z0-9])", defined, re.IGNORECASE):
+            continue
+        seen.append(token)
+    return seen
+
+
+def plain_problem(question, header, options, context, terms, c):
+    """None when the question explains itself; otherwise the sentence that says what to write (the engine's refusal and PEN-10)."""
+    m = messages(c)
+    need = c["limits"]["plain_min_chars"]
+    ctx = one_line(context or "")
+    if len(ctx) < need or ctx.lower().rstrip(" ?.") == one_line(question).lower().rstrip(" ?.") or len(ctx.split()) < 6:
+        return m["plain_missing"].format(n=need)
+    titles = [o.partition(" | ")[0] for o in options]
+    codes = undefined_codes([question, header, *titles], f"{ctx} {terms or ''}", c)
+    if codes:
+        return m["plain_terms"].format(codes=", ".join(codes), first=codes[0])
+    return None
+
+
 def render_ask(number, a, c):
     t = labels(c)
     kind = type_word(a["type"], c["ask_types"])
     blocks = a.get("blocks") or t["nothing"]
     out = [f"# ASK-{number:03d} · {one_line(a['question'])}", "",
            f"{t['type']}: {kind} · {t['topic']}: {one_line(a['header'])} · {t['blocks']}: {blocks} · {t['created']}: {today()}",
-           f"{t['why_matters']}: {one_line(a['why'])}"]
+           f"{t['context']}: {one_line(a['context'])}"]
+    if a.get("terms"):
+        out.append(f"{t['terms']}: {c['plain']['term_separator'].join(one_line(x) for x in a['terms'])}")
+    out.append(f"{t['why_matters']}: {one_line(a['why'])}")
     for index, option in enumerate(a["options"], 1):
         title, _, note = option.partition(" | ")
         mark = f" ({t['recommended']})" if index == a["recommended"] else ""
         out += [f"{index}. {one_line(title)}{mark}", f"   {one_line(note)}"]
     count = len(a["options"])
     out += [f"{count + 1}. {t['other']}", f"{count + 2}. {t['chat']}"]
-    out += [f"{t['until']}: {t['option_word']} {a['recommended']}.", "", f"{t['answer']}:"]
+    out += [f"{t['until']}: {t['option_word']} {a['recommended']}.", f"{t['todo']}: {todo_text('ask', c)}", "", f"{t['answer']}:"]
     return "\n".join(out) + "\n"
 
 
@@ -516,10 +569,18 @@ def cmd_ask(args):
     if args.blocks and not WHERE_ID.match(args.blocks):
         print("gtt-pending: --blocks is a Story or Epic id (STORY-066).", file=sys.stderr)
         return 1
-    if refuse_key([args.question, args.why, args.header, *options], c):
+    terms = [one_line(t) for t in (args.term or [])]
+    if len(terms) > c["limits"]["terms"]["max"] or any(not split_terms(t, c) or c["plain"]["term_separator"].strip() in t for t in terms):
+        print(f"gtt-pending: each --term is \"term = what it is\" (no `;` inside), at most {c['limits']['terms']['max']}.", file=sys.stderr)
+        return 1
+    problem = plain_problem(args.question, args.header, options, args.context, "; ".join(terms), c)
+    if problem:
+        print(f"gtt-pending: a question must explain itself to someone who was not in the session: {problem}.", file=sys.stderr)
+        return 1
+    if refuse_key([args.question, args.why, args.header, args.context or "", *terms, *options], c):
         return 1
     number = next_number(c)
-    text = render_ask(number, {"type": type_id(args.type, c["ask_types"]), "question": args.question, "why": args.why,
+    text = render_ask(number, {"type": type_id(args.type, c["ask_types"]), "question": args.question, "why": args.why, "context": args.context, "terms": terms,
                                "options": options, "recommended": args.recommended, "blocks": args.blocks, "header": args.header}, c)
     ok, path = create(text, number, c, args.apply)
     if not ok:
@@ -570,6 +631,7 @@ def render_rev(number, spec, c, ic):
         mark_ = f" ({t['recommended_rev']})" if ident == best else ""
         described = spec.get("effect") if ident == "accept-urgent" and spec.get("effect") else L['describe'][route if route in L['describe'] else 'scope'][ident]
         out += [f"{index}. {L['options'][ident]}{mark_}", f"   {described}"]
+    out.append(f"{t['todo']}: {todo_text('review', c)}")
     out.append(f"{t['answer']}:")
     return "\n".join(out) + "\n"
 
@@ -1095,7 +1157,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description="GTT pending events")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("ask"); p.add_argument("--type", required=True); p.add_argument("--question", required=True)
-    p.add_argument("--why", required=True); p.add_argument("--option", action="append"); p.add_argument("--header"); p.add_argument("--recommended", type=int)
+    p.add_argument("--why", required=True); p.add_argument("--context"); p.add_argument("--term", action="append"); p.add_argument("--option", action="append"); p.add_argument("--header"); p.add_argument("--recommended", type=int)
     p.add_argument("--blocks"); p.add_argument("--apply", action="store_true")
     p = sub.add_parser("decide"); p.add_argument("--affects", required=True); p.add_argument("--title", required=True)
     p.add_argument("--what", required=True); p.add_argument("--why", required=True); p.add_argument("--where", required=True)

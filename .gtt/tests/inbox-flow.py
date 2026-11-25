@@ -32,6 +32,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+PLAIN_CONTEXT = "A decision for the person who was not in the session: what is being decided and what it unblocks."
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("acc", os.path.join(HERE, "bootstrap-acceptance.py"))
@@ -44,6 +45,7 @@ INBOX = ".gtt/scripts/gtt-inbox.sh"
 PENDING = ".gtt/scripts/gtt-pending.sh"
 FORM4 = """Proposed Epic Change
 
+In plain words: the team wants this change so the project and the people who read it speak the same words.
 Kind: new Epic
 Epic ID: new
 Current state: none
@@ -57,6 +59,7 @@ Risk: low
 """
 FORM2 = """Proposed Context Change
 
+In plain words: the team wants this change so the project and the people who read it speak the same words.
 File: gtt-domain/context/glossary.md
 Current statement: order
 Suggested change: add parcel
@@ -64,7 +67,8 @@ Reason: new word
 Impact: low
 Risk: low
 """
-CLOSURE = """Non-goal: the product does not do payments
+CLOSURE = """In plain words: the team wants this change so the project and the people who read it speak the same words.
+Non-goal: the product does not do payments
 Reason: solution-vision.md lists payments as out of scope
 """
 STORIES = "#### Stories\n\n##### STORY-001 — Cancel an order\n- **Status:** Planned\n- **Origin:** IDEA-00{n}\n- **Implements:** design/EPIC-001#R-1\n"
@@ -442,7 +446,7 @@ def the_table(proj, tmp):
         ("priority", "IDEA"): {"accepted", "ratify", "work"}, ("priority", "PROP"): {"accepted", "ratify", "work"},
         ("supersede", "PROP"): {"review"},
     }
-    ask = sh(p, ".gtt/scripts/gtt-pending.sh", "ask", "--type", "account", "--header", "Account", "--question", "Which account?", "--why", "needed", "--option", "A | use a",
+    ask = sh(p, ".gtt/scripts/gtt-pending.sh", "ask", "--type", "account", "--header", "Account", "--question", "Which account?", "--context", PLAIN_CONTEXT, "--why", "needed", "--option", "A | use a",
              "--option", "B | use b", "--recommended", "1", "--apply")
     rc, ask_ref = 0, re.search(r"ASK-\d+", text(p, "gtt-domain", "pending", "ASK-001.md").split("\n")[0])
     asks = ask_ref.group(0) if ask_ref else "ASK-001"
@@ -505,7 +509,7 @@ def the_table(proj, tmp):
     check(rc == 0 and listing(p)["IDEA-005"]["stage"] == "closed" and len(dec) == 1, "T4: covered by EPIC-001 closes the idea and opens an informative DEC", o + e)
     sets("T4") if rc == 0 else None
     # T6
-    made = sh(p, PENDING, "ask", "--type", "account", "--header", "Account", "--question", "Which account?", "--why", "needed", "--option", "A | use a",
+    made = sh(p, PENDING, "ask", "--type", "account", "--header", "Account", "--question", "Which account?", "--context", PLAIN_CONTEXT, "--why", "needed", "--option", "A | use a",
               "--option", "B | use b", "--recommended", "1", "--apply")
     asks = (re.search(r"ASK-\d+", made[1]) or re.search(r"ASK-\d+", "ASK-000")).group(0)
     inbox(p, "add", "Which cloud?", "--apply")                                                                                   # IDEA-006

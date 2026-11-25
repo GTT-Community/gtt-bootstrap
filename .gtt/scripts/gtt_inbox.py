@@ -698,6 +698,8 @@ def form_check(c, form, level, text):
             value = "" if (not nxt or re.match(r"^[A-Z][A-Za-z ?]{1,45}:", nxt)) else nxt
         if not value or re.fullmatch(r"<[^<>]*>", value.strip()):
             problems.append(f"the field `{field}` is empty")
+        elif field == c["plain"]["field"] and len(value.strip()) < c["plain"]["min_chars"]:
+            problems.append(f"the field `{field}` is too short: say, for someone who was not in the session, what is proposed and why (at least {c['plain']['min_chars']} characters), and explain any code or name they could not guess")
     return problems
 
 

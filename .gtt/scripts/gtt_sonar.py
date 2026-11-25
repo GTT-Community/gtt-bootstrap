@@ -476,6 +476,16 @@ def adr_hand_items():
     return out
 
 
+def awaiting_agent(pend, inbox):
+    """What the person already did in Sonar (or the chat) and the agent has not yet taken: answers recorded and not applied, ideas not yet triaged,
+    proposals accepted whose package is not staged. It is what makes the page say `done on your side, waiting for the agent` instead of letting a
+    card vanish. Counts and refs only (the agent reads the files itself)."""
+    rows = [r for r in (inbox or [])]
+    return {"answered": [{"ref": r["id"], "title": short(r.get("title"), 80), "answer": short(r.get("answer"), 60)} for r in (pend.get("to_apply") or [])],
+            "ideas": [r["ref"] for r in rows if r.get("stage") == "new"],
+            "accepted": [r["ref"] for r in rows if r.get("stage") == "accepted"]}
+
+
 def inbox_section(at, pend):
     """(inbox rows, counts, needs, me) from the engine. rows is None when this Bootstrap has no inbox (no data)."""
     import gtt_inbox
@@ -524,11 +534,12 @@ def inbox_section(at, pend):
     # One decision per open REV, with an act per option.
     for r in pend.get("reviews", []):
         options = r.get("options") or []
-        choices = [{"label": o, "command": at(f"gtt answer {r['number']} {i}")} for i, o in enumerate(options, 1)]
+        choices = [{"label": o, "does": short((r.get("notes") or {}).get(i), 160), "recommended": r.get("recommended") == i, "command": at(f"gtt answer {r['number']} {i}")}
+                   for i, o in enumerate(options, 1)]
         best = r.get("recommended") or 1
         needs.append({"ref": r["id"], "kind": "review", "how": "decide", "title": r["title"], "weight": {"stories": 0, "hours": None}, "unblocks": [],
                       "note": by_ref[r["entry"]]["route"] if r.get("entry") in by_ref else None, "for": r.get("for"), "entry": r.get("entry"),
-                      "choices": choices, "command": at(f"gtt answer {r['number']} {best}")})
+                      "why": short(r.get("why"), 240), "until": short(r.get("until"), 120), "choices": choices, "command": at(f"gtt answer {r['number']} {best}")})
     # A ready package that names its origin but whose entry is not (yet) in `ratify` still waits for the human.
     for name, (origin, reason) in staged_sets().items():
         if name not in ratify_names:
@@ -879,10 +890,11 @@ def build(root, docs=False):
         number = r["number"]
         # What the human must do follows the kind of question: a key or an account is handed over (`provide`); the rest is decided.
         how = "provide" if r.get("class") in ("key", "account") else "decide"
-        choices = [{"label": o, "command": at(f"gtt answer {number} {i}")} for i, o in enumerate(r.get("options") or [], 1)][:4] if how == "decide" else []
+        choices = [{"label": o, "does": short((r.get("notes") or {}).get(i), 160), "recommended": r.get("recommended") == i, "command": at(f"gtt answer {number} {i}")}
+                   for i, o in enumerate(r.get("options") or [], 1)][:4] if how == "decide" else []
         needs.append({"ref": r["id"], "kind": "ask", "how": how, "title": r["title"],
                       "weight": {"stories": len(blocked), "hours": wait.get("waiting_h")}, "unblocks": [s["id"] for s in blocked][:3],
-                      "choices": choices, "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
+                      "context": short(r.get("context"), 330), "terms": (r.get("terms") or [])[:4], "why": short(r.get("why"), 240), "until": short(r.get("until"), 120), "choices": choices, "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
     # Only a promotion set that is ready to apply is an act of the human; a folder left without its spec is not.
     proposals = safe(lambda: gtt_change.drafts(), []) or []
     nxt_props = [{"ref": p["name"], "kind": p["kind"], "title": p.get("title") or p["name"], "command": at(f"gtt promote {p['name']}")}
@@ -922,6 +934,10 @@ def build(root, docs=False):
         needs.extend(inbox_needs)
     except (Exception, SystemExit):
         inbox = inbox_counts = None             # a Bootstrap without the inbox: no data, never an empty guess
+    for n in needs:                                    # what the person does with each one, in one fixed plain line (pending.json -> todo)
+        key = "provide" if n.get("how") == "provide" else ("promote" if str(n.get("command") or "").find("gtt promote ") >= 0 else
+              {"ask": "ask", "review": "review", "ratify": "ratify", "adr-hand": "adopt", "blocked": "blocked"}.get(n["kind"]))
+        n["todo"] = safe(lambda: gtt_pending.todo_text(key, ctx)) if key and ctx else None
     needs.sort(key=lambda n: (n["kind"] != "epic-batch", -(n["weight"]["stories"] or 0), -(n["weight"]["hours"] or 0), KIND_RANK.get(n["kind"], 0), n["ref"]))
     planned = [{"ref": e["id"], "title": e.get("title"), "lane": e["lane"] or "main"} for e in epics if e["status"] == "Planned"][:3]
 
@@ -1055,6 +1071,7 @@ def build(root, docs=False):
         "health": safe(health_checks),
         "recent": recent,
         "ideas": ideas,
+        "awaiting": safe(lambda: awaiting_agent(pend, inbox)),
         "inbox": inbox, "inbox_counts": inbox_counts, "decisions": safe(lambda: decisions_list(by_ref)), "me": git_user(),
         "docs": safe(collect_docs) if docs else None,
         "mode": os.environ.get("GTT_SONAR_MODE") or "static",

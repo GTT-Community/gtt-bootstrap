@@ -106,7 +106,7 @@ def main():
         print("K3  a review opens the card of its entry; K4  the pending questions carry their link")
         canon = "> **Canonical reference:** https://github.com/GTT-Community/gtt-method/blob/main/GTT-CANONICAL-v3.0.md"
         write(os.path.join(p, "gtt-domain", "proposals", "drafts", "redis.md"),
-              f"Proposed Context Change\n\n{canon}\nFile: gtt-domain/context/glossary.md\nCurrent statement: order\nSuggested change: add a term\nReason: new word\nImpact: low\nRisk: low\n")
+              f"Proposed Context Change\n\n{canon}\nIn plain words: the team wants this change so the project and the people who read it speak the same words.\nFile: gtt-domain/context/glossary.md\nCurrent statement: order\nSuggested change: add a term\nReason: new word\nImpact: low\nRisk: low\n")
         rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "add", "Change for redis", "--apply")
         idea = re.search(r"IDEA-\d+", o).group(0)
         rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "propose", "--file", "gtt-domain/proposals/drafts/redis.md", "--level", "spec", "--form", "2",

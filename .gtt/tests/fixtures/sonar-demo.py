@@ -208,12 +208,12 @@ def plant_more(dest):
     """What the order asks the fixture to carry besides the eight problems: an ASK that blocks a Story, an open DEC, an answered event nobody
     applied, a run plan ready for the human, a source that changed after it was registered and an observation in the governance backlog."""
     out = {}
-    out["ask"] = pending(dest, "ask", "--type", "product", "--question", "Does the owner approve payments by card?", "--why", "it changes the scope",
+    out["ask"] = pending(dest, "ask", "--type", "product", "--question", "Does the owner approve payments by card?", "--context", "A decision about the demo project, written for someone who was not in the session: what is being decided.", "--why", "it changes the scope",
                          "--option", "Yes | I build card payments", "--option", "No | I leave them out", "--recommended", "2", "--blocks", "STORY-009",
                          "--header", "Payments", "--apply")
     out["dec"] = pending(dest, "decide", "--affects", "design", "--title", "Queue uses a local file", "--what", "the offline queue is a file",
                          "--why", "no server is needed", "--where", "STORY-005", "--apply")
-    pending(dest, "ask", "--type", "product", "--question", "Which date format?", "--why", "reports", "--option", "ISO | 2026-11-01", "--option", "Local | 01/11/2026",
+    pending(dest, "ask", "--type", "product", "--question", "Which date format?", "--context", "A decision about the demo project, written for someone who was not in the session: what is being decided.", "--why", "reports", "--option", "ISO | 2026-11-01", "--option", "Local | 01/11/2026",
             "--recommended", "1", "--blocks", "STORY-004", "--header", "Dates", "--apply")
     out["answer"] = pending(dest, "answer", "3", "1", "--confirmed-by-human", "--by", "Ana")
     write(dest, "gtt-domain/run/RUN-001-env.md",

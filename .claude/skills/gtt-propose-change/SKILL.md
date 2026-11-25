@@ -126,6 +126,8 @@ below; it is neither an architecture change nor a backlog change.
 
 Pick the one that matches the situation.
 
+**Every form opens with `In plain words:`** (at least 30 characters; the engine refuses a proposal without it). Write it for the person who will decide: someone who was not in this session and does not know the project's codes. Say what is proposed and why, in two or three plain sentences, and explain any code or name they could not guess (a service, a library, an internal name) the first time you use it, for example "b2 (Backblaze B2, a cloud service that stores files)". The fields below are for the record; this line is what the person reads first in the review and in Sonar. The form stays the same every time.
+
 ## 1. Architecture change
 
 Use when the solution needs a different architectural direction, style,
@@ -135,6 +137,7 @@ runtime, datastore, or cloud service.
 ```text
 Proposed Architecture Change
 
+In plain words:
 Current decision:
 Suggested change:
 Reason:
@@ -154,6 +157,7 @@ reality — and the fix is to the document, not the code.
 ```text
 Proposed Context Change
 
+In plain words:
 File:
 Current statement:
 Suggested change:
@@ -172,6 +176,7 @@ one is correct. Do not resolve it yourself and do not pick the code by default.
 ```text
 Context Conflict Detected
 
+In plain words:
 Context file:
 What the context says:
 What the implementation does:
@@ -191,6 +196,7 @@ never proposed or approved.
 ```text
 Proposed Epic Change
 
+In plain words:
 Kind: <new Epic / remove / material change of goal or scope>
 Epic ID: <EPIC-NNN, or "new" if not yet assigned>
 Current state: <what gtt-domain/backlog.md says today, or "none" if new>
@@ -276,6 +282,7 @@ way.
 ```text
 Proposed Development Method Change
 
+In plain words:
 Current method: <the Method Lock as `gtt-method.sh get` prints it - style, start, locked_by, verification>
 Proposed method: <style, start - Method Pack ids>
 Reason:
@@ -316,6 +323,7 @@ contract's words, not yours.
 ```text
 Proposed Autonomy Profile Change
 
+In plain words:
 Current plan: <id>
 Proposed plan: <id>
 Reason: <what the human finds heavy, in their words>
@@ -336,6 +344,7 @@ and `Status: Accepted`. The human promotes it, then applies it with
 
 A proposal is only useful if it can be decided without a follow-up question.
 
+- Open with `In plain words:` and never leave a bare code (`b2`, `S3`, an internal name) unexplained: the person deciding does not have your context.
 - Name the specific decision being changed, not the general area.
 - Impact means blast radius: which modules, which interfaces, which deployments.
 - Risk means what breaks if this is wrong, and how it would be detected.

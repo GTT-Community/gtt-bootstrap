@@ -32,6 +32,7 @@ PROJECT = ".gtt/scripts/gtt-project.sh"
 BACKLOG_HEAD = "# Backlog\n\n## Epics\n\n"
 FORM1 = """Proposed Architecture Change
 
+In plain words: the team wants this change so the project and the people who read it speak the same words.
 Current decision: monolith
 Suggested change: split the billing module
 Reason: it scales on its own

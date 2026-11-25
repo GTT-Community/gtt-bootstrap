@@ -9,6 +9,7 @@
   C6  Sonar: the bar is at the top of EVERY view, with the first message when there is no thread and the thread when there is; each question points to it
   C7  an open gap carries what the person needs to decide it (scope, design lines, Stories) and Sonar shows it as a card: what it asks, the context, Claude
   C8  every view says what it is, what it is for and how it is used; the Inbox says what each stage is and what is yours; the session line names the thread
+  C10 what the person did and the agent has not taken yet is shown; the thread's reply is read by the page
   C9  the thread is registered once and remembered for good: a wiped .gtt/local, a clone or a worktree do not ask for it again
 
   python3 .gtt/tests/consult.py [--project .] [--keep]
@@ -24,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import time
+PLAIN_CONTEXT = "A decision for the person who was not in the session: what is being decided and what it unblocks."
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 spec = importlib.util.spec_from_file_location("acc", os.path.join(HERE, "bootstrap-acceptance.py"))
@@ -61,11 +63,11 @@ def build_project(project, tmp, name):
 def open_questions(p):
     """An ASK and a REV, both open: the two kinds of question the thread takes."""
     rc, o, e = bash(p, ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--header", "Billing", "--question", "Do we bill by field or by farm?",
-                    "--why", "It decides the data model of the invoices.", "--option", "By field | One invoice line per field.",
+                    "--context", PLAIN_CONTEXT, "--why", "It decides the data model of the invoices.", "--option", "By field | One invoice line per field.",
                     "--option", "By farm | One line per farm.", "--recommended", "2", "--blocks", "STORY-001", "--apply")
     ok_ask = rc == 0
     write(os.path.join(p, "gtt-domain", "proposals", "drafts", "redis.md"),
-          f"Proposed Context Change\n\n{CANON}\nFile: gtt-domain/context/glossary.md\nCurrent statement: a farm is a predio\nSuggested change: add the term sector\nReason: the field team says sector\nImpact: low\nRisk: low\n")
+          f"Proposed Context Change\n\n{CANON}\nIn plain words: the team wants this change so the project and the people who read it speak the same words.\nFile: gtt-domain/context/glossary.md\nCurrent statement: a farm is a predio\nSuggested change: add the term sector\nReason: the field team says sector\nImpact: low\nRisk: low\n")
     rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "add", "Add the term sector", "--apply")
     idea = re.search(r"IDEA-\d+", o).group(0)
     rc, o, e = bash(p, ".gtt/scripts/gtt-inbox.sh", "propose", "--file", "gtt-domain/proposals/drafts/redis.md", "--level", "spec", "--form", "2",
@@ -400,6 +402,36 @@ def main():
         env = dict(os.environ, GTT_HOME=ro)
         done = subprocess.run(["bash", ".gtt/scripts/gtt-consult.sh", "set", THREAD], cwd=a, capture_output=True, text=True, env=env)
         check("a home that cannot be written never stops `set`: the project's file still holds it", done.returncode == 0, done.stdout + done.stderr)
+
+        # C10 ---------------------------------------------------------------------------------------------------
+        print("C10  what the person did and the agent has not taken yet; the reply is read by the page and by the terminal alike")
+        os.chdir(here)
+        w = build_project(project, tmp, "awaiting")
+        opened, prop = open_questions(w)
+        script(w, "set", THREAD)
+
+        def snap_of(d):
+            return json.loads(subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "snapshot", "--json"], cwd=d, capture_output=True, text=True).stdout)
+        s0 = snap_of(w)
+        check("with nothing answered, no answer waits for the agent", s0.get("awaiting") is not None and s0["awaiting"]["answered"] == [], str(s0.get("awaiting")))
+        check("the snapshot hands the page the line format and the header of the thread's reply", bool(s0["consult"].get("answer_line")) and s0["consult"].get("answer_header") == "Respuesta para GTT", str(s0["consult"].get("answer_header")))
+        number = str(int(re.search(r"(\d+)", next(n["ref"] for n in s0["needs_you"] if n["kind"] == "ask")).group(1)))
+        rc, out, err = bash(w, ".gtt/scripts/gtt-pending.sh", "answer", number, "2", "--confirmed-by-human")
+        s1 = snap_of(w)
+        check("an answer recorded and not applied is listed as waiting for the agent", rc == 0 and any(x["ref"].startswith("ASK-") for x in s1["awaiting"]["answered"]), str(s1.get("awaiting")) + out + err)
+        check("and the idea the person wrote waits to be triaged until the agent takes it", isinstance(s1["awaiting"]["ideas"], list))
+        page = os.path.join(tmp, "sonar-awaiting.html")
+        open(os.path.join(w, "snap.json"), "w", encoding="utf-8").write(json.dumps(s1))
+        subprocess.run(["bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", page, "snap.json"], cwd=w, capture_output=True, text=True)
+        html = open(page, encoding="utf-8").read()
+        check("the page carries the bar, the thread form, the reply box and the free answer, in both languages", all(x in html for x in ("awaitingBar", "consultPaste", "threadForm", "otherAnswer", "esperando al agente", "waiting for the agent")))
+        check("a static page (no door) never offers to write: it shows the command", "cmdLine(\"gtt answer \" + r.n" in html)
+        ask = next(n for n in s0["needs_you"] if n["kind"] == "ask")
+        check("a question carries why it matters, what each option makes the agent do, the recommended one and what happens with no answer",
+              bool(ask.get("why")) and bool(ask.get("until")) and all(c.get("does") for c in ask["choices"]) and any(c["recommended"] for c in ask["choices"]), str(ask)[:400])
+        rev = next((n for n in s0["needs_you"] if n["kind"] == "review"), None)
+        check("a proposal's review carries what each option does too", rev is not None and all(c.get("does") for c in rev["choices"]) and any(c["recommended"] for c in rev["choices"]), str(rev)[:300])
+        check("the page draws it as a decision card (why, options with their effect, recommended, the way out)", all(x in html for x in ("decisionCard", "why it matters", "If you do not answer", "dopt")))
     finally:
         os.chdir(here)
         if args.keep:

@@ -567,6 +567,11 @@
     "incorporated": "[A-Za-z0-9._/-]+",
     "converted": "[A-Za-z0-9._-]+"
   },
+  "plain": {
+    "field": "In plain words",
+    "min_chars": 30,
+    "note": "Every proposal opens with `In plain words`: what is being proposed and why, for a person who was not in the session and does not know the project's codes. A code or name they could not guess (b2, S3, a library, an internal name) is explained there. The review (REV) and the Inbox card lead with it."
+  },
   "forms": {
     "1": {
       "title": "Proposed Architecture Change",
@@ -575,6 +580,7 @@
         "arch"
       ],
       "fields": [
+        "In plain words",
         "Current decision",
         "Suggested change",
         "Reason",
@@ -592,6 +598,7 @@
         "arch"
       ],
       "fields": [
+        "In plain words",
         "File",
         "Current statement",
         "Suggested change",
@@ -607,6 +614,7 @@
         "arch"
       ],
       "fields": [
+        "In plain words",
         "Context file",
         "What the context says",
         "What the implementation does",
@@ -622,6 +630,7 @@
         "spec"
       ],
       "fields": [
+        "In plain words",
         "Kind",
         "Epic ID",
         "Current state",
@@ -641,6 +650,7 @@
         "arch"
       ],
       "fields": [
+        "In plain words",
         "Current method",
         "Proposed method",
         "Reason",
@@ -657,6 +667,7 @@
         "arch"
       ],
       "fields": [
+        "In plain words",
         "Current plan",
         "Proposed plan",
         "Reason",
@@ -672,6 +683,7 @@
         "non-goal"
       ],
       "fields": [
+        "In plain words",
         "Non-goal",
         "Reason"
       ]

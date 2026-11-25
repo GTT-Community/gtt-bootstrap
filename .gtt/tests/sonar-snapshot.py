@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import time
+PLAIN_CONTEXT = "A decision for the person who was not in the session: what is being decided and what it unblocks."
 
 FAILS, COUNT = [], 0
 os.environ.setdefault("GTT_SONAR_NO_WATCH", "1")   # the page spawns a detached watcher unless CI is set: a test must not leave one behind or see its pid
@@ -64,7 +65,7 @@ BACKLOG = """# Backlog
 TOP = {"schema", "generated_at", "repo", "suite_version", "lang", "project", "summary", "columns", "lanes", "epics",
        "stories", "next", "needs_you", "repo_state", "signals", "health", "recent", "ideas", "docs",
        "working_now", "throughput", "refresh", "degraded", "inbox", "inbox_counts", "decisions", "me", "adrs", "proposal_files",
-       "mode", "sources", "findings", "readiness", "activity", "project_extra", "agreements", "shadow", "forecast_range", "code", "prefs", "consult"}
+       "mode", "sources", "findings", "readiness", "activity", "project_extra", "agreements", "shadow", "forecast_range", "code", "prefs", "consult", "awaiting"}
 HOSTILE = '<img src=x onerror="window.PWNED=9"> & <script>window.PWNED=8</script>'
 
 
@@ -105,7 +106,7 @@ def make_project(project):
     with open(os.path.join(dest, "gtt-domain", "backlog.md"), "w", encoding="utf-8") as handle:
         handle.write(BACKLOG)           # uncommitted: the main checkout holds the state
     ask = run(dest, "bash", ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--question", "<img src=x onerror=alert(1)> PowerSync on your server or in the cloud?",
-              "--why", "it changes the deploy", "--option", "Server | I use your server", "--option", "Cloud | I use the cloud",
+              "--context", PLAIN_CONTEXT, "--why", "it changes the deploy", "--option", "Server | I use your server", "--option", "Cloud | I use the cloud",
               "--recommended", "1", "--blocks", "STORY-002", "--header", "PowerSync", "--apply")
     return tmp, dest, ask
 
@@ -235,6 +236,8 @@ def main():
         check(ask_ref is not None and cmds[ask_ref].startswith(f"cd '{dest}' && gtt answer ") and cmds[ask_ref].endswith(" 1"), "a question brings its command with the recommended option", str(cmds))
         check(all(n["command"] for n in snap["needs_you"] if n["kind"] != "blocked"), "every act the human must do carries a command")
         ask_need = next(n for n in snap["needs_you"] if n["ref"] == ask_ref)
+        check(ask_need.get("context") == PLAIN_CONTEXT and ask_need.get("todo") and all(n.get("todo") for n in snap["needs_you"] if n["kind"] in ("ask", "review", "ratify")),
+              "every thing that waits for the person says in one plain line what they do, and a question carries its `in plain words`", str({k: ask_need.get(k) for k in ("context", "terms", "todo")}))
         check(ask_need["how"] in ("decide", "provide") and isinstance(ask_need["choices"], list), "a question says how the human unblocks it", str(ask_need))
         check(all(c["command"].startswith(f"cd '{dest}' && gtt answer ") for c in ask_need["choices"]), "each choice carries its own command")
         check(snap["repo_state"] is None or isinstance(snap["repo_state"]["uncommitted"], int), "repo_state is a count or no data, never a guess", str(snap["repo_state"]))
