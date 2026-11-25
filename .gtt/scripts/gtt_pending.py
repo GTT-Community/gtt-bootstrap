@@ -6,7 +6,7 @@ a decision (DEC) is something the agent decided that changes scope, time, cost, 
 The human answers; the agent applies the answer where it belongs, cites it there and marks the event;
 the next session deletes what is marked. Only this engine writes the folder.
 
-  gtt_pending.py ask --type T --header "topic" --question "...?" --context "what this is, in plain words" [--term "b2 = what it is"] --why W --option "A | what I do" --option "B | what I do" [--option "C | ..."]
+  gtt_pending.py ask --type T --header "topic" --question "...?" --context "what this is, in plain words" [--term "b2 = what it is"] [--cite "path#section | the exact words"] --why W --option "A | what I do" --option "B | what I do" [--option "C | ..."]
                      --recommended N [--blocks STORY-NNN] [--apply]       an agent may run this
   gtt_pending.py decide --affects X --title T --what W --why W --where P [--apply]
                                                                          an agent may run this
@@ -298,7 +298,7 @@ def row(ev, c):
             "entry": ev["fields"].get("entry") if is_rev else None, "sha": ev["fields"].get("sha") if is_rev else None,
             "for": ev["fields"].get("for") if is_rev else None, "route": ev["fields"].get("route") if is_rev else None,
             "class": (ev["fields"].get("route") or "") if is_rev else (type_id(raw, table) or raw), "created": created(ev), "state": state_of(ev), "answer": ev["answer"],
-            "blocks": blocks_of(ev, c), "recommended": (ev["recommended"] or [None])[0], "options": [o[1] for o in ev["options"]], "notes": ev["notes"], "why": ev["fields"].get("why_matters"), "context": ev["fields"].get("context"), "terms": [{"term": a, "meaning": b} for a, b in split_terms(ev["fields"].get("terms"), c)], "until": ev["fields"].get("until"), "topic": ev["fields"].get("topic"), "discuss": ev["discuss"],
+            "blocks": blocks_of(ev, c), "recommended": (ev["recommended"] or [None])[0], "options": [o[1] for o in ev["options"]], "notes": ev["notes"], "why": ev["fields"].get("why_matters"), "context": ev["fields"].get("context"), "terms": [{"term": a, "meaning": b} for a, b in split_terms(ev["fields"].get("terms"), c)], "cites": split_cites(ev["fields"].get("cites")), "until": ev["fields"].get("until"), "topic": ev["fields"].get("topic"), "discuss": ev["discuss"],
             "closing": [labels(c)["other"], labels(c)["chat"]],
             "path": ev["path"], "problems": [{"rule": r, "message": m} for r, m in ev["problems"]]}
 
@@ -340,7 +340,7 @@ def review(ev, c, strict_where=True):
     max_chars = rev_lim.get("max_chars", lim["max_chars"]) if ev.get("kind") == "REV" else lim["max_chars"]
     if len(engine) > max_lines:
         out.append(("PEN-01", "fail", f"{len(engine)} lines; the limit is {max_lines}"))
-    plain_labels = {t[k].lower() + ":" for t in c["labels"].values() for k in ("context", "terms", "todo")}
+    plain_labels = {t[k].lower() + ":" for t in c["labels"].values() for k in ("context", "terms", "todo", "cites")}
     for number, line in enumerate(engine, 1):
         if len(line) > (lim["plain_chars"] if any(line.lower().startswith(p) for p in plain_labels) else max_chars):
             out.append(("PEN-01", "fail", f"line {number} has {len(line)} characters; the limit is {max_chars}"))
@@ -396,6 +396,11 @@ def review(ev, c, strict_where=True):
             problem = plain_problem(ev["title"], ev["fields"].get("topic", ""), [o[1] for o in ev["options"]], ev["fields"].get("context"), ev["fields"].get("terms"), c)
             if problem:
                 out.append(("PEN-10", "warn", "it does not explain itself to someone who was not in the session: " + problem))
+        if not (ev["answered"] or ev["attended"]):
+            for x in split_cites(ev["fields"].get("cites")):
+                gone = cite_problem(x["path"], x["quote"], c)
+                if gone:
+                    out.append(("PEN-11", "warn", "a citation no longer holds: " + gone))
         if ev["answered"] and option_chosen(ev) and option_chosen(ev) > max([n for n, _ in ev["options"]] or [0]) + 2:
             out.append(("PEN-02", "fail", f"the answer chooses option {option_chosen(ev)}, which does not exist"))
     else:
@@ -483,6 +488,54 @@ def plain_problem(question, header, options, context, terms, c):
     return None
 
 
+def _fold(text):
+    """The words of a document as a person reads them: markdown emphasis and code ticks gone, spaces collapsed."""
+    return " ".join(re.sub(r"[*_`]", "", str(text)).split())
+
+
+def split_cites(value):
+    """`path#section «words» · path2 «words»` -> [{path, anchor, quote}]. Never raises."""
+    out = []
+    for m in re.finditer(r"(\S+)\s+«([^»]+)»", str(value or "")):
+        path, _, anchor = m.group(1).partition("#")
+        out.append({"path": path, "anchor": anchor, "quote": m.group(2).strip()})
+    return out
+
+
+def cite_problem(path, quote, c, strict=True):
+    """None when the citation holds: a project document that has those words. Otherwise the sentence for the person who wrote it (`strict`) or a short note."""
+    m, cfg = messages(c), c["cites"]
+    norm = os.path.normpath(path).replace(os.sep, "/")
+    if norm.startswith("..") or os.path.isabs(path) or not any(norm == r or norm.startswith(r) for r in cfg["roots"]):
+        return m["cite_path"].format(path=path, roots=", ".join(cfg["roots"]))
+    text = read(norm)
+    if text is None:
+        return m["cite_missing"].format(path=path)
+    if _fold(quote) not in _fold(text):
+        return m["cite_words"].format(path=path)
+    return None
+
+
+def parse_cites(raw, c):
+    """The --cite arguments -> ([{path, anchor, quote}], problem or None)."""
+    lim, m = c["limits"]["cites"], messages(c)
+    shape = m["cite_shape"].format(min=lim["quote_min"], max=lim["quote_max"], n=lim["max"])
+    cites = []
+    if len(raw or []) > lim["max"]:
+        return [], shape
+    for item in raw or []:
+        place, sep, quote = item.partition(" | ")
+        quote = one_line(quote).strip("«»\"*_` ")
+        path, _, anchor = place.strip().partition("#")
+        if not sep or not path or not lim["quote_min"] <= len(quote) <= lim["quote_max"] or "»" in quote:
+            return [], shape
+        problem = cite_problem(path, quote, c)
+        if problem:
+            return [], problem
+        cites.append({"path": path, "anchor": anchor.strip(), "quote": quote})
+    return cites, None
+
+
 def render_ask(number, a, c):
     t = labels(c)
     kind = type_word(a["type"], c["ask_types"])
@@ -493,6 +546,9 @@ def render_ask(number, a, c):
     if a.get("terms"):
         out.append(f"{t['terms']}: {c['plain']['term_separator'].join(one_line(x) for x in a['terms'])}")
     out.append(f"{t['why_matters']}: {one_line(a['why'])}")
+    if a.get("cites"):
+        cfg = c["cites"]
+        out.append(f"{t['cites']}: " + cfg["separator"].join(f"{x['path']}{'#' + x['anchor'] if x['anchor'] else ''} {cfg['open']}{x['quote']}{cfg['close']}" for x in a["cites"]))
     for index, option in enumerate(a["options"], 1):
         title, _, note = option.partition(" | ")
         mark = f" ({t['recommended']})" if index == a["recommended"] else ""
@@ -569,6 +625,10 @@ def cmd_ask(args):
     if args.blocks and not WHERE_ID.match(args.blocks):
         print("gtt-pending: --blocks is a Story or Epic id (STORY-066).", file=sys.stderr)
         return 1
+    cites, bad = parse_cites(args.cite, c)
+    if bad:
+        print(f"gtt-pending: {bad}.", file=sys.stderr)
+        return 1
     terms = [one_line(t) for t in (args.term or [])]
     if len(terms) > c["limits"]["terms"]["max"] or any(not split_terms(t, c) or c["plain"]["term_separator"].strip() in t for t in terms):
         print(f"gtt-pending: each --term is \"term = what it is\" (no `;` inside), at most {c['limits']['terms']['max']}.", file=sys.stderr)
@@ -580,7 +640,7 @@ def cmd_ask(args):
     if refuse_key([args.question, args.why, args.header, args.context or "", *terms, *options], c):
         return 1
     number = next_number(c)
-    text = render_ask(number, {"type": type_id(args.type, c["ask_types"]), "question": args.question, "why": args.why, "context": args.context, "terms": terms,
+    text = render_ask(number, {"type": type_id(args.type, c["ask_types"]), "question": args.question, "why": args.why, "context": args.context, "terms": terms, "cites": cites,
                                "options": options, "recommended": args.recommended, "blocks": args.blocks, "header": args.header}, c)
     ok, path = create(text, number, c, args.apply)
     if not ok:
@@ -1157,7 +1217,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description="GTT pending events")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("ask"); p.add_argument("--type", required=True); p.add_argument("--question", required=True)
-    p.add_argument("--why", required=True); p.add_argument("--context"); p.add_argument("--term", action="append"); p.add_argument("--option", action="append"); p.add_argument("--header"); p.add_argument("--recommended", type=int)
+    p.add_argument("--why", required=True); p.add_argument("--context"); p.add_argument("--term", action="append"); p.add_argument("--cite", action="append"); p.add_argument("--option", action="append"); p.add_argument("--header"); p.add_argument("--recommended", type=int)
     p.add_argument("--blocks"); p.add_argument("--apply", action="store_true")
     p = sub.add_parser("decide"); p.add_argument("--affects", required=True); p.add_argument("--title", required=True)
     p.add_argument("--what", required=True); p.add_argument("--why", required=True); p.add_argument("--where", required=True)

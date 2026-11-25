@@ -205,6 +205,10 @@ textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line
 .tag.ok{border-color:var(--agent);color:var(--agent)}
 .strip{grid-template-columns:repeat(6,1fr)}
 .strip>.fig{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+a.fig{color:inherit;text-decoration:none;cursor:pointer}
+a.fig:hover,a.fig:focus-visible{filter:brightness(1.18)}
+a.fig .go{font:11px var(--mono);color:var(--dim);margin-top:2px}
+a.fig:hover .go,a.fig:focus-visible .go{color:var(--text)}
 .strip .fig .k{font:11.5px var(--mono);color:var(--dim)}
 .strip .fig .v{font:500 20px var(--mono)}
 .strip .fig .s{font-size:12.5px;color:var(--muted)}
@@ -243,6 +247,9 @@ nav.tabs a b.mute{background:transparent;border:1px solid var(--line);color:var(
 .dcard .dopt .does{font-size:13px;color:var(--muted)}
 .dcard .dopt .tagrec{font:10.5px var(--mono);color:var(--ok, #2f9e7a);text-transform:uppercase;letter-spacing:.04em;margin-left:6px}
 .dcard .duntil{font-size:12.5px;color:var(--dim);margin-top:4px}
+.dcard .dcite{margin:6px 0;padding:4px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13px;line-height:1.45}
+.dcard .dcite .where{display:inline-block;margin-top:2px}
+.icard .iplain{margin:4px 0 2px;font-size:13px;line-height:1.4;color:var(--muted)}
 .acts{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
 .btn{font:12px var(--mono);padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--cmd);color:var(--text);cursor:pointer;white-space:nowrap}
 .btn.pri{border-color:var(--needs);color:var(--needs)}.btn.go{border-color:var(--agent);color:var(--agent)}.btn.ghost{background:none;color:var(--muted)}
@@ -528,6 +535,13 @@ function writeHash(st) {
   var parts = Object.keys(st).filter(function (k) { return st[k] !== "" && st[k] !== undefined && st[k] !== null; }).map(function (k) { return k + "=" + encodeURIComponent(st[k]); });
   location.hash = "/" + parts.join("&");
 }
+/* The address of the page with some state changed: what a link needs, where `go` needs a click. `at` is the section to land on. */
+function hashWith(patch) {
+  var st = readHash(), x = {};
+  Object.keys(st).forEach(function (k) { if (k !== "at") x[k] = st[k]; });
+  Object.keys(patch).forEach(function (k) { x[k] = patch[k]; });
+  return "#/" + Object.keys(x).filter(function (k) { return x[k] !== "" && x[k] !== undefined && x[k] !== null; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&");
+}
 function go(patch) { var st = readHash(); Object.keys(patch).forEach(function (k) { st[k] = patch[k]; }); writeHash(st); }
 window.addEventListener("hashchange", render);
 
@@ -648,6 +662,7 @@ function inboxCard(snap, r, open, mineCheck) {
   var card = h("div", { class: "icard" + (agent ? " agent" : "") + (mine ? " mine" : ""), id: "card-" + r.ref },
     h("div", { class: "top" }, h("span", { class: "ref", text: r.ref }), r.from ? h("span", { class: "small mono", text: T.fromW + " " + r.from }) : null),
     h("button", { type: "button", class: "tt", "aria-expanded": open ? "true" : "false", "aria-label": (open ? T.closeCard : T.openCard) + " " + r.ref, on: { click: function () { go({ card: open ? "" : r.ref }); } }, text: r.title || r.ref }),
+    r.plain ? h("div", { class: "iplain" }, h("span", { class: "k2", text: L("en simple", "in plain words") }), document.createTextNode(" " + r.plain)) : null,
     h("span", { class: "small", text: meta.join(" · ") }),
     last.length ? h("div", { class: "trail" }, last.map(function (l) { return h("div", { text: (l.label || l.key) + ": " + (l.value || "") + " · " + (l.at || "") + (l.actor ? " · " + l.actor : "") }); })) : null,
     r.command ? youDoNode(r) : null);
@@ -1053,8 +1068,13 @@ function consultBar(snap) {
     make.addEventListener("click", function () { consultGo(make, c.seed, c.new_url); });
     bar.appendChild(make);
     if (c.desktop_ok) bar.appendChild(h("a", { class: "btn ghost", href: c.desktop_new + encodeURIComponent(c.seed), title: L("Abre Claude Desktop con el mensaje ya escrito", "Opens Claude Desktop with the message already typed"), text: L("o en Claude Desktop (prellenado)", "or in Claude Desktop (prefilled)") }));
-    if (editable(snap)) bar.appendChild(threadForm(snap, true));
-    else {
+    if (editable(snap)) {
+      /* the URL form waits behind a button: the bar is one row until the person has a thread to register */
+      var have = h("button", { type: "button", class: "btn ghost", "aria-expanded": CONSULT_UI.form ? "true" : "false", text: CONSULT_UI.form ? L("Ocultar", "Hide") : L("Ya tengo el hilo: registrar su URL", "I already have the thread: register its URL") });
+      have.addEventListener("click", function () { CONSULT_UI.form = !CONSULT_UI.form; render(); });
+      bar.appendChild(have);
+      if (CONSULT_UI.form) bar.appendChild(threadForm(snap, true));
+    } else {
       bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo, una sola vez (GTT la recuerda siempre): ", "Then register the thread's URL, once (GTT remembers it for good): ") }));
       bar.appendChild(cmdBlock(c.set_command));
     }
@@ -1135,6 +1155,13 @@ function consultPaste(snap) {
   }
   area.addEventListener("input", paint);
   box.appendChild(h("span", { class: "small", text: L("Claude responde en el hilo con un bloque «Respuesta para GTT:». Pégalo aquí: lo leo, te muestro qué entendí y lo registras con un clic.", "Claude answers in the thread with a “Respuesta para GTT:” block. Paste it here: I read it, show what I understood and you record it with one click.") }));
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    var fromClip = h("button", { type: "button", class: "btn go", title: L("Lee lo que copiaste del hilo: un clic en vez de pegar", "Reads what you copied from the thread: one click instead of pasting"), text: L("Traer lo copiado", "Bring what I copied") });
+    fromClip.addEventListener("click", function () {
+      navigator.clipboard.readText().then(function (t) { area.value = t; paint(); }, function () { fromClip.textContent = L("el navegador no dejó leer: pégalo abajo (Ctrl+V)", "the browser did not allow reading: paste below (Ctrl+V)"); });
+    });
+    box.appendChild(fromClip);
+  }
   box.appendChild(area); box.appendChild(out); paint();
   return box;
 }
@@ -1161,7 +1188,7 @@ function needItems(snap) {
   var out = [];
   (snap.needs_you || []).forEach(function (n) {
     out.push({ ref: n.ref, title: n.title || n.ref, sub: [(T.hows[n.how] || T.kinds[n.kind] || n.kind)].concat(n.unblocks && n.unblocks.length ? [L("destraba ", "unblocks ") + n.unblocks.join(", ")] : []).concat(n.note ? [n.note] : []).join(" · "),
-      choices: n.choices || null, context: n.context || null, terms: n.terms || null, todo: n.todo || null, why: n.why || null, until: n.until || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
+      choices: n.choices || null, context: n.context || null, terms: n.terms || null, cites: n.cites || null, todo: n.todo || null, why: n.why || null, until: n.until || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
   });
   (snap.findings || []).forEach(function (f) {
     if (f.owner !== "human") return;
@@ -1198,7 +1225,20 @@ function figures(snap) {
     define: L("Historias a las que les falta información antes de poder empezar.", "Stories that lack information before they can start."),
     alerts: L("WARNING: lo que GTT detectó y conviene atender pronto (BLOCKING detiene lo afectado). El detalle está en la vista Salud.", "WARNING: what GTT detected and should be attended soon (BLOCKING stops what it affects). The detail is in the Health view."),
     notices: L("NOTICE: informativo. Sirve para saber, no hay que atenderlo ahora. Está aparte para que no tape lo urgente.", "NOTICE: informative. Good to know, nothing to attend now. Kept apart so it does not bury what is urgent.") };
-  function cell(k, v, sub, cls, key) { return h("div", { class: "fig", "data-fig": key, title: figHelp[key] || "" }, h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub })); }
+  /* each figure leads to the content it counts: the click lands on it, never on the top of a view */
+  var level = alerts.b ? "BLOCKING" : "WARNING";
+  var goes = {
+    progress: [{ view: "plan", f: "", q: "", tl: "", at: "plan-list" }, L("ver el plan", "see the plan")],
+    eta: [{ view: "plan", f: "", q: "", tl: "1", at: "plan-list" }, L("ver la línea de tiempo", "see the timeline")],
+    needs: [{ view: "plan", na: "1", at: "needs-h" }, L("ver lo que te espera", "see what waits for you")],
+    define: [{ view: "plan", f: "define", q: "", at: "plan-list" }, L("ver las historias por definir", "see the Stories to define")],
+    alerts: [{ view: "health", hl: level, ho: "", hq: "" }, L("ver las alertas en Salud", "see the alerts in Health")],
+    notices: [{ view: "health", hl: "NOTICE", ho: "", hq: "" }, L("ver los avisos en Salud", "see the notices in Health")] };
+  function cell(k, v, sub, cls, key) {
+    var to = goes[key];
+    return h("a", { class: "fig", "data-fig": key, href: hashWith(to[0]), title: (figHelp[key] || "") + " — " + to[1], "aria-label": k + " " + v + ": " + to[1] },
+      h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub }), h("span", { class: "go", text: "→ " + to[1] }));
+  }
   var estimated = hrs && hrs.total ? L("de ", "of ") + fmtH(hrs.total) + " h · " : "";
   return h("section", { class: "strip", "aria-label": L("cifras", "figures") },
     cell(L("avance", "progress"), pct === null || pct === undefined ? "—" : pct + "%", (hrs && hrs.total ? fmtH(hrs.done) + " " + estimated : "") + (s.stories_done || 0) + "/" + (s.stories_total || 0) + " " + L("historias", "Stories"), "", "progress"),
@@ -1297,6 +1337,10 @@ function decisionCard(snap, n) {
     card.appendChild(dl);
   }
   if (n.why) card.appendChild(h("div", { class: "dwhy" }, h("span", { class: "k2", text: L("por qué importa", "why it matters") }), document.createTextNode(" " + n.why)));
+  (n.cites || []).forEach(function (x) {
+    card.appendChild(h("blockquote", { class: "dcite", "aria-label": L("fuente de ", "source of ") + n.ref },
+      "\u201c" + x.quote + "\u201d", h("div", { class: "small" }, L("dice el documento: ", "the document says: "), docLink(snap, x.path, x.path + (x.anchor ? " \u203a " + x.anchor : "")))));
+  });
   if (n.todo) card.appendChild(h("div", { class: "todo" }, h("span", { class: "k2", text: L("qué te toca", "what you do") }), document.createTextNode(n.todo)));
   var opts = h("div", { class: "dopts", role: "group", "aria-label": L("opciones de ", "options of ") + n.ref });
   var note = h("span", { class: "small", text: FORM_MSG[n.ref] || "" });
@@ -1786,7 +1830,7 @@ function viewPlan() {
   main.appendChild(howTo("plan",
     L("El plan de construcción: cada épica (un objetivo grande) con sus historias (los pasos pequeños que la construyen), en el orden en que se construyen.", "The build plan: each Epic (a big goal) with its Stories (the small steps that build it), in the order they are built."),
     L("Para saber cuánto falta, qué está en curso, qué te espera a ti y qué está bloqueado, sin leer el backlog.", "To know how much is left, what is in progress, what waits for you and what is blocked, without reading the backlog."),
-    [L("Arriba están las cifras: avance, fecha estimada, lo que te espera y lo que falta definir.", "At the top are the figures: progress, estimated date, what waits for you and what is left to define."),
+    [L("Arriba están las cifras: avance, fecha estimada, lo que te espera y lo que falta definir. Haz clic en una y llegas a su contenido.", "At the top are the figures: progress, estimated date, what waits for you and what is left to define. Click one and you land on its content."),
      L("«te necesito» es lo único que espera una decisión tuya: respóndelo ahí, o usa «Consultar en Claude» si necesitas pensarlo.", "“I need you” is the only thing waiting for a decision of yours: answer it there, or use “Consult in Claude” if you need to think it through."),
      L("Abre una épica con un clic: verás su objetivo, alcance y sus historias. Los vacíos abiertos traen su contexto y un botón para consultarlos.", "Open an Epic with a click: you will see its goal, scope and Stories. Open gaps come with their context and a button to consult them."),
      L("Con los filtros y la búsqueda acotas; pasa el mouse sobre una cifra o una etiqueta para ver qué significa.", "Narrow with the filters and the search; hover a figure or a tag to see what it means.")],
@@ -1794,7 +1838,7 @@ function viewPlan() {
   main.appendChild(figures(snap)); main.appendChild(nowBlock(snap));
   var nb = needsBlock(snap); if (nb) main.appendChild(nb);
   var sh = shadowStrip(snap); if (sh) main.appendChild(sh);
-  main.appendChild(h("div", { class: "secline" }, h("h2", { class: "sec", text: "plan" }), h("span", { class: "small", text: L("en el orden en que se construye, por " + (st.g === "release" ? "release" : st.g === "group" ? "grupo" : "frente"), "in the order it is built, by " + (st.g === "release" ? "release" : st.g === "group" ? "group" : "front")) })));
+  main.appendChild(h("div", { class: "secline", id: "plan-list" }, h("h2", { class: "sec", text: "plan" }), h("span", { class: "small", text: L("en el orden en que se construye, por " + (st.g === "release" ? "release" : st.g === "group" ? "grupo" : "frente"), "in the order it is built, by " + (st.g === "release" ? "release" : st.g === "group" ? "group" : "front")) })));
   main.appendChild(planFilters(snap));
   if (st.tl === "1") main.appendChild(timelinePanel(snap));
   var g = st.g === "release" || st.g === "group" ? st.g : "lane"; var k = FILTERS.indexOf(st.f) >= 0 ? st.f : "all"; var q = (st.q || "").toLowerCase();
@@ -2230,6 +2274,14 @@ function render() {
     var saved = sessionStorage.getItem("sonar-scroll");
     if (saved) { sessionStorage.removeItem("sonar-scroll"); var cut = saved.indexOf("|"); if (saved.slice(0, cut) === location.hash) window.scrollTo(0, parseInt(saved.slice(cut + 1), 10) || 0); }
   } catch (e) {}
+  var landing = readHash().at;
+  if (landing) {                       /* a link to a section: land on it, then forget it so a later click does not scroll again */
+    setTimeout(function () {
+      var target = document.getElementById(landing);
+      if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
+      try { var x = readHash(); delete x.at; history.replaceState(null, "", "#/" + Object.keys(x).filter(function (k) { return x[k] !== ""; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&")); } catch (e) {}
+    }, 0);
+  }
   document.title = "GTT Sonar · " + view;
 }
 function schedule() {

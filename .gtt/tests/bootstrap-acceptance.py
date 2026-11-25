@@ -4168,9 +4168,9 @@ def pending_events(project, tmp):
         rc, out = pend(*args, "--apply")
         check(rc == 1, f"criteria 2 and 10: {label} is refused", out)
     check(sorted(os.listdir(pdir)) == [".seq", "ASK-001.md", "DEC-002.md", "README.md"], "criterion 2: a refused event leaves nothing behind")
-    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nIn plain words: a question written by hand for a person who was not there.\nWhat you do: answer it.\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n" + "\n" * 3 + "line\n\nAnswer:\n")
+    write(path("ASK-009.md"), "# ASK-009 · Q?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nIn plain words: a question written by hand for a person who was not there.\nWhat you do: answer it.\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n" + "\n" * 3 + "line\nline\n\nAnswer:\n")
     rc, out = pend("check")
-    check(rc == 1 and "PEN-01" in out and "19 lines" in out, "criterion 2: a file over the limit fails the check", out)
+    check(rc == 1 and "PEN-01" in out and "20 lines" in out, "criterion 2: a file over the limit fails the check", out)
     os.remove(path("ASK-009.md"))
     write(path("DEC-008.md"), "# DEC-008 · No affects\n\nCreated: 2026-11-01\nWhat I decided: a\nWhy: b\nWhere it landed: src/sync/\n\nAnswer: (ok, or tell me what to change)\n")
     rc, out = pend("check")
@@ -4362,6 +4362,33 @@ def plain_words(project, tmp):
     write(os.path.join(pdir, "ASK-009.md"), "# ASK-009 · Old question?\n\nType: money · Topic: t · Blocks: nothing · Created: 2026-11-01\nWhy it matters: w\n1. a (recommended)\n   x\n2. b\n   y\n3. Something else: write it in «Answer»\n4. Talk about it in the chat: say «let's talk»\nUntil you answer: option 1.\n\nAnswer:\n")
     rc, out = pend("check")
     check("ASK-009" in out and "PEN-10" in out and "ASK-001.md: ok" in out, "an event written before this rule is told once (PEN-10), never blocked; the new ones are ok", out)
+    # a question can cite the words of the governed document it comes from: checked, kept, handed to Sonar, and told if the document changes
+    DOC = "gtt-domain/context/constraints.md"
+    WORDS = "Hard limits this solution must respect"
+    CQ = "Do we store the photo backups outside the country?"
+    rc, out = ask(CQ, OPTS, "--context", CTX, "--cite", f"{DOC}#Platform | words the document never says", "--apply", header="Backups abroad")
+    check(rc == 1 and "--cite" in out and "not in the document" in out, "a citation whose words are not in the document is refused", out)
+    rc, out = ask(CQ, OPTS, "--context", CTX, "--cite", "AGENTS.md | The human decides; you prepare.", "--apply", header="Backups abroad")
+    check(rc == 1 and "not a project document" in out, "a citation of a file that is not a project document is refused", out)
+    rc, out = ask(CQ, OPTS, "--context", CTX, "--cite", f"{DOC}#Platform", "--apply", header="Backups abroad")
+    check(rc == 1 and "--cite" in out and "exact words" in out, "a citation with no words is refused, and says the shape", out)
+    rc, out = ask(CQ, OPTS, "--context", CTX, "--cite", f"{DOC}#Platform | {WORDS}", "--cite", f"{DOC} | a", "--cite", f"{DOC} | {WORDS}", "--apply", header="Backups abroad")
+    check(rc == 1 and "at most 2" in out, "more citations than the limit are refused", out)
+    rc, out = ask(CQ, OPTS, "--context", CTX, "--cite", f"{DOC}#Platform | **{WORDS}**", "--apply", header="Backups abroad")
+    cited = next((open(os.path.join(pdir, n), encoding="utf-8").read() for n in sorted(os.listdir(pdir)) if n.endswith(".md") and CQ in open(os.path.join(pdir, n), encoding="utf-8").read()), "")
+    check(rc == 0 and f"Sources: {DOC}#Platform «{WORDS}»" in cited, "a citation that holds is written with its document, its section and its words (markdown emphasis does not matter)", out + cited)
+    rc, out = pend("list", "--json")
+    rows = json.loads(out) if rc == 0 else []
+    rows = rows if isinstance(rows, list) else rows.get("events", rows.get("all", []))
+    row = next((r for r in rows if r.get("title") == CQ), {})
+    check(row.get("cites") == [{"path": DOC, "anchor": "Platform", "quote": WORDS}], "the engine hands Sonar the citation as data", json.dumps(row)[:300])
+    rc, out = pend("check")
+    check("PEN-11" not in out, "a citation that still holds raises nothing", out)
+    original = open(os.path.join(p, DOC), encoding="utf-8").read()
+    write(os.path.join(p, DOC), original.replace(WORDS, "Limits"))
+    rc, out = pend("check")
+    check("PEN-11" in out and "no longer holds" in out, "when the document changes and the words are gone the question is told (PEN-11), never blocked", out)
+    write(os.path.join(p, DOC), original)
 
 
 def parse_answered(path):

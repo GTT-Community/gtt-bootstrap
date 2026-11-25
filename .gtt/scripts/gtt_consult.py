@@ -573,6 +573,14 @@ def proposal_context(entry):
     return out
 
 
+def gtt_pending_cites(fields):
+    try:
+        import gtt_pending
+        return gtt_pending.split_cites((fields or {}).get("cites"))
+    except Exception:
+        return []
+
+
 def item_text(ev):
     ref = event_ref(ev)
     n = int(ev["number"])
@@ -585,6 +593,8 @@ def item_text(ev):
             continue
         if re.match(r"^\s*(?:Respuesta|Answer)\s*:", line):
             continue
+        if re.match(r"^\s*(?:Sources|Fuentes)\s*:", line):       # the sources go below, one line each, with their link
+            continue
         line = re.sub(r"(sha: [0-9a-f]{12})[0-9a-f]{40,}", r"\1", line)
         body.append(line.rstrip())
     text = "\n".join(body)
@@ -594,6 +604,10 @@ def item_text(ev):
     ctx = proposal_context(entry)
     if ctx:
         parts += [T("item_context")] + ctx
+    for x in (gtt_pending_cites(fields) if ev["kind"] == "ASK" else []):
+        where = x["path"] + ("#" + x["anchor"] if x["anchor"] else "")
+        url = doc_link(x["path"])
+        parts.append(T("item_cite" if url else "item_cite_plain", path=where, quote=x["quote"], link=url))
     link = ref_link(entry or ref)
     if link:
         parts.append(T("item_link", link=link))

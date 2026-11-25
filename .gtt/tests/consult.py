@@ -432,6 +432,20 @@ def main():
         rev = next((n for n in s0["needs_you"] if n["kind"] == "review"), None)
         check("a proposal's review carries what each option does too", rev is not None and all(c.get("does") for c in rev["choices"]) and any(c["recommended"] for c in rev["choices"]), str(rev)[:300])
         check("the page draws it as a decision card (why, options with their effect, recommended, the way out)", all(x in html for x in ("decisionCard", "why it matters", "If you do not answer", "dopt")))
+        # a question that cites the document it comes from: the words travel to the page and to the thread, and a proposal's card leads with its plain words
+        DOC = "gtt-domain/context/constraints.md"
+        rc, o, e = bash(w, ".gtt/scripts/gtt-pending.sh", "ask", "--type", "product", "--header", "Hosting", "--question", "Do we host outside Chile?", "--context", PLAIN_CONTEXT,
+                        "--cite", f"{DOC}#Platform | Self-hosted server in Chile, no cloud.", "--why", "It decides where the data lives.", "--option", "Stay | Keep the server in Chile.",
+                        "--option", "Move | Look at a provider abroad.", "--recommended", "1", "--blocks", "STORY-001", "--apply")
+        check("a question with a citation is created", rc == 0, o + e)
+        s2 = snap_of(w)
+        cited = next((n for n in s2["needs_you"] if n["kind"] == "ask" and n["title"] == "Do we host outside Chile?"), {})
+        check("the citation reaches the page as data: the document, the section and its words", cited.get("cites") == [{"path": DOC, "anchor": "Platform", "quote": "Self-hosted server in Chile, no cloud."}], str(cited)[:300])
+        rc, out, err = script(w, "batch")
+        check("the message for the thread carries the cited words and where they come from, once", rc == 0 and f"Document source ({DOC}#Platform): \u00abSelf-hosted server in Chile, no cloud.\u00bb" in out and "Sources:" not in out, out[-900:])
+        check("the page draws the citation as a quote that opens the document, and a proposal's card leads with its plain words", all(x in html for x in ("dcite", "the document says", "iplain")))
+        card = next((r for r in (s2.get("inbox") or []) if r["ref"] == prop), {})
+        check("a proposal's row carries its `In plain words` for the card", str(card.get("plain") or "").startswith("the team wants this change"), str(card)[:300])
     finally:
         os.chdir(here)
         if args.keep:

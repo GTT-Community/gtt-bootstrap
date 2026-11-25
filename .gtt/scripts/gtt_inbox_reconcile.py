@@ -181,11 +181,13 @@ def draft_problems(e):
     """Why an ADR draft is not complete yet: `<...>` markers left, or an empty Context, Decision or Consequences."""
     body = e["body"]
     problems = []
+    texts = inbox.contract()["draft_texts"]
+    lang = inbox.lang()
     for number, line in enumerate(body.split("\n"), 1):
         if OPTIONAL_LINES.match(line):
             continue
         if inbox.MARKER.search(line):
-            problems.append(f"line {number} still has a marker")
+            problems.append(texts["marker"][lang].format(n=number))
             break
     sections = {}
     current = None
@@ -196,11 +198,11 @@ def draft_problems(e):
             sections[current] = []
         elif current is not None:
             sections[current].append(line)
-    for names in (("context", "contexto"), ("decision", "decisión", "decision"), ("consequences", "consecuencias")):
+    for name_key, names in (("context", ("context", "contexto")), ("decision", ("decision", "decisión")), ("consequences", ("consequences", "consecuencias"))):
         key = next((n for n in sections if n in names), None)
         text = "\n".join(sections.get(key, [])) if key else ""
         if not re.sub(r"<!--.*?-->|\s", "", text, flags=re.DOTALL):
-            problems.append(f"the section {names[0]} is empty")
+            problems.append(texts["empty"][lang].format(name=texts["names"][name_key][lang]))
     return problems
 
 

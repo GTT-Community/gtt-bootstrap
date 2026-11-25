@@ -567,6 +567,11 @@
     "incorporated": "[A-Za-z0-9._/-]+",
     "converted": "[A-Za-z0-9._-]+"
   },
+  "draft_texts": {
+    "marker": { "en": "line {n} still has a placeholder to fill in (a <...> left from the template)", "es": "la línea {n} aún tiene un marcador sin completar (un <...> que dejó la plantilla)" },
+    "empty": { "en": "the «{name}» section of the draft is empty", "es": "la sección «{name}» del borrador está vacía" },
+    "names": { "context": { "en": "Context", "es": "Contexto" }, "decision": { "en": "Decision", "es": "Decisión" }, "consequences": { "en": "Consequences", "es": "Consecuencias" } }
+  },
   "plain": {
     "field": "In plain words",
     "min_chars": 30,

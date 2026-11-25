@@ -40,13 +40,14 @@
   ],
   "limits": {
     "max_lines": 12,
-    "ask_max_lines": 18,
+    "ask_max_lines": 19,
     "header_chars": 24,
     "max_open_asks": 4,
     "max_chars": 120,
     "options": { "min": 2, "max": 3 },
     "answer_chars": 120,
-    "plain_chars": 320,
+    "plain_chars": 420,
+    "cites": { "max": 2, "quote_min": 12, "quote_max": 160 },
     "plain_min_chars": 40,
     "terms": { "max": 4 },
     "long_token": 40,
@@ -61,6 +62,11 @@
     "ratify": { "en": "Approve it in your terminal with the command shown. Only you approve: until then it stays proposed.", "es": "Apruébalo en tu terminal con el comando que se muestra. Solo tú apruebas: hasta entonces queda propuesto." },
     "adopt": { "en": "Adopt this draft into the inbox with the command shown, or leave it where it is.", "es": "Adopta este borrador en la Bandeja con el comando que se muestra, o déjalo donde está." },
     "blocked": { "en": "A Story cannot continue until you decide what blocks it. Open it and answer, or tell the agent how to unblock it.", "es": "Una Story no puede continuar hasta que decidas qué la bloquea. Ábrela y responde, o dile al agente cómo destrabarla." }
+  },
+  "cites": {
+    "note": "A question may cite the words of a governed document it comes from: --cite \"path#section | the exact words\". The engine checks that the file is a project document and that the words are in it; Sonar shows them with a link to the page. A citation is the document's own proof: it never decides anything.",
+    "roots": ["gtt-domain/context/", "gtt-domain/adr/", "docs/sources/", "gtt-domain/backlog.md"],
+    "open": "«", "close": "»", "separator": " · "
   },
   "plain": {
     "note": "An event is read by a person who was not in the session and may not know the project's words. Every ASK carries `In plain words` (what this is about, in a few plain sentences, never a restatement of the question) and, for any code, acronym or name a person could not guess (b2, S3, EC2, a library, an internal name), a `Terms` line `term = what it is`. The engine refuses an ASK whose question or options use such a code that neither line explains. Ids the page links (STORY-467, EPIC-004, ASK-014) and plain version words (v1) need no explanation.",
@@ -95,14 +101,14 @@
       "decided": "What I decided", "reason": "Why", "where": "Where it landed", "until": "Until you answer",
       "answer": "Answer", "answer_hint": "(ok, or tell me what to change)", "attended": "Attended", "option": "option",
       "landed": "applied in", "recommended": "recommended", "nothing": "nothing", "option_word": "option",
-      "level": "Level", "route": "Route", "for": "For", "sha": "sha", "recommended_rev": "recommended"
+      "level": "Level", "route": "Route", "for": "For", "sha": "sha", "recommended_rev": "recommended", "cites": "Sources"
     },
     "es": {
       "type": "Tipo", "topic": "Tema", "other": "Otra respuesta: escríbela en «Respuesta»", "chat": "Hablarlo en el chat: dime «hablemos»", "blocks": "Bloquea", "created": "Creada", "affects": "Afecta", "why_matters": "Por qué importa", "context": "En simple", "terms": "Términos", "todo": "Qué te toca",
       "decided": "Qué decidí", "reason": "Por qué", "where": "Dónde quedó", "until": "Mientras no respondas",
       "answer": "Respuesta", "answer_hint": "(ok, o dime qué cambiar)", "attended": "Atendida", "option": "opción",
       "landed": "quedó en", "recommended": "recomendada", "nothing": "nada", "option_word": "opción",
-      "level": "Nivel", "route": "Ruta", "for": "Para", "sha": "sha", "recommended_rev": "recomendado"
+      "level": "Nivel", "route": "Ruta", "for": "Para", "sha": "sha", "recommended_rev": "recomendado", "cites": "Fuentes"
     }
   },
   "message": {
@@ -112,6 +118,10 @@
       "applied": "Answered, not applied yet", "cleaned": "removed {n} attended or expired event(s)",
       "nothing": "Nothing pending.",
       "plain_missing": "write --context: what this is about in plain words, for someone who was not in the session (at least {n} characters, not a copy of the question)",
+      "cite_shape": "each --cite is \"path#section | the exact words\" (the words from the document, {min} to {max} characters), at most {n}",
+      "cite_path": "--cite `{path}`: it is not a project document (allowed: {roots})",
+      "cite_missing": "--cite `{path}`: the file does not exist",
+      "cite_words": "--cite `{path}`: those words are not in the document; copy them exactly as the document has them",
       "plain_terms": "explain {codes} in --context or with --term \"{first} = what it is\" (a code or name a person could not guess)",
       "batch_tail": "Answer each one with its number (e.g. «14: 1, 15: 2»), or write what you prefer.",
       "review_tail": "A review is answered with an option number only: «15: 1» here, or gtt answer 15 1; for anything else, say it and the agent will propose again."
@@ -122,6 +132,10 @@
       "applied": "Respondida, falta aplicar", "cleaned": "borré {n} evento(s) atendido(s) o vencido(s)",
       "nothing": "Nada pendiente.",
       "plain_missing": "escribe --context: de qué se trata, en simple, para alguien que no estuvo en la sesión (al menos {n} caracteres, sin repetir la pregunta)",
+      "cite_shape": "cada --cite es \"ruta#sección | las palabras exactas\" (las palabras del documento, de {min} a {max} caracteres), como máximo {n}",
+      "cite_path": "--cite `{path}`: no es un documento del proyecto (permitidos: {roots})",
+      "cite_missing": "--cite `{path}`: el archivo no existe",
+      "cite_words": "--cite `{path}`: esas palabras no están en el documento; cópialas tal cual las tiene el documento",
       "plain_terms": "explica {codes} en --context o con --term \"{first} = qué es\" (un código o nombre que una persona no podría adivinar)",
       "batch_tail": "Responde cada una con su número (p. ej. «14: 1, 15: 2»), o escribe lo que prefieras.",
       "review_tail": "Una revisión se responde solo con el número de una opción: «15: 1» aquí, o gtt answer 15 1; para otra cosa, dilo y el agente propondrá de nuevo."
@@ -137,6 +151,7 @@
     { "id": "PEN-08", "level": "fail", "statement": "a question is necessary: a product or governed question names the Story or Epic it blocks, no question repeats an open one, and at most max_open_asks questions are open at once (answer those first)" },
     { "id": "PEN-09", "level": "fail", "statement": "a review (REV) names its entry, carries the sha256 of it, has 2 to 5 numbered options each with a one-line description, exactly one recommended, no closing lines, and at most rev.max_lines lines of rev.max_chars characters" },
     { "id": "PEN-10", "level": "warn", "statement": "a question explains itself to someone who was not in the session: an `In plain words` line (at least plain_min_chars) and every code or name in the question, the options or the topic (b2, S3...) explained in it or in `Terms`; the engine refuses to create one that does not" },
+    { "id": "PEN-11", "level": "warn", "statement": "a citation of a question still holds: its document exists and still has those words (otherwise the document changed after the question: ask again or answer by hand)" },
     { "id": "PEN-07", "level": "warn", "statement": "an answered event that nobody marked is waiting to be applied" }
   ]
 }

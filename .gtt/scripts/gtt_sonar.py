@@ -486,6 +486,23 @@ def awaiting_agent(pend, inbox):
             "accepted": [r["ref"] for r in rows if r.get("stage") == "accepted"]}
 
 
+def plain_words(body, c):
+    """What the proposal says in plain words (its `In plain words` field), for the card: the person reads it without opening the text."""
+    field = (c.get("plain") or {}).get("field")
+    lines = (body or "").splitlines()
+    if not field:
+        return None
+    for i, line in enumerate(lines):
+        m = re.match(rf"^\s*{re.escape(field)}\s*:\s*(.*)$", line, re.IGNORECASE)
+        if not m:
+            continue
+        value = m.group(1).strip() or next((l.strip() for l in lines[i + 1:] if l.strip()), "")
+        if not value or re.fullmatch(r"<[^<>]*>", value) or re.match(r"^[A-Z][A-Za-z ?]{1,45}:", value):
+            return None
+        return short(value, 320)
+    return None
+
+
 def inbox_section(at, pend):
     """(inbox rows, counts, needs, me) from the engine. rows is None when this Bootstrap has no inbox (no data)."""
     import gtt_inbox
@@ -525,6 +542,7 @@ def inbox_section(at, pend):
                      "days_in_stage": age, "event": e["rev"], "for": rev.get("for") if rev and e["stage"] == "review" else None,
                      "command": command, "path": e["path"],
                      "trail": [{"key": l["key"], "label": (L.get("trail") or {}).get(l["key"], l["key"]), "value": l["value"], "at": l["at"], "actor": l["actor"], "detail": l["detail"]} for l in e["trail"]],
+                     "plain": plain_words(e["body"], c),
                      "text": (e["body"] or "")[:TEXT_LIMIT]})
     order = {s: i for i, s in enumerate(c["stages"])}
     rank = {p: i for i, p in enumerate(PRIORITIES)}
@@ -894,7 +912,7 @@ def build(root, docs=False):
                    for i, o in enumerate(r.get("options") or [], 1)][:4] if how == "decide" else []
         needs.append({"ref": r["id"], "kind": "ask", "how": how, "title": r["title"],
                       "weight": {"stories": len(blocked), "hours": wait.get("waiting_h")}, "unblocks": [s["id"] for s in blocked][:3],
-                      "context": short(r.get("context"), 330), "terms": (r.get("terms") or [])[:4], "why": short(r.get("why"), 240), "until": short(r.get("until"), 120), "choices": choices, "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
+                      "context": short(r.get("context"), 330), "terms": (r.get("terms") or [])[:4], "cites": (r.get("cites") or [])[:2], "why": short(r.get("why"), 240), "until": short(r.get("until"), 120), "choices": choices, "command": at(f"gtt answer {number} {r['recommended'] or 'ok'}")})
     # Only a promotion set that is ready to apply is an act of the human; a folder left without its spec is not.
     proposals = safe(lambda: gtt_change.drafts(), []) or []
     nxt_props = [{"ref": p["name"], "kind": p["kind"], "title": p.get("title") or p["name"], "command": at(f"gtt promote {p['name']}")}

@@ -324,7 +324,9 @@ def main():
 
     print("criterion 35 - the inbox: an ADR draft says what it lacks; ideas, levels and packages are the agent's and count")
     draft = by_code(fdata, "DEF-INBOX-ADR-DRAFT")[0]
-    check("context" in draft["text"] and "decision" in draft["text"] and "consequences" in draft["text"], "an ADR draft says which sections it lacks", draft["text"])
+    said = draft["text"].lower()
+    check("context" in said and "decision" in said and "consequences" in said, "an ADR draft says which sections it lacks", draft["text"])
+    check("placeholder" in said and "<...>" in said and "still has a marker" not in said, "and says the left-over marker in plain words, not in the validator's", draft["text"])
     for code in ("DEF-INBOX-UNTRIAGED", "DEF-INBOX-LEVEL", "DEF-INBOX-NO-PACKAGE", "DEF-INBOX-PACKAGE-STALE"):
         hits = by_code(fdata, code)
         check(bool(hits) and hits[0]["owner"] == "agent", f"{code} is the agent's")

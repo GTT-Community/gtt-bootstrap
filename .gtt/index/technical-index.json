@@ -165,7 +165,7 @@
       "title": "AGENTS.md — GTT Bootstrap Agent Contract",
       "authority": "instruction",
       "version": "v3.0",
-      "sha256": "39981c36e7d6c11fdd03fdacc491a0c80822839864730de278befa24f7887d26",
+      "sha256": "6d14d42b6f121456ed40047ec91729c439508dc41a64854651b33b83798ebe6c",
       "aliases": [],
       "sections": [
         {
@@ -3435,7 +3435,7 @@
       "title": "Working inside a governed project",
       "authority": "human-reference",
       "version": "v3.0",
-      "sha256": "904e01599ccae0d53894f7066d7085d0172599928a9cf4fa227a48a802456284",
+      "sha256": "b5795250dc14be45b697ce64001a441a7034a584feba8ba393638b070e5c2b71",
       "aliases": [],
       "sections": [
         {
