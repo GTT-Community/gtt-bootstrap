@@ -229,17 +229,19 @@ def main():
         if chrome:
             def view(frag):
                 return subprocess.run([chrome, "--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=3000", "--dump-dom", f"file://{gpage}#/view={frag}"], capture_output=True, text=True).stdout
+            shut = view("plan")
+            check("the explanation waits behind its button: no view opens with it", 'class="how"' not in shut.split('id="app"', 1)[-1].split("<script", 1)[0] and "How is this view used?" in shut, "")
             for frag in ("inbox", "activity", "plan", "health", "design"):
-                body = view(frag)
+                body = view(frag + "&help=1")
                 check(f"{frag}: it says what it is, what it is for and how it is used, and the person can hide it",
                       'class="how"' in body and "what it is for" in body and "how to use it" in body and "Hide the explanation" in body, frag)
             inbox = view("inbox")
             check("the Inbox says what each stage is and what is yours in it", "colhelp" in inbox and "ratifying is yours alone" in inbox, "")
             act = view("activity")
             check("the Activity references are links to where they live", 'class="refl"' in act and "view=plan&amp;q=STORY-" in act or "view=inbox&amp;card=" in act, str(act.count("refl")))
-            plan = view("plan")
+            plan = view("plan&help=1")
             check("the Plan explains its words (Epic, Story, to define, open gap...) and its figures say what they count on hover", "dl class=\"terms\"" in plan and "to define" in plan and "title=\"How much of the work is done" in plan, "")
-            check("Health explains the levels and puts Consult in Claude on an open gap", "BLOCKING" in view("health") and "Consult in Claude" in view("health"), "")
+            check("Health explains the levels and puts Consult in Claude on an open gap", "BLOCKING" in view("health&help=1") and "Consult in Claude" in view("health&qo=WAITING,GOV-GAP"), "")
             check("Design offers to have Claude explain any document", "Ask Claude to explain it" in view("design"), "")
             guide = view("help")
             check("the Guide lists the words you will meet and where Claude can help", "The words you will meet" in guide and "Where you can ask Claude for help" in guide, "")

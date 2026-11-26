@@ -1108,6 +1108,17 @@ def build(root, docs=False):
     }
 
 
+def waiting_now(snap):
+    """How many things wait for the person today: the same rule as the page (`attention` in template.html), so the line and the page say one number.
+    What the engine declares, each open gap that holds an unfinished Story (or is BLOCKING), a decision to know and a plan ready to run."""
+    found = snap.get("findings") or []
+    refs = {n["ref"] for n in snap.get("needs_you") or []}
+    held = {m.group(0) for f in found if f["code"] == "DEF-STORY-GAP" for m in [re.search(r"GAP-\d+", f.get("text") or "")] if m}
+    refs |= {f["ref"] for f in found if f["code"] == "GOV-GAP" and (f["ref"] in held or f["level"] != "NOTICE")}
+    refs |= {f["ref"] for f in found if f["code"] in ("GOV-DEC", "GOV-RUN")}
+    return len(refs)
+
+
 def cmd_snapshot(args):
     root = repo_root()
     if os.path.realpath(root) != os.path.realpath(os.getcwd()) and os.path.isdir(os.path.join(root, ".gtt")):
@@ -1437,7 +1448,7 @@ def cmd_start(args):
             return 0
         import pathlib
         uri = pathlib.Path(page_path).as_uri()
-        waiting = len(snap.get("needs_you") or [])
+        waiting = waiting_now(snap)
         blocked = (snap.get("summary") or {}).get("stories_blocked") or 0
         # The consultation thread (Claude web) is part of the same line while none is registered: one clause, said once, so the person knows it exists.
         no_thread = False
@@ -1450,12 +1461,12 @@ def cmd_start(args):
             head = f"{waiting} cosa(s) te esperan" if waiting else "nada te espera"
             tail = f" · {blocked} historia(s) bloqueada(s)" if blocked else ""
             tail += " · sin hilo de consulta en Claude web (arriba en Sonar: «Crear el hilo»)" if no_thread else ""
-            line = f"Sonar: {head}{tail} · {uri} (también `gtt sonar`)"
+            line = f"Sonar: {head}{tail} · {uri} (solo lectura; para responder desde la página: `gtt sonar`)"
         else:
             head = f"{waiting} thing(s) wait for you" if waiting else "nothing waits for you"
             tail = f" · {blocked} blocked Stor{'y' if blocked == 1 else 'ies'}" if blocked else ""
             tail += " · no consultation thread in Claude web yet (top of Sonar: “Create the thread”)" if no_thread else ""
-            line = f"Sonar: {head}{tail} · {uri} (also `gtt sonar`)"
+            line = f"Sonar: {head}{tail} · {uri} (read only; to answer from the page: `gtt sonar`)"
         spawn_watcher()
         if prefs().get("open_on_start"):
             open_once(uri)

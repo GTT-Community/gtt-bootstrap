@@ -931,6 +931,17 @@ def observe_shadow():
     return out
 
 
+def decision_acts(item, by):
+    """The human's acts that would change this observation now, each as the command of .gtt/contract/handoff.json with its id and the person's name."""
+    try:
+        acts = json.loads(read(".gtt/contract/handoff.json"))["acts"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return []
+    same = {"deferred": "defer", "rejected": "reject"}.get(item.get("status"))
+    return [{"act": name, "command": acts[name]["command"].format(observation=item["id"], by=by)}
+            for name in ("accept", "reject", "defer") if name != same and name in acts]
+
+
 def findings():
     """GOV-OBSERVATION for what the governance backlog (`gtt-domain/governance-backlog.json`) holds open, as it is (no recalculation),
     and GTT-SHADOW-STATE, which is computed live here (it needs no freeze)."""
@@ -940,11 +951,19 @@ def findings():
         ledger = load_ledger()
     except SystemExit:
         ledger = {"items": []}
+    by = None
     for item in ledger.get("items", []):
         if item.get("status") not in OPEN_STATES or item.get("rule") in ("GTT-SHADOW-STATE", "GTT-DEPENDS") or str(item.get("rule", "")).startswith("DLV-"):
             continue
-        out.append(gf.make("GOV-OBSERVATION", item["artifact"], LEDGER, "gtt_observe", level="WARNING" if item["level"] in ("GOVERNANCE", "BLOCKING") else "NOTICE",
-                           what=f"{item['rule']}: {item['detail']}"))
+        finding = gf.make("GOV-OBSERVATION", item["artifact"], LEDGER, "gtt_observe", level="WARNING" if item["level"] in ("GOVERNANCE", "BLOCKING") else "NOTICE",
+                          what=f"{item['rule']}: {item['detail']}")
+        # Without its id the person cannot attend it: the id and the commands of the hand-off contract travel with the finding.
+        if by is None:                        # asked of Git once, and only when there is an observation to attend
+            import gtt_handoff
+            by = gtt_handoff.who().replace('"', "")
+        finding["observation"] = item["id"]
+        finding["fix"]["acts"] = decision_acts(item, by)
+        out.append(finding)
     for sig in observe_shadow():
         out.append(gf.make("GTT-SHADOW-STATE", sig["artifact"], sig["artifact"], "gtt_observe", level=sig["level"], path=sig["artifact"]))
     return out

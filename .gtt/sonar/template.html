@@ -8,363 +8,566 @@
 <style>
 @font-face{font-family:"Geist";src:local("Geist"),url("__SONAR_FONTS__/Geist-Variable.woff2") format("woff2");font-weight:100 900}
 @font-face{font-family:"Geist Mono";src:local("Geist Mono"),url("__SONAR_FONTS__/GeistMono-Variable.woff2") format("woff2");font-weight:100 900}
+
+/* ===== tokens: dark is the default; light follows gtt-method.org (white, ink, hairlines; blue = the agent, green = done) =====
+   Colour has one meaning everywhere: agent = blue, needs = amber (yours), ok = green (done), danger = red (stops). Words always say it too. */
 :root{
-  --bg:#0E1621;--surface:#131D2B;--rail:#0B121C;--line:#23324A;--line-soft:#1C2A3D;
-  --text:#E6EDF5;--muted:#8FA1B5;--dim:#7D90A6;
-  --agent:#2DD4BF;--agent-bg:#0F2A2B;--needs:#FBBF24;--needs-bg:#221D0E;--danger:#F87171;
-  --cmd:#0A111A;--sans:"Geist",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,monospace;
+  --bg:#0A0A0B;--surface:#131315;--raised:#1A1A1D;--rail:#0F0F11;--line:#27272B;--line-soft:#1F1F23;--line-strong:#3A3A40;
+  --text:#F4F4F5;--body:#D4D4D8;--muted:#A6A6AF;--dim:#8E8E98;
+  --agent:#82AAFF;--agent-bg:#111A2E;--agent-line:#2B4272;
+  --ok:#46D390;--ok-bg:#0E2118;--ok-line:#1F5139;
+  --needs:#F5B942;--needs-bg:#1E170A;--needs-line:#4D3A12;
+  --danger:#FF7B7B;--danger-bg:#241214;--danger-line:#5A272B;
+  --primary:#F4F4F5;--on-primary:#0A0A0B;--cta:#2C61E8;--on-cta:#FFFFFF;
+  --cmd:#0D0D0F;
+  --shadow:0 1px 2px rgba(0,0,0,.4);--shadow-lg:0 14px 36px rgba(0,0,0,.45);
+  --sans:"Geist",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,monospace;
+  --r:12px;--r-s:8px;--side:240px;
 }
+:root[data-theme="light"]{
+  --bg:#FAFAFA;--surface:#FFFFFF;--raised:#F4F4F5;--rail:#F6F6F7;--line:#E2E2E4;--line-soft:#EDEDEF;--line-strong:#C9C9CE;
+  --text:#0A0A0A;--body:#2E2E31;--muted:#4F4F55;--dim:#64646B;
+  --agent:#0B46C4;--agent-bg:#EEF3FE;--agent-line:#B9CCF4;
+  --ok:#0A6E35;--ok-bg:#ECF8F1;--ok-line:#AEDCC0;
+  --needs:#875200;--needs-bg:#FDF6E6;--needs-line:#EDD59C;
+  --danger:#B3231A;--danger-bg:#FDEFEE;--danger-line:#F0BDB9;
+  --primary:#0A0A0A;--on-primary:#FFFFFF;--cta:#0B46C4;--on-cta:#FFFFFF;
+  --cmd:#F6F6F7;
+  --shadow:0 1px 2px rgba(10,10,10,.05),0 2px 8px rgba(10,10,10,.03);--shadow-lg:0 14px 34px rgba(10,10,10,.10);
+}
+
+/* ===== base ===== */
 *{box-sizing:border-box}
 html{color-scheme:dark}
-body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans)}
-a{color:var(--agent)}
-a:hover{color:#99F6E4}
+html[data-theme="light"]{color-scheme:light}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:var(--agent);text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--agent);outline-offset:2px}
-.mono{font-family:var(--mono)}
+::selection{background:var(--agent-line)}
+::placeholder{color:var(--dim)}
+button{font-family:var(--sans)}
+code,pre{font-family:var(--mono)}
+.mono{font-family:var(--mono);font-size:.92em;letter-spacing:-.01em}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-header.bar{display:flex;align-items:center;gap:28px;flex-wrap:wrap;padding:0 24px;min-height:56px;border-bottom:1px solid var(--line)}
-.brandbox{display:flex;flex-direction:column;line-height:1.15}.brandbox .home{font:400 10px var(--mono);color:var(--muted,#8b9bb0);text-decoration:none;margin-left:20px}.brandbox .home:hover{text-decoration:underline}
-.help{max-width:820px;margin:0 auto;padding:24px 16px}.help h1{margin:0 0 6px}.help .sub{opacity:.75}.help .panel{margin:14px 0;padding:14px 18px}.help li{margin:6px 0;line-height:1.5}
-.brand{display:flex;align-items:center;gap:10px;font:500 15px var(--mono)}
-.brand i{width:10px;height:10px;border-radius:2px;background:var(--agent);display:inline-block}
-nav.tabs{display:flex;gap:22px;align-self:stretch;font:13px var(--mono)}
-nav.tabs a{display:flex;align-items:center;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent}
-nav.tabs a[aria-current="page"]{color:var(--text);border-bottom-color:var(--agent)}
+select,input[type=text],textarea{font:13px/1.5 var(--sans);padding:7px 11px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);color:var(--text)}
+select:hover,input[type=text]:hover,textarea:hover{border-color:var(--line-strong)}
+textarea{width:100%;resize:vertical;background:var(--cmd);padding:11px 13px}
 .grow{flex:1}
-.meta{display:flex;align-items:center;gap:18px;flex-wrap:wrap;font:12px var(--mono);color:var(--muted)}
-.live{display:flex;align-items:center;gap:7px;color:var(--agent);background:none;border:0;font:12px var(--mono);cursor:pointer;padding:6px 4px}
-.live i{width:7px;height:7px;border-radius:50%;background:var(--agent);display:inline-block}
+.small{font-size:13px;color:var(--muted)}
+.empty{padding:22px 20px;color:var(--muted)}
+.foot{font-size:12px;color:var(--dim);padding-top:16px;border-top:1px solid var(--line-soft)}
+
+/* ===== shell: a sidebar on wide screens, a sticky bar on narrow ones ===== */
+header.bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px 20px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--rail)}
+.brandbox{display:flex;flex-direction:column;line-height:1.2}
+.brand{display:flex;align-items:center;gap:11px;font-size:16px;font-weight:750;letter-spacing:-.03em;white-space:nowrap}
+.brand::first-letter{text-transform:uppercase}
+.brand i{width:30px;height:30px;border-radius:9px;flex:none;background:radial-gradient(circle at 50% 50%,var(--on-primary) 0 2.5px,transparent 3px 5.5px,var(--on-primary) 6px 7px,transparent 7.5px 10px,var(--on-primary) 10.5px 11.2px,transparent 11.8px),var(--primary)}
+.brandbox .home{font-size:11.5px;color:var(--dim);text-decoration:none;margin:-4px 0 0 41px}
+.brandbox .home:hover{color:var(--text);text-decoration:underline}
+header.bar nav.tabs{display:flex;gap:2px;order:3;flex-basis:100%;overflow-x:auto}
+header.bar nav.tabs a{display:flex;align-items:center;gap:10px;padding:7px 11px;border-radius:var(--r-s);color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:500;white-space:nowrap}
+header.bar nav.tabs a:hover{color:var(--text);background:var(--raised)}
+header.bar nav.tabs a[aria-current="page"]{color:var(--text);background:var(--raised);font-weight:600;box-shadow:inset 0 0 0 1px var(--line)}
+header.bar nav.tabs a .tl-t{display:inline-block}
+header.bar nav.tabs a .tl-t::first-letter{text-transform:uppercase}
+.navico{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs a b{font-size:11px;font-weight:650;line-height:18px;min-width:20px;text-align:center;padding:0 6px;border-radius:999px;background:var(--line);color:var(--text);font-variant-numeric:tabular-nums}
+nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
+.meta{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.meta .edit{font-size:11.5px;font-weight:600;color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-line);border-radius:999px;padding:1px 10px}
+.meta .edit.ro{color:var(--muted);background:transparent;border-color:var(--line-strong)}
+.live{display:flex;align-items:center;gap:8px;color:var(--text);background:none;border:0;font-size:12px;cursor:pointer;padding:5px 2px;text-align:left}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px var(--ok-bg);display:inline-block;flex:none}
 .live[aria-pressed="true"]{color:var(--muted)}
 .live[aria-pressed="true"] i{background:transparent;box-shadow:inset 0 0 0 1px var(--muted)}
-select,input[type=text]{font:12px var(--mono);padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text)}
-main{padding:28px 32px 40px;display:flex;flex-direction:column;gap:28px;max-width:1280px;margin:0 auto}
-.stale{border:1px solid var(--needs);background:var(--needs-bg);color:var(--needs);border-radius:8px;padding:8px 14px;font:12px var(--mono)}
-.cmdline{font:12px var(--mono);color:var(--dim)}
-h1{margin:0;font-size:28px;font-weight:600;letter-spacing:-0.4px}
-h2.sec{margin:0;font:500 13px var(--mono);color:#B6C4D3}
-h2.sec::before{content:"# ";color:var(--dim)}
+.themebtn{display:inline-flex;align-items:center;gap:8px;padding:6px 11px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);color:var(--muted);font-size:12px;font-weight:500;cursor:pointer}
+.themebtn:hover{color:var(--text);border-color:var(--line-strong)}
+header.bar .grow{min-width:0}
+@media (min-width:1100px){
+  #app{padding-left:var(--side)}
+  header.bar{position:fixed;top:0;bottom:0;left:0;width:var(--side);flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:22px;padding:20px 12px 16px;border-bottom:0;border-right:1px solid var(--line);overflow-y:auto}
+  header.bar .brandbox{padding:0 8px}
+  header.bar nav.tabs{flex-direction:column;order:0;flex-basis:auto;overflow:visible}
+  header.bar nav.tabs a{padding:8px 10px}
+  header.bar nav.tabs a b:first-of-type{margin-left:auto}
+  header.bar .meta{flex-direction:column;align-items:flex-start;gap:10px;padding:14px 8px 0;border-top:1px solid var(--line)}
+  .themebtn{align-self:stretch}
+}
+
+/* ===== page ===== */
+main{width:100%;max-width:1200px;margin:0 auto;padding:24px 40px 56px;display:flex;flex-direction:column;gap:26px;min-width:0}
+main>*{min-width:0}
+.stale{border:1px solid var(--needs-line);background:var(--needs-bg);color:var(--needs);border-radius:var(--r-s);padding:10px 16px;font-size:13px}
+.headblock{display:flex;flex-direction:column;gap:4px}
+.cmdline{font-size:11px;font-weight:650;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.headrow{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(28px,3.4vw,38px);line-height:1.12;font-weight:780;letter-spacing:-.04em}
+h2.sec{margin:0;font-size:17px;line-height:1.35;font-weight:680;letter-spacing:-.018em}
+h2.sec::first-letter{text-transform:uppercase}
+h2.sec.raw::first-letter{text-transform:none}
 .head{display:flex;flex-direction:column;gap:6px}
 .sub{margin:0;color:var(--muted)}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px}
-.needs{border-color:#5C4A17;overflow:hidden}
-.needs .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px;background:var(--needs-bg);border-bottom:1px solid #5C4A17}
-.needs h2{margin:0;font:500 13px var(--mono);color:var(--needs)}
-.needs h2::before{content:"# ";color:#A88A3A}
-.count{font:500 12px var(--mono);padding:1px 8px;border-radius:4px;background:var(--needs);color:var(--bg)}
-.needs .hint{font-size:13px;color:#D9C48A}
-.row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
-.row:last-child{border-bottom:0}
-.ref{font:12px var(--mono);color:var(--muted);min-width:70px}
-.grow2{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:2px}
-.grow2 b{font-weight:500}
-.small{font-size:13px;color:var(--muted)}
-.tag{font:11px var(--mono);padding:2px 7px;border:1px solid #2E4058;border-radius:4px;color:#B6C4D3;display:inline-block}
-.tag.dev{background:var(--text);color:var(--bg);border-color:var(--text);font-weight:500}
-.tag.think{border:1px dashed var(--agent);color:var(--agent)}
-.tag.red{border-color:var(--danger);color:var(--danger)}
-.tag.amber{border-color:var(--needs);color:var(--needs)}
-.cmd{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--cmd);overflow:hidden;max-width:100%}
-.cmd code{font:12.5px var(--mono);padding:8px 12px;color:var(--text);overflow-wrap:anywhere}
+.secline{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.tl>h2.sec,.help .panel>h2.sec{padding:15px 20px;border-bottom:1px solid var(--line-soft)}
+.k2{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+
+/* ===== the consultation thread and what waits for the agent: two quiet cards above the page ===== */
+.consult,.await{display:flex;gap:8px 10px;flex-wrap:wrap;align-items:center;width:calc(100% - 80px);max-width:1120px;margin:14px auto 0;padding:9px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.consult{border-color:var(--agent-line)}
+.consult+.await{margin-top:8px}
+.consult .ct,.await .at{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--agent)}
+.await .at{color:var(--needs)}
+.consult .ct::before,.await .at::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.consult>.ct,.await>.at{margin-right:6px;cursor:help}
+.await>.at+.small{flex:1 1 320px;min-width:0}
+.consult .small.warn{color:var(--needs)}
+.consult .cmd{margin:0}
+.consult-row{margin-top:4px}
+.cpanel{flex-basis:100%;display:grid;gap:8px;padding:6px 0}
+.cpanel textarea,.cpanel input[type=text]{width:100%}
+.cpanel .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0;border:0}
+.cpanel .bad{color:var(--danger)}
+
+/* whether this page saves or only copies */
+.modebar{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;width:calc(100% - 80px);max-width:1120px;margin:8px auto 0;padding:8px 16px;border:1px solid var(--line);border-left:3px solid var(--line-strong);border-radius:var(--r-s);background:var(--surface);font-size:12.5px;line-height:1.5}
+.modebar.on{border-color:var(--ok-line);border-left-color:var(--ok);background:var(--ok-bg)}
+.modebar strong{font-weight:650}
+.mline{color:var(--body)}
+.mline .cmd{vertical-align:middle;margin-left:4px}
+.mk2{display:inline-block;margin-right:8px;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+
+/* ===== buttons, commands, tags, chips ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:32px;font-size:12.5px;font-weight:550;line-height:1.35;padding:6px 13px;border-radius:var(--r-s);border:1px solid var(--line-strong);background:var(--surface);color:var(--text);cursor:pointer;text-decoration:none;text-align:left}
+.btn:hover{background:var(--raised);text-decoration:none}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:var(--on-primary);font-weight:650}
+.btn.go{background:var(--cta);border-color:var(--cta);color:var(--on-cta);font-weight:600}
+.btn.pri:hover{background:var(--primary);box-shadow:var(--shadow-lg)}
+.btn.go:hover{background:var(--cta);box-shadow:var(--shadow-lg)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--muted)}
+.btn.ghost:hover{color:var(--text);border-color:var(--line-strong);background:var(--raised)}
+.acts{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cmd{display:inline-flex;align-items:stretch;max-width:100%;border:1px solid var(--line);border-radius:var(--r-s);background:var(--cmd);overflow:hidden}
+.cmd code{font:12px/1.5 var(--mono);padding:6px 11px;color:var(--text);overflow-wrap:anywhere;align-self:center}
 .cmd code span{color:var(--dim)}
-.cmd button{min-height:40px;padding:0 14px;border:0;border-left:1px solid var(--line);background:var(--surface);color:var(--agent);font:12px var(--mono);cursor:pointer}
+.cmd button{padding:5px 12px;border:0;border-left:1px solid var(--line);background:var(--surface);color:var(--text);font-size:12px;font-weight:600;cursor:pointer}
+.cmd button:hover{background:var(--raised);color:var(--agent)}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:550;line-height:18px;padding:0 9px;border:1px solid var(--line);border-radius:999px;background:var(--raised);color:var(--body);white-space:nowrap}
+a.tag{text-decoration:none}
+a.tag:hover{border-color:var(--agent);color:var(--agent)}
+.tag+.tag{margin-left:2px}
+.tags .tag+.tag{margin-left:0}
+.tag.dev{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-weight:700;font-size:10.5px;letter-spacing:.08em}
+.tag.think{border:1px dashed var(--agent);color:var(--agent);background:transparent}
+.tag.red{border-color:var(--danger-line);background:var(--danger-bg);color:var(--danger)}
+.tag.amber{border-color:var(--needs-line);background:var(--needs-bg);color:var(--needs)}
+.tag.ok{border-color:var(--ok-line);background:var(--ok-bg);color:var(--ok)}
+.tag.hollow{border:1px dashed var(--needs);color:var(--needs);background:transparent}
+.tag.hollowa{border:1px dashed var(--agent);color:var(--agent);background:transparent}
+.lvl{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;line-height:18px;padding:0 7px;border-radius:5px;border:1px solid var(--line);background:var(--raised);color:var(--muted);white-space:nowrap}
+.lvl.w{border-color:var(--needs-line);background:var(--needs-bg);color:var(--needs)}
+.lvl.n{color:var(--muted)}
+.chips,.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters{font-size:12.5px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;padding:5px 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);cursor:pointer}
+.chip:hover{border-color:var(--line-strong);color:var(--text)}
+.chip.on,.chip[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.chip b{font-size:11px;font-weight:700;color:inherit;opacity:.72;font-variant-numeric:tabular-nums}
+.filters input[type=text]{min-width:230px}
+.count{font-size:11.5px;font-weight:700;min-width:22px;text-align:center;line-height:20px;padding:0 7px;border-radius:999px;background:var(--needs);color:var(--bg)}
+.ref{font:500 12px var(--mono);color:var(--muted);min-width:72px}
+a.ref{color:var(--agent)}
+.cref{all:unset;cursor:pointer;color:var(--dim);font-size:12px;padding:0 4px;border-radius:4px}
+.cref:hover{color:var(--agent);background:var(--agent-bg)}
+.cref:focus-visible{outline:2px solid var(--agent)}
+.refl{color:var(--agent);text-decoration:none;border-bottom:1px dotted var(--agent)}
+.who{font-size:11.5px;font-weight:550;color:var(--dim);white-space:nowrap}
+.who.me{color:var(--needs)}
+
+/* ===== generic rows ===== */
+.row{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line-soft)}
+.row:last-child{border-bottom:0}
+.grow2{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:3px}
+.grow2 b{font-weight:600;letter-spacing:-.008em}
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:820px}
-th{text-align:left;font:400 11.5px var(--mono);color:var(--dim);padding:11px 10px;border-bottom:1px solid var(--line)}
-td{padding:16px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
-th:first-child,td:first-child{padding-left:18px}
+th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 12px;border-bottom:1px solid var(--line)}
+td{padding:14px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th:first-child,td:first-child{padding-left:20px}
 tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--raised)}
 td .stack{display:flex;flex-direction:column;gap:3px}
-.bar8{height:8px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 8px)}
-.bar8>div{height:100%;background:repeating-linear-gradient(90deg,var(--agent) 0 6px,transparent 6px 8px)}
-.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.strip>div{background:var(--surface);padding:14px 18px;display:flex;flex-direction:column;gap:4px}
-.strip .k{font:11.5px var(--mono);color:var(--dim)}
-.strip .v{font:500 18px var(--mono)}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
-.card.assert{border:1px dashed var(--agent);background:var(--agent-bg)}
-.card .t{font-weight:500}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--muted)}
-.legend span{display:flex;align-items:center;gap:6px}
-.sw{width:14px;height:9px;border-radius:2px;display:inline-block}
-.sw.done{background:var(--agent)}
-.sw.prog{background:rgba(45,212,191,.2);box-shadow:inset 0 0 0 1px var(--agent)}
-.sw.plan{box-shadow:inset 0 0 0 1px #50647C}
-.flow{padding:14px 16px 18px;overflow-x:auto}
-.flowin{position:relative;min-width:860px}
-.grid2{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:center}
-.days{display:flex}
-.days span{flex:1;text-align:center;font:11px var(--mono);color:var(--muted)}
-.days span.we{color:var(--dim)}
-.lane{padding:12px 0 4px;font:11.5px var(--mono);color:var(--muted)}
-.erow{min-height:58px;border-bottom:1px solid var(--line-soft)}
-.erow button.name{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding-right:12px;box-sizing:border-box}
-.erow button.name:focus-visible{outline:2px solid var(--agent)}
-.track{position:relative;height:30px}
-.segs{position:absolute;top:5px;height:20px;display:flex;gap:2px}
-.segs div{border-radius:3px}
-.segs .d{background:var(--agent)}
-.segs .p{background:rgba(45,212,191,.2);box-shadow:inset 0 0 0 1px var(--agent)}
-.segs .n{box-shadow:inset 0 0 0 1px #50647C}
-.segs .b{background:var(--danger)}
-.vline{position:absolute;top:0;bottom:0;width:0;pointer-events:none}
-.vline.today{border-left:2px solid var(--text)}
-.vline.eta{border-left:2px dashed var(--agent)}
-.vline.due{border-left:2px solid var(--danger)}
-.detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.detail>div{background:var(--rail);padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.detail h3{margin:0;font:500 12px var(--mono);color:var(--muted)}
-.scard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-wrap:anywhere}
-.scard.over{border-color:var(--danger)}
-.sigs{display:flex;flex-direction:column}
-.sig{display:flex;gap:12px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line-soft);align-items:baseline}
-.sig:last-child{border-bottom:0}
-.sig.hit{background:var(--agent-bg);outline:1px solid var(--agent)}
-.consult{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 22px;border-bottom:1px solid var(--line);background:var(--surface)}
-.consult .ct{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.consult .small.warn{color:var(--amber, #c98a00)}
-.consult .cmd{margin:0}
-.consult-row{margin-top:6px}
-.await{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 22px;border-bottom:1px solid var(--line);background:var(--surface)}
-.await .at{font:12px var(--mono);color:var(--amber, #c98a00);text-transform:uppercase;letter-spacing:.04em}
-.cpanel{flex-basis:100%;display:grid;gap:8px;padding:6px 0}
-.cpanel textarea,.cpanel input[type=text]{width:100%;box-sizing:border-box}
-.cpanel .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.cpanel .bad{color:var(--red, #c0392b)}
-.otro{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px}
-.otro input{flex:1 1 240px;min-width:0}
-.filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font:12px var(--mono);color:var(--muted)}
-.dayh{font:500 12px var(--mono);color:#B6C4D3;margin:0;padding:10px 18px;border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
-.dayh:first-child{border-top:0}
-.ev{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--line-soft)}
-.ev time{font:12px var(--mono);color:var(--dim);min-width:48px}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
-.dot.agent{background:var(--agent)}
-.dot.human{background:var(--text)}
-.dot.gtt{background:var(--needs)}
-.dot.unknown{box-shadow:inset 0 0 0 1px var(--dim)}
-.empty{padding:18px;color:var(--muted)}
-.update{border:1px dashed var(--needs);color:var(--needs)}
-details.idle summary{cursor:pointer;padding:12px 18px;font:13px var(--mono);color:var(--muted)}
-details.idle[open] summary{border-bottom:1px solid var(--line)}
-textarea{font:13px/1.5 var(--mono);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--cmd);color:var(--text);width:100%;resize:vertical}
-@media (max-width:720px){main{padding:20px 16px}.detail{grid-template-columns:1fr}}
-.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;padding:14px;align-items:start}
-.bcol{display:flex;flex-direction:column;gap:10px;min-width:0}
-.bcol h3{margin:0;font:500 12px var(--mono);color:#B6C4D3;display:flex;gap:8px;align-items:center}
-.bcol h3 .n{font:500 11px var(--mono);padding:0 7px;border-radius:4px;background:var(--line);color:var(--text)}
-.icard{background:var(--surface);border:1px solid #4A6288;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0;overflow-wrap:anywhere}
-.icard.agent{border:1px dashed var(--agent);background:var(--agent-bg)}
-.icard.mine{box-shadow:0 0 0 2px var(--needs)}
-.icard .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.icard .tt{all:unset;cursor:pointer;font-weight:500;display:block}
-.icard .tt:focus-visible{outline:2px solid var(--agent);outline-offset:2px}
-.icard .trail{display:flex;flex-direction:column;gap:2px;font:11.5px var(--mono);color:var(--muted)}
-.icard .trail div{overflow-wrap:anywhere}
-.icard pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:12.5px/1.5 var(--mono);background:var(--cmd);border:1px solid var(--line-soft);border-radius:6px;padding:8px 10px;color:var(--text)}
-.icard .cmd{margin-top:2px;flex-direction:column;align-items:stretch}.icard .cmd button{border-left:0;border-top:1px solid var(--line);white-space:nowrap}
-.dec{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line-soft)}
-.dec:last-child{border-bottom:0}
-.dec time{font:12px var(--mono);color:var(--dim);min-width:84px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip{font:12px var(--mono);padding:5px 11px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--muted);cursor:pointer}
-.chip[aria-pressed="true"]{border-color:var(--agent);color:var(--agent);background:var(--agent-bg)}
-.tag.ok{border-color:#2E6F66;color:var(--agent)}
-.ebtn{all:unset;display:flex;align-items:center;gap:16px;flex-wrap:wrap;width:100%;box-sizing:border-box;padding:14px 18px;cursor:pointer}
-.ebtn:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
-.ebtn .car{font:12px var(--mono);color:var(--dim);min-width:14px}
-.srow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:9px 18px 9px 48px;border-top:1px solid var(--line-soft);background:var(--rail)}
-.srow .ref{min-width:84px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
-.tile{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
-.tile .k{font:11px var(--mono);color:var(--dim)} .tile .v{font:600 26px var(--mono)} .tile .n{font-size:12px;color:var(--muted)}
-.grp2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 18px;background:var(--rail);border-top:1px solid var(--line);font:12px var(--mono);color:var(--muted)}
-.qrow{display:grid;grid-template-columns:minmax(140px,1.4fr) minmax(90px,1fr) auto;gap:12px;align-items:center;padding:8px 18px;border-top:1px solid var(--line-soft)}
-.split{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
-@media (max-width:820px){.split{grid-template-columns:1fr}}
-.dlist{display:flex;flex-direction:column;gap:2px;padding:10px}
-.dlist .grp{font:11px var(--mono);color:var(--dim);padding:10px 8px 4px}
-.dlist a{display:block;padding:6px 8px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:13px;overflow-wrap:anywhere}
-.dlist a[aria-current="page"]{background:var(--agent-bg);color:var(--agent)}
-.md{padding:20px 26px;max-width:900px}
-.md h3,.md h4,.md h5,.md h6{margin:22px 0 8px;font-weight:600;letter-spacing:-0.2px}
-.md h3{font-size:22px;margin-top:0}.md h4{font-size:17px}.md h5{font-size:15px}.md h6{font-size:14px;color:var(--muted)}
-.md p,.md li{color:#D3DEEA}
-.md code{font:12.5px var(--mono);background:var(--cmd);border:1px solid var(--line-soft);border-radius:4px;padding:1px 5px}
-.md pre{background:var(--cmd);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto}
-.md pre code{border:0;padding:0;background:none}
-.md blockquote{margin:12px 0;padding:2px 14px;border-left:3px solid var(--line);color:var(--muted)}
-.md ul,.md ol{margin:8px 0;padding-left:22px}
-.md .tablewrap table{min-width:0;font-size:13px}
-.md .tablewrap th,.md .tablewrap td{padding:7px 10px}
-.md hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.bar8{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar8>div{height:100%;border-radius:999px;background:var(--ok)}
 
-/* ===== 1.25: the Plan, the Inbox, Activity, Health ===== */
-.tag.hollow{border:1px dashed var(--needs);color:var(--needs)}
-.tag.hollowa{border:1px dashed var(--agent);color:var(--agent)}
-.tag.ok{border-color:var(--agent);color:var(--agent)}
-.strip{grid-template-columns:repeat(6,1fr)}
-.strip>.fig{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+/* ===== the figures ===== */
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.strip>.fig,.strip>div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:15px 17px 13px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.strip .k{font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+.strip .fig .v,.strip>div .v{font-size:32px;line-height:1.12;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.strip .fig[data-fig="eta"] .v{font-size:21px;line-height:1.72;letter-spacing:-.025em}
+.strip .fig .s{font-size:12.5px;line-height:1.45;color:var(--muted)}
 a.fig{color:inherit;text-decoration:none;cursor:pointer}
-a.fig:hover,a.fig:focus-visible{filter:brightness(1.18)}
-a.fig .go{font:11px var(--mono);color:var(--dim);margin-top:2px}
-a.fig:hover .go,a.fig:focus-visible .go{color:var(--text)}
-.strip .fig .k{font:11.5px var(--mono);color:var(--dim)}
-.strip .fig .v{font:500 20px var(--mono)}
-.strip .fig .s{font-size:12.5px;color:var(--muted)}
-.amberv{color:var(--needs)}.redv{color:var(--danger)}
-.headblock{display:flex;flex-direction:column;gap:2px}
-.headrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.meta .edit{color:var(--agent);border:1px solid var(--agent);border-radius:4px;padding:1px 7px}
-.meta .edit.ro{color:var(--muted);border-color:var(--line)}
-nav.tabs a b{font:500 11px var(--mono);padding:0 6px;border-radius:4px;background:var(--line);color:var(--text);margin-left:6px}
-nav.tabs a b.amber{background:var(--needs);color:var(--bg)}
-nav.tabs a b.mute{background:transparent;border:1px solid var(--line);color:var(--muted);margin-left:4px}
-.lvlsep{font:10.5px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.05em;padding:6px 10px 2px;border-top:1px dashed var(--line)}
-.mutev{color:var(--muted)}
-.now{display:grid;grid-template-columns:1.3fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.now>div{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
-.k2{font:11.5px var(--mono);color:var(--dim)}.k2::before{content:"# "}
-.pulse{display:flex;align-items:center;gap:10px}
-.pulse i{width:8px;height:8px;border-radius:50%;background:var(--agent);box-shadow:0 0 0 3px var(--agent-bg);flex:none}
-.pulse i.off{background:transparent;box-shadow:inset 0 0 0 1px var(--needs)}
-.files{font:12px var(--mono);color:var(--muted);display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+a.fig:hover,a.fig:focus-visible{border-color:var(--line-strong);box-shadow:var(--shadow-lg)}
+a.fig .go{font-size:11.5px;font-weight:550;color:var(--dim);margin-top:auto;padding-top:8px}
+a.fig:hover .go,a.fig:focus-visible .go{color:var(--agent)}
+.amberv{color:var(--needs)}.redv{color:var(--danger)}.mutev{color:var(--muted)}
+@media (min-width:1360px){.strip{grid-template-columns:repeat(5,minmax(0,1fr))}.strip .fig[data-fig="eta"] .v{font-size:18px;line-height:2}}
+@media (max-width:700px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== now and the last events ===== */
+.now{display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
+.now>div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 20px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pulse{display:flex;align-items:center;gap:12px}
+.pulse i{width:9px;height:9px;border-radius:50%;background:var(--agent);box-shadow:0 0 0 4px var(--agent-bg),0 0 0 5px var(--agent-line);flex:none;margin:0 3px}
+.pulse i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--needs)}
+.files{font:12px/1.7 var(--mono);color:var(--muted);display:flex;flex-direction:column;overflow-wrap:anywhere}
 .files span::before{content:"~ ";color:var(--agent)}
-.nrow{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
-.nrow:last-child{border-bottom:0}.nrow.more{justify-content:center}
+
+/* ===== I need you ===== */
+.needs{background:var(--surface);border:1px solid var(--needs-line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.needs .top{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:15px 20px;background:var(--needs-bg);border-bottom:1px solid var(--needs-line)}
+.needs h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.018em;color:var(--needs)}
+.needs h2::first-letter{text-transform:uppercase}
+.needs .hint{flex-basis:100%;font-size:13px;color:var(--body);max-width:96ch}
+.nrow{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:18px 20px;border-bottom:1px solid var(--line-soft)}
+.nrow:last-child{border-bottom:0}
+.nrow.more{justify-content:center;padding:12px}
 .dcard{display:block}
-.dcard .dhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.dcard .dplain{margin:8px 0 4px;font-size:14px;line-height:1.45}
-.dcard .dterms{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:4px 0 6px;font-size:12.5px;color:var(--muted)}
-.dcard .dterms dt{font:12px var(--mono);color:var(--text)}
+.dcard .dhead{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.dcard .dhead b{font-size:15.5px}
+.dcard .dplain{margin:12px 0 4px;font-size:14px;line-height:1.6;color:var(--body);max-width:96ch}
+.dcard .dplain .k2,.dcard .dwhy .k2,.todo .k2{margin-right:8px}
+.dcard .dterms{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:6px 0 8px;font-size:12.5px;color:var(--muted)}
+.dcard .dterms dt{font:500 12px var(--mono);color:var(--text)}
 .dcard .dterms dd{margin:0}
-.todo{margin:6px 0 2px;font-size:13px;padding:5px 9px;border-left:3px solid var(--amber, #c98a00);background:var(--surface)}
-.todo .k2{margin-right:6px}
+.todo{margin:10px 0 2px;font-size:13px;line-height:1.55;padding:9px 13px;border:1px solid var(--needs-line);border-radius:var(--r-s);background:var(--needs-bg);color:var(--body)}
 .dcard .dwhy{margin:8px 0 2px;font-size:13px;color:var(--muted)}
-.dcard .dopts{display:grid;gap:6px;margin:8px 0}
-.dcard .dopt{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:4px 12px;align-items:start;padding:6px 8px;border:1px solid var(--line);border-radius:6px}
-.dcard .dopt.rec{border-color:var(--ok, #2f9e7a)}
-.dcard .dopt .does{font-size:13px;color:var(--muted)}
-.dcard .dopt .tagrec{font:10.5px var(--mono);color:var(--ok, #2f9e7a);text-transform:uppercase;letter-spacing:.04em;margin-left:6px}
+.dcard .dopts{display:grid;gap:8px;margin:12px 0 8px}
+.dcard .dopt{display:grid;grid-template-columns:minmax(210px,auto) 1fr;gap:6px 16px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--rail)}
+.dcard .dopt:hover{border-color:var(--line-strong)}
+.dcard .dopt.rec{border-color:var(--ok-line);background:var(--ok-bg)}
+.dcard .dopt b{font-weight:620}
+.dcard .dopt .does{display:flex;align-items:center;justify-content:space-between;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.dcard .dopt .tagrec{font-size:10px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.1em;margin-left:9px}
+@media (max-width:640px){.dcard .dopt{grid-template-columns:minmax(0,1fr)}}
 .dcard .duntil{font-size:12.5px;color:var(--dim);margin-top:4px}
-.dcard .dcite{margin:6px 0;padding:4px 12px;border-left:3px solid var(--line);color:var(--muted);font-size:13px;line-height:1.45}
+.dcard .dcite{margin:8px 0;padding:6px 14px;border-left:3px solid var(--line-strong);color:var(--muted);font-size:13px;line-height:1.5}
 .dcard .dcite .where{display:inline-block;margin-top:2px}
-.icard .iplain{margin:4px 0 2px;font-size:13px;line-height:1.4;color:var(--muted)}
-.acts{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{font:12px var(--mono);padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:var(--cmd);color:var(--text);cursor:pointer;white-space:nowrap}
-.btn.pri{border-color:var(--needs);color:var(--needs)}.btn.go{border-color:var(--agent);color:var(--agent)}.btn.ghost{background:none;color:var(--muted)}
-.cmd{display:inline-flex}.cmd button{min-height:0;padding:5px 10px}.cmd code{padding:5px 10px;font-size:12px}
-.shadow{border:1px dashed var(--needs);border-radius:8px;padding:8px 14px;font:12px var(--mono);color:#D9C48A;background:var(--needs-bg);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.secline{display:flex;align-items:baseline;gap:12px}
-.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.chip{font:12px var(--mono);padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:none;cursor:pointer}
-.chip.on,.chip[aria-pressed="true"]{border-color:var(--agent);color:var(--agent);background:none}
-.chip b{color:var(--text);font-weight:500;margin-left:6px}
-.lane{font:11.5px var(--mono);color:var(--dim);padding:2px 2px 0}
-.epic{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.epic.prop{border:1px dashed var(--agent)}
-.ehead-wrap{position:relative}
-.ehead{all:unset;box-sizing:border-box;display:grid;grid-template-columns:18px 84px minmax(0,1fr) 210px 150px 128px;gap:14px;align-items:center;padding:12px 16px;width:100%;cursor:pointer}
-.ehead:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
-.ehead-wrap>.cref{position:absolute;left:112px;top:12px}
-.etitle{display:flex;flex-direction:column;gap:6px;min-width:0}.etitle .t{font-weight:500}
-.chev{font:12px var(--mono);color:var(--dim)}
-.tags{display:flex;gap:6px;flex-wrap:wrap}
-.pbar{height:8px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 8px);position:relative}
-.pbar>.d{position:absolute;left:0;top:0;bottom:0;background:repeating-linear-gradient(90deg,var(--agent) 0 6px,transparent 6px 8px)}
-.pbar>.u{position:absolute;top:0;bottom:0;box-shadow:inset 0 0 0 1px var(--needs)}
-.pct{font:12px var(--mono);color:var(--muted);display:flex;justify-content:space-between;margin-top:4px}
-.hrs{font:12px var(--mono);color:var(--muted);text-align:right}.hrs b{color:var(--text);font-weight:500}
-.efind{padding:0 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
-.find{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
-.lvl{font:10.5px var(--mono);padding:1px 6px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
-.lvl.w{border-color:var(--needs);color:var(--needs)}.lvl.n{border-color:#50647C;color:#B6C4D3}
-.who{font:11px var(--mono);color:var(--dim)}.who.me{color:var(--needs)}
-.stories{display:flex;flex-direction:column}
-.sitem{border-top:1px solid var(--line-soft)}
-.srow2{display:grid;grid-template-columns:minmax(0,1fr) 110px 110px 130px;gap:10px;padding:10px 16px 10px 132px;align-items:start}
-.srow2 .rt{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-.srow2.undef{background:linear-gradient(90deg,rgba(251,191,36,.05),transparent 40%)}
-.srow2.blocked{background:linear-gradient(90deg,rgba(248,113,113,.06),transparent 40%)}
-.st{font:11px var(--mono);color:var(--muted)}.ready{color:var(--agent);font:12px var(--mono)}
-.form{margin:4px 16px 10px 132px;padding:12px 14px;border:1px dashed var(--needs);border-radius:8px;background:var(--rail);display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 12px;align-items:center}
-.form.agent{border-color:var(--agent)}
-.form label{font:12px var(--mono);color:var(--muted)}
-.form input,.form textarea{font:12.5px var(--mono);padding:6px 9px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);width:100%}
-.form textarea{min-height:34px;resize:vertical}
-.form .acts-row,.form .hint{grid-column:2}.form .hint{font-size:12px;color:var(--dim)}
-.miss{font:11.5px var(--mono);color:var(--needs)}.missa{font:11.5px var(--mono);color:var(--agent)}
-.efind .form{margin:0}
-.blockedinfo{padding:4px 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
-.aportebox{padding:2px 16px 10px 132px;display:flex;flex-direction:column;gap:6px}
-.aporte{display:inline-flex;flex-direction:column;gap:6px;min-width:260px;max-width:520px}
-.aporte textarea{min-height:34px}
+.otro{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.otro input{flex:1 1 240px;min-width:0}
+.youdo{display:flex;flex-direction:column;gap:4px}
+.youdo .small{color:var(--needs);line-height:1.45}
+
 /* a decision that is the person's: colour says whose it is, the words say what is asked, the context is one click away */
-.need{border:1px solid var(--line);border-left:4px solid var(--needs);border-radius:8px;background:var(--needs-bg);padding:11px 14px;display:flex;flex-direction:column;gap:9px;max-width:940px}
-.need.ag{border-left-color:var(--agent);background:var(--agent-bg)}
+.need{border:1px solid var(--needs-line);border-left:3px solid var(--needs);border-radius:10px;background:var(--needs-bg);padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-width:940px}
+.need.ag{border-color:var(--agent-line);border-left-color:var(--agent);background:var(--agent-bg)}
 .need .ntop{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.need .ntitle{font-weight:600;font-size:14px;color:var(--text);line-height:1.4}
-.need .nask{margin:0;font-size:13.5px;line-height:1.55;color:var(--text)}
+.need .ntitle{font-weight:650;font-size:14.5px;line-height:1.4;letter-spacing:-.01em}
+.need .nask{margin:0;font-size:13.5px;line-height:1.6;color:var(--body)}
 .need .nacts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .need .aporte{max-width:none;width:100%}
-.need .aporte textarea{min-height:56px}
-.nctx{display:grid;grid-template-columns:104px minmax(0,1fr);gap:8px 14px;padding:11px 13px;border:1px solid var(--line);border-radius:6px;background:var(--rail);font-size:12.5px;line-height:1.5}
+.need .aporte textarea{min-height:56px;background:var(--surface)}
+.nctx{display:grid;grid-template-columns:104px minmax(0,1fr);gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);font-size:12.5px;line-height:1.55}
 .nctx[hidden]{display:none}
-.nctx .k{font:10.5px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.nctx .k{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding-top:2px}
 .nctx .v{color:var(--text);min-width:0;overflow-wrap:anywhere}
 .nctx .v ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
 .nctx .v .where{font:11px var(--mono);color:var(--agent);margin-right:6px}
 .nctx .v .sub{color:var(--muted)}
 .nctx .v .tag{margin-left:6px}
 @media (max-width:640px){.nctx{grid-template-columns:minmax(0,1fr)}}
+.shadow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px dashed var(--needs);border-radius:var(--r);padding:11px 16px;font-size:13px;color:var(--needs);background:var(--needs-bg)}
+.update{border:1px dashed var(--needs);color:var(--needs)}
+
 /* what a view is, what it is for and how it is used: in words, visible until the person hides it */
-.how{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;padding:13px 16px;border:1px solid var(--line);border-left:4px solid var(--agent);border-radius:8px;background:var(--surface);font-size:13.5px;line-height:1.55;max-width:1100px}
-.how .k{font:10.5px var(--mono);color:var(--agent);text-transform:uppercase;letter-spacing:.04em;padding-top:3px}
-.how .v{color:var(--text);min-width:0}
-.how ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
-.howwrap{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.colhelp{font-size:12px;line-height:1.45;color:var(--muted);margin:0}
+.howwrap{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.how{display:grid;grid-template-columns:128px minmax(0,1fr);gap:10px 18px;width:100%;padding:18px 22px;border:1px solid var(--line);border-radius:var(--r);background:var(--rail);font-size:13.5px;line-height:1.6}
+.how .k{font-size:10.5px;font-weight:700;letter-spacing:.11em;color:var(--dim);text-transform:uppercase;padding-top:3px}
+.how .v{color:var(--body);min-width:0;max-width:100ch}
+.how ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.how ol li::marker{color:var(--dim);font-weight:700}
+.how dl.terms{margin:0;display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 16px;font-size:13px}
+.how dl.terms dt{font-weight:620;color:var(--text)}
+.how dl.terms dd{margin:0;color:var(--muted)}
+.howwrap>.btn{min-height:28px;padding:3px 11px;font-size:12px}
+.howwrap.closed{margin:-18px 0 -6px}
+.howwrap.closed>.btn{border:0;background:none;padding:0;min-height:0;color:var(--dim);text-decoration:underline dotted;text-underline-offset:4px}
+.howwrap.closed>.btn:hover{color:var(--text)}
+@media (min-width:1280px){.how dl.terms{grid-template-columns:132px minmax(0,1fr) 132px minmax(0,1fr)}.how .v:last-child{max-width:none}}
+@media (max-width:640px){.how{grid-template-columns:minmax(0,1fr)}.how dl.terms{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== the Plan ===== */
+.lane{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:6px 2px 0;margin-bottom:-14px}
+.lane .gs{margin-left:12px;font-weight:500;letter-spacing:0;text-transform:none;font-size:12px;color:var(--muted)}
+.epic{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.epic.prop{border:1px dashed var(--agent)}
+.ehead-wrap{position:relative}
+.ehead{all:unset;box-sizing:border-box;display:grid;grid-template-columns:16px 84px minmax(0,1fr) 190px 112px 128px;gap:14px;align-items:start;padding:17px 20px;width:100%;cursor:pointer}
+.ehead:hover{background:var(--raised)}
+.ehead:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
+.ehead .eref{color:var(--muted);padding-top:3px;white-space:nowrap}
+.ehead-wrap>.cref{position:absolute;left:112px;top:20px}
+.chev{width:7px;height:7px;border-right:1.8px solid var(--dim);border-bottom:1.8px solid var(--dim);transform:rotate(-45deg);justify-self:center;margin-top:7px}
+.chev.open{transform:rotate(45deg)}
+.etitle{display:flex;flex-direction:column;gap:7px;min-width:0}
+.etitle .t{font-size:15.5px;font-weight:650;letter-spacing:-.015em}
+.pbar{height:6px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+.pbar>.d{position:absolute;left:0;top:0;bottom:0;background:var(--ok)}
+.pbar>.u{position:absolute;top:0;bottom:0;background:var(--needs-line)}
+.pct{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-top:6px;font-variant-numeric:tabular-nums}
+.hrs{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.hrs b{color:var(--text);font-weight:650}
+.efind{padding:2px 20px 12px 134px;display:flex;flex-direction:column;gap:8px}
+.find{display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.meta2{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.meta2 .mk{font-size:12px;font-weight:600;color:var(--dim)}
+.stories{display:flex;flex-direction:column}
+.sitem{border-top:1px solid var(--line-soft)}
+.srow2{display:grid;grid-template-columns:minmax(0,1fr) 100px 104px 96px;gap:12px;padding:12px 20px 12px 134px;align-items:start}
+.srow2:hover{background-color:var(--raised)}
+.srow2 .rt{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-weight:560}
+.srow2 .rt .mono{color:var(--muted);font-weight:500}
+.srow2.undef{box-shadow:inset 3px 0 0 var(--needs)}
+.srow2.blocked{box-shadow:inset 3px 0 0 var(--danger)}
+.st{font-size:12px;color:var(--muted)}
+.ready{color:var(--ok);font-size:12px;font-weight:600}
+.blockedinfo{padding:4px 20px 12px 134px;display:flex;flex-direction:column;gap:6px}
+.aportebox{padding:2px 20px 12px 134px;display:flex;flex-direction:column;gap:6px}
+.aporte{display:inline-flex;flex-direction:column;gap:8px;min-width:260px;max-width:520px}
+.aporte textarea{min-height:36px}
+.aporte .btn{align-self:flex-start}
+.form{margin:4px 20px 14px 134px;padding:14px 16px;border:1px dashed var(--needs);border-radius:10px;background:var(--rail);display:grid;grid-template-columns:120px minmax(0,1fr);gap:9px 14px;align-items:center}
+.form.agent{border-color:var(--agent)}
+.form label{font-size:12px;font-weight:600;color:var(--muted)}
+.form input,.form textarea{font:13px/1.5 var(--sans);padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-s);background:var(--surface);color:var(--text);width:100%}
+.form textarea{min-height:36px;resize:vertical}
+.form .acts-row,.form .hint{grid-column:2}
+.form .hint{font-size:12px;color:var(--dim)}
+.miss{font-size:12px;font-weight:600;color:var(--needs)}
+.missa{font-size:12px;font-weight:600;color:var(--agent)}
+.efind .form{margin:0}
+.tl .row{padding:10px 20px}
+@media (max-width:1320px){.ehead{grid-template-columns:16px 84px minmax(0,1fr) 150px 112px}.ehead>*:nth-child(6){display:none}}
+@media (max-width:980px){
+  .ehead{grid-template-columns:16px 76px minmax(0,1fr)}.ehead>*:nth-child(n+4){display:none}
+  .srow2{grid-template-columns:1fr;gap:4px;padding-left:20px}.hrs{text-align:left}
+  .efind,.blockedinfo,.aportebox{padding-left:20px}
+  .form{margin-left:20px;grid-template-columns:1fr}.form .acts-row,.form .hint{grid-column:1}
+  .now{grid-template-columns:1fr}
+}
+
+/* ===== Health ===== */
+.sigs{display:flex;flex-direction:column;overflow:hidden}
+.sig{display:flex;gap:8px 12px;flex-wrap:wrap;padding:13px 20px;border-bottom:1px solid var(--line-soft);align-items:baseline}
+.sig:last-child{border-bottom:0}
+.sig:hover{background:var(--raised)}
+.sig .stext{flex:1 1 320px;min-width:0}
+.swhere{font-size:12px;color:var(--dim);overflow-wrap:anywhere}
+.sig.hit{background:var(--agent-bg);box-shadow:inset 0 0 0 1px var(--agent)}
+.lvlsep{font-size:10.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.11em;padding:12px 20px 6px;border-bottom:1px solid var(--line-soft);background:var(--rail)}
+
+/* ===== no urgency: folded, calm, and each group says when it leaves ===== */
+.quiet{display:flex;flex-direction:column;gap:10px;padding-top:8px;border-top:1px solid var(--line)}
+.quiet .lane{margin:8px 0 -2px}
+.plane{display:flex;flex-direction:column;gap:10px}
+.plane>.lane{margin:0}
+.qgroup{overflow:hidden;box-shadow:none}
+.qhead{all:unset;box-sizing:border-box;display:grid;grid-template-columns:14px 52px minmax(0,1fr);gap:12px;align-items:start;width:100%;padding:13px 20px;cursor:pointer}
+.qhead:hover{background:var(--raised)}
+.qhead:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
+.qn{font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.03em;color:var(--muted);font-variant-numeric:tabular-nums}
+.qtext{display:flex;flex-direction:column;gap:3px;min-width:0}
+.qtext b{font-weight:620;letter-spacing:-.008em}
+.qline{display:grid;grid-template-columns:176px minmax(0,1fr);align-items:baseline;font-size:12.5px;line-height:1.5;color:var(--muted);max-width:130ch}
+.qk{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.qgroup>.sigs{border-top:1px solid var(--line)}
+.quietbtn{align-self:flex-start;background:none;border:0;padding:3px 0;font-size:12.5px;font-weight:550;color:var(--dim);cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}
+.quietbtn:hover{color:var(--text)}
+.need.calm{border-color:var(--line);border-left-color:var(--line-strong);background:var(--rail)}
+.obsacts{flex-basis:100%;font-size:12.5px}
+.obsacts summary{cursor:pointer;color:var(--agent);font-weight:550}
+.obsact{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;padding-top:8px}
+@media (max-width:640px){.qhead{grid-template-columns:14px 40px minmax(0,1fr);gap:8px;padding:12px 14px}.qline{grid-template-columns:minmax(0,1fr)}}
+
+/* ===== Activity ===== */
+.dayh{margin:0;padding:11px 20px;font-size:12px;font-weight:700;color:var(--body);background:var(--rail);border-bottom:1px solid var(--line);border-top:1px solid var(--line)}
+.dayh:first-child{border-top:0;border-radius:var(--r) var(--r) 0 0}
+.ev{display:flex;gap:8px 14px;align-items:baseline;flex-wrap:wrap;padding:11px 20px;border-bottom:1px solid var(--line-soft)}
+.ev:hover{background:var(--raised)}
+.ev time{font:12px var(--mono);color:var(--dim);min-width:48px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot.agent{background:var(--agent)}
+.dot.human{background:var(--text)}
+.dot.gtt{background:var(--needs)}
+.dot.unknown{box-shadow:inset 0 0 0 1px var(--dim)}
+.sessionpre{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 var(--mono);color:var(--muted);max-height:360px;overflow:auto}
+details.idle summary{cursor:pointer;padding:13px 20px;font-size:13px;font-weight:550;color:var(--muted)}
+details.idle summary:hover{color:var(--text)}
+details.idle[open] summary{border-bottom:1px solid var(--line)}
+
+/* ===== the Inbox: one lane per stage; solid card = a person wrote it, dashed = the agent ===== */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-items:start}
+.panel.board{background:transparent;border:0;box-shadow:none;padding:0}
+.bcol{display:flex;flex-direction:column;gap:10px;min-width:0;padding:12px;border:1px solid var(--line-soft);border-radius:var(--r);background:var(--rail);align-self:stretch}
+.bcol h3{margin:0;font-size:13px;font-weight:700;letter-spacing:-.005em;display:flex;gap:8px;align-items:center}
+.bcol h3 .n{font-size:11px;font-weight:700;line-height:18px;min-width:20px;text-align:center;padding:0 6px;border-radius:999px;background:var(--line);color:var(--text)}
+.colhelp{font-size:12px;line-height:1.5;color:var(--muted);margin:0}
 .colhelp.me{color:var(--needs)}
-.youdo{display:flex;flex-direction:column;gap:4px}
-.youdo .small{color:var(--needs);line-height:1.45}
-.refl{color:var(--agent);text-decoration:none;border-bottom:1px dotted var(--agent)}
-.sumline{display:flex;gap:14px;flex-wrap:wrap;font:12px var(--mono);color:var(--muted)}
-.sumline b{color:var(--text);font-weight:500}
-.how dl.terms{margin:0;display:grid;grid-template-columns:170px minmax(0,1fr);gap:5px 14px;font-size:13px}
-.how dl.terms dt{font-weight:600;color:var(--text)}.how dl.terms dd{margin:0;color:var(--muted)}
-.ctxstrip{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
-.ctxhead{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.icard{background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-width:0;overflow-wrap:anywhere;box-shadow:var(--shadow)}
+.icard:hover{box-shadow:var(--shadow-lg)}
+.icard.agent{border:1px dashed var(--agent);background:var(--agent-bg)}
+.icard.mine{box-shadow:0 0 0 2px var(--needs)}
+.icard .top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.icard .tt{all:unset;cursor:pointer;font-weight:650;font-size:14.5px;line-height:1.4;letter-spacing:-.012em;display:block}
+.icard .tt:hover{color:var(--agent)}
+.icard .tt:focus-visible{outline:2px solid var(--agent);outline-offset:2px}
+.icard .iplain{margin:2px 0;font-size:13px;line-height:1.5;color:var(--body)}
+.icard .iplain .k2{display:block;margin-bottom:2px}
+.icard .small{font-size:12px}
+.icard .trail{display:flex;flex-direction:column;gap:2px;font:11px/1.6 var(--mono);color:var(--muted)}
+.icard .trail div{overflow-wrap:anywhere}
+.icard pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 var(--mono);background:var(--cmd);border:1px solid var(--line-soft);border-radius:var(--r-s);padding:9px 11px;color:var(--text)}
+.icard .cmd{margin-top:2px;flex-direction:column;align-items:stretch}
+.icard .cmd code{align-self:stretch}
+.icard .cmd button{border-left:0;border-top:1px solid var(--line);white-space:nowrap;min-height:30px}
+.dec{display:flex;gap:8px 14px;align-items:baseline;flex-wrap:wrap;padding:13px 20px;border-bottom:1px solid var(--line-soft)}
+.dec:last-child{border-bottom:0}
+.dec time{font:12px var(--mono);color:var(--dim);min-width:86px}
+
+/* ===== Design: context pages, decisions and documents ===== */
+main nav.tabs{display:inline-flex;align-self:flex-start;gap:3px;max-width:100%;flex-wrap:wrap;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--rail)}
+main nav.tabs a{padding:6px 15px;border-radius:7px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:550}
+main nav.tabs a:hover{color:var(--text)}
+main nav.tabs a[aria-current="page"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow),inset 0 0 0 1px var(--line)}
+.ctxstrip{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.ctxhead{display:flex;gap:6px 12px;align-items:baseline;flex-wrap:wrap}
+.ctxhead strong{font-size:15px;letter-spacing:-.012em}
 .ctxgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (max-width:980px){.ctxgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.ctxgrid{grid-template-columns:minmax(0,1fr)}}
-.ctxcard{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--muted);text-decoration:none;position:relative}
-a.ctxcard:hover{border-color:var(--agent)}
-.ctxcard[aria-current="page"]{border-color:var(--agent);background:var(--agent-bg)}
+.ctxcard{display:flex;flex-direction:column;gap:4px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;background:var(--rail);color:var(--muted);text-decoration:none;position:relative}
+a.ctxcard:hover{border-color:var(--line-strong);background:var(--raised);text-decoration:none}
+.ctxcard[aria-current="page"],a.ctxcard[aria-current="page"]:hover{border-color:var(--agent);background:var(--agent-bg);box-shadow:inset 0 0 0 1px var(--agent)}
 .ctxcard.missing{border-style:dashed;opacity:.75}
-.ctxcard .ctxn{position:absolute;top:10px;right:12px;font:11px var(--mono);color:var(--dim)}
-.ctxcard .ctxf{font:12px var(--mono);color:var(--agent)}
+.ctxcard .ctxn{position:absolute;top:11px;right:13px;font-size:11px;font-weight:700;color:var(--dim)}
+.ctxcard .ctxf{font:11.5px var(--mono);color:var(--agent)}
 .ctxcard.missing .ctxf{color:var(--needs)}
-.ctxcard .ctxt{font-size:15px;font-weight:600;color:var(--text);overflow-wrap:anywhere}
-.outline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.ctxcard .ctxt{font-size:15px;font-weight:650;letter-spacing:-.015em;color:var(--text);overflow-wrap:anywhere}
+.split{display:grid;grid-template-columns:250px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:980px){.split{grid-template-columns:1fr}}
+.dlist{display:flex;flex-direction:column;gap:2px;padding:10px}
+.dlist .grp{font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);padding:12px 9px 5px}
+.dlist a{display:block;padding:7px 9px;border-radius:7px;color:var(--muted);text-decoration:none;font-size:13px;overflow-wrap:anywhere}
+.dlist a:hover{background:var(--raised);color:var(--text)}
+.dlist a[aria-current="page"]{background:var(--agent-bg);color:var(--agent);font-weight:600}
+.outline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
 .outline .chip.sub{opacity:.8}
-.docbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 10px;margin-bottom:10px;border-bottom:1px solid var(--line-soft)}
-@media (max-width:640px){.how{grid-template-columns:minmax(0,1fr)}.how dl.terms{grid-template-columns:minmax(0,1fr)}}
-.cref{all:unset;cursor:pointer;color:var(--dim);font:12px var(--mono);padding:0 4px}.cref:hover{color:var(--agent)}
+.docbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:0 0 12px;margin-bottom:16px;border-bottom:1px solid var(--line-soft)}
+.md{padding:22px 32px 30px;min-width:0}
+.md h3,.md h4,.md h5,.md h6{margin:26px 0 9px;font-weight:700;letter-spacing:-.022em;line-height:1.28}
+.md h3{font-size:26px;margin-top:0}.md h4{font-size:18px}.md h5{font-size:15px}.md h6{font-size:14px;color:var(--muted)}
+.md p,.md li{color:var(--body);line-height:1.7}
+.md p,.md ul,.md ol,.md blockquote{max-width:76ch}
+.md code{font:12.5px var(--mono);background:var(--cmd);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.md pre{background:var(--cmd);border:1px solid var(--line);border-radius:var(--r-s);padding:14px 16px;overflow-x:auto}
+.md pre code{border:0;padding:0;background:none}
+.md blockquote{margin:14px 0;padding:4px 16px;border-left:3px solid var(--text);color:var(--muted)}
+.md ul,.md ol{margin:9px 0;padding-left:22px}
+.md .tablewrap table{min-width:0;font-size:13px}
+.md .tablewrap th,.md .tablewrap td{padding:8px 11px}
+.md hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+.srow{display:flex;align-items:baseline;gap:8px 12px;flex-wrap:wrap;padding:12px 20px;border-top:1px solid var(--line-soft)}
+.srow:first-child{border-top:0}
+.srow .ref{min-width:84px}
 
+/* ===== Code ===== */
 .codegrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:16px;align-items:start}
-.mod{all:unset;box-sizing:border-box;position:absolute;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:10px 14px;border:1px solid #2E4058;border-radius:8px;background:var(--surface);cursor:pointer;font-size:12.5px;color:var(--muted)}
-.mod b{color:var(--text);font-weight:500}.mod:focus-visible{outline:2px solid var(--agent)}
-.mod.hot{border-color:var(--agent);background:var(--agent-bg)}.mod.hot .hotl{color:var(--agent)}
-.mod.empty,.mod.out{border:1px dashed #50647C}.mod.out{border-color:var(--needs);color:var(--needs)}
+@media (max-width:1320px){.codegrid{grid-template-columns:1fr}}
+.mod{all:unset;box-sizing:border-box;position:absolute;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:10px 14px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);box-shadow:var(--shadow);cursor:pointer;font-size:12.5px;color:var(--muted)}
+.mod b{color:var(--text);font-weight:600}
+.mod:hover{box-shadow:var(--shadow-lg)}
+.mod:focus-visible{outline:2px solid var(--agent)}
+.mod.hot{border-color:var(--agent);background:var(--agent-bg)}
+.mod.hot .hotl{color:var(--agent)}
+.mod.empty,.mod.out{padding:10px 14px;border:1px dashed var(--line-strong)}
+.mod.out{border-color:var(--needs);color:var(--needs)}
 .mod.sel{box-shadow:0 0 0 2px var(--text)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--muted)}.legend .okc{color:var(--agent)}.legend .badc{color:var(--danger)}
-@media (max-width:980px){.codegrid{grid-template-columns:1fr}}
-.foot{font:12px var(--mono);color:var(--dim)}
-.meta2{display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}.meta2 .mk{font:11.5px var(--mono);color:var(--dim)}
-.lane .gs{margin-left:12px;color:var(--muted)}
-.tl .row{padding:8px 18px}
-.sessionpre{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 var(--mono);color:var(--muted);max-height:360px;overflow:auto}
-@media (max-width:980px){.strip{grid-template-columns:repeat(2,1fr)}.ehead{grid-template-columns:18px 70px minmax(0,1fr)}.ehead>*:nth-child(n+4){display:none}.srow2{grid-template-columns:1fr;padding-left:16px}.efind,.blockedinfo,.aportebox{padding-left:16px}.form{margin-left:16px;grid-template-columns:1fr}.form .acts-row,.form .hint{grid-column:1}.now{grid-template-columns:1fr}}
+.edge{stroke:var(--line-strong);fill:none}.edge.hit{stroke:var(--agent)}.edge.bad{stroke:var(--danger)}
+.ahead{fill:var(--line-strong)}.ahead.hit{fill:var(--agent)}.ahead.bad{fill:var(--danger)}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend .okc{color:var(--agent)}
+.legend .badc{color:var(--danger)}
+.sumline{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.sumline b{color:var(--text);font-weight:650}
+
+/* ===== flow, cards and tiles of the portfolio ===== */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.card.assert{border:1px dashed var(--agent);background:var(--agent-bg)}
+.card .t{font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tile{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:15px 17px;display:flex;flex-direction:column;gap:6px}
+.tile .k{font-size:10.5px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+.tile .v{font-size:30px;font-weight:750;letter-spacing:-.04em}
+.tile .n{font-size:12px;color:var(--muted)}
+.sw{width:14px;height:9px;border-radius:3px;display:inline-block}
+.sw.done{background:var(--ok)}
+.sw.prog{background:var(--agent-bg);box-shadow:inset 0 0 0 1px var(--agent)}
+.sw.plan{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.flow{padding:14px 16px 18px;overflow-x:auto}
+.flowin{position:relative;min-width:860px}
+.grid2{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:center}
+.days{display:flex}
+.days span{flex:1;text-align:center;font:11px var(--mono);color:var(--muted)}
+.days span.we{color:var(--dim)}
+.erow{min-height:58px;border-bottom:1px solid var(--line-soft)}
+.erow button.name{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding-right:12px;box-sizing:border-box}
+.erow button.name:focus-visible{outline:2px solid var(--agent)}
+.track{position:relative;height:30px}
+.segs{position:absolute;top:5px;height:20px;display:flex;gap:2px}
+.segs div{border-radius:4px}
+.segs .d{background:var(--ok)}
+.segs .p{background:var(--agent-bg);box-shadow:inset 0 0 0 1px var(--agent)}
+.segs .n{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.segs .b{background:var(--danger)}
+.vline{position:absolute;top:0;bottom:0;width:0;pointer-events:none}
+.vline.today{border-left:2px solid var(--text)}
+.vline.eta{border-left:2px dashed var(--agent)}
+.vline.due{border-left:2px solid var(--danger)}
+.detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.detail>div{background:var(--rail);border:1px solid var(--line-soft);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.detail h3{margin:0;font-size:13px;font-weight:700}
+@media (max-width:720px){.detail{grid-template-columns:1fr}}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-s);padding:9px 11px;overflow-wrap:anywhere}
+.scard.over{border-color:var(--danger)}
+.grp2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;background:var(--rail);border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.qrow{display:grid;grid-template-columns:minmax(140px,1.4fr) minmax(90px,1fr) auto;gap:12px;align-items:center;padding:9px 20px;border-top:1px solid var(--line-soft)}
+.ebtn{all:unset;display:flex;align-items:center;gap:16px;flex-wrap:wrap;width:100%;box-sizing:border-box;padding:14px 20px;cursor:pointer}
+.ebtn:focus-visible{outline:2px solid var(--agent);outline-offset:-2px}
+.ebtn .car{font-size:12px;color:var(--dim);min-width:14px}
+
+/* ===== the guide ===== */
+main.help{max-width:900px;gap:14px}
+.help h1{margin:0}
+.help .sub{margin:-6px 0 10px}
+.help .panel ul{margin:0;padding:14px 22px 16px 40px}
+.help li{margin:7px 0;line-height:1.65;color:var(--body)}
+.help .panel>dl.terms{padding:16px 22px 18px!important}
+@media (max-width:640px){.help .panel>dl.terms{grid-template-columns:minmax(0,1fr)!important}}
+
+/* ===== narrow screens ===== */
+@media (max-width:720px){
+  main{padding:20px 16px 40px;gap:22px}
+  .consult,.await,.modebar{width:calc(100% - 32px);margin-top:14px}
+  header.bar .meta{font-size:11.5px}
+  .themebtn span{display:none}
+  .md{padding:18px 18px 24px}
+}
 
 </style>
 </head>
@@ -545,6 +748,38 @@ function hashWith(patch) {
 function go(patch) { var st = readHash(); Object.keys(patch).forEach(function (k) { st[k] = patch[k]; }); writeHash(st); }
 window.addEventListener("hashchange", render);
 
+/* ---------- theme: the viewer's preference, not the project's. Dark by default, light on request; `theme=` in the address wins ---------- */
+var THEME_KEY = "gtt-sonar-theme", THEME_PICKED = null;
+function themeNow() {
+  var t = readHash().theme || THEME_PICKED;
+  if (!t) { try { t = localStorage.getItem(THEME_KEY); } catch (e) { t = null; } }
+  return t === "light" ? "light" : "dark";
+}
+function applyTheme() { document.documentElement.setAttribute("data-theme", themeNow()); }
+function themeToggle() {
+  var dark = themeNow() === "dark", label = dark ? L("Tema claro", "Light theme") : L("Tema oscuro", "Dark theme");
+  var b = h("button", { type: "button", class: "themebtn", id: "theme-toggle", title: label, "aria-label": label }, icon(dark ? "sun" : "moon"), h("span", { text: label }));
+  b.addEventListener("click", function () {
+    THEME_PICKED = dark ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, THEME_PICKED); } catch (e) { /* storage may be blocked: it holds until the page reloads */ }
+    if (readHash().theme) go({ theme: "" }); else render();
+  });
+  return b;
+}
+var ICONS = {
+  portfolio: "M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z",
+  plan: "M10 6h10M10 12h10M10 18h10M3.5 6l1.4 1.4L7.5 4.8M3.5 12l1.4 1.4 2.6-2.6M3.5 18l1.4 1.4 2.6-2.6",
+  inbox: "M4 13l2.6-8h10.8L20 13v6H4zM4 13h4.5a3.5 3.5 0 0 0 7 0H20",
+  activity: "M3 12h4l3-8 4 16 3-8h4",
+  code: "M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16",
+  health: "M12 3l8 3v5c0 5-3.4 8.6-8 10-4.600-1.400-8-5-8-10V6zM8.500 12l2.500 2.500 4.500-5",
+  design: "M12 3l9 5-9 5-9-5zM3 13l9 5 9-5",
+  help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.500 9.500a2.500 2.500 0 1 1 3.700 2.200c-.8.500-1.200 1-1.200 1.900M12 17h.01",
+  sun: "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2.500M12 19.500V22M2 12h2.500M19.500 12H22M4.900 4.900l1.800 1.800M17.300 17.300l1.800 1.800M4.900 19.100l1.800-1.800M17.300 6.700l1.800-1.800",
+  moon: "M20 14.500A8.500 8.500 0 0 1 9.500 4a8.500 8.500 0 1 0 10.500 10.500z"
+};
+function icon(name) { var s = svgEl("svg", { viewBox: "0 0 24 24", class: "navico", "aria-hidden": "true" }); s.appendChild(svgEl("path", { d: ICONS[name] })); return s; }
+
 /* ---------- the one command the page builds: `gtt idea add` ---------- */
 /*IDEA-CMD*/
 function ideaCommand(text) {
@@ -678,8 +913,7 @@ function inboxCard(snap, r, open, mineCheck) {
 function inboxPanel(snap) {
   var st = readHash(); var rows = snap.inbox;
   var everything = st.ia === "1";
-  var wrap = h("section", { "aria-labelledby": "inbox-h", style: "display:flex;flex-direction:column;gap:12px" },
-    h("h2", { id: "inbox-h", class: "sec", text: T.inbox }), h("span", { class: "small", text: T.inboxHint }));
+  var wrap = h("section", { "aria-label": T.inbox, title: T.inboxHint, style: "display:flex;flex-direction:column;gap:12px" });
   if (rows === null || rows === undefined) { wrap.appendChild(h("div", { class: "panel empty", text: T.nodata })); return wrap; }
   var ok = needsMe(snap);
   var cols = BOARD.concat(everything ? ["parked", "rejected"] : []);
@@ -692,8 +926,8 @@ function inboxPanel(snap) {
     var list = rows.filter(function (r) { return r.stage === stage && ok(r); });
     if (stage === "accepted" && !list.length) return;      // the column of what the agent is packaging shows only when it holds something
     var sh = stageHelp()[stage];
-    board.appendChild(h("div", { class: "bcol" }, h("h3", null, T.inboxCols[stage], h("span", { class: "n", text: list.length })),
-      sh ? h("p", { class: "colhelp" + (sh[1] && list.length ? " me" : ""), text: sh[0] }) : null,
+    board.appendChild(h("div", { class: "bcol", title: sh ? sh[0] : null }, h("h3", null, T.inboxCols[stage], h("span", { class: "n", text: list.length })),
+      sh && sh[1] && list.length ? h("p", { class: "colhelp me", text: sh[0] }) : null,
       list.length ? list.map(function (r) { return inboxCard(snap, r, st.card === r.ref); }) : h("span", { class: "small", text: T.noneCol })));
   });
   if (!rows.length) board = h("div", { class: "panel empty", text: T.inboxNone });
@@ -924,7 +1158,7 @@ function ago(iso) {
   var hh = Math.round(m / 60); if (hh < 48) return L("hace ", "") + hh + " h" + L("", " ago"); return L("hace ", "") + Math.round(hh / 24) + " d" + L("", " ago");
 }
 function ownerWord(o) { return o === "human" ? L("te toca", "yours") : o === "agent" ? L("le toca a claude", "the agent's") : ""; }
-function lvlTag(l) { return h("span", { class: "lvl " + (l === "WARNING" || l === "BLOCKING" ? "w" : "n"), text: l }); }
+function lvlTag(l) { return l === "WARNING" || l === "BLOCKING" ? h("span", { class: "lvl w", text: l }) : null; }      /* only an alert wears a level */
 function copyRef(ref) {
   var b = h("button", { type: "button", class: "cref", title: L("copiar ref", "copy ref"), "aria-label": L("copiar ref ", "copy ref ") + ref, text: "⧉" });
   b.addEventListener("click", function (ev) {
@@ -969,32 +1203,27 @@ function storyChat(snap, s) {
   return fs.map(function (f) { return f.fix.chat; }).join(" ");
 }
 function inboxN(snap) { var c = snap.inbox_counts; return c ? (c["new"] || 0) + (c.review || 0) + (c.ratify || 0) : 0; }
-function healthN(snap) {
-  var n = 0, notices = 0;                             /* n = what to attend (BLOCKING, WARNING, a failed check); notices = what only informs */
-  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "WARNING" || f.level === "BLOCKING") n++; else notices++; } });
-  (snap.health || []).forEach(function (c) { if (c.status === "fail") n++; else if (c.status !== "ok") notices++; });
-  return { n: n, notices: notices, amber: n > 0 };
-}
+function healthN(snap) { var a = attention(snap).alerts; return { n: a.n, amber: a.n > 0 }; }
 
 /* ---------- the bar ---------- */
 function topBar2(view, snap) {
   var st = readHash();
-  function tab(id, label, count, amber, notices) {
+  function tab(id, label, count, amber) {
     var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.view = id; if (id !== "plan") { delete x.q; }
     var href = "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&");
     var tabHelp = { portfolio: L("Todos tus proyectos de un vistazo", "All your projects at a glance"), plan: L("Épicas e historias: cuánto falta y qué te espera", "Epics and Stories: how much is left and what waits for you"),
       inbox: L("Por donde entran los cambios al diseño", "Where changes to the design come in"), activity: L("Quién hizo qué y en qué trabaja el agente ahora", "Who did what and what the agent works on now"),
       code: L("Lo construido frente al diseño", "What was built against the design"), health: L("Lo que GTT detectó solo, y de quién es", "What GTT detected by itself, and whose it is"),
       design: L("Los documentos que mandan, y las decisiones", "The documents that rule, and the decisions"), help: L("Qué es cada vista y las palabras que verás", "What each view is and the words you will meet") };
-    var a = h("a", { href: href, title: tabHelp[id] || "" }, label, count ? h("b", { class: amber ? "amber" : "", text: count }) : null, notices ? h("b", { class: "mute", title: L("avisos informativos (NOTICE)", "informative notices (NOTICE)"), text: "+" + notices }) : null);
+    var a = h("a", { href: href, title: tabHelp[id] || "" }, icon(id), h("span", { class: "tl-t", text: label }), count ? h("b", { class: amber ? "amber" : "", text: count }) : null);
     if (view === id) a.setAttribute("aria-current", "page");
     return a;
   }
-  var hn = snap ? healthN(snap) : { n: 0, notices: 0, amber: false };
+  var hn = snap ? healthN(snap) : { n: 0, amber: false };
   var tabs = [];
   if (OK.length > 1) tabs.push(tab("portfolio", L("portafolio", "portfolio")));
   tabs.push(tab("plan", L("plan", "plan")), tab("inbox", L("bandeja", "inbox"), snap ? inboxN(snap) : 0, false), tab("activity", L("actividad", "activity")), snap && snap.code && snap.code.modules && snap.code.modules.length ? tab("code", L("código", "code")) : null,
-    tab("health", L("salud", "health"), hn.n, hn.amber, hn.notices), tab("design", L("diseño", "design")), tab("help", L("guía", "guide")));
+    tab("health", L("salud", "health"), hn.n, hn.amber), tab("design", L("diseño", "design")), tab("help", L("guía", "guide")));
   var paused = st.pause === "1";
   var mode = snap && editable(snap) ? h("span", { class: "edit", text: L("editable", "editable") }) : h("span", { class: "edit ro", text: L("solo lectura", "read only") });
   var live = h("button", { type: "button", class: "live", "aria-pressed": paused ? "true" : "false", title: paused ? T.resume : T.pause }, h("i", { "aria-hidden": "true" }),
@@ -1002,11 +1231,11 @@ function topBar2(view, snap) {
   live.addEventListener("click", function () { go({ pause: paused ? "" : "1" }); schedule(); });
   var suite = snap ? (snap.compat ? snap.compat.read_with : snap.suite_version) : null;
   return h("header", { class: "bar" },
-    h("div", { class: "brandbox" }, h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "gtt sonar"),
+    h("div", { class: "brandbox" }, h("div", { class: "brand" }, h("i", { "aria-hidden": "true" }), "GTT Sonar"),
       h("a", { class: "home", href: "https://gtt-method.org/", target: "_blank", rel: "noopener noreferrer", title: "gtt-method.org", text: "gtt-method.org" })),
     h("nav", { class: "tabs", "aria-label": L("Vistas", "Views") }, tabs),
     h("div", { class: "grow" }),
-    h("div", { class: "meta" }, suite ? h("span", { text: L("suite ", "suite ") + suite }) : null, mode, live));
+    h("div", { class: "meta" }, suite ? h("span", { text: L("suite ", "suite ") + suite }) : null, mode, live, themeToggle()));
 }
 
 /* ---------- the consultation thread: ONE conversation in Claude web, always at the top; the questions point to it ---------- */
@@ -1039,8 +1268,7 @@ function consultButton(snap, ref) {
 function consultBar(snap) {
   var c = snap && snap.consult; if (!c) return null;
   var bar = h("div", { class: "consult", role: "region", "aria-label": L("Hilo de consulta en Claude web", "Consultation thread in Claude web") });
-  bar.appendChild(h("span", { class: "ct", text: L("Claude web · hilo del proyecto", "Claude web · project thread") }));
-  bar.appendChild(h("span", { class: "small", text: L("Una sola conversación de Claude web que conoce tu proyecto, para pensar ahí las decisiones difíciles. Los botones «Consultar en Claude» le llevan su pregunta con el contexto; tú traes la respuesta de vuelta.", "One Claude web conversation that knows your project, for thinking the hard decisions through. The “Consult in Claude” buttons take it their question with the context; you bring the answer back.") }));
+  bar.appendChild(h("span", { class: "ct", title: L("Una sola conversación de Claude web que conoce tu proyecto, para pensar las decisiones difíciles. Los botones «Consultar en Claude» le llevan su pregunta con el contexto; tú traes la respuesta.", "One Claude web conversation that knows your project, for thinking the hard decisions through. The “Consult in Claude” buttons take it their question with the context; you bring the answer back."), text: L("hilo en Claude web", "thread in Claude web") }));
   var hasThread = !!(c.thread && c.thread.url);
   if (hasThread) {
     bar.appendChild(h("a", { class: "btn go", href: c.thread.url, target: "_blank", rel: "noopener noreferrer", text: L("Abrir el hilo ↗", "Open the thread ↗") }));
@@ -1075,7 +1303,7 @@ function consultBar(snap) {
       bar.appendChild(have);
       if (CONSULT_UI.form) bar.appendChild(threadForm(snap, true));
     } else {
-      bar.appendChild(h("span", { class: "small", text: L("Luego registra la URL del hilo, una sola vez (GTT la recuerda siempre): ", "Then register the thread's URL, once (GTT remembers it for good): ") }));
+      bar.appendChild(h("span", { class: "small", text: L("registrar su URL (una vez):", "register its URL (once):") }));
       bar.appendChild(cmdBlock(c.set_command));
     }
   }
@@ -1175,7 +1403,7 @@ function awaitingBar(snap) {
   if (!parts.length) return null;
   var bar = h("div", { class: "await", role: "status", "aria-label": L("esperando al agente", "waiting for the agent") });
   bar.appendChild(h("span", { class: "at", text: L("esperando al agente", "waiting for the agent") }));
-  bar.appendChild(h("span", { class: "small", text: L("De tu parte está hecho: ", "Done on your side: ") + parts.join(" · ") + ". " + L("El agente lo toma en tu próximo mensaje a Claude Code: GTT se lo dice solo. Si no tienes una sesión abierta, queda guardado.", "The agent takes it at your next message to Claude Code: GTT tells it by itself. With no open session it stays recorded.") }));
+  bar.appendChild(h("span", { class: "small", title: L("Tu parte está hecha. GTT se lo dice al agente solo; sin una sesión abierta, queda guardado.", "Your part is done. GTT tells the agent by itself; with no open session it stays recorded."), text: parts.join(" · ") + ". " + L("El agente lo toma en tu próximo mensaje a Claude Code.", "The agent takes it at your next message to Claude Code.") }));
   var line = L("Aplica lo que respondí en Sonar y trata mis ideas nuevas.", "Apply what I answered in Sonar and triage my new ideas.");
   var cp = h("button", { type: "button", class: "btn ghost", title: L("Copia una línea para pegarla en Claude Code si quieres que lo tome ya", "Copies a line to paste into Claude Code if you want it taken now"), text: L("Copiar aviso para Claude", "Copy a nudge for Claude") });
   cp.addEventListener("click", function () { copyToClipboard(line, function () { cp.textContent = L("copiado: pégalo en Claude Code", "copied: paste it in Claude Code"); setTimeout(function () { cp.textContent = L("Copiar aviso para Claude", "Copy a nudge for Claude"); }, 3500); }, function () { cp.textContent = L("no se pudo copiar", "could not copy"); }); });
@@ -1184,22 +1412,128 @@ function awaitingBar(snap) {
 }
 
 /* ---------- the five figures, Now, the last events, I-need-you ---------- */
-function needItems(snap) {
-  var out = [];
+/* ---------- one rule for every number on the page: does the person have to do something now? ----------
+   I need you = what the engine declares + each open gap that holds an unfinished Story (or is BLOCKING) + a decision to know and a plan ready to run.
+   Alerts     = every BLOCKING and WARNING, on any plane, + a failed check that no finding already stands for.
+   No urgency = every other finding. It is in no figure and no badge, and each group says whether it leaves by itself, when, and why it can wait.
+   A finding is in "I need you" or in "no urgency", never in both. */
+var ATTN = typeof WeakMap === "function" ? new WeakMap() : null;
+function attention(snap) {
+  var hit = ATTN && ATTN.get(snap);
+  if (hit && hit.lang === LANG) return hit;
+  var findings = snap.findings || [], held = {}, items = [], refs = {}, gaps = {}, stories = {};
+  findings.forEach(function (f) {
+    if (f.code !== "DEF-STORY-GAP") return;
+    var id = gapIdOf(f); if (!id) return;
+    held[id] = held[id] || [];
+    if (held[id].indexOf(f.ref) < 0) held[id].push(f.ref);
+  });
+  function push(it) { if (refs[it.ref]) return; refs[it.ref] = true; items.push(it); }
   (snap.needs_you || []).forEach(function (n) {
-    out.push({ ref: n.ref, title: n.title || n.ref, sub: [(T.hows[n.how] || T.kinds[n.kind] || n.kind)].concat(n.unblocks && n.unblocks.length ? [L("destraba ", "unblocks ") + n.unblocks.join(", ")] : []).concat(n.note ? [n.note] : []).join(" · "),
+    (n.unblocks || []).concat(n.kind === "blocked" ? [n.ref] : []).forEach(function (x) { stories[x] = true; });
+    push({ ref: n.ref, title: n.title || n.ref, sub: [(T.hows[n.how] || T.kinds[n.kind] || n.kind)].concat(n.unblocks && n.unblocks.length ? [L("destraba ", "unblocks ") + n.unblocks.join(", ")] : []).concat(n.note ? [n.note] : []).join(" · "),
       choices: n.choices || null, context: n.context || null, terms: n.terms || null, cites: n.cites || null, todo: n.todo || null, why: n.why || null, until: n.until || null, command: n.command || null, kind: n.kind, target: n.entry || n.ref });
   });
-  (snap.findings || []).forEach(function (f) {
-    if (f.owner !== "human") return;
-    if (f.code === "GOV-GAP") out.push({ ref: f.ref, title: f.text, sub: L("vacío abierto", "open gap") + (f.epic ? " · " + L("afecta ", "affects ") + f.epic : ""), about: f.ref, kind: "gap", target: f.epic || f.ref });
-    else if (f.code === "GOV-DEC") out.push({ ref: f.ref, title: f.text, sub: L("decidió el agente y debes saberlo", "the agent decided and you should know"), kind: "dec", target: f.ref });
-    else if (f.code === "GOV-RUN") out.push({ ref: f.ref, title: f.text, sub: L("varios actos tuyos listos", "several acts of yours are ready"), command: f.fix.command, kind: "run", target: f.ref });
-    else if (f.code === "DEF-EPIC-PROPOSED") out.push({ ref: f.ref, title: L("propuesta completa: espera tu aprobación", "complete proposal: waits for your approval"), sub: epicTitle(snap, f.ref), command: f.fix.command, kind: "epic", target: f.ref });
-    else if (f.code === "DEF-EPIC-INTENT") out.push({ ref: f.ref, title: epicTitle(snap, f.ref) + ": " + f.text, sub: L("abre la épica para completarla", "open the Epic to complete it"), kind: "epic", target: f.ref });
+  var holding = findings.filter(function (f) { return f.code === "GOV-GAP" && (held[f.ref] || f.level !== "NOTICE"); })
+    .sort(function (a, b) { return (held[b.ref] || []).length - (held[a.ref] || []).length || (a.ref < b.ref ? -1 : 1); });
+  holding.forEach(function (f) {
+    var who = held[f.ref] || [];
+    gaps[f.ref] = true; who.forEach(function (x) { stories[x] = true; });
+    push({ ref: f.ref, title: f.text, sub: L("vacío abierto", "open gap") + (who.length ? " · " + L("frena ", "holds ") + who.slice(0, 3).join(", ") + (who.length > 3 ? " +" + (who.length - 3) : "") : " · " + L("bloqueante", "blocking")), about: f.ref, kind: "gap", target: who[0] || f.epic || f.ref });
   });
+  findings.forEach(function (f) {
+    if (f.code === "GOV-DEC") push({ ref: f.ref, title: f.text, sub: L("decidió el agente y debes saberlo", "the agent decided and you should know"), kind: "dec", target: f.ref });
+    else if (f.code === "GOV-RUN") push({ ref: f.ref, title: f.text, sub: L("varios actos tuyos listos", "several acts of yours are ready"), command: f.fix.command, kind: "run", target: f.ref });
+  });
+  var quiet = findings.filter(function (f) {
+    if (f.level !== "NOTICE" || f.code === "GOV-DEC" || f.code === "GOV-RUN") return false;
+    if (f.code === "GOV-GAP") return !gaps[f.ref];
+    if (f.code === "DEF-STORY-GAP") return !gaps[gapIdOf(f)];
+    if (f.code === "DEF-EPIC-PROPOSED" || f.code === "DEF-EPIC-INTENT") return !refs[f.ref];
+    return true;
+  });
+  var urgent = findings.filter(function (f) { return f.level !== "NOTICE"; });
+  var stood = {}; findings.forEach(function (f) { if (f.code === "GOV-VALIDATION") stood[f.ref] = true; });
+  var failed = (snap.health || []).filter(function (c) { return c.status === "fail" && !stood[c.id]; }).length;
+  var blocking = urgent.filter(function (f) { return f.level === "BLOCKING"; }).length;
+  var old = findings.length ? 0 : (snap.signals || []).filter(function (x) { return x.level === "WARNING" || x.level === "GOVERNANCE"; }).length;
+  var out = { lang: LANG, items: items, refs: refs, gaps: gaps, held: held, stories: stories, quiet: quiet, quietSet: new Set(quiet), urgent: urgent,
+    alerts: { n: urgent.length + failed + old, blocking: blocking, failed: failed } };
+  if (ATTN) ATTN.set(snap, out);
   return out;
 }
+function needItems(snap) { return attention(snap).items; }
+function isQuiet(snap, f) { return attention(snap).quietSet.has(f); }
+/* "your move" is said only of what waits for an act today; what has no urgency just says whose it is. */
+function whoWord(snap, f) { if (!isQuiet(snap, f)) return ownerWord(f.owner); return f.owner === "human" ? L("tuyo", "yours") : f.owner === "agent" ? L("del agente", "the agent's") : ownerWord(f.owner); }
+function whoClass(snap, f) { return "who " + (f.owner === "human" && !isQuiet(snap, f) ? "me" : ""); }
+
+/* When a notice leaves, and why it can wait. `a` = it leaves with nothing from you (the agent's work or the work itself moves it).
+   Each rule is the condition of the script that raises the finding: the test holds this table to the catalog in findings.json. */
+var QUIET = {
+  "GOV-GAP": { a: 0, t: ["Decisiones abiertas que no frenan ninguna historia", "Open decisions that hold no Story"],
+    w: ["Ninguna historia sin terminar las cita: se puede seguir construyendo. Si una llega a citar una, pasa sola a «te necesito».", "No unfinished Story cites them: building goes on. When one does cite a gap, it moves to “I need you” by itself."],
+    g: ["No se va sola. Se va cuando el diseño la marca resuelta: como el diseño está congelado, tu respuesta entra a la Bandeja como idea, el agente propone el cambio y tú lo aceptas y promueves.", "It does not leave by itself. It leaves when the design marks it resolved: the design is frozen, so your answer enters the Inbox as an idea, the agent proposes the change and you accept and promote it."] },
+  "DEF-EPIC-PROPOSED": { a: 0, t: ["Épicas propuestas sin trabajo encima", "Proposed Epics with no work on them"],
+    w: ["Ninguna historia suya está en curso ni hecha: aprobarlas hoy no mueve nada. Si se construye sobre una, pasa sola a «te necesito».", "None of their Stories is in progress or done: approving them today moves nothing. When work stands on one, it moves to “I need you” by itself."],
+    g: ["No se va sola. Se va cuando la apruebas (`gtt approve EPIC-NNN`) o se cancela.", "It does not leave by itself. It leaves when you approve it (`gtt approve EPIC-NNN`) or it is cancelled."] },
+  "GOV-OBSERVATION": { a: 0, t: ["Observaciones sobre el código, registradas", "Recorded observations about the code"],
+    w: ["Son desviaciones anotadas que no detienen el trabajo. Las de nivel alto aparecen arriba, como alertas.", "They are recorded deviations that stop no work. The high-level ones appear above, as alerts."],
+    g: ["Se va sola si el código deja de mostrarla, o cuando la aceptas (es intencional). Diferirla la deja en esta lista; rechazarla frena lo afectado hasta deshacerlo.", "It leaves by itself if the code stops showing it, or when you accept it (it is intended). Deferring keeps it listed; rejecting stops the affected work until it is undone."] },
+  "DEF-EPIC-INTENT": { a: 0, t: ["Propuestas de épica incompletas", "Incomplete Epic proposals"],
+    w: ["La épica sigue propuesta y no hay trabajo sobre ella.", "The Epic is still a proposal and no work stands on it."],
+    g: ["No se va sola. Se va cuando tiene objetivo, alcance y fuera de alcance, o deja de estar propuesta.", "It does not leave by itself. It leaves when it has a goal, a scope and an out of scope, or it is no longer proposed."] },
+  "DEF-INBOX-ADR-DRAFT": { a: 0, t: ["Borradores de ADR tuyos a medias", "Your ADR drafts half written"],
+    w: ["Un borrador no cambia el diseño ni frena el trabajo.", "A draft changes nothing in the design and holds no work."],
+    g: ["No se va solo. Se va cuando completas sus secciones.", "It does not leave by itself. It leaves when you fill its sections."] },
+  "DLV-UNINTEGRATED": { a: 0, t: ["Historias hechas sin commit registrado", "Done Stories with no commit recorded"],
+    w: ["El trabajo está hecho; falta integrarlo, y cuándo hacerlo lo decides tú.", "The work is done; integrating it is left, and you choose when."],
+    g: ["No se va solo: el historial de Git es tuyo. Se va cuando hay commit y queda anotado en `Closed:`.", "It does not leave by itself: Git history is yours. It leaves when there is a commit and `Closed:` names it."] },
+  "DEF-STORY-DONE-WHEN": { a: 1, t: ["Historias sin una «hecha cuando» comprobable", "Stories without a checkable “done when”"],
+    w: ["El agente la escribe antes de empezar la historia; una historia no empieza sin estar definida.", "The agent writes it before starting the Story; a Story does not start undefined."],
+    g: ["Se va cuando el agente escribe una «hecha cuando» con evidencia que un comando pueda comprobar, o la historia se cierra.", "It leaves when the agent writes a “done when” with evidence a command can check, or the Story is closed."] },
+  "DEF-STORY-ESTIMATE": { a: 1, t: ["Historias sin estimación", "Stories with no estimate"], w: ["Es parte de definir la historia, trabajo del agente.", "It is part of defining the Story, the agent's work."], g: ["Se va cuando el agente la estima o la historia se cierra.", "It leaves when the agent estimates it or the Story is closed."] },
+  "DEF-STORY-IMPLEMENTS": { a: 1, t: ["Historias que no dicen qué parte del diseño construyen", "Stories that do not say which design part they build"], w: ["Es parte de definir la historia, trabajo del agente.", "It is part of defining the Story, the agent's work."], g: ["Se va cuando el agente escribe `Implements` o la historia se cierra.", "It leaves when the agent writes `Implements` or the Story is closed."] },
+  "DEF-STORY-GAP": { a: 0, t: ["Historias que esperan un vacío abierto", "Stories waiting on an open gap"], w: ["Se listan junto a su vacío.", "They are listed with their gap."], g: ["No se va sola. Se va cuando el vacío se resuelve, la historia deja de citarlo o se cierra.", "It does not leave by itself. It leaves when the gap is resolved, the Story stops citing it or it is closed."] },
+  "DEF-STORY-GAP-STALE": { a: 1, t: ["Historias que citan un vacío ya cerrado", "Stories citing a gap already closed"], w: ["La decisión ya existe: solo falta poner al día el texto.", "The decision exists already: only the text is behind."], g: ["Se va cuando el agente actualiza la historia.", "It leaves when the agent updates the Story."] },
+  "DEF-STORY-BLOCKED": { a: 0, t: ["Historias bloqueadas por una pregunta", "Stories blocked by a question"], w: ["La pregunta está en «te necesito».", "The question is in “I need you”."], g: ["Se va cuando la pregunta se responde y la historia sigue.", "It leaves when the question is answered and the Story moves on."] },
+  "DEF-STORY-BLOCKED-NOCAUSE": { a: 1, t: ["Historias bloqueadas sin motivo escrito", "Blocked Stories with no written cause"], w: ["Falta anotar la causa, trabajo del agente.", "The cause is not written down, the agent's work."], g: ["Se va cuando el agente escribe `Blocked by` o la pregunta, o la historia deja de estar bloqueada.", "It leaves when the agent writes `Blocked by` or the question, or the Story is no longer blocked."] },
+  "DEF-EPIC-DESIGN": { a: 1, t: ["Épicas con el diseño sin terminar", "Epics whose design is unfinished"], w: ["Es el documento que el agente prepara.", "It is the document the agent prepares."], g: ["Se va cuando el diseño de la épica está completo y aprobado.", "It leaves when the Epic's design is complete and approved."] },
+  "DEF-EPIC-ESTIMATE": { a: 1, t: ["Épicas sin estimación", "Epics with no estimate"], w: ["Solo afecta a la fecha estimada.", "It only affects the estimated date."], g: ["Se va cuando el agente la estima.", "It leaves when the agent estimates it."] },
+  "DEF-NOTES-STALE": { a: 1, t: ["Notas del backlog desactualizadas", "Backlog notes out of date"], w: ["Es texto de apoyo: el estado real está en cada historia.", "It is supporting text: the real state is on each Story."], g: ["Se va cuando el agente actualiza la sección.", "It leaves when the agent updates the section."] },
+  "DEF-ANSWER-TO-APPLY": { a: 1, t: ["Respuestas tuyas por aplicar", "Your answers still to apply"], w: ["Ya respondiste: tu parte está hecha.", "You already answered: your part is done."], g: ["Se va cuando el agente aplica la respuesta, en tu próximo mensaje.", "It leaves when the agent applies the answer, at your next message."] },
+  "DEF-INBOX-UNTRIAGED": { a: 1, t: ["Ideas sin tratar", "Ideas not triaged"], w: ["El agente las trata en su próximo punto de corte.", "The agent triages them at its next cut point."], g: ["Se va cuando el agente la convierte en propuesta o la responde.", "It leaves when the agent turns it into a proposal or answers it."] },
+  "DEF-INBOX-LEVEL": { a: 1, t: ["Propuestas sin nivel confirmado", "Proposals with no confirmed level"], w: ["Falta un dato que pone el agente.", "A datum the agent fills is missing."], g: ["Se va cuando el agente la reemplaza con su nivel real.", "It leaves when the agent replaces it with its real level."] },
+  "DEF-INBOX-NO-PACKAGE": { a: 1, t: ["Propuestas aceptadas por preparar", "Accepted proposals to prepare"], w: ["Ya la aceptaste: sigue el agente.", "You accepted it already: the agent goes next."], g: ["Se va cuando el agente prepara su paquete.", "It leaves when the agent prepares its package."] },
+  "DEF-INBOX-PACKAGE-STALE": { a: 1, t: ["Paquetes desactualizados", "Packages out of date"], w: ["El borrador cambió después: el agente rehace el paquete.", "The draft changed afterwards: the agent rebuilds the package."], g: ["Se va cuando el agente lo prepara de nuevo.", "It leaves when the agent prepares it again."] },
+  "DEF-WORK-NO-STORY": { a: 1, t: ["Código cambiando sin una historia en curso", "Code changing with no Story in progress"], w: ["Recién empezó; si sigue, pasa a alerta.", "It just started; if it goes on, it becomes an alert."], g: ["Se va cuando una historia queda en curso o el código deja de cambiar.", "It leaves when a Story is in progress or the code stops changing."] },
+  "GOV-COVERAGE": { a: 1, t: ["Partes del diseño que ninguna historia construye todavía", "Design parts no Story builds yet"], w: ["La épica sigue abierta: aún se pueden agregar historias.", "The Epic is still open: Stories can still be added."], g: ["Se va cuando el agente agrega las historias que faltan.", "It leaves when the agent adds the missing Stories."] },
+  "GOV-SOURCE": { a: 1, t: ["Fuentes que cambiaron", "Sources that changed"], w: ["Lo corrige el agente registrando la nueva versión.", "The agent fixes it by registering the new version."], g: ["Se va cuando la fuente vuelve a coincidir con su registro.", "It leaves when the source matches its record again."] },
+  "GOV-VALIDATION": { a: 1, t: ["Chequeos con aviso o vencidos", "Checks that warned or are out of date"], w: ["No fallaron; un chequeo que falla aparece como alerta.", "They did not fail; a failing check shows as an alert."], g: ["Se va cuando el chequeo se vuelve a correr y pasa.", "It leaves when the check runs again and passes."] },
+  "GOV-DEC": { a: 0, t: ["Decisiones del agente que debes saber", "Decisions of the agent you should know"], w: ["Se muestran en «te necesito».", "They show in “I need you”."], g: ["Se va cuando queda atendida.", "It leaves once attended."] },
+  "GOV-RUN": { a: 0, t: ["Planes listos para ejecutar", "Plans ready to run"], w: ["Se muestran en «te necesito».", "They show in “I need you”."], g: ["Se va cuando lo ejecutas (`gtt run n`).", "It leaves when you run it (`gtt run n`)."] },
+  "GTT-SHADOW-STATE": { a: 1, t: ["Estado guardado fuera de gtt-domain/", "State kept outside gtt-domain/"], w: ["No detiene nada, pero Sonar no lee esos archivos.", "It stops nothing, but Sonar does not read those files."], g: ["Se va cuando el agente migra el contenido y archiva el archivo.", "It leaves when the agent migrates the content and archives the file."] },
+  "GTT-DEPENDS": { a: 1, t: ["Dependencias que stack.md no permite", "Dependencies stack.md does not allow"], w: ["Se corrige en el código.", "It is fixed in the code."], g: ["Se va cuando la dependencia desaparece o stack.md la permite.", "It leaves when the dependency is gone or stack.md allows it."] },
+  "CODE-EMPTY": { a: 1, t: ["Módulos declarados que aún no tienen código", "Declared modules with no code yet"], w: ["Es normal mientras no toque construirlos.", "Normal while their turn to be built has not come."], g: ["Se va cuando el módulo tiene código.", "It leaves when the module has code."] },
+  "DEF-EPIC-DEFAULT": null,
+  "DLV-NO-PLAN": { a: 1, t: ["Sin datos suficientes para una fecha", "Not enough data for a date"], w: ["Solo afecta a la fecha estimada.", "It only affects the estimated date."], g: ["Se va cuando las épicas o historias abiertas tienen estimación.", "It leaves when the open Epics or Stories have estimates."] },
+  "DLV-FINDING": { a: 1, t: ["Señales de la entrega", "Delivery signals"], w: ["Informan sobre ritmo, plazo y tamaño; no detienen el trabajo.", "They report pace, deadline and size; they stop no work."], g: ["Se va cuando deja de cumplirse la condición que la generó: GTT la recalcula cada vez.", "It leaves when the condition that raised it stops being true: GTT recomputes it every time."] }
+};
+delete QUIET["DEF-EPIC-DEFAULT"];
+/*END-QUIET*/
+function quietRule(code) {
+  return QUIET[code] || (code.indexOf("DLV-") === 0 ? QUIET["DLV-FINDING"] : { a: 0, t: [code, code], w: ["No cuenta como alerta.", "It is not an alert."], g: ["Se va cuando cambia lo que lo causa.", "It leaves when what causes it changes."] });
+}
+function two(pair) { return L(pair[0], pair[1]); }
+/* The three acts on an observation are the person's: the engine sends them ready to run; an older one sends no id, and the page says how to find it. */
+function observationActs(f) {
+  var acts = f.fix && f.fix.acts; if (!acts || !acts.length) return null;
+  var word = { accept: L("Aceptar (es intencional): se va", "Accept (it is intended): it leaves"), reject: L("Rechazar (hay que deshacerlo): frena lo afectado", "Reject (it must be undone): stops the affected work"), defer: L("Diferir: sigue en la lista", "Defer: stays listed") };
+  var box = h("details", { class: "obsacts" }, h("summary", { text: L("Atender ", "Attend ") + (f.observation || "") }));
+  acts.forEach(function (a) { box.appendChild(h("div", { class: "obsact" }, h("span", { class: "small", text: word[a.act] || a.act }), cmdLine(a.command))); });
+  return box;
+}
+
 function epicTitle(snap, ref) { var e = (snap.epics || []).filter(function (x) { return x.ref === ref; })[0]; return e ? (e.title || ref) : ref; }
 function figures(snap) {
   var s = snap.summary || {}; var hrs = s.hours; var rc = snap.readiness ? snap.readiness.counts : null;
@@ -1209,11 +1543,9 @@ function figures(snap) {
   var needsSub = [];
   if (kinds.q) needsSub.push(kinds.q + " " + L(kinds.q > 1 ? "preguntas" : "pregunta", kinds.q > 1 ? "questions" : "question"));
   if (kinds.e) needsSub.push(kinds.e + " " + L(kinds.e > 1 ? "épicas" : "épica", kinds.e > 1 ? "Epics" : "Epic"));
-  if (kinds.g) needsSub.push(kinds.g + " " + L(kinds.g > 1 ? "vacíos" : "vacío", kinds.g > 1 ? "gaps" : "gap"));
+  if (kinds.g) needsSub.push(kinds.g + " " + L(kinds.g > 1 ? "vacíos que frenan" : "vacío que frena", kinds.g > 1 ? "gaps holding work" : "gap holding work"));
   if (kinds.o) needsSub.push(kinds.o + " " + L("otros", "other"));
-  var alerts = { b: 0, w: 0, n: 0 };               /* BLOCKING, WARNING and NOTICE are three things: what stops, what to attend soon, what only informs */
-  (snap.findings || []).forEach(function (f) { if (f.plane === "governance" || f.plane === "delivery") { if (f.level === "BLOCKING") alerts.b++; else if (f.level === "WARNING") alerts.w++; else alerts.n++; } });
-  (snap.signals || []).forEach(function (x) { if (!(snap.findings || []).length) { if (x.level === "WARNING" || x.level === "GOVERNANCE") alerts.w++; else alerts.n++; } });
+  var alerts = attention(snap).alerts;
   var eta = fmtRange(snap.forecast_range) || (s.forecast ? fmtDate(s.forecast) : null);
   var etaSub = [s.deadline ? L("plazo ", "deadline ") + fmtDate(s.deadline) : L("sin plazo", "no deadline")];
   if (snap.forecast_range || (s.calibration && s.calibration.uncalibrated)) etaSub.push(L("sin calibrar", "uncalibrated"));
@@ -1221,32 +1553,28 @@ function figures(snap) {
   var nextN = (snap.stories || []).filter(function (x) { return x.next && x.ready === "to_define"; }).length;
   var figHelp = { progress: L("Cuánto del trabajo está hecho: por horas si hay estimaciones, si no por historias.", "How much of the work is done: by hours if there are estimates, otherwise by Stories."),
     eta: L("Cuándo terminaría al ritmo actual. «sin calibrar» = aún hay pocos datos, es un rango.", "When it would finish at the current pace. “uncalibrated” = still little data, it is a range."),
-    needs: L("Cosas que solo tú puedes resolver: preguntas, decisiones abiertas, aprobaciones.", "Things only you can resolve: questions, open decisions, approvals."),
+    needs: L("Solo lo que hoy espera un acto tuyo: preguntas, decisiones por tomar y vacíos que frenan una historia.", "Only what waits for an act of yours today: questions, decisions to take and gaps that hold a Story."),
     define: L("Historias a las que les falta información antes de poder empezar.", "Stories that lack information before they can start."),
-    alerts: L("WARNING: lo que GTT detectó y conviene atender pronto (BLOCKING detiene lo afectado). El detalle está en la vista Salud.", "WARNING: what GTT detected and should be attended soon (BLOCKING stops what it affects). The detail is in the Health view."),
-    notices: L("NOTICE: informativo. Sirve para saber, no hay que atenderlo ahora. Está aparte para que no tape lo urgente.", "NOTICE: informative. Good to know, nothing to attend now. Kept apart so it does not bury what is urgent.") };
+    alerts: L("Lo que GTT detectó y conviene atender pronto (BLOCKING detiene lo afectado). Es el mismo número que ves en el menú y en Salud.", "What GTT detected and should be attended soon (BLOCKING stops what it affects). The same number as in the menu and in Health.") };
   /* each figure leads to the content it counts: the click lands on it, never on the top of a view */
-  var level = alerts.b ? "BLOCKING" : "WARNING";
   var goes = {
     progress: [{ view: "plan", f: "", q: "", tl: "", at: "plan-list" }, L("ver el plan", "see the plan")],
     eta: [{ view: "plan", f: "", q: "", tl: "1", at: "plan-list" }, L("ver la línea de tiempo", "see the timeline")],
     needs: [{ view: "plan", na: "1", at: "needs-h" }, L("ver lo que te espera", "see what waits for you")],
     define: [{ view: "plan", f: "define", q: "", at: "plan-list" }, L("ver las historias por definir", "see the Stories to define")],
-    alerts: [{ view: "health", hl: level, ho: "", hq: "" }, L("ver las alertas en Salud", "see the alerts in Health")],
-    notices: [{ view: "health", hl: "NOTICE", ho: "", hq: "" }, L("ver los avisos en Salud", "see the notices in Health")] };
+    alerts: [{ view: "health", hl: "", ho: "", hq: "", at: "alerts" }, L("ver las alertas en Salud", "see the alerts in Health")] };
   function cell(k, v, sub, cls, key) {
     var to = goes[key];
     return h("a", { class: "fig", "data-fig": key, href: hashWith(to[0]), title: (figHelp[key] || "") + " — " + to[1], "aria-label": k + " " + v + ": " + to[1] },
-      h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub }), h("span", { class: "go", text: "→ " + to[1] }));
+      h("span", { class: "k", text: k }), h("span", { class: "v " + (cls || ""), text: v }), h("span", { class: "s", text: sub }));
   }
   var estimated = hrs && hrs.total ? L("de ", "of ") + fmtH(hrs.total) + " h · " : "";
   return h("section", { class: "strip", "aria-label": L("cifras", "figures") },
     cell(L("avance", "progress"), pct === null || pct === undefined ? "—" : pct + "%", (hrs && hrs.total ? fmtH(hrs.done) + " " + estimated : "") + (s.stories_done || 0) + "/" + (s.stories_total || 0) + " " + L("historias", "Stories"), "", "progress"),
     cell(L("fecha estimada", "estimated date"), eta || "—", etaSub.join(" · "), "", "eta"),
     cell(L("te necesito", "I need you"), String(needs.length), needsSub.join(" · ") || L("nada por ahora", "nothing for now"), needs.length ? "amberv" : "", "needs"),
-    cell(L("por definir", "to define"), toDef === null ? "—" : String(toDef), rc ? nextN + " " + L("cerca de empezar", "close to starting") + " · " + (rc.mine || 0) + " " + L(rc.mine === 1 ? "tuya" : "tuyas", "yours") : L("sin dato", "no data"), toDef ? "amberv" : "", "define"),
-    cell(L("alertas", "alerts"), String(alerts.b + alerts.w), alerts.b ? alerts.b + " BLOCKING · " + alerts.w + " WARNING" : "WARNING · " + L("atender pronto", "attend soon"), alerts.b + alerts.w ? "redv" : "", "alerts"),
-    cell(L("avisos", "notices"), String(alerts.n), "NOTICE · " + L("informativo", "informative"), "mutev", "notices"));
+    cell(L("por definir", "to define"), toDef === null ? "—" : String(toDef), rc ? nextN + " " + L("cerca de empezar", "close to starting") : L("sin dato", "no data"), toDef ? "amberv" : "", "define"),
+    cell(L("alertas", "alerts"), String(alerts.n), alerts.blocking ? alerts.blocking + " BLOCKING · " + L("atender ya", "attend now") : (alerts.n ? L("atender pronto", "attend soon") : L("nada que atender", "nothing to attend")), alerts.n ? "redv" : "", "alerts"));
 }
 function nowBlock(snap) {
   var a = snap.activity;
@@ -1341,7 +1669,7 @@ function decisionCard(snap, n) {
     card.appendChild(h("blockquote", { class: "dcite", "aria-label": L("fuente de ", "source of ") + n.ref },
       "\u201c" + x.quote + "\u201d", h("div", { class: "small" }, L("dice el documento: ", "the document says: "), docLink(snap, x.path, x.path + (x.anchor ? " \u203a " + x.anchor : "")))));
   });
-  if (n.todo) card.appendChild(h("div", { class: "todo" }, h("span", { class: "k2", text: L("qué te toca", "what you do") }), document.createTextNode(n.todo)));
+  if (n.todo) card.setAttribute("title", n.todo);
   var opts = h("div", { class: "dopts", role: "group", "aria-label": L("opciones de ", "options of ") + n.ref });
   var note = h("span", { class: "small", text: FORM_MSG[n.ref] || "" });
   n.choices.forEach(function (c, i) {
@@ -1378,14 +1706,13 @@ function needsBlock(snap) {
   var st = readHash(); var items = needItems(snap); var all = st.na === "1";
   var shown = all ? items : items.slice(0, 3);
   var box = h("section", { class: "needs", "aria-labelledby": "needs-h" },
-    h("div", { class: "top" }, h("h2", { id: "needs-h", text: L("te necesito", "I need you") }), h("span", { class: "count", text: items.length }),
-      h("span", { class: "hint", text: L("Lo que solo tú puedes resolver. Respóndelo aquí o, si necesitas pensarlo, usa «Consultar en Claude». Lo que cambia el diseño entra a la Bandeja; aprobar y promover se copian a tu terminal.", "What only you can resolve. Answer it here or, if you need to think it through, use “Consult in Claude”. What changes the design goes to the Inbox; approve and promote are copied to your terminal.") })));
+    h("div", { class: "top", title: L("Lo que solo tú puedes resolver hoy. Aprobar y promover se copian a tu terminal.", "What only you can resolve today. Approving and promoting are copied to your terminal.") }, h("h2", { id: "needs-h", text: L("te necesito", "I need you") }), h("span", { class: "count", text: items.length }),
+      ));
   if (!items.length) box.appendChild(h("div", { class: "empty", text: L("Nada te espera.", "Nothing waits for you.") }));
   shown.forEach(function (n) {
     if (n.choices && n.choices.some(function (c) { return c.does; })) { box.appendChild(decisionCard(snap, n)); return; }
-    box.appendChild(h("div", { class: "nrow" }, h("span", { class: "ref", text: n.ref }),
-      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" }),
-        n.todo ? h("div", { class: "todo" }, h("span", { class: "k2", text: L("qué te toca", "what you do") }), document.createTextNode(n.todo)) : null),
+    box.appendChild(h("div", { class: "nrow", title: n.todo || null }, h("span", { class: "ref", text: n.ref }),
+      h("div", { class: "grow2" }, h("b", { text: n.title }), h("span", { class: "small", text: n.sub || "" })),
       consultButton(snap, n.ref) || consultButton(snap, n.target) || null, actNode(snap, n)));
   });
   if (items.length > 3) box.appendChild(h("div", { class: "nrow more" }, h("button", { type: "button", class: "btn ghost", on: { click: function () { go({ na: all ? "" : "1" }); } }, text: all ? L("ver menos", "see less") : L("ver todo (", "see all (") + items.length + ")" })));
@@ -1395,7 +1722,8 @@ function shadowStrip(snap) {
   var sh = snap.shadow; if (!sh || !sh.length) return null;
   var paths = sh.map(function (x) { return x.path; });
   var chat = L("Migra a gtt-domain/ el estado que vive fuera de él (" + paths.join(", ") + ") y archiva esos archivos en docs/archivo/ con «Reemplazado por gtt-domain/».", "Migrate the state that lives outside gtt-domain/ (" + paths.join(", ") + ") into it and archive those files in docs/archivo/ with “Replaced by gtt-domain/”.");
-  return h("div", { class: "shadow" }, L("Estado fuera de GTT: ", "State outside GTT: ") + paths.join(" · ") + L(" — Sonar no los lee. Pídele a claude que los migre: ", " — Sonar does not read them. Ask claude to migrate them: "), copyText(L("copiar texto para el chat", "copy text for the chat"), chat));
+  return h("div", { class: "shadow", title: paths.join("\n") }, L(paths.length + (paths.length > 1 ? " archivos guardan" : " archivo guarda") + " estado fuera de gtt-domain/; Sonar no los lee.", paths.length + (paths.length > 1 ? " files keep" : " file keeps") + " state outside gtt-domain/; Sonar does not read " + (paths.length > 1 ? "them." : "it.")),
+    copyText(L("copiar pedido de migración", "copy the migration request"), chat));
 }
 
 /* ---------- the Plan ---------- */
@@ -1405,8 +1733,8 @@ function storyMatches(snap, s, k) {
   var fs = findingsOf(snap, s.ref);
   if (k === "all") return true;
   if (k === "define") return s.ready === "to_define";
-  if (k === "mine") return fs.some(function (f) { return f.owner === "human"; });
-  if (k === "alerts") return (s.flags || []).length > 0 || (snap.findings || []).some(function (f) { return f.ref === s.ref && f.plane !== "definition"; }) || fs.some(function (f) { return f.level === "WARNING"; });
+  if (k === "mine") return !!(attention(snap).stories[s.ref] || attention(snap).refs[s.ref]);
+  if (k === "alerts") return (s.flags || []).length > 0 || (snap.findings || []).some(function (f) { return f.ref === s.ref && f.level !== "NOTICE"; }) || fs.some(function (f) { return f.level !== "NOTICE"; });
   if (k === "doing") return s.status === "In Progress";
   if (k === "blocked") return s.status === "Blocked" || s.ready === "blocked";
   if (k === "done") return s.status === "Done";
@@ -1415,8 +1743,8 @@ function storyMatches(snap, s, k) {
 function epicMatches(snap, e, k) {
   if (k === "all") return true;
   if (k === "define") return e.ready === "to_define" || epicFindings(snap, e).some(function (f) { return f.plane === "definition"; });
-  if (k === "mine") return epicFindings(snap, e).some(function (f) { return f.owner === "human"; });
-  if (k === "alerts") return (e.flags || []).length > 0 || epicFindings(snap, e).some(function (f) { return f.plane !== "definition" || f.level === "WARNING"; });
+  if (k === "mine") return !!attention(snap).refs[e.ref] || (snap.stories || []).some(function (s) { return s.epic === e.ref && storyMatches(snap, s, "mine"); });
+  if (k === "alerts") return (e.flags || []).length > 0 || epicFindings(snap, e).some(function (f) { return f.level !== "NOTICE"; });
   if (k === "doing") return e.state === "in_progress";
   if (k === "blocked") return e.ready === "blocked";
   if (k === "done") return e.state === "done";
@@ -1425,7 +1753,7 @@ function epicMatches(snap, e, k) {
 function filterCounts(snap) {
   var c = {}; FILTERS.forEach(function (k) { c[k] = (snap.stories || []).filter(function (s) { return storyMatches(snap, s, k); }).length; });
   var rc = snap.readiness ? snap.readiness.counts : null;
-  if (rc) { c.define = rc.to_define; c.mine = rc.mine; }
+  if (rc) c.define = rc.to_define;
   return c;
 }
 function planFilters(snap) {
@@ -1474,8 +1802,8 @@ function epicTags(snap, e) {
   if (own.some(function (f) { return f.code === "DEF-EPIC-DESIGN"; })) tags.push(h("span", { class: "tag hollow", title: L("Falta el documento de diseño de esta épica; es trabajo del agente.", "This Epic's design document is missing; it is the agent's work."), text: L("sin diseño", "no design") }));
   if (own.some(function (f) { return f.code === "DEF-EPIC-ESTIMATE"; })) tags.push(h("span", { class: "tag hollow", title: L("Falta estimarla en horas; es trabajo del agente.", "It still needs an estimate in hours; it is the agent's work."), text: L("sin estimación", "no estimate") }));
   if (nDef && !isProp) tags.push(h("span", { class: "tag hollow", title: L("Historias de esta épica a las que les falta información antes de poder empezar.", "Stories of this Epic that lack information before they can start."), text: nDef + " " + L("por definir", "to define") }));
-  var gaps = (snap.findings || []).filter(function (f) { return f.code === "GOV-GAP" && f.epic === e.ref; }).length;
-  if (gaps) tags.push(h("span", { class: "tag amber", title: L("Decisiones que el diseño dejó pendientes y solo tú puedes cerrar: ábrelas más abajo, cada una con su contexto.", "Decisions the design left open and only you can close: open them below, each with its context."), text: gaps + " " + L(gaps > 1 ? "vacíos abiertos" : "vacío abierto", gaps > 1 ? "open gaps" : "open gap") }));
+  var gaps = (snap.findings || []).filter(function (f) { return f.code === "GOV-GAP" && f.epic === e.ref && attention(snap).gaps[f.ref]; }).length;
+  if (gaps) tags.push(h("span", { class: "tag amber", title: L("Decisiones abiertas que frenan una historia y solo tú puedes cerrar: ábrelas más abajo, cada una con su contexto.", "Open decisions that hold a Story and only you can close: open them below, each with its context."), text: gaps + " " + L(gaps > 1 ? "vacíos que frenan" : "vacío que frena", gaps > 1 ? "gaps holding work" : "gap holding work") }));
   if (e.stories.blocked) tags.push(h("span", { class: "tag red", title: L("Historias que no pueden avanzar hasta que se resuelva algo.", "Stories that cannot move until something is resolved."), text: e.stories.blocked + " " + L(e.stories.blocked > 1 ? "bloqueadas" : "bloqueada", "blocked") }));
   if (e.origin) tags.push(h("span", { class: "tag", text: T.bkOrigin + ": " + e.origin }));
   if (e.priority && e.priority !== "normal") tags.push(h("span", { class: "tag " + (e.priority === "urgent" ? "amber" : ""), text: T.bkPriority + ": " + e.priority }));
@@ -1489,7 +1817,7 @@ function metaLine(pairs) {
 function epicMeta(e) {
   return metaLine([[L("objetivo", "goal"), e.goal], [L("alcance", "scope"), e.scope], [L("fuera de alcance", "out of scope"), e.out_of_scope], [L("aprobada", "approved"), e.approved],
     ["kind", e.kind], ["touches", e.touches], ["build", e.build], ["budget", e.budget], [L("diseño", "design"), e.design], [L("depende de", "depends on"), (e.depends || []).join(", ")],
-    ["release", (e.releases || []).join(", ")], [L("grupo", "group"), e.group], [L("estado derivado", "derived state"), e.derived]]);
+    ["release", (e.releases || []).join(", ")], [L("grupo", "group"), e.group]]);
 }
 function storyMeta(s) {
   return metaLine([["implements", s.implements], ["done when", s.done_when], ["release", s.release], [L("frente", "front"), s.front], ["origin", s.origin], [L("cierre", "closed"), s.closed], [L("bloqueada por", "blocked by"), s.blocked_by]]);
@@ -1497,15 +1825,21 @@ function storyMeta(s) {
 function findRow(snap, f) {
   if (f.fix && (f.fix.about || f.fix.ask)) return needCard(snap, f);
   var shown = f.text.length > 190 ? f.text.slice(0, 187) + "…" : f.text;
-  var row = h("div", { class: "find" }, lvlTag(f.level), h("span", { text: shown, title: f.text }), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }),
+  var row = h("div", { class: "find" }, lvlTag(f.level), h("span", { text: shown, title: f.text }), h("span", { class: whoClass(snap, f), text: whoWord(snap, f) + (f["for"] ? " · " + f["for"] : "") }),
     f.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null);
   if (f.fix && f.fix.command) row.appendChild(cmdLine(f.fix.command));
   if (f.fix && f.fix.about) row.appendChild(aporte(snap, f.ref, true));
+  var oa = observationActs(f); if (oa) row.appendChild(oa);
   return row;
 }
 /* ---------- each view says what it is, what it is for and how it is used; the person can hide it ---------- */
-function howHidden(view) { try { return localStorage.getItem("gtt-sonar-how-" + view) === "1"; } catch (e) { return false; } }      /* what the person hid stays hidden: it is a preference of theirs, not of the project */
-function howSet(view, v) { try { if (v) localStorage.setItem("gtt-sonar-how-" + view, "1"); else localStorage.removeItem("gtt-sonar-how-" + view); } catch (e) { /* storage may be blocked */ } }
+var HOW_OPEN = {};
+function howHidden(view) {                    /* closed until asked for; what the person opened stays open: it is a preference of theirs, not of the project */
+  if (readHash().help === "1") return false;
+  if (HOW_OPEN[view] !== undefined) return !HOW_OPEN[view];
+  try { return localStorage.getItem("gtt-sonar-how-" + view) !== "0"; } catch (e) { return true; }
+}
+function howSet(view, hide) { HOW_OPEN[view] = !hide; try { localStorage.setItem("gtt-sonar-how-" + view, hide ? "1" : "0"); } catch (e) { /* storage may be blocked */ } }
 /* The words a person meets in Sonar, in plain language; each view shows the ones it uses and the guide shows them all. */
 function TERMS() {
   return {
@@ -1513,7 +1847,8 @@ function TERMS() {
     story: [L("Historia", "Story"), L("Un paso pequeño que construye parte de una épica. El agente las crea, las hace y las cierra sin pedirte permiso.", "A small step that builds part of an Epic. The agent creates, does and closes them without asking you.")],
     states: [L("planeada · en curso · hecha · propuesta", "planned · in progress · done · proposed"), L("Estado de una épica. «Propuesta» espera tu aprobación.", "State of an Epic. “Proposed” waits for your approval.")],
     todefine: [L("por definir", "to define"), L("A la historia le falta información antes de empezar (cuánto toma, qué parte del diseño construye, cuándo está hecha).", "The Story lacks information before it can start (how long it takes, which part of the design it builds, when it is done).")],
-    gap: [L("vacío abierto (GAP)", "open gap (GAP)"), L("Una decisión que el diseño dejó pendiente y que solo tú puedes cerrar.", "A decision the design left open and only you can close.")],
+    gap: [L("vacío abierto (GAP)", "open gap (GAP)"), L("Una decisión que el diseño dejó pendiente y que solo tú puedes cerrar. Te espera cuando frena una historia; si no, queda en «sin urgencia».", "A decision the design left open and only you can close. It waits for you when it holds a Story; otherwise it sits in “no urgency”.")],
+    quiet: [L("sin urgencia (NOTICE)", "no urgency (NOTICE)"), L("Lo que GTT anota y hoy no pide nada. No cuenta en ninguna cifra, no se marca como leído y se va cuando cambia lo que lo causa.", "What GTT records and asks nothing today. It is in no figure, it is not marked as read and it leaves when what causes it changes.")],
     blocked: [L("bloqueada", "blocked"), L("No puede avanzar hasta que se resuelva algo, por ejemplo una pregunta tuya o un vacío.", "It cannot move until something is resolved, for example a question to you or a gap.")],
     uncal: [L("sin calibrar", "uncalibrated"), L("La fecha estimada aún se apoya en pocos datos: es un rango, no una promesa.", "The estimated date still rests on little data: it is a range, not a promise.")],
     whose: [L("te toca · le toca a claude", "your move · the agent's"), L("Quién debe actuar. Siempre se dice con palabras, no solo con color.", "Who must act. Always said in words, not only in colour.")],
@@ -1521,13 +1856,13 @@ function TERMS() {
     ratify: [L("ratificar / promover", "ratify / promote"), L("Pasar un cambio aceptado al diseño. Solo tú, con un comando en tu terminal.", "Move an accepted change into the design. Only you, with a command in your terminal.")],
     freeze: [L("congelar (freeze)", "freeze"), L("Fijar el diseño que aprobaste como la autoridad. Después, todo cambio al diseño pasa por la Bandeja.", "Fix the design you approved as the authority. After that, every change to the design goes through the Inbox.")],
     adr: [L("ADR", "ADR"), L("Registro de una decisión de arquitectura: qué se decidió, por qué y qué alternativas había.", "Record of an architecture decision: what was decided, why, and which alternatives there were.")],
-    levels: [L("BLOCKING · WARNING · NOTICE", "BLOCKING · WARNING · NOTICE"), L("Detiene lo afectado · atiéndelo pronto · es informativo.", "Stops what it affects · attend to it soon · informative.")]
+    levels: [L("alerta: BLOCKING · WARNING", "alert: BLOCKING · WARNING"), L("Detiene lo afectado · atiéndelo pronto.", "Stops what it affects · attend to it soon.")]
   };
 }
 function howTo(view, what, forWhat, steps, termKeys) {
-  var hidden = howHidden(view), wrap = h("div", { class: "howwrap" });
+  var hidden = howHidden(view), wrap = h("div", { class: "howwrap" + (hidden ? " closed" : "") });
   var tog = h("button", { type: "button", class: "btn ghost", "aria-expanded": hidden ? "false" : "true", text: hidden ? L("¿Cómo se usa esta vista?", "How is this view used?") : L("Ocultar la explicación", "Hide the explanation") });
-  tog.addEventListener("click", function () { howSet(view, !hidden); render(); });
+  tog.addEventListener("click", function () { howSet(view, !hidden); if (readHash().help) go({ help: "" }); else render(); });
   if (hidden) { wrap.appendChild(tog); return wrap; }
   var T0 = TERMS(), box = h("div", { class: "how", role: "note" },
     h("div", { class: "k", text: L("qué es", "what it is") }), h("div", { class: "v", text: what }),
@@ -1644,9 +1979,10 @@ function consultAction(snap, label, textFn, title) {
 }
 function needCard(snap, f) {
   var human = f.owner === "human", key = "ctx|" + f.code + "|" + f.ref + "|" + (f.epic || "");
-  var card = h("div", { class: "need " + (human ? "me" : "ag") });
+  var calmCard = isQuiet(snap, f);
+  var card = h("div", { class: "need " + (calmCard ? "calm" : human ? "me" : "ag") });
   card.appendChild(h("div", { class: "ntop" }, lvlTag(f.level), h("span", { class: "ntitle", text: f.text }),
-    h("span", { class: "who " + (human ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }),
+    h("span", { class: whoClass(snap, f), text: whoWord(snap, f) + (f["for"] ? " · " + f["for"] : "") }),
     f.next ? h("span", { class: "tag hollowa", text: L("siguiente", "next") }) : null));
   if (f.fix && f.fix.ask) card.appendChild(h("p", { class: "nask", text: f.fix.ask }));
   var ctx = contextNode(snap, f), acts = h("div", { class: "nacts" });
@@ -1781,7 +2117,7 @@ function epicBlock(snap, e, open) {
     var cur = (st.open || "").split(",").filter(Boolean); var i = cur.indexOf(e.ref); var closedSet = (st.shut || "").split(",").filter(Boolean);
     if (open) { closedSet.push(e.ref); cur = cur.filter(function (x) { return x !== e.ref; }); } else { cur.push(e.ref); closedSet = closedSet.filter(function (x) { return x !== e.ref; }); }
     go({ open: cur.join(","), shut: closedSet.join(",") }); } } },
-    h("span", { class: "chev", text: open ? "v" : ">" }), h("span", { class: "mono eref", text: e.ref }),
+    h("span", { class: "chev" + (open ? " open" : ""), "aria-hidden": "true" }), h("span", { class: "mono eref", text: e.ref }),
     h("span", { class: "etitle" }, h("span", { class: "t", text: e.title || e.ref }), epicTags(snap, e)),
     progressBar(e, snap),
     h("span", { class: "hrs" }, h("span", null, h("b", { text: e.estimate_h ? fmtH(e.estimate_h) : "—" }), " h " + L("estimadas", "estimated")), h("br"),
@@ -1793,7 +2129,19 @@ function epicBlock(snap, e, open) {
   if (open) {
     var own = epicFindings(snap, e);
     var em = epicMeta(e); if (em) box.appendChild(h("div", { class: "efind" }, em));
-    if (own.length) box.appendChild(h("div", { class: "efind" }, own.map(function (f) { return findRow(snap, f); })));
+    var loud = own.filter(function (f) { return !isQuiet(snap, f); }), calm = own.filter(function (f) { return isQuiet(snap, f); });
+    if (loud.length) box.appendChild(h("div", { class: "efind" }, loud.map(function (f) { return findRow(snap, f); })));
+    if (calm.length) {
+      var shownCalm = (st.qe || "").split(",").indexOf(e.ref) >= 0;
+      var fold = h("button", { type: "button", class: "quietbtn", "aria-expanded": shownCalm ? "true" : "false", text: L("Sin urgencia en esta épica (", "No urgency in this Epic (") + calm.length + ")",
+        on: { click: function () { var cur = (st.qe || "").split(",").filter(Boolean); go({ qe: (shownCalm ? cur.filter(function (x) { return x !== e.ref; }) : cur.concat([e.ref])).join(",") }); } } });
+      var zone = h("div", { class: "efind" }, fold);
+      if (shownCalm) {
+        calm.slice(0, 40).forEach(function (f) { zone.appendChild(findRow(snap, f)); });
+        if (calm.length > 40) zone.appendChild(h("a", { class: "small", href: "#/view=health&hq=" + encodeURIComponent(e.ref), text: L("y " + (calm.length - 40) + " más: míralos en Salud", (calm.length - 40) + " more: see them in Health") }));
+      }
+      box.appendChild(zone);
+    }
     if (isProp && editable(snap)) box.appendChild(h("div", { class: "efind" }, itemForm(snap, e, true)));
     else if (isProp) box.appendChild(h("div", { class: "efind" }, itemForm(snap, e, true)));
     var q = (st.q || "").toLowerCase(); var k = FILTERS.indexOf(st.f) >= 0 ? st.f : "all";
@@ -1823,8 +2171,7 @@ function viewPlan() {
   if (px.ades && px.ades.participating) meta.push("ADE " + [].concat(px.ades.participating).join(", "));
   if (snap.repo_state && snap.repo_state.dirty) meta.push(snap.repo_state.dirty + " " + L("sin commit", "uncommitted"));
   meta.push(nEpics + " " + L("épicas", "Epics") + " · " + nStories + " " + L("historias", "Stories"));
-  var head = h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }),
-    h("div", { class: "headrow" }, h("h1", { text: snap.repo.name }), h("span", { class: "tag dev", text: snap.project.phase }), h("span", { class: "small", text: meta.filter(Boolean).join(" · ") })));
+  var head = h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: snap.repo.name }), h("span", { class: "tag dev", text: snap.project.phase }), h("span", { class: "small", text: meta.filter(Boolean).join(" · ") })));
   var main = h("main", { id: "plan" }, head);
   var dn = degradedNote(snap); if (dn) main.appendChild(dn);
   main.appendChild(howTo("plan",
@@ -1838,7 +2185,7 @@ function viewPlan() {
   main.appendChild(figures(snap)); main.appendChild(nowBlock(snap));
   var nb = needsBlock(snap); if (nb) main.appendChild(nb);
   var sh = shadowStrip(snap); if (sh) main.appendChild(sh);
-  main.appendChild(h("div", { class: "secline", id: "plan-list" }, h("h2", { class: "sec", text: "plan" }), h("span", { class: "small", text: L("en el orden en que se construye, por " + (st.g === "release" ? "release" : st.g === "group" ? "grupo" : "frente"), "in the order it is built, by " + (st.g === "release" ? "release" : st.g === "group" ? "group" : "front")) })));
+  main.appendChild(h("div", { class: "secline", id: "plan-list" }, h("h2", { class: "sec", title: L("En el orden en que se construye.", "In the order it is built."), text: "plan" })));
   main.appendChild(planFilters(snap));
   if (st.tl === "1") main.appendChild(timelinePanel(snap));
   var g = st.g === "release" || st.g === "group" ? st.g : "lane"; var k = FILTERS.indexOf(st.f) >= 0 ? st.f : "all"; var q = (st.q || "").toLowerCase();
@@ -1867,14 +2214,13 @@ function viewPlan() {
       main.appendChild(epicBlock(snap, e, open));
     });
   });
-  main.appendChild(h("div", { class: "foot", text: L("Sonar no decide nada: guarda lo que tú escribes por las operaciones de GTT, y aprobar, promover y congelar siguen en tu terminal.", "Sonar decides nothing: it saves what you write through GTT's operations, and approve, promote and freeze stay in your terminal.") }));
   return main;
 }
 
 /* ---------- the Inbox (Bandeja): ideas, proposals, ADR drafts, and what the agent still owes them ---------- */
 function viewInbox() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Bandeja", "Inbox") }), h("span", { class: "small", text: snap.repo.name }))));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Bandeja", "Inbox") }), h("span", { class: "small", text: snap.repo.name }))));
   main.appendChild(howTo("inbox",
     L("El único camino por donde un cambio entra al diseño: tus ideas y las propuestas del agente, de izquierda a derecha, por etapas.", "The only path by which a change enters the design: your ideas and the agent's proposals, left to right, in stages."),
     L("Para que nada cambie el diseño sin pasar por ti, y para ver de un vistazo qué espera tu decisión y qué solo espera al agente.", "So nothing changes the design without passing through you, and to see at a glance what waits for your decision and what only waits for the agent."),
@@ -1887,7 +2233,7 @@ function viewInbox() {
   var owed = (snap.findings || []).filter(function (f) { return f.code.indexOf("DEF-INBOX-") === 0; });
   if (owed.length) {
     var box = h("div", { class: "panel" });
-    owed.forEach(function (f) { box.appendChild(h("div", { class: "row" }, h("a", { class: "ref", href: "#/view=inbox&card=" + encodeURIComponent(f.ref), text: f.ref }), h("div", { class: "grow2" }, h("span", { text: f.text })), h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) }), f.fix && f.fix.chat && f.owner === "agent" ? copyText(L("copiar para el chat", "copy for the chat"), f.fix.chat) : null)); });
+    owed.forEach(function (f) { box.appendChild(h("div", { class: "row" }, h("a", { class: "ref", href: "#/view=inbox&card=" + encodeURIComponent(f.ref), text: f.ref }), h("div", { class: "grow2" }, h("span", { text: f.text })), h("span", { class: whoClass(snap, f), text: whoWord(snap, f) }), f.fix && f.fix.chat && f.owner === "agent" ? copyText(L("copiar para el chat", "copy for the chat"), f.fix.chat) : null)); });
     main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("por definir en la Bandeja", "to define in the Inbox")), box));
   }
   main.appendChild(ideasForm(snap));
@@ -1918,7 +2264,7 @@ function actorKey(e) { return e.actor === "agent" ? "claude" : e.actor === "huma
 function viewActivity() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var st = readHash(); var a = snap.activity;
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Actividad", "Activity") }), h("span", { class: "small", text: snap.repo.name }))));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Actividad", "Activity") }), h("span", { class: "small", text: snap.repo.name }))));
   main.appendChild(howTo("activity",
     L("El diario del proyecto: quién hizo qué y cuándo (Claude, tú o GTT), y lo que el agente está haciendo ahora.", "The project's journal: who did what and when (Claude, you or GTT), and what the agent is doing right now."),
     L("Para saber qué cambió desde la última vez que miraste, ver en qué trabaja el agente sin preguntarle, y notar trabajo hecho sin historia.", "To know what changed since you last looked, see what the agent is working on without asking it, and spot work done with no Story."),
@@ -1946,7 +2292,7 @@ function viewActivity() {
   if (runs.length) {
     var rb = h("div", { class: "panel" });
     runs.forEach(function (r) { rb.appendChild(h("div", { class: "ev" }, h("time", { text: hhmm(r.at || r.t) }), h("span", { class: "mono small", text: r.run || r.id || "RUN" }), h("span", { class: "tag " + (r.ok === false || r.status === "failed" ? "red" : "ok"), text: r.ok === false || r.status === "failed" ? L("falló", "failed") : L("corrió", "ran") }), h("span", { class: "small", text: r.detail || r.title || "" }))); });
-    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("gtt run: resultado", "gtt run: result")), rb));
+    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, h("h2", { class: "sec raw", text: L("gtt run: resultado", "gtt run: result") }), rb));
   }
   if (a.session) main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(L("lo que vio claude", "what claude saw")),
     h("div", { class: "panel", style: "padding:12px 16px" }, h("span", { class: "small", text: L("Su memoria operativa al abrir la última sesión (session.md, derivada del repositorio; no es autoridad) · ", "Its operating memory when it opened the last session (session.md, derived from the repository; not authority) · ") + hhmm(a.session.at) + " · " + L("solo lectura", "read only") }),
@@ -1980,21 +2326,20 @@ function lvlCounts(rows) {
   return out.length ? out.join(" · ") : "0";
 }
 function findingHit(f, fl) {
-  if (fl.lvl && f.level !== fl.lvl) return false;
+  if (fl.lvl && fl.lvl !== "quiet" && f.level !== fl.lvl) return false;
   if (fl.who && f.owner !== fl.who) return false;
   if (fl.q && [f.ref, f.code, f.text, f.where, f.epic, f["for"]].join(" ").toLowerCase().indexOf(fl.q) < 0) return false;
   return true;
 }
-function healthFilters(all, fl) {
-  var levels = ["BLOCKING", "WARNING", "NOTICE"].filter(function (l) { return all.some(function (f) { return f.level === l; }); });
-  all.forEach(function (f) { if (f.level && levels.indexOf(f.level) < 0) levels.push(f.level); });
-  function count(fn) { return all.filter(fn).length; }
+function healthFilters(snap, all, fl) {
+  var att = attention(snap);
   function chip(label, patch, on) { return h("button", { type: "button", class: "chip", "aria-pressed": on ? "true" : "false", on: { click: function () { go(patch); } }, text: label }); }
   var row = h("div", { class: "chips", role: "group", "aria-label": L("filtros de salud", "health filters") });
-  row.appendChild(chip(L("todos ", "all ") + all.length, { hl: "" }, !fl.lvl));
-  levels.forEach(function (l) { row.appendChild(chip(l + " " + count(function (f) { return f.level === l; }), { hl: fl.lvl === l ? "" : l }, fl.lvl === l)); });
-  row.appendChild(chip(L("te tocan ", "yours ") + count(function (f) { return f.owner === "human"; }), { ho: fl.who === "human" ? "" : "human" }, fl.who === "human"));
-  row.appendChild(chip(L("le tocan a claude ", "the agent's ") + count(function (f) { return f.owner === "agent"; }), { ho: fl.who === "agent" ? "" : "agent" }, fl.who === "agent"));
+  row.appendChild(chip(L("todo", "everything"), { hl: "" }, !fl.lvl));
+  ["BLOCKING", "WARNING"].forEach(function (l) { var n = att.urgent.filter(function (f) { return f.level === l; }).length; if (n) row.appendChild(chip(l + " " + n, { hl: fl.lvl === l ? "" : l }, fl.lvl === l)); });
+  row.appendChild(chip(L("sin urgencia", "no urgency"), { hl: fl.lvl === "quiet" ? "" : "quiet" }, fl.lvl === "quiet"));
+  row.appendChild(chip(L("solo lo tuyo", "only yours"), { ho: fl.who === "human" ? "" : "human" }, fl.who === "human"));
+  row.appendChild(chip(L("solo lo del agente", "only the agent's"), { ho: fl.who === "agent" ? "" : "agent" }, fl.who === "agent"));
   var q = h("input", { type: "text", id: "health-q", placeholder: L("buscar por id, código o texto", "search by id, code or text"), "aria-label": L("buscar en la salud", "search health"), style: "min-width:280px", value: readHash().hq || "" });
   q.value = readHash().hq || "";
   q.addEventListener("input", debounced(function (v) { go({ hq: v }); }, 250));
@@ -2002,42 +2347,107 @@ function healthFilters(all, fl) {
   if (fl.lvl || fl.who || fl.q) row.appendChild(h("button", { type: "button", class: "chip", on: { click: function () { go({ hl: "", ho: "", hq: "" }); } }, text: L("quitar filtros", "clear filters") }));
   return row;
 }
+/* One finding as a row of Health. */
+function sigRow(snap, f, filtered, among, also) {
+  var href = findingLink(snap, f);
+  var where = also && also.length > 1 ? L("afecta ", "affects ") + also.slice(0, 4).join(", ") + (also.length > 4 ? " +" + (also.length - 4) : "") : (f.where && f.where !== f.ref ? f.where : "");
+  var tip = { class: "ref" };
+  if (href) tip.href = href;
+  tip.title = f.code + (f.where ? " · " + f.where : ""); tip["data-code"] = f.code; tip.text = f.ref;
+  return h("div", { class: "sig" }, lvlTag(f.level), h(href ? "a" : "span", tip), h("span", { class: "stext", text: f.text }),
+    h("span", { class: whoClass(snap, f), text: whoWord(snap, f) + (f["for"] ? " · " + f["for"] : "") }), where ? h("span", { class: "swhere", text: where }) : null,
+    (f.code === "GOV-GAP" && gapOf(snap, f) && (among <= 40 || filtered)) ? consultAction(snap, L("Consultar en Claude", "Consult in Claude"), function () { return gapMessage(snap, f); }) : null,
+    observationActs(f));
+}
+/* What asks for nothing today: grouped by kind, folded, and each group says whether it leaves by itself, when, and why it can wait. */
+function quietSection(snap, fl, st) {
+  var att = attention(snap), order = [], groups = {};
+  att.quiet.filter(function (f) { return findingHit(f, { lvl: "", who: fl.who, q: fl.q }); }).forEach(function (f) {
+    var g = groups[f.code]; if (!g) { g = groups[f.code] = { code: f.code, rows: [], seen: {} }; order.push(g); }
+    var one = f.code === "GOV-GAP" ? f.ref : f.ref + "|" + f.text;              /* a gap that touches several Epics is one decision */
+    if (!g.seen[one]) { g.seen[one] = { f: f, epics: [] }; g.rows.push(g.seen[one]); }
+    if (f.epic && g.seen[one].epics.indexOf(f.epic) < 0) g.seen[one].epics.push(f.epic);
+  });
+  var box = h("section", { class: "quiet", id: "quiet", "aria-label": L("sin urgencia", "no urgency") });
+  var total = order.reduce(function (n, g) { return n + g.rows.length; }, 0);
+  box.appendChild(h("div", { class: "secline" }, h("h2", { class: "sec", text: L("sin urgencia · ", "no urgency · ") + total }),
+    h("span", { class: "small", text: L("No piden nada hoy ni cuentan en ninguna cifra.", "They ask nothing today and are in no figure.") })));
+  if (!order.length) { box.appendChild(h("div", { class: "panel empty", text: fl.q || fl.who ? L("nada con este filtro", "nothing matches this filter") : L("nada en espera", "nothing waiting") })); return box; }
+  var opened = (st.qo || "").split(",").filter(Boolean);
+  [[1, L("Se van sin que hagas nada", "They leave with nothing from you"), L("los mueve el trabajo del agente o el avance", "the agent's work or the progress moves them")],
+   [0, L("No siempre se van solos", "They do not always leave by themselves"), L("esperan una decisión o un acto, cuando quieras", "they wait for a decision or an act, whenever you choose")]].forEach(function (part) {
+    var mine = order.filter(function (g) { return quietRule(g.code).a === part[0]; }).sort(function (a, b) { return b.rows.length - a.rows.length; });
+    if (!mine.length) return;
+    box.appendChild(h("div", { class: "lane" }, part[1], h("span", { class: "gs", text: part[2] })));
+    mine.forEach(function (g) {
+      var rule = quietRule(g.code), open = !!fl.q || opened.indexOf(g.code) >= 0;
+      var head = h("button", { type: "button", class: "qhead", "aria-expanded": open ? "true" : "false",
+        on: { click: function () { go({ qo: (opened.indexOf(g.code) >= 0 ? opened.filter(function (x) { return x !== g.code; }) : opened.concat([g.code])).join(",") }); } } },
+        h("span", { class: "chev" + (open ? " open" : ""), "aria-hidden": "true" }), h("span", { class: "qn", text: String(g.rows.length) }),
+        h("span", { class: "qtext" }, h("b", { text: g.code.indexOf("DLV-") === 0 && !QUIET[g.code] ? two(rule.t) + " · " + g.code : two(rule.t) }),
+          h("span", { class: "qline" }, h("span", { class: "qk", text: L("cuándo se va", "when it leaves") }), h("span", { text: two(rule.g) })),
+          open ? h("span", { class: "qline" }, h("span", { class: "qk", text: L("por qué puede esperar", "why it can wait") }), h("span", { text: two(rule.w) })) : null));
+      var card = h("div", { class: "panel qgroup", "data-quiet": g.code }, head);
+      if (open) {
+        var body = h("div", { class: "sigs" });
+        if (g.code === "GOV-OBSERVATION" && !g.rows.some(function (r) { return r.f.fix && r.f.fix.acts; }))
+          body.appendChild(h("div", { class: "sig" }, h("span", { class: "small", text: L("Esta versión de GTT no envía el identificador de cada observación. Míralos con:", "This version of GTT does not send each observation's id. List them with:") }), cmdLine("bash .gtt/scripts/gtt-observe.sh backlog")));
+        g.rows.slice(0, 60).forEach(function (r) { body.appendChild(sigRow(snap, r.f, !!fl.q, g.rows.length, r.epics)); });
+        if (g.rows.length > 60) body.appendChild(h("div", { class: "sig" }, h("span", { class: "small", text: L("Se muestran 60 de " + g.rows.length + ": busca por id, código o texto para encontrar otro.", "60 of " + g.rows.length + " shown: search by id, code or text to find another.") })));
+        card.appendChild(body);
+      }
+      box.appendChild(card);
+    });
+  });
+  return box;
+}
 function viewHealth() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
-  var st = readHash(), fl = { lvl: st.hl || "", who: st.ho || "", q: String(st.hq || "").trim().toLowerCase() }, filtered = !!(fl.lvl || fl.who || fl.q);
+  var st = readHash(), fl = { lvl: st.hl === "NOTICE" ? "quiet" : (st.hl || ""), who: st.ho || "", q: String(st.hq || "").trim().toLowerCase() }, filtered = !!(fl.lvl || fl.who || fl.q);
   var all = snap.findings || [];
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Salud", "Health") }), h("span", { class: "small", text: snap.repo.name }))));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Salud", "Health") }), h("span", { class: "small", text: snap.repo.name }))));
   var dn = degradedNote(snap); if (dn) main.appendChild(dn);
   main.appendChild(howTo("health",
-    L("Todo lo que GTT revisó por su cuenta y encontró raro o incompleto, ordenado por plano: gobierno, entrega, definición y código.", "Everything GTT checked by itself and found odd or incomplete, ordered by plane: governance, delivery, definition and code."),
-    L("Para saber qué arreglar primero y de quién es cada cosa, sin abrir archivos ni preguntarle al agente.", "To know what to fix first and whose each thing is, without opening files or asking the agent."),
-    [L("Filtra por nivel y por a quién le toca: «te tocan» es lo tuyo; lo demás lo resuelve el agente.", "Filter by level and by whose it is: “yours” is for you; the rest the agent resolves."),
-     L("Haz clic en el id de un hallazgo para ir a su contenido: la épica o historia, la tarjeta de la Bandeja o el documento.", "Click a finding's id to go to its content: the Epic or Story, the Inbox card or the document."),
-     L("En un vacío abierto, «Consultar en Claude» lleva su pregunta con el contexto al hilo del proyecto.", "On an open gap, “Consult in Claude” takes its question with the context to the project thread."),
+    L("Lo que GTT revisó por su cuenta, en dos partes: las alertas, que conviene atender pronto, y lo que no tiene urgencia.", "What GTT checked by itself, in two parts: the alerts, to attend soon, and what has no urgency."),
+    L("Para saber si hay algo que arreglar, sin que la lista de pendientes tranquilos tape lo importante.", "To know whether something needs fixing, without the calm backlog burying what matters."),
+    [L("Arriba están las alertas, por plano. Si no hay, no tienes nada que atender aquí.", "The alerts are on top, by plane. With none, there is nothing to attend here."),
+     L("«Sin urgencia» no son notificaciones: no se marcan como leídas. GTT las recalcula desde los archivos y desaparecen cuando cambia lo que las causa.", "“No urgency” items are not notifications: nothing is marked as read. GTT recomputes them from the files and they disappear when what causes them changes."),
+     L("Cada grupo dice si se va solo, cuándo se va y por qué puede esperar. Ábrelo para ver sus elementos.", "Each group says whether it leaves by itself, when it leaves and why it can wait. Open it to see its items."),
      L("Abajo están los chequeos que GTT corre (validaciones); en rojo, el que falló.", "Below are the checks GTT runs (validations); in red, the one that failed.")],
-    ["levels", "whose", "gap"]));
-  if (all.length) main.appendChild(healthFilters(all, fl));
+    ["levels", "quiet", "whose", "gap"]));
+  if (all.length) main.appendChild(healthFilters(snap, all, fl));
+  var att = attention(snap);
   var planes = [["governance", L("gobierno", "governance")], ["delivery", L("entrega", "delivery")], ["definition", L("definición", "definition")], ["code", L("código", "code")]];
-  planes.forEach(function (p) {
-    var inPlane = all.filter(function (f) { return f.plane === p[0]; });
-    var rows = inPlane.filter(function (f) { return findingHit(f, fl); });
-    if (!inPlane.length && p[0] === "code") return;
-    var box = h("div", { class: "panel sigs" });
-    if (!rows.length) box.appendChild(h("div", { class: "empty", text: filtered && inPlane.length ? L("ningún hallazgo con este filtro", "no finding matches this filter") : L("nada que avisar", "nothing to report") }));
-    var rankL = { BLOCKING: 0, WARNING: 1 };
-    rows = rows.slice().sort(function (a, b) { return (rankL[a.level] === undefined ? 2 : rankL[a.level]) - (rankL[b.level] === undefined ? 2 : rankL[b.level]); });
-    var sepAt = null;
-    rows.forEach(function (f) {
-      var href = findingLink(snap, f);
-      var grp = rankL[f.level] === undefined ? "n" : "w";
-      if (sepAt === "w" && grp === "n") { box.appendChild(h("div", { class: "lvlsep", text: "NOTICE · " + L("informativo, no hay que atenderlo ahora", "informative, nothing to attend now") })); }
-      sepAt = grp;
-      box.appendChild(h("div", { class: "sig" }, lvlTag(f.level), href ? h("a", { class: "ref", href: href, text: f.ref }) : h("span", { class: "ref", text: f.ref }), h("span", { class: "mono small", text: f.code }), h("span", { text: f.text }),
-        h("span", { class: "who " + (f.owner === "human" ? "me" : ""), text: ownerWord(f.owner) + (f["for"] ? " · " + f["for"] : "") }), h("span", { class: "small", text: f.where || "" }),
-        (f.code === "GOV-GAP" && gapOf(snap, f) && (rows.length <= 40 || filtered)) ? consultAction(snap, L("Consultar en Claude", "Consult in Claude"), function () { return gapMessage(snap, f); }) : null));
+  /* every finding is in one of three places and only one: an alert, something that waits for you, or no urgency */
+  var kept = function (list) { return list.filter(function (f) { return findingHit(f, fl); }); };
+  var waiting = all.filter(function (f) { return f.level === "NOTICE" && !isQuiet(snap, f); });
+  var calmHit = att.quiet.filter(function (f) { return findingHit(f, { lvl: "", who: fl.who, q: fl.q }); }).length;
+  var showUrgent = fl.lvl !== "quiet", showQuiet = fl.lvl === "" || fl.lvl === "quiet";
+  var nothing = filtered && all.length && !(showUrgent && kept(att.urgent).length) && !(fl.lvl === "" && kept(waiting).length) && !(showQuiet && calmHit);
+  if (nothing) main.appendChild(h("div", { class: "panel empty", text: L("ningún hallazgo con este filtro", "no finding matches this filter") }));
+  var byPlane = function (list, whole) {
+    planes.forEach(function (p) {
+      var rows = kept(list).filter(function (f) { return f.plane === p[0]; });
+      if (!rows.length) return;
+      var box = h("div", { class: "panel sigs" });
+      rows.slice().sort(function (a, b) { return (a.level === "BLOCKING" ? 0 : 1) - (b.level === "BLOCKING" ? 0 : 1); }).forEach(function (f) { box.appendChild(sigRow(snap, f, filtered, rows.length)); });
+      main.appendChild(h("section", { class: "plane" }, h("div", { class: "lane" }, p[1] + " · " + (filtered ? rows.length + " / " + whole.filter(function (f) { return f.plane === p[0]; }).length : (whole === att.urgent ? lvlCounts(rows) : String(rows.length)))), box));
     });
-    main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(p[1] + " · " + (filtered ? rows.length + " / " + inPlane.length : lvlCounts(rows))), box));
-  });
+  };
+  if (!nothing && showUrgent) {
+    main.appendChild(h("div", { class: "secline", id: "alerts" }, h("h2", { class: "sec", text: L("alertas · ", "alerts · ") + att.alerts.n }), h("span", { class: "small", text: L("conviene atenderlas pronto", "to attend soon") })));
+    byPlane(att.urgent, att.urgent);
+    if (!kept(att.urgent).length) main.appendChild(h("div", { class: "panel empty", text: filtered && att.urgent.length ? L("ninguna alerta con este filtro", "no alert matches this filter") : att.alerts.failed ? L("un chequeo falló: está abajo, en los chequeos", "a check failed: it is below, in the checks") : L("Sin alertas: no hay nada que atender aquí.", "No alerts: nothing to attend here.") }));
+  }
+  if (!nothing && fl.lvl === "" && kept(waiting).length) {
+    var openWait = !!fl.q || (st.qo || "").split(",").indexOf("WAITING") >= 0;
+    main.appendChild(h("div", { class: "secline", id: "waiting" },
+      h("a", { class: "btn", href: "#/view=plan&na=1&at=needs-h", text: L("Responder lo que te espera, en el Plan →", "Answer what waits for you, in the Plan →") }),
+      h("button", { type: "button", class: "quietbtn", "aria-expanded": openWait ? "true" : "false", text: openWait ? L("ocultar aquí", "hide here") : L("listarlo aquí", "list it here"),
+        on: { click: function () { var cur = (st.qo || "").split(",").filter(Boolean); go({ qo: (openWait ? cur.filter(function (x) { return x !== "WAITING"; }) : cur.concat(["WAITING"])).join(",") }); } } })));
+    if (openWait) byPlane(waiting, waiting);
+  }
+  if (!nothing && showQuiet) main.appendChild(quietSection(snap, fl, st));
   var hp = healthPanel(snap); if (hp) main.appendChild(hp);
   else main.appendChild(h("section", { style: "display:flex;flex-direction:column;gap:12px" }, sec(T.health), h("div", { class: "panel empty", text: L("Aún no hay resultados de chequeos: corre gtt-validate.sh.", "No check results yet: run gtt-validate.sh.") })));
   if (st.hc) setTimeout(function () { var el = document.getElementById("chk-" + st.hc); if (el && el.scrollIntoView) el.scrollIntoView({ block: "center" }); }, 0);
@@ -2056,7 +2466,7 @@ function viewDesign() {
      L("«Decisiones» muestra los ADR y los cambios registrados, con quién los produjo.", "“Decisions” shows the ADRs and the recorded changes, with who produced them.")],
     ["adr", "freeze", "epic"]);
   function tl(id, label) { var x = {}; Object.keys(st).forEach(function (k) { x[k] = st[k]; }); x.dt = id; var a = h("a", { href: "#/" + Object.keys(x).filter(function (k) { return x[k]; }).map(function (k) { return k + "=" + encodeURIComponent(x[k]); }).join("&"), text: label }); if (tab === id) a.setAttribute("aria-current", "page"); return a; }
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar" }), h("div", { class: "headrow" }, h("h1", { text: L("Diseño", "Design") }), h("span", { class: "small", text: snap.repo.name }))),
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Diseño", "Design") }), h("span", { class: "small", text: snap.repo.name }))),
     h("nav", { class: "tabs", style: "border-bottom:1px solid var(--line);min-height:36px", "aria-label": L("Diseño", "Design") }, tl("docs", L("Contexto y diseño por épica", "Context and design by Epic")), tl("adr", L("Decisiones", "Decisions"))));
   main.insertBefore(howDesign, main.children[1]);
   var strip = contextStrip(snap, { dt: tab, doc: st.doc });
@@ -2068,19 +2478,19 @@ function viewDesign() {
 
 /* ---------- Portfolio: only with 2 repos or more ---------- */
 function viewPortfolio2() {
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar --all" }), h("div", { class: "headrow" }, h("h1", { text: L("Portafolio", "Portfolio") }), h("span", { class: "small", text: OK.length + " " + L("proyectos", "projects") }))));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Portafolio", "Portfolio") }), h("span", { class: "small", text: OK.length + " " + L("proyectos", "projects") }))));
   var rows = h("tbody");
   OK.forEach(function (s) {
     var rc = s.readiness ? s.readiness.counts : null; var hn = healthN(s);
     var href = "#/view=plan&repo=" + encodeURIComponent(s.repo.path);
-    var needs = (s.needs_you || []).length;
+    var needs = needItems(s).length;
     rows.appendChild(h("tr", null, h("td", null, h("a", { href: href, text: s.repo.name })), h("td", { class: "mono", text: s.suite_version || "—" }), h("td", null, h("span", { class: "tag " + (s.project.phase === "DEV" ? "dev" : "think"), text: s.project.phase })),
-      h("td", { class: "mono", text: s.summary.progress_pct === null ? "—" : s.summary.progress_pct + "%" }), h("td", { class: "mono", text: String(needs) }), h("td", { class: "mono", text: rc ? rc.to_define + " (" + rc.mine + " " + L("tuyas", "yours") + ")" : L("sin dato", "no data") }),
-      h("td", { class: "mono", title: hn.notices + " NOTICE", text: String(hn.n) + (hn.notices ? " +" + hn.notices : "") }), h("td", null, inboxWords(s))));
+      h("td", { class: "mono", text: s.summary.progress_pct === null ? "—" : s.summary.progress_pct + "%" }), h("td", { class: "mono", text: String(needs) }), h("td", { class: "mono", text: rc ? String(rc.to_define) : L("sin dato", "no data") }),
+      h("td", { class: "mono", text: String(hn.n) }), h("td", null, inboxWords(s))));
   });
   var heads = [L("El proyecto; haz clic para abrir su plan.", "The project; click to open its plan."), L("Versión de GTT instalada en el proyecto.", "Version of GTT installed in the project."), L("DEV = se está construyendo; THINK = aún se diseña.", "DEV = being built; THINK = still being designed."),
-    L("Cuánto del trabajo está hecho.", "How much of the work is done."), L("Cosas que solo tú puedes resolver.", "Things only you can resolve."), L("Historias a las que les falta información (y cuántas son tuyas).", "Stories that lack information (and how many are yours)."),
-    L("Avisos que GTT detectó solos.", "Notices GTT detected by itself."), L("Cambios al diseño en la Bandeja.", "Changes to the design in the Inbox.")];
+    L("Cuánto del trabajo está hecho.", "How much of the work is done."), L("Cosas que solo tú puedes resolver.", "Things only you can resolve."), L("Historias a las que les falta información.", "Stories that lack information."),
+    L("Alertas que conviene atender pronto.", "Alerts to attend soon."), L("Cambios al diseño en la Bandeja.", "Changes to the design in the Inbox.")];
   var head = ["proyecto", "suite", "fase", "avance", "te necesito", "por definir", "alertas", "bandeja"].map(function (x, i) { return h("th", { title: heads[i], text: L(x, ["project", "suite", "phase", "progress", "I need you", "to define", "alerts", "inbox"][i]) }); });
   main.appendChild(howTo("portfolio",
     L("Todos tus proyectos con GTT de un vistazo, uno por fila.", "All your GTT projects at a glance, one per row."),
@@ -2101,8 +2511,7 @@ function fileStatus(f, since) { return since === "freeze" ? f.freeze : since ===
 function viewCode() {
   var snap = currentSnap(); if (!snap) return h("main", null, h("div", { class: "empty", text: T.noRepos }));
   var st = readHash(); var code = snap.code;
-  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "cmdline", text: "$ gtt sonar · " + L("código", "code") }),
-    h("div", { class: "headrow" }, h("h1", { text: L("Lo construido", "What was built") }), h("span", { class: "small", text: snap.repo.name }))));
+  var main = h("main", null, h("div", { class: "headblock" }, h("div", { class: "headrow" }, h("h1", { text: L("Lo construido", "What was built") }), h("span", { class: "small", text: snap.repo.name }))));
   if (!code || !code.modules) {
     main.appendChild(h("div", { class: "stale", role: "status", text: L("sin dato: actualiza GTT en este repo (gtt update) para ver el mapa del código.", "no data: update GTT in this repo (gtt update) to see the map of the code.") }));
     return main;
@@ -2126,7 +2535,8 @@ function viewCode() {
   var rows = {}; mods.forEach(function (m) { (rows[m.layer] = rows[m.layer] || []).push(m); });
   var BW = 200, BH = 82, GX = 56, GY = 70, PAD = 24;
   var widest = 0; Object.keys(rows).forEach(function (k) { if (rows[k].length > widest) widest = rows[k].length; });
-  var W = PAD * 2 + widest * BW + (widest - 1) * GX, Hh = PAD * 2 + (maxLayer + 1) * BH + maxLayer * GY;
+  var strayRow = code.outside && code.outside.length ? BH + 16 : 0;
+  var W = PAD * 2 + widest * BW + (widest - 1) * GX, Hh = PAD * 2 + (maxLayer + 1) * BH + maxLayer * GY + strayRow;
   var pos = {};
   Object.keys(rows).forEach(function (k) {
     var layer = +k, list = rows[k]; var rowW = list.length * BW + (list.length - 1) * GX; var x0 = (W - rowW) / 2;
@@ -2148,10 +2558,10 @@ function viewCode() {
     if (same) { x1 = a.x < b.x ? a.x + BW : a.x; y1 = a.y + BH / 2; x2 = a.x < b.x ? b.x : b.x + BW; y2 = b.y + BH / 2; }
     else { var down = b.y > a.y; x1 = a.x + BW / 2; y1 = down ? a.y + BH : a.y; x2 = b.x + BW / 2; y2 = down ? b.y : b.y + BH; }
     var bad = e.allowed === false; var hit = !bad && ((epicFiles || since !== "all") && mods.some(function (m) { return (m.path === e.from) && touched(m); }));
-    var color = bad ? "#F87171" : hit ? "#2DD4BF" : "#50647C";
-    var line = svgEl("line", { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color, "stroke-width": bad ? 2 : hit ? 2 : 1.5 });
+    var tone = bad ? " bad" : hit ? " hit" : "";
+    var line = svgEl("line", { x1: x1, y1: y1, x2: x2, y2: y2, class: "edge" + tone, "stroke-width": bad ? 2 : hit ? 2 : 1.5 });
     var ang = Math.atan2(y2 - y1, x2 - x1), hx = 9, hy = 5;      /* the arrowhead is drawn by hand: no markers */
-    var head = svgEl("polygon", { points: [x2, y2, x2 - hx * Math.cos(ang) + hy * Math.sin(ang), y2 - hx * Math.sin(ang) - hy * Math.cos(ang), x2 - hx * Math.cos(ang) - hy * Math.sin(ang), y2 - hx * Math.sin(ang) + hy * Math.cos(ang)].join(" "), fill: color });
+    var head = svgEl("polygon", { points: [x2, y2, x2 - hx * Math.cos(ang) + hy * Math.sin(ang), y2 - hx * Math.sin(ang) - hy * Math.cos(ang), x2 - hx * Math.cos(ang) - hy * Math.sin(ang), y2 - hx * Math.sin(ang) + hy * Math.cos(ang)].join(" "), class: "ahead" + tone });
     if (bad) line.setAttribute("stroke-dasharray", "6 4");
     var tt = svgEl("title"); tt.textContent = e.from + " → " + e.to + " · " + e.count + "× · " + e.example; line.appendChild(tt);
     svg.appendChild(line); svg.appendChild(head);
@@ -2190,7 +2600,7 @@ function viewCode() {
           h("td", null, s ? h("span", { class: "tag hollowa", text: s === "new" ? L("nueva", "new") : L("cambiada", "changed") }) : h("span", { class: "small", text: "—" })),
           h("td", null, (f.stories || []).map(function (x) { return h("span", { class: "tag", text: x }); })), h("td", { class: "small", text: (f.who || []).join(", ") || L("sin dato", "no data") }), h("td", { class: "small", text: f.last ? ago(f.last) : "—" }));
       })));
-    main.appendChild(h("div", { class: "panel", style: "padding:16px 18px" }, h("h2", { class: "sec", text: selMod.path + " · " + L("qué hay y quién lo construyó", "what is there and who built it") }), h("div", { class: "tablewrap" }, table),
+    main.appendChild(h("div", { class: "panel", style: "padding:16px 18px" }, h("h2", { class: "sec raw", text: selMod.path + " · " + L("qué hay y quién lo construyó", "what is there and who built it") }), h("div", { class: "tablewrap" }, table),
       h("p", { class: "small", text: code.ctags ? L("Clases con universal-ctags. «Nueva» compara contra el último commit (o el freeze, o ayer, según el filtro).", "Classes from universal-ctags. “New” compares against the last commit (or the freeze, or yesterday, per the filter).") : L("Sin universal-ctags la vista queda en módulos y archivos (se dice una vez). «Nueva» compara contra el último commit.", "Without universal-ctags the view stays at modules and files (said once). “New” compares against the last commit.") })));
   }
   var d2c = code.design_to_code;
@@ -2228,11 +2638,12 @@ function viewHelp2() {
     L("Plan: las épicas en el orden en que se construyen, con sus historias, lo que le falta a cada una y a quién le toca. Aquí lo llenas.", "Plan: the Epics in the order they are built, with their Stories, what each still lacks and whom it is up to. You fill it in here."),
     L("Bandeja: ideas sin triage, propuestas sin confirmar y borradores de ADR a medias.", "Inbox: ideas not triaged, proposals not confirmed and ADR drafts half written."),
     L("Actividad: qué hace claude ahora, con o sin hooks; lo que pasó, día por día; y lo que vio en su última sesión.", "Activity: what claude is doing now, with or without hooks; what happened, day by day; and what it saw in its last session."),
-    L("Salud: todo lo que GTT detecta, por plano, filtrable por nivel, por a quién le toca y por texto; cada hallazgo enlaza a su contenido (la épica o historia, la tarjeta de la bandeja, el documento de diseño o el chequeo), y abajo el estado de cada chequeo.", "Health: everything GTT detects, by plane, filterable by level, by whose it is and by text; each finding links to its content (the Epic or Story, the inbox card, the design document or the check), and below it the state of each check."),
+    L("Salud: primero las alertas, por plano; después «sin urgencia», agrupado y cerrado, donde cada grupo dice si se va solo, cuándo se va y por qué puede esperar; y abajo el estado de cada chequeo. Cada elemento enlaza a su contenido.", "Health: the alerts first, by plane; then “no urgency”, grouped and folded, where each group says whether it leaves by itself, when it leaves and why it can wait; and below, the state of each check. Each item links to its content."),
     L("Diseño: el contexto gobernado, los ADR adoptados y el diseño de cada épica.", "Design: the governed context, the adopted ADRs and the design of each Epic."),
     L("Código: los módulos de stack.md contra las importaciones reales, qué se construyó, quién lo construyó y si respeta la arquitectura.", "Code: the modules of stack.md against the real imports, what was built, who built it and whether it respects the architecture.")]));
   main.appendChild(panel(L("Cómo se lee", "How to read it"), [
-    L("Borde punteado ámbar: por definir y te toca. Punteado turquesa: por definir y le toca a claude, o una propuesta que espera aprobación. Sólido: ratificado o tuyo y completo.", "Dashed amber: to define and yours. Dashed teal: to define and the agent's, or a proposal waiting for approval. Solid: ratified, or yours and complete."),
+    L("Borde punteado ámbar: por definir y te toca. Punteado azul: por definir y le toca a claude, o una propuesta que espera aprobación. Sólido: ratificado o tuyo y completo.", "Dashed amber: to define and yours. Dashed blue: to define and the agent's, or a proposal waiting for approval. Solid: ratified, or yours and complete."),
+    L("Los tres números que piden algo significan una sola cosa en todas las vistas. «Te necesito»: lo que hoy espera un acto tuyo. «Alertas»: lo que conviene atender pronto. «Sin urgencia»: lo demás; no cuenta en ninguna cifra y cada grupo dice cuándo se va.", "The numbers that ask for something mean one thing in every view. “I need you”: what waits for an act of yours today. “Alerts”: what to attend soon. “No urgency”: the rest; it is in no figure and each group says when it leaves."),
     L("«te toca», «le toca a claude», «siguiente», «sin atribuir» e «inferido» siempre se dicen con palabras, nunca solo con color.", "“yours”, “the agent's”, “next”, “unattributed” and “inferred” are always said in words, never by colour alone."),
     L("Sin calibrar: mientras haya menos de 3 historias medidas, la fecha es un rango (1 a 2 veces la estimación), no una fecha falsa.", "Uncalibrated: with fewer than 3 Stories measured, the date is a range (1 to 2 times the estimate), not a false date.")]));
   main.appendChild(panel(L("Qué puedes hacer", "What you can do"), [
@@ -2250,9 +2661,28 @@ function viewHelp2() {
   return main;
 }
 
+/* ---------- does this page change anything? said in words, on every view: the question must never be left to guessing ---------- */
+function modeBar(snap) {
+  if (!snap) return null;
+  var on = !!editable(snap);
+  var bar = h("div", { class: "modebar " + (on ? "on" : "off"), role: "note", "aria-label": L("qué guarda esta página", "what this page saves") });
+  bar.appendChild(h("strong", { text: on ? L("Editable: lo que envías aquí se guarda en GTT.", "Editable: what you send here is saved in GTT.")
+    : L("Solo lectura: esta página no cambia nada en GTT.", "Read only: this page changes nothing in GTT.") }));
+  if (on) {
+    bar.appendChild(h("span", { class: "mline", title: L("Se guarda: respuestas y decisiones, datos de historias y épicas propuestas, ideas y aportes, y la URL del hilo. El agente aplica tus respuestas en tu próximo mensaje.", "Saved: answers and decisions, the fields of Stories and proposed Epics, ideas and inputs, and the thread's URL. The agent applies your answers at your next message."),
+      text: L("Aprobar, promover, ejecutar, congelar, deshacer y decidir observaciones: solo en tu terminal.", "Approving, promoting, running, freezing, undoing and deciding observations: only in your terminal.") }));
+  } else if (SERVED) {
+    bar.appendChild(h("span", { class: "mline", text: L("Este proyecto necesita actualizar GTT para poder editar desde aquí.", "This project needs a GTT update before it can be edited from here.") }));
+  } else {
+    bar.appendChild(h("span", { class: "mline" }, L("Para responder desde la página: ", "To answer from the page: "), cmdLine("cd '" + String(snap.repo.path).replace(/'/g, "'\\''") + "' && gtt sonar")));
+  }
+  return bar;
+}
+
 /* ---------- render + refresh ---------- */
 var timer = null;
 function render() {
+  applyTheme();
   var st = readHash(); var snap = currentSnap();
   var view = st.view || (OK.length > 1 && !st.repo ? "portfolio" : "plan");
   if (["plan", "inbox", "activity", "health", "design", "code", "portfolio", "help"].indexOf(view) < 0) view = "plan";
@@ -2265,6 +2695,7 @@ function render() {
   app.appendChild(topBar2(view, snap));
   var cbar = snap ? consultBar(snap) : null; if (cbar) app.appendChild(cbar);
   var wbar = snap ? awaitingBar(snap) : null; if (wbar) app.appendChild(wbar);
+  var mbar = view === "plan" || view === "inbox" ? modeBar(snap) : null; if (mbar) app.appendChild(mbar);
   var banner = staleBanner();
   var page = view === "plan" ? viewPlan() : view === "inbox" ? viewInbox() : view === "activity" ? viewActivity() : view === "health" ? viewHealth() : view === "design" ? viewDesign() : view === "code" ? viewCode() : view === "portfolio" ? viewPortfolio2() : viewHelp2();
   if (banner && !SERVED) page.insertBefore(banner, page.firstChild);

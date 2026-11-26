@@ -205,9 +205,9 @@ async def drive(chrome, port):
         print("the figures at the top are links: each one lands on the content it counts")
         before_hash = await page.ev("location.hash")
         n_links = await page.ev("document.querySelectorAll('a.fig[href]').length")
-        check(n_links == 6, "the six figures are links", str(n_links))
+        check(n_links == 5, "the five figures are links", str(n_links))
         hrefs = await page.ev("Array.from(document.querySelectorAll('a.fig')).map(function (a) { return a.getAttribute('data-fig') + '=' + a.getAttribute('href'); }).join(' ')")
-        check("define=#/" in hrefs and "f=define" in hrefs and "view=health" in hrefs and "hl=NOTICE" in hrefs and "tl=1" in hrefs and "at=needs-h" in hrefs, "each leads to its own content (to define, alerts, notices, timeline, what waits for you)", hrefs[:400])
+        check("define=#/" in hrefs and "f=define" in hrefs and "view=health" in hrefs and "at=alerts" in hrefs and "NOTICE" not in hrefs and "tl=1" in hrefs and "at=needs-h" in hrefs, "each leads to its own content (to define, alerts, timeline, what waits for you)", hrefs[:400])
         await page.ev("document.querySelector('a.fig[data-fig=define]').click(); 1")
         await asyncio.sleep(0.8)
         now_hash = await page.ev("location.hash")
@@ -279,7 +279,8 @@ async def drive_lang(chrome, port):
         await page.ev(JS)
         text = await page.ev("window.__text()")
         print("served with no initial data: the language comes from the snapshot")
-        check("save to the backlog" in text and "inbox" in text and "bandeja" not in text and "guardar en el backlog" not in text, "an English project, polled in, is shown in English", text[:160])
+        low = text.lower()          # the labels are capitalised by the style sheet: the check is about the language
+        check("save to the backlog" in low and "inbox" in low and "bandeja" not in low and "guardar en el backlog" not in low, "an English project, polled in, is shown in English", text[:160])
     finally:
         await page.close()
 

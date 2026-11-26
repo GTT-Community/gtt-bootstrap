@@ -168,7 +168,7 @@ def plan_checks(tmp, chrome):
     print("criterion 39 - every Epic and Story has `copy ref`")
     check(len(re.findall(r'aria-label="copy ref (?:EPIC|STORY)-\d+"', body)) >= 10, "copy ref on each Epic and Story", str(len(re.findall(r'aria-label="copy ref', body))))
     health = words(dom(static, "health"))
-    check("governance" in health and "delivery" in health and "definition" in health and "GOV-GAP" in health and "DEF-STORY-ESTIMATE" in health, "Health shows the findings by plane")
+    check("governance" in health and "definition" in health and 'data-code="DEF-STORY-ESTIMATE"' in dom(static, "health&qo=DEF-STORY-ESTIMATE"), "Health shows the findings by plane, the calm ones inside their group")
     check(re.search(r'href="#/view=plan&amp;q=STORY-003"', dom(static, "health")) is not None, "each finding links to its item")
     print("Health: filters by level, by whose it is and by text, kept in the address; every finding that has a content links to it")
     hall = dom(static, "health")
@@ -191,21 +191,62 @@ def plan_checks(tmp, chrome):
     none = dom(static, "health&hq=zzz-nothing-matches")
     check("no finding matches this filter" in words(none) and not rows_of(none), "a filter that matches nothing says so")
     check(re.search(r"(governance|delivery|definition|code) · \d+ / \d+", words(dom(static, "health&hl=" + level))) is not None, "each plane shows how many of its findings the filter keeps")
-    print("WARNING and NOTICE are two things: two figures, two badges, and the Health list keeps them apart")
+    print("one rule for every number: I need you, alerts, and no urgency - a finding is in one place only")
+    snapshot = json.load(open(snap_path, encoding="utf-8"))
     plan_dom = dom(static, "plan")
-    gd = [f for f in findings if f.get("plane") in ("governance", "delivery")]
-    n_warn = sum(1 for f in gd if f["level"] in ("WARNING", "BLOCKING"))
-    n_note = sum(1 for f in gd if f["level"] not in ("WARNING", "BLOCKING"))
     fig = lambda key: re.search(r'data-fig="%s"[^>]*><span class="k">[^<]*</span><span class="v[^"]*">(\d+)</span><span class="s">([^<]*)</span>' % key, plan_dom)
-    fa, fn = fig("alerts"), fig("notices")
-    check(fa is not None and fn is not None, "the figures have one for alerts (WARNING) and one apart for notices (NOTICE)")
-    check(fa is not None and int(fa.group(1)) == n_warn and "WARNING" in fa.group(2) and "NOTICE" not in fa.group(2), "the alerts figure counts only WARNING (and BLOCKING)", str(fa.groups() if fa else None) + f" want {n_warn}")
-    check(fn is not None and int(fn.group(1)) == n_note and "NOTICE" in fn.group(2), "the notices figure counts only NOTICE", str(fn.groups() if fn else None) + f" want {n_note}")
-    check(n_note > 0 and 'class="mute"' in plan_dom, "the Health tab shows the NOTICE count in its own muted badge, apart from the WARNING one", f"notices={n_note}")
-    hv = dom(static, "health")
-    warn_rows = len(re.findall(r'<span class="lvl w">', hv))
-    check(n_warn > 0 and n_note > 0 and 'class="lvlsep"' in hv, "in Health the NOTICE rows come after a divider that names them", f"warn={n_warn} notice={n_note}")
-    check(re.search(r"(governance|delivery|definition|code) · \d+ (BLOCKING|WARNING|NOTICE)", words(hv)) is not None, "each plane says how many WARNING and how many NOTICE it holds, not one total")
+    stood = {f["ref"] for f in findings if f["code"] == "GOV-VALIDATION"}
+    n_alert = sum(1 for f in findings if f["level"] != "NOTICE") + sum(1 for c in snapshot.get("health") or [] if c["status"] == "fail" and c["id"] not in stood)
+    fa = fig("alerts")
+    check(fig("notices") is None and len(re.findall(r'<a class="fig" data-fig="', body_of(plan_dom))) == 5, "five figures: none for notices")
+    check(fa is not None and int(fa.group(1)) == n_alert, "the alerts figure counts every BLOCKING and WARNING, on any plane", str(fa.groups() if fa else None) + f" want {n_alert}")
+    badge = re.search(r'class="tl-t">health</span><b class="[^"]*">(\d+)</b>', plan_dom)
+    check(badge is not None and int(badge.group(1)) == n_alert and 'class="mute"' not in plan_dom, "the Health tab has one badge and it is the same number", str(badge.group(1) if badge else None))
+    check(f"alerts · {n_alert}" in words(dom(static, "health")), "and Health opens with that number")
+    held = {re.search(r"GAP-\d+", f["text"]).group(0) for f in findings if f["code"] == "DEF-STORY-GAP"}
+    gap_refs = {f["ref"] for f in findings if f["code"] == "GOV-GAP" and (f["ref"] in held or f["level"] != "NOTICE")}
+    want = {n["ref"] for n in snapshot.get("needs_you") or []} | gap_refs | {f["ref"] for f in findings if f["code"] in ("GOV-DEC", "GOV-RUN")}
+    fneeds = fig("needs")
+    check(fneeds is not None and int(fneeds.group(1)) == len(want), "I need you: what the engine declares, the gaps that hold a Story, a decision to know and a plan to run - and nothing else", f"{fneeds.group(1) if fneeds else None} want {len(want)} {sorted(want)}")
+    sys.path.insert(0, os.path.join(ROOT, ".gtt", "scripts"))
+    sys.dont_write_bytecode = True
+    import gtt_sonar
+    check(gtt_sonar.waiting_now(snapshot) == len(want), "the terminal line says the same number as the page", str(gtt_sonar.waiting_now(snapshot)))
+    codes = sorted({f["code"] for f in findings})
+    everything = dom(static, "health&qo=WAITING," + ",".join(codes))
+    quiet_gaps = {f["ref"] for f in findings if f["code"] == "GOV-GAP" and f["ref"] not in gap_refs}
+    shown = body_of(everything)
+    missing = [f["code"] + " " + f["ref"] for f in findings if 'data-code="%s"' % f["code"] not in shown]
+    check(not missing, "no finding vanishes from Health: each is an alert, something that waits for you, or in a calm group", str(missing[:5]))
+    check(all(("GOV-GAP" not in g) or quiet_gaps for g in re.findall(r'data-quiet="([A-Z0-9-]+)"', shown)), "a gap that holds work is not listed as calm")
+    folded = dom(static, "health")
+    check('data-quiet="' in folded and 'aria-expanded="true"' not in body_of(folded).split('id="quiet"', 1)[-1], "the calm groups are folded until opened")
+    check(all(w in words(folded) for w in ("when it leaves", "They leave with nothing from you")) and "why it can wait" not in words(folded) and "why it can wait" in words(everything),
+          "each calm group says when it leaves, and why it can wait once opened")
+    template_text = open(os.path.join(ROOT, ".gtt", "sonar", "template.html"), encoding="utf-8").read()
+    table = template_text.split("var QUIET = {", 1)[1].split("/*END-QUIET*/", 1)[0]
+    catalog = json.load(open(os.path.join(ROOT, ".gtt", "contract", "findings.json"), encoding="utf-8"))["codes"]
+    unruled = [c for c in catalog if '"%s": {' % c not in table]
+    check(not unruled, "every code of the findings catalog has its rule: when it leaves and why it can wait", str(unruled))
+    obs = {"code": "GOV-OBSERVATION", "plane": "governance", "level": "NOTICE", "ref": "package.json#x", "epic": None, "where": "gtt-domain/governance-backlog.json", "owner": "human", "for": None, "source": "gtt_observe", "next": False,
+           "text": "B-06: new dependency `x`", "observation": "OBS-0007",
+           "fix": {"fields": [], "about": False, "command": None, "chat": None, "ask": None, "acts": [{"act": a, "command": f'bash .gtt/scripts/gtt-observe.sh {a} OBS-0007 --by "Ana" --apply'} for a in ("accept", "reject", "defer")]}}
+    for label, row in (("new", obs), ("old", {k: v for k, v in dict(obs, fix=dict(obs["fix"], acts=None)).items() if k != "observation"})):
+        file_ = os.path.join(os.path.dirname(snap_path), f"obs-{label}.json")
+        json.dump(dict(snapshot, findings=findings + [row]), open(file_, "w", encoding="utf-8"))
+        page_ = file_[:-5] + ".html"
+        sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--out", page_, file_)
+        seen = words(dom(page_, "health&qo=GOV-OBSERVATION"))
+        if label == "new":
+            check(all(f"gtt-observe.sh {a} OBS-0007" in seen for a in ("accept", "reject", "defer")) and "Attend OBS-0007" in seen, "an observation shows its id and the three commands")
+        else:
+            check("gtt-observe.sh backlog" in seen, "with an older engine the page says how to list the ids")
+    mode = words(dom(static, "plan"))
+    check("read only: this page changes nothing in gtt" in mode.lower() and "to answer from the page" in mode.lower() and "gtt sonar" in mode, "a read-only page says it saves nothing and how to open the editable one")
+    served_page = os.path.join(os.path.dirname(snap_path), "mode-served.html")
+    sh(project, "bash", ".gtt/scripts/gtt-sonar.sh", "render", "--served", "--out", served_page, snap_path)
+    mode = words(dom(served_page, "plan")).lower()
+    check("editable: what you send here is saved in gtt" in mode and "only in your terminal" in mode, "the editable page says what the form saves and what stays in the terminal")
     linked = len(re.findall(r'<a class="ref" href="#/view=(?:plan|inbox|design|health|code)', body_of(hall)))
     check(linked >= 3, "the findings that have a content link to it", str(linked))
     designs = [f for f in findings if f.get("where", "").startswith("gtt-domain/context/") and not f.get("epic") and not str(f.get("ref", "")).startswith(("EPIC-", "STORY-"))]
@@ -400,13 +441,22 @@ def main():
         check("gtt-sonar.sh start" in context and "|| true" in context.split("gtt-sonar.sh start")[1][:60], "the page is refreshed at session start and never fails it")
 
         print("criterion 10 - contrast and keyboard")
-        tokens = dict(re.findall(r"--([a-z-]+):(#[0-9A-Fa-f]{6})", template.split("</style>")[0]))
-        pairs = [("text", "bg", 4.5), ("muted", "bg", 4.5), ("dim", "bg", 4.5), ("agent", "bg", 4.5), ("needs", "bg", 4.5), ("danger", "bg", 4.5),
-                 ("text", "surface", 4.5), ("muted", "surface", 4.5), ("dim", "surface", 4.5), ("agent", "surface", 4.5), ("dim", "rail", 4.5), ("muted", "rail", 4.5),
-                 ("needs", "needs-bg", 4.5), ("agent", "agent-bg", 4.5), ("text", "agent-bg", 4.5), ("text", "cmd", 4.5), ("dim", "cmd", 4.5), ("agent", "surface", 4.5), ("danger", "surface", 4.5)]
-        for fg, bg, need in pairs:
-            r = ratio(tokens[fg], tokens[bg])
-            check(r >= need, f"{fg} on {bg} is {r:.1f}:1 (needs {need}:1)")
+        css = template.split("</style>")[0]
+        themes = {"dark": re.search(r"^:root\{(.*?)^\}", css, re.S | re.M).group(1),
+                  "light": re.search(r'^:root\[data-theme="light"\]\{(.*?)^\}', css, re.S | re.M).group(1)}
+        pairs = [(fg, bg) for fg in ("text", "body", "muted", "dim", "agent", "ok", "needs", "danger") for bg in ("bg", "surface", "rail")]
+        pairs += [(fg, "raised") for fg in ("text", "muted", "dim")] + [(fg, "cmd") for fg in ("text", "dim", "agent")]
+        pairs += [(tone, tone + "-bg") for tone in ("agent", "ok", "needs", "danger")] + [(fg, bg) for fg in ("text", "body", "muted") for bg in ("agent-bg", "needs-bg", "ok-bg")]
+        pairs += [("on-primary", "primary"), ("on-cta", "cta"), ("bg", "needs")]
+        for name, block in themes.items():
+            tokens = dict(re.findall(r"--([a-z0-9-]+):(#[0-9A-Fa-f]{6})", block))
+            for fg, bg in pairs:
+                r = ratio(tokens[fg], tokens[bg])
+                check(r >= 4.5, f"{name}: {fg} on {bg} is {r:.1f}:1 (needs 4.5:1)")
+        if chrome:
+            themed = lambda frag: re.search(r'<html[^>]*data-theme="(\w+)"', dom_of(frag)).group(1)
+            check(themed("plan") == "dark" and themed("plan&theme=light") == "light", "dark is the default theme and the light one can be asked for")
+            check('id="theme-toggle"' in body_of(dom_of("plan")), "the theme button is on the page")
         check("#5F738A" not in template.upper(), "the old 5F738A text colour is gone")
         check(not re.search(r"onclick=|tabindex=\"-", template) and "addEventListener(\"click\"" in template, "actions are real buttons and links, not clickable divs")
         check(":focus-visible{outline:2px solid var(--agent)" in template, "the focus is visible: 2px in agent")
